@@ -2,7 +2,14 @@ module Main where
 
 import Graphics.UI.GLUT
 
+import Control.Monad
+
 import Geometries
+
+points :: Int -> [(GLfloat,GLfloat,GLfloat)]
+points n = [ (sin (2*pi*k/n'), cos (2*pi*k/n'), 0) | k <- [1..n'] ]
+   where n' = fromIntegral n
+
 
 main :: IO ()
 main = do
@@ -15,7 +22,10 @@ main = do
 display :: DisplayCallback
 display = do
   clear [ ColorBuffer ]
-  cube 0.1
+  forM_ (points 7) $ \(x, y, z) ->
+    preservingMatrix $ do
+      translate $ Vector3 x y z
+      cube 0.1
   flush
 
 reshape :: ReshapeCallback
