@@ -5,22 +5,22 @@ type Block = [GfxCommand]
 type GfxAst = Block
 
 data GfxCommand
-  = Shape (Maybe Block)
-  | Matrix (Maybe Block)
-  | Colour (Maybe Block)
+  = ShapeCommand ShapeGfx (Maybe Block)
+  | MatrixCommand MatrixGfx (Maybe Block)
+  | ColourCommand ColourGfx (Maybe Block)
   deriving (Show, Eq)
 
-data Shape
+data ShapeGfx
   = Cube Float Float Float
   deriving (Show, Eq)
 
-data Matrix
+data MatrixGfx
   = Rotate Float Float Float
 --  | Scale Float Float Float
 --  | Move Float Float Float
   deriving (Show, Eq)
 
-data Colour
+data ColourGfx
   = Fill Float Float Float
 --  | NoFill
 --  | Stroke Float Float Float
