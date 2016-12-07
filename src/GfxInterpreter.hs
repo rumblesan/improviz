@@ -43,4 +43,4 @@ interpretColour colour = [show colour]
 
 newScope :: String -> GfxAst -> [GfxOutput]
 newScope name block =
-  [name ++ " scope enter"] ++ (interpretBlock block) ++ [name ++ " scope leave"]
+  [name ++ " scope enter"] ++ interpretBlock block ++ [name ++ " scope leave"]
