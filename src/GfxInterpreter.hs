@@ -1,6 +1,6 @@
 module GfxInterpreter where
 
-import Data.Maybe
+import Data.Maybe (maybe)
 
 import GfxAst
 
