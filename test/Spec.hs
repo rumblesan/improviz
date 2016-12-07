@@ -1,2 +1,15 @@
+module Main where
+
+import Data.Monoid
+
+import Test.Framework
+
+import Tests.GfxInterpreter (gfxInterpreterTests)
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main =
+  defaultMainWithOpts
+    [
+      gfxInterpreterTests
+    ]
+    mempty
