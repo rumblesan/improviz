@@ -1,46 +1,88 @@
 module GfxInterpreter where
 
+import Data.Map.Strict hiding (foldl)
 import Data.Maybe (maybe)
+import Control.Monad (mapM)
+import Control.Monad.State.Strict
+
+import Graphics.Rendering.OpenGL hiding (Fill)
 
 import GfxAst
+import Geometries
 
 
-type GfxOutput = String
+type GfxOutput = IO ()
 
-interpretGfx :: GfxAst -> [GfxOutput]
-interpretGfx = interpretBlock
+data EngineState = EngineState {
+  variables :: Map String Double
+} deriving (Show, Eq)
 
-interpretBlock :: Block -> [GfxOutput]
-interpretBlock block = block >>= interpretCommand
+type GraphicsEngine v = State EngineState v
 
-interpretCommand :: GfxCommand -> [GfxOutput]
-interpretCommand (ShapeCommand shape block) =
+interpretGfx :: GfxAst -> GraphicsEngine (IO ())
+interpretGfx ast = do
+  commands <- interpretBlock ast
+  return $ sequence_ commands
+
+interpretBlock :: Block -> GraphicsEngine [IO ()]
+interpretBlock = mapM interpretCommand
+
+interpretCommand' :: GraphicsEngine (IO ()) -> Maybe Block -> GraphicsEngine (IO ())
+interpretCommand' commandOutput block =
   let
-    blockMap :: GfxAst -> [GfxOutput]
-    blockMap = newScope (show shape)
-  in maybe (interpretShape shape) blockMap block
-interpretCommand (MatrixCommand matrix block) =
-  let
-    blockMap :: GfxAst -> [GfxOutput]
-    blockMap = newScope (show matrix)
-  in maybe (interpretMatrix matrix) blockMap block
-interpretCommand (ColourCommand colour block) =
-  let
-    blockMap :: GfxAst -> [GfxOutput]
-    blockMap = newScope (show colour)
-  in maybe (interpretColour colour) blockMap block
+    blockMap :: Block -> GraphicsEngine (IO ())
+    blockMap = newScope preservingMatrix commandOutput
+  in
+    maybe commandOutput blockMap block
+
+interpretCommand :: GfxCommand -> GraphicsEngine GfxOutput
+interpretCommand (ShapeCommand shapeAst block) = interpretCommand' (interpretShape shapeAst) block
+interpretCommand (MatrixCommand matrixAst block) = interpretCommand' (interpretMatrix matrixAst) block
+interpretCommand (ColourCommand colourAst block) = interpretCommand' (interpretColour colourAst) block
 
 
-interpretShape :: ShapeGfx -> [GfxOutput]
-interpretShape shape = [show shape]
+interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
+interpretShape s@(Cube xV yV zV) =
+  do
+    x <- getValue xV
+    y <- getValue yV
+    z <- getValue zV
+    return $ preservingMatrix $ do
+      putStrLn $ "Interpreting " ++ show s
+      scale x y z
+      cube 1
 
-interpretMatrix :: MatrixGfx -> [GfxOutput]
-interpretMatrix matrix = [show matrix]
+interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
+interpretMatrix m@(Rotate xV yV zV) =
+  do
+    x <- getValue xV
+    y <- getValue yV
+    z <- getValue zV
+    return $ do
+      putStrLn $ "Interpreting " ++ show m
+      rotate x $ Vector3 1 0 0
+      rotate y $ Vector3 0 1 0
+      rotate z $ Vector3 0 0 1
 
-interpretColour :: ColourGfx -> [GfxOutput]
-interpretColour colour = [show colour]
+interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
+interpretColour c@(Fill rV gV bV) =
+  do
+    r <- getValue rV
+    g <- getValue gV
+    b <- getValue bV
+    return $ do
+      putStrLn $ "Interpreting " ++ show c
+      color $ Color3 (r/255) (g/255) (b/255)
 
 
-newScope :: String -> GfxAst -> [GfxOutput]
-newScope name block =
-  [name ++ " scope enter"] ++ interpretBlock block ++ [name ++ " scope leave"]
+newScope :: (IO () -> IO ()) -> GraphicsEngine (IO ()) -> Block -> GraphicsEngine GfxOutput
+newScope preservingFunc newStateFunc block = do
+  newStateIO <- newStateFunc
+  blockIO <- interpretBlock block
+  return $ do
+    putStrLn "new scope"
+    preservingFunc $ sequence_ (newStateIO : blockIO)
+
+getValue :: Value -> GraphicsEngine Double
+getValue (Number v) = return v
+getValue (Variable name) = gets $ findWithDefault 0 name . variables

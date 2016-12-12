@@ -1,10 +1,12 @@
 module Main where
 
-import Graphics.UI.GLUT
+import Graphics.UI.GLUT hiding (Cube, get)
 
-import Control.Monad
+import Data.Map.Strict hiding (size)
+import Control.Monad.State.Strict
 
-import Geometries
+import GfxAst
+import GfxInterpreter
 
 import Data.IORef
 
@@ -12,27 +14,41 @@ points :: Int -> [(GLfloat,GLfloat,GLfloat)]
 points n = [ (sin (2*pi*k/n'), cos (2*pi*k/n'), 0) | k <- [1..n'] ]
    where n' = fromIntegral n
 
+displayAst :: GfxAst
+displayAst = [MatrixCommand (Rotate (Variable "time") (Number 2) (Number 1)) $ Just [
+  ShapeCommand (Cube (Number 0.1) (Number 0.2) (Number 0.1)) Nothing,
+  MatrixCommand (Rotate (Number 2) (Variable "time") (Variable "time")) Nothing,
+  ShapeCommand (Cube (Number 0.1) (Number 0.2) (Number 0.1)) Nothing
+                                                     ]]
+smallAst :: GfxAst
+smallAst = [
+  MatrixCommand (Rotate (Number 2) (Number 3) (Number 4)) Nothing,
+  ShapeCommand  (Cube (Number 0.1) (Number 0.1) (Number 0.1)) Nothing
+  ]
+
+startState :: EngineState
+startState = EngineState { variables=fromList [("time", 1)] }
 
 main :: IO ()
 main = do
   (_progName, _args) <- getArgsAndInitialize
+  initialDisplayMode $= [WithDepthBuffer]
   _window <- createWindow _progName
-  angle <- newIORef 0.0
-  displayCallback $= display angle
   reshapeCallback $= Just reshape
-  idleCallback $= Just (idle angle)
+  depthFunc $= Just Less
+  initialState <- newIORef startState
+  displayCallback $= display initialState
+  idleCallback $= Just (idle initialState)
   mainLoop
 
-display :: IORef GLfloat -> DisplayCallback
-display angle = do
+display :: IORef EngineState -> DisplayCallback
+display engineState = do
+  clear [ ColorBuffer, DepthBuffer ]
   clear [ ColorBuffer ]
   loadIdentity
-  a <- get angle
-  rotate a $ Vector3 0 0 1
-  forM_ (points 7) $ \(x, y, z) ->
-    preservingMatrix $ do
-      translate $ Vector3 x y z
-      cube 0.1
+  es <- readIORef engineState
+  putStrLn "display loop"
+  evalState (interpretGfx displayAst) es
   flush
 
 reshape :: ReshapeCallback
@@ -41,7 +57,9 @@ reshape size = do
   postRedisplay Nothing
 
 
-idle :: IORef GLfloat -> IdleCallback
-idle angle = do
-  angle $~! (+ 0.1)
+idle :: IORef EngineState -> IdleCallback
+idle engineState = do
+  es <- readIORef engineState
+  let newvars = adjust (1 +) "time" (variables es)
+  writeIORef engineState EngineState {variables=newvars}
   postRedisplay Nothing
