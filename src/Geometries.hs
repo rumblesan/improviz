@@ -16,3 +16,6 @@ cubeVertexes w = [
 
 cube :: GLfloat -> IO ()
 cube w = renderPrimitive Quads $ mapM_ vertex3f $ cubeVertexes w
+
+cubeFrame :: GLfloat -> IO ()
+cubeFrame w = renderPrimitive Lines $ mapM_ vertex3f $ cubeVertexes w
