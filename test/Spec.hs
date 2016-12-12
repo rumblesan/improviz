@@ -1,15 +1,8 @@
 module Main where
 
-import Data.Monoid
+import Data.Monoid (mempty)
 
 import Test.Framework
 
-import Tests.GfxInterpreter (gfxInterpreterTests)
-
 main :: IO ()
-main =
-  defaultMainWithOpts
-    [
-      gfxInterpreterTests
-    ]
-    mempty
+main = defaultMainWithOpts [] mempty
