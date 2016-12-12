@@ -4,6 +4,11 @@ type Block = [GfxCommand]
 
 type GfxAst = Block
 
+data Value
+  = Variable String
+  | Number Double
+  deriving (Show, Eq)
+
 data GfxCommand
   = ShapeCommand ShapeGfx (Maybe Block)
   | MatrixCommand MatrixGfx (Maybe Block)
@@ -11,18 +16,18 @@ data GfxCommand
   deriving (Show, Eq)
 
 data ShapeGfx
-  = Cube Float Float Float
+  = Cube Value Value Value
   deriving (Show, Eq)
 
 data MatrixGfx
-  = Rotate Float Float Float
---  | Scale Float Float Float
---  | Move Float Float Float
+  = Rotate Value Value Value
+--  | Scale Value Value Value
+--  | Move Value Value Value
   deriving (Show, Eq)
 
 data ColourGfx
-  = Fill Float Float Float
+  = Fill Value Value Value
 --  | NoFill
---  | Stroke Float Float Float
+--  | Stroke Value Value Value
 --  | NoStroke
   deriving (Show, Eq)
