@@ -10,12 +10,10 @@ import GfxInterpreter
 
 import Data.IORef
 
-points :: Int -> [(GLfloat,GLfloat,GLfloat)]
-points n = [ (sin (2*pi*k/n'), cos (2*pi*k/n'), 0) | k <- [1..n'] ]
-   where n' = fromIntegral n
-
 displayAst :: GfxAst
-displayAst = [ColourCommand (Fill (Number 1) (Number 0) (Number 0.4)) Nothing,
+displayAst = [
+  ColourCommand (Stroke (Number 0) (Number 0) (Number 0)) Nothing,
+  ColourCommand (Fill (Number 1) (Number 0) (Number 0.4)) Nothing,
   MatrixCommand (Rotate (Variable "time") (Number 2) (Number 1)) $ Just [
     ShapeCommand (Cube (Number 0.1) (Number 0.2) (Number 0.1)) $ Just [
       ColourCommand (Fill (Number 0) (Number 0.7) (Number 0.2)) Nothing,
@@ -25,6 +23,7 @@ displayAst = [ColourCommand (Fill (Number 1) (Number 0) (Number 0.4)) Nothing,
     MatrixCommand (Rotate (Variable "time") (Variable "time") (Number 0.3)) Nothing,
     ShapeCommand (Cube (Number 0.1) (Number 0.3) (Number 0.05)) Nothing
     ]]
+
 startState :: EngineState
 startState = EngineState {
     variables=fromList [("time", 1)]

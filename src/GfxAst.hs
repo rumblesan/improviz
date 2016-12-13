@@ -28,6 +28,6 @@ data MatrixGfx
 data ColourGfx
   = Fill Value Value Value
 --  | NoFill
---  | Stroke Value Value Value
+  | Stroke Value Value Value
 --  | NoStroke
   deriving (Show, Eq)

@@ -45,9 +45,14 @@ interpretShape (Cube xV yV zV) =
     x <- getValue xV
     y <- getValue yV
     z <- getValue zV
+    strokeC <- getStroke
+    fillC <- getFill
     lift $ preservingMatrix $ do
       scale x y z
+      color fillC
       cube 1
+      color strokeC
+      cubeFrame 1
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
 interpretMatrix (Rotate xV yV zV) =
@@ -65,7 +70,11 @@ interpretColour (Fill rV gV bV) = do
   g <- getValue gV
   b <- getValue bV
   pushFill r g b
-  setFill
+interpretColour (Stroke rV gV bV) = do
+  r <- getValue rV
+  g <- getValue gV
+  b <- getValue bV
+  pushStroke r g b
 
 getValue :: Value -> GraphicsEngine Double
 getValue (Number v) = return v
@@ -77,8 +86,18 @@ pushFill r g b = modify' (\s ->  s { fillColours = Color3 r g b : fillColours s 
 popFill :: GraphicsEngine GfxOutput
 popFill = modify' (\s ->  s { fillColours = tail $ fillColours s })
 
-setFill :: GraphicsEngine GfxOutput
-setFill = get >>= lift . color . head . fillColours
+getFill :: GraphicsEngine (Color3 GLdouble)
+getFill = gets (head . fillColours)
+
+pushStroke :: Double -> Double -> Double -> GraphicsEngine GfxOutput
+pushStroke r g b = modify' (\s ->  s { strokeColours = Color3 r g b : strokeColours s })
+
+popStroke :: GraphicsEngine GfxOutput
+popStroke = modify' (\s ->  s { strokeColours = tail $ strokeColours s })
+
+getStroke :: GraphicsEngine (Color3 GLdouble)
+getStroke = gets (head . strokeColours)
+
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
 newScope gfx block =
@@ -89,4 +108,4 @@ newScope gfx block =
       _ <- evalStateT (interpretBlock block) engineState
       return ((), engineState)
   in
-    mapStateT stateMap gfx >> setFill
+    mapStateT stateMap gfx
