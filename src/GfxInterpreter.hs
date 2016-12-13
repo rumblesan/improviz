@@ -5,7 +5,7 @@ import Data.Maybe (maybe)
 import Control.Monad (mapM)
 import Control.Monad.State.Strict
 
-import Graphics.Rendering.OpenGL hiding (Fill)
+import Graphics.Rendering.OpenGL hiding (Fill, get)
 
 import GfxAst
 import Geometries
@@ -15,7 +15,9 @@ type GfxAction = IO
 type GfxOutput = ()
 
 data EngineState = EngineState {
-  variables :: Map String Double
+    variables :: Map String Double
+  , fillColours :: [ Color3 Double ]
+  , strokeColours :: [ Color3 Double ]
 } deriving (Show, Eq)
 
 type GraphicsEngine v = StateT EngineState GfxAction v
@@ -58,17 +60,25 @@ interpretMatrix (Rotate xV yV zV) =
     lift $ rotate z $ Vector3 0 0 1
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
-interpretColour (Fill rV gV bV) =
-  do
-    r <- getValue rV
-    g <- getValue gV
-    b <- getValue bV
-    lift $ color $ Color3 (r/255) (g/255) (b/255)
-
+interpretColour (Fill rV gV bV) = do
+  r <- getValue rV
+  g <- getValue gV
+  b <- getValue bV
+  pushFill r g b
+  setFill
 
 getValue :: Value -> GraphicsEngine Double
 getValue (Number v) = return v
 getValue (Variable name) = gets $ findWithDefault 0 name . variables
+
+pushFill :: Double -> Double -> Double -> GraphicsEngine GfxOutput
+pushFill r g b = modify' (\s ->  s { fillColours = Color3 r g b : fillColours s })
+
+popFill :: GraphicsEngine GfxOutput
+popFill = modify' (\s ->  s { fillColours = tail $ fillColours s })
+
+setFill :: GraphicsEngine GfxOutput
+setFill = get >>= lift . color . head . fillColours
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
 newScope gfx block =
@@ -79,4 +89,4 @@ newScope gfx block =
       _ <- evalStateT (interpretBlock block) engineState
       return ((), engineState)
   in
-    mapStateT stateMap gfx
+    mapStateT stateMap gfx >> setFill

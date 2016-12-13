@@ -1,6 +1,6 @@
 module Main where
 
-import Graphics.UI.GLUT hiding (Cube, get)
+import Graphics.UI.GLUT hiding (Cube, get, Fill)
 
 import Data.Map.Strict hiding (size)
 import Control.Monad.State.Strict
@@ -15,19 +15,22 @@ points n = [ (sin (2*pi*k/n'), cos (2*pi*k/n'), 0) | k <- [1..n'] ]
    where n' = fromIntegral n
 
 displayAst :: GfxAst
-displayAst = [MatrixCommand (Rotate (Variable "time") (Number 2) (Number 1)) $ Just [
-  ShapeCommand (Cube (Number 0.1) (Number 0.2) (Number 0.1)) Nothing,
-  MatrixCommand (Rotate (Number 2) (Variable "time") (Variable "time")) Nothing,
-  ShapeCommand (Cube (Number 0.1) (Number 0.2) (Number 0.1)) Nothing
-                                                     ]]
-smallAst :: GfxAst
-smallAst = [
-  MatrixCommand (Rotate (Number 2) (Number 3) (Number 4)) Nothing,
-  ShapeCommand  (Cube (Number 0.1) (Number 0.1) (Number 0.1)) Nothing
-  ]
-
+displayAst = [ColourCommand (Fill (Number 1) (Number 0) (Number 0.4)) Nothing,
+  MatrixCommand (Rotate (Variable "time") (Number 2) (Number 1)) $ Just [
+    ShapeCommand (Cube (Number 0.1) (Number 0.2) (Number 0.1)) $ Just [
+      ColourCommand (Fill (Number 0) (Number 0.7) (Number 0.2)) Nothing,
+      MatrixCommand (Rotate (Number 2) (Variable "time") (Variable "time")) Nothing,
+      ShapeCommand (Cube (Number 0.1) (Number 0.2) (Number 0.1)) Nothing
+    ],
+    MatrixCommand (Rotate (Variable "time") (Variable "time") (Number 0.3)) Nothing,
+    ShapeCommand (Cube (Number 0.1) (Number 0.3) (Number 0.05)) Nothing
+    ]]
 startState :: EngineState
-startState = EngineState { variables=fromList [("time", 1)] }
+startState = EngineState {
+    variables=fromList [("time", 1)]
+  , fillColours=[Color3 1.0 1.0 1.0]
+  , strokeColours=[Color3 0.0 0.0 0.0]
+}
 
 main :: IO ()
 main = do
@@ -61,5 +64,5 @@ idle :: IORef EngineState -> IdleCallback
 idle engineState = do
   es <- readIORef engineState
   let newvars = adjust (1 +) "time" (variables es)
-  writeIORef engineState EngineState {variables=newvars}
+  writeIORef engineState es {variables=newvars}
   postRedisplay Nothing
