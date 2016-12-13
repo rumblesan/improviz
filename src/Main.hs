@@ -48,7 +48,7 @@ display engineState = do
   loadIdentity
   es <- readIORef engineState
   putStrLn "display loop"
-  evalState (interpretGfx displayAst) es
+  evalStateT (interpretGfx displayAst) es
   flush
 
 reshape :: ReshapeCallback
