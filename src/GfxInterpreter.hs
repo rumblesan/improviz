@@ -18,6 +18,7 @@ data EngineState = EngineState {
     variables :: Map String Double
   , fillColours :: [ Color4 Double ]
   , strokeColours :: [ Color4 Double ]
+  , backgroundColour :: Color4 GLfloat
 } deriving (Show, Eq)
 
 type GraphicsEngine v = StateT EngineState GfxAction v

@@ -27,9 +27,10 @@ displayAst = [
 
 startState :: EngineState
 startState = EngineState {
-    variables=fromList [("time", 1)]
-  , fillColours=[Color4 1 1 1 1]
-  , strokeColours=[Color4 0 0 0 1]
+    variables = fromList [("time", 1)]
+  , fillColours = [Color4 1 1 1 1]
+  , strokeColours = [Color4 0 0 0 1]
+  , backgroundColour = Color4 1 1 1 1
 }
 
 main :: IO ()
@@ -48,10 +49,11 @@ main = do
 
 display :: IORef EngineState -> DisplayCallback
 display engineState = do
+  es <- readIORef engineState
+  clearColor $= backgroundColour es
   clear [ ColorBuffer, DepthBuffer ]
   clear [ ColorBuffer ]
   loadIdentity
-  es <- readIORef engineState
   putStrLn "display loop"
   evalStateT (interpretGfx displayAst) es
   flush
