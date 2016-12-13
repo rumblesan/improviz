@@ -16,8 +16,8 @@ type GfxOutput = ()
 
 data EngineState = EngineState {
     variables :: Map String Double
-  , fillColours :: [ Color3 Double ]
-  , strokeColours :: [ Color3 Double ]
+  , fillColours :: [ Color4 Double ]
+  , strokeColours :: [ Color4 Double ]
 } deriving (Show, Eq)
 
 type GraphicsEngine v = StateT EngineState GfxAction v
@@ -65,37 +65,39 @@ interpretMatrix (Rotate xV yV zV) =
     lift $ rotate z $ Vector3 0 0 1
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
-interpretColour (Fill rV gV bV) = do
+interpretColour (Fill rV gV bV aV) = do
   r <- getValue rV
   g <- getValue gV
   b <- getValue bV
-  pushFill r g b
-interpretColour (Stroke rV gV bV) = do
+  a <- getValue aV
+  pushFill r g b a
+interpretColour (Stroke rV gV bV aV) = do
   r <- getValue rV
   g <- getValue gV
   b <- getValue bV
-  pushStroke r g b
+  a <- getValue aV
+  pushStroke r g b a
 
 getValue :: Value -> GraphicsEngine Double
 getValue (Number v) = return v
 getValue (Variable name) = gets $ findWithDefault 0 name . variables
 
-pushFill :: Double -> Double -> Double -> GraphicsEngine GfxOutput
-pushFill r g b = modify' (\s ->  s { fillColours = Color3 r g b : fillColours s })
+pushFill :: Double -> Double -> Double -> Double -> GraphicsEngine GfxOutput
+pushFill r g b a = modify' (\s ->  s { fillColours = Color4 r g b a : fillColours s })
 
 popFill :: GraphicsEngine GfxOutput
 popFill = modify' (\s ->  s { fillColours = tail $ fillColours s })
 
-getFill :: GraphicsEngine (Color3 GLdouble)
+getFill :: GraphicsEngine (Color4 GLdouble)
 getFill = gets (head . fillColours)
 
-pushStroke :: Double -> Double -> Double -> GraphicsEngine GfxOutput
-pushStroke r g b = modify' (\s ->  s { strokeColours = Color3 r g b : strokeColours s })
+pushStroke :: Double -> Double -> Double -> Double -> GraphicsEngine GfxOutput
+pushStroke r g b a = modify' (\s ->  s { strokeColours = Color4 r g b a : strokeColours s })
 
 popStroke :: GraphicsEngine GfxOutput
 popStroke = modify' (\s ->  s { strokeColours = tail $ strokeColours s })
 
-getStroke :: GraphicsEngine (Color3 GLdouble)
+getStroke :: GraphicsEngine (Color4 GLdouble)
 getStroke = gets (head . strokeColours)
 
 

@@ -12,14 +12,15 @@ import Data.IORef
 
 displayAst :: GfxAst
 displayAst = [
-  ColourCommand (Stroke (Number 0) (Number 0) (Number 0)) Nothing,
-  ColourCommand (Fill (Number 1) (Number 0) (Number 0.4)) Nothing,
+  ColourCommand (Stroke (Number 0) (Number 0) (Number 0) (Number 1)) Nothing,
+  ColourCommand (Fill (Number 1) (Number 0) (Number 0.4) (Number 1)) Nothing,
   MatrixCommand (Rotate (Variable "time") (Number 2) (Number 1)) $ Just [
     ShapeCommand (Cube (Number 0.1) (Number 0.2) (Number 0.1)) $ Just [
-      ColourCommand (Fill (Number 0) (Number 0.7) (Number 0.2)) Nothing,
+      ColourCommand (Fill (Number 0) (Number 0.7) (Number 0.2) (Number 1)) Nothing,
       MatrixCommand (Rotate (Number 2) (Variable "time") (Variable "time")) Nothing,
       ShapeCommand (Cube (Number 0.1) (Number 0.2) (Number 0.1)) Nothing
     ],
+    ColourCommand (Fill (Number 0) (Number 0.7) (Number 0.2) (Number 0)) Nothing,
     MatrixCommand (Rotate (Variable "time") (Variable "time") (Number 0.3)) Nothing,
     ShapeCommand (Cube (Number 0.1) (Number 0.3) (Number 0.05)) Nothing
     ]]
@@ -27,8 +28,8 @@ displayAst = [
 startState :: EngineState
 startState = EngineState {
     variables=fromList [("time", 1)]
-  , fillColours=[Color3 1.0 1.0 1.0]
-  , strokeColours=[Color3 0.0 0.0 0.0]
+  , fillColours=[Color4 1 1 1 1]
+  , strokeColours=[Color4 0 0 0 1]
 }
 
 main :: IO ()
@@ -38,6 +39,8 @@ main = do
   _window <- createWindow _progName
   reshapeCallback $= Just reshape
   depthFunc $= Just Less
+  blend $= Enabled
+  blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
   initialState <- newIORef startState
   displayCallback $= display initialState
   idleCallback $= Just (idle initialState)
