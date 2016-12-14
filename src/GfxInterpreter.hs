@@ -9,17 +9,11 @@ import Graphics.Rendering.OpenGL hiding (Fill, get)
 
 import GfxAst
 import Geometries
+import GfxEngineState
 
 
 type GfxAction = IO
 type GfxOutput = ()
-
-data EngineState = EngineState {
-    variables :: Map String Double
-  , fillColours :: [ Color4 Double ]
-  , strokeColours :: [ Color4 Double ]
-  , backgroundColour :: Color4 GLfloat
-} deriving (Show, Eq)
 
 type GraphicsEngine v = StateT EngineState GfxAction v
 
@@ -86,22 +80,22 @@ getValue (Number v) = return v
 getValue (Variable name) = gets $ findWithDefault 0 name . variables
 
 pushFill :: Double -> Double -> Double -> Double -> GraphicsEngine GfxOutput
-pushFill r g b a = modify' (\s ->  s { fillColours = Color4 r g b a : fillColours s })
+pushFill r g b a = modify' (pushFillColour $ Color4 r g b a)
 
 popFill :: GraphicsEngine GfxOutput
-popFill = modify' (\s ->  s { fillColours = tail $ fillColours s })
+popFill = modify' popFillColour
 
 getFill :: GraphicsEngine (Color4 GLdouble)
-getFill = gets (head . fillColours)
+getFill = gets getFillColour
 
 pushStroke :: Double -> Double -> Double -> Double -> GraphicsEngine GfxOutput
-pushStroke r g b a = modify' (\s ->  s { strokeColours = Color4 r g b a : strokeColours s })
+pushStroke r g b a = modify' (pushStrokeColour $ Color4 r g b a)
 
 popStroke :: GraphicsEngine GfxOutput
-popStroke = modify' (\s ->  s { strokeColours = tail $ strokeColours s })
+popStroke = modify' popStrokeColour
 
 getStroke :: GraphicsEngine (Color4 GLdouble)
-getStroke = gets (head . strokeColours)
+getStroke = gets getStrokeColour
 
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput

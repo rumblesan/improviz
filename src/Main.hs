@@ -7,23 +7,20 @@ import Control.Monad.State.Strict
 
 import GfxAst
 import GfxInterpreter
+import GfxEngineState
 
 import Data.IORef
 
 displayAst :: GfxAst
 displayAst = [
   ColourCommand (Stroke (Number 0) (Number 0) (Number 0) (Number 1)) Nothing,
-  ColourCommand NoFill Nothing,
+  ColourCommand (Fill (Number 0) (Number 0.7) (Number 0.2) (Number 1)) Nothing,
   MatrixCommand (Rotate (Variable "time") (Number 0) (Number 1)) $ Just [
     ShapeCommand (Cube (Number 0.3) (Number 0.6) (Number 0.2)) $ Just [
-      ColourCommand (Fill (Number 0) (Number 0.7) (Number 0.2) (Number 1)) Nothing,
+      ColourCommand NoFill Nothing,
       MatrixCommand (Rotate (Number 2) (Variable "time") (Variable "time")) Nothing,
       ShapeCommand (Cube (Number 0.3) (Number 0.5) (Number 0.1)) Nothing
-    ],
-    ColourCommand (Fill (Number 1) (Number 0) (Number 0.2) (Number 0)) Nothing,
-    MatrixCommand (Rotate (Variable "time") (Variable "time") (Number 0.3)) Nothing,
-    ShapeCommand (Cube (Number 0.4) (Number 0.3) (Number 0.5)) Nothing
-    ]]
+    ]]]
 
 startState :: EngineState
 startState = EngineState {

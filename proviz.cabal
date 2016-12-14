@@ -26,6 +26,7 @@ executable proviz
   other-modules:       Geometries
                      , GfxAst
                      , GfxInterpreter
+                     , GfxEngineState
   default-language:    Haskell2010
 
 test-suite proviz-test
@@ -43,6 +44,7 @@ test-suite proviz-test
   other-modules:       Geometries
                      , GfxAst
                      , GfxInterpreter
+                     , GfxEngineState
                      , Tests.GfxInterpreter
   default-language:    Haskell2010
 
