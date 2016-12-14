@@ -72,12 +72,14 @@ interpretColour (Fill rV gV bV aV) = do
   b <- getValue bV
   a <- getValue aV
   pushFill r g b a
+interpretColour NoFill = pushFill 0 0 0 0
 interpretColour (Stroke rV gV bV aV) = do
   r <- getValue rV
   g <- getValue gV
   b <- getValue bV
   a <- getValue aV
   pushStroke r g b a
+interpretColour NoStroke = pushStroke 0 0 0 0
 
 getValue :: Value -> GraphicsEngine Double
 getValue (Number v) = return v
