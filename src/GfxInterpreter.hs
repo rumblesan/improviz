@@ -40,8 +40,8 @@ interpretShape (Cube xV yV zV) =
     x <- getValue xV
     y <- getValue yV
     z <- getValue zV
-    strokeC <- getStroke
-    fillC <- getFill
+    strokeC <- gets currentStrokeColour
+    fillC <- gets currentFillColour
     lift $ preservingMatrix $ do
       scale x y z
       color fillC
@@ -65,37 +65,20 @@ interpretColour (Fill rV gV bV aV) = do
   g <- getValue gV
   b <- getValue bV
   a <- getValue aV
-  pushFill r g b a
-interpretColour NoFill = pushFill 0 0 0 0
+  modify' (pushFillColour $ Color4 r g b a)
+interpretColour NoFill = modify' (pushFillColour $ Color4 0 0 0 0)
+
 interpretColour (Stroke rV gV bV aV) = do
   r <- getValue rV
   g <- getValue gV
   b <- getValue bV
   a <- getValue aV
-  pushStroke r g b a
-interpretColour NoStroke = pushStroke 0 0 0 0
+  modify' (pushStrokeColour $ Color4 r g b a)
+interpretColour NoStroke = modify' (pushStrokeColour $ Color4 0 0 0 0)
 
 getValue :: Value -> GraphicsEngine Double
 getValue (Number v) = return v
 getValue (Variable name) = gets $ findWithDefault 0 name . variables
-
-pushFill :: Double -> Double -> Double -> Double -> GraphicsEngine GfxOutput
-pushFill r g b a = modify' (pushFillColour $ Color4 r g b a)
-
-popFill :: GraphicsEngine GfxOutput
-popFill = modify' popFillColour
-
-getFill :: GraphicsEngine (Color4 GLdouble)
-getFill = gets getFillColour
-
-pushStroke :: Double -> Double -> Double -> Double -> GraphicsEngine GfxOutput
-pushStroke r g b a = modify' (pushStrokeColour $ Color4 r g b a)
-
-popStroke :: GraphicsEngine GfxOutput
-popStroke = modify' popStrokeColour
-
-getStroke :: GraphicsEngine (Color4 GLdouble)
-getStroke = gets getStrokeColour
 
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
