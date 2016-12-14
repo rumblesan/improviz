@@ -19,6 +19,7 @@ displayAst = [
     ShapeCommand (Cube (Number 0.3) (Number 0.6) (Number 0.2)) $ Just [
       ColourCommand (Fill (Number 0) (Number 0.7) (Number 0.2) (Number 0.5)) Nothing,
       MatrixCommand (Rotate (Number 2) (Variable "time") (Variable "time")) Nothing,
+      MatrixCommand (Move (Number 1) (Number 0.3) (Number 0)) Nothing,
       ShapeCommand (Cube (Number 0.3) (Number 0.5) (Number 0.1)) Nothing
     ],
     ColourCommand (Fill (Number 1) (Number 0) (Number 0.2) (Number 0)) Nothing,

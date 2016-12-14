@@ -69,6 +69,18 @@ interpretMatrix (Rotate xV yV zV) =
     lift $ rotate x $ Vector3 1 0 0
     lift $ rotate y $ Vector3 0 1 0
     lift $ rotate z $ Vector3 0 0 1
+interpretMatrix (Scale xV yV zV) =
+  do
+    x <- getValue xV
+    y <- getValue yV
+    z <- getValue zV
+    lift $ scale x y z
+interpretMatrix (Move xV yV zV) =
+  do
+    x <- getValue xV
+    y <- getValue yV
+    z <- getValue zV
+    lift $ translate $ Vector3 x y z
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
 interpretColour (Fill rV gV bV aV) = do

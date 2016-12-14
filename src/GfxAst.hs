@@ -21,8 +21,8 @@ data ShapeGfx
 
 data MatrixGfx
   = Rotate Value Value Value
---  | Scale Value Value Value
---  | Move Value Value Value
+  | Scale Value Value Value
+  | Move Value Value Value
   deriving (Show, Eq)
 
 data ColourGfx
