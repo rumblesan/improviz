@@ -14,13 +14,16 @@ import GfxEngineState
 hasTransparency :: Color4 Double -> Bool
 hasTransparency (Color4 _ _ _ a) = a < 1.0
 
+fullyTransparent :: Color4 Double -> Bool
+fullyTransparent (Color4 _ _ _ a) = a == 0
+
 drawNow :: EngineState -> Color4 Double -> IO () -> IO ()
 drawNow es colour action =
   let
     transDraw = drawTransparencies es
   in
-    when ((transDraw && hasTransparency colour)
-          || (not transDraw && not (hasTransparency colour)))
+    when (not (fullyTransparent colour) && ((transDraw && hasTransparency colour)
+          || (not transDraw && not (hasTransparency colour))))
       action
 
 type GfxAction = IO
