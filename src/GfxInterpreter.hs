@@ -2,7 +2,7 @@ module GfxInterpreter where
 
 import Data.Map.Strict hiding (foldl)
 import Data.Maybe (maybe)
-import Control.Monad (mapM)
+import Control.Monad (mapM, when)
 import Control.Monad.State.Strict
 
 import Graphics.Rendering.OpenGL hiding (Fill, get)
@@ -11,6 +11,17 @@ import GfxAst
 import Geometries
 import GfxEngineState
 
+hasTransparency :: Color4 Double -> Bool
+hasTransparency (Color4 _ _ _ a) = a < 1.0
+
+drawNow :: EngineState -> Color4 Double -> IO () -> IO ()
+drawNow es colour action =
+  let
+    transDraw = drawTransparencies es
+  in
+    when ((transDraw && hasTransparency colour)
+          || (not transDraw && not (hasTransparency colour)))
+      action
 
 type GfxAction = IO
 type GfxOutput = ()
@@ -40,14 +51,13 @@ interpretShape (Cube xV yV zV) =
     x <- getValue xV
     y <- getValue yV
     z <- getValue zV
+    es <- get
     strokeC <- gets currentStrokeColour
     fillC <- gets currentFillColour
     lift $ preservingMatrix $ do
       scale x y z
-      color fillC
-      cube 1
-      color strokeC
-      cubeFrame 1
+      drawNow es fillC (color fillC >> cube 1)
+      drawNow es strokeC (color strokeC >> cubeFrame 1)
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
 interpretMatrix (Rotate xV yV zV) =

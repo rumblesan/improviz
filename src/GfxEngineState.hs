@@ -9,6 +9,7 @@ data EngineState = EngineState {
   , fillColours :: [ Color4 Double ]
   , strokeColours :: [ Color4 Double ]
   , backgroundColour :: Color4 GLfloat
+  , drawTransparencies :: Bool
 } deriving (Show, Eq)
 
 pushFillColour :: Color4 Double -> EngineState -> EngineState
