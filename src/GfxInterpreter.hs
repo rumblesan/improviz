@@ -2,7 +2,7 @@ module GfxInterpreter where
 
 import Data.Map.Strict hiding (foldl)
 import Data.Maybe (maybe)
-import Control.Monad (mapM, when)
+import Control.Monad (mapM, when, void)
 import Control.Monad.State.Strict
 
 import Graphics.Rendering.OpenGL hiding (Fill, get)
@@ -29,9 +29,7 @@ type GfxOutput = ()
 type GraphicsEngine v = StateT EngineState GfxAction v
 
 interpretGfx :: GfxAst -> GraphicsEngine GfxOutput
-interpretGfx ast = do
-  _ <- interpretBlock ast
-  return ()
+interpretGfx = void . interpretBlock
 
 interpretBlock :: Block -> GraphicsEngine [ GfxOutput ]
 interpretBlock = mapM interpretCommand
