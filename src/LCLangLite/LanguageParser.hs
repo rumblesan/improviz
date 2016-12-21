@@ -39,10 +39,8 @@ table = [ [Prefix (m_reservedOp "-" >> return (UnaryOp "-"))]
 atom :: LangParser Expression
 atom =     m_parens expression
        <|> fmap EApp (try application)
-       <|> fmap (ENum . Number) (m_intToFloat <|> m_float)
+       <|> fmap EVal value
        <|> fmap (EVar . Variable) (m_identifier <* m_whiteSpace)
-  where
-    m_intToFloat = fmap fromIntegral m_integer
 
 block :: LangParser Block
 block = Block <$> many element
@@ -66,6 +64,15 @@ assignment = AsVar <$> m_identifier <*> expression
 
 application :: LangParser Application
 application = Application <$> m_identifier <*> m_parens (many expression) <*> optionMaybe (m_braces block)
+
+number :: LangParser Number
+number = Number <$> (m_intToFloat <|> m_float)
+  where
+    m_intToFloat = fmap fromIntegral m_integer
+
+value :: LangParser Value
+value = Num <$> number <|> m_null
+  where m_null = Null <$ m_symbol "null"
 
 parseProgram :: String -> Either ParseError Block
 parseProgram = runParser block () "program"
