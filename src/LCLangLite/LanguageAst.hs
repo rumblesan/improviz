@@ -1,10 +1,10 @@
-module LanguageAst where
+module LCLangLite.LanguageAst where
 
 data Block = Block [Element] deriving (Eq, Show)
 
-data Element = ElApplication Application
-             | ElLoop Loop
+data Element = ElLoop Loop
              | ElAssign Assignment
+             | ElExpression Expression
              deriving (Eq, Show)
 
 data Application = Application Identifier [Expression] (Maybe Block) deriving (Eq, Show)

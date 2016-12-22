@@ -1,11 +1,11 @@
-module LanguageParser where
+module LCLangLite.LanguageParser where
 
 import Text.Parsec
 import Text.Parsec.Expr
 import Text.Parsec.Token
 import Text.Parsec.Language
 
-import LanguageAst
+import LCLangLite.LanguageAst
 
 type LangParser e = Parsec String () e
 
@@ -46,9 +46,9 @@ block :: LangParser Block
 block = Block <$> many element <?> "block"
 
 element :: LangParser Element
-element =     (ElApplication <$> application)
-          <|> (ElLoop <$> loop)
-          <|> (ElAssign <$> assignment)
+element =     (ElLoop <$> try loop)
+          <|> (ElAssign <$> try assignment)
+          <|> (ElExpression <$> try expression)
           <?> "element"
 
 application :: LangParser Application
