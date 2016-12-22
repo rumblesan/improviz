@@ -7,30 +7,21 @@ data Element = ElApplication Application
              | ElAssign Assignment
              deriving (Eq, Show)
 
-data Application = Application Identifier [Expression] (Maybe Block)
-                 deriving (Eq, Show)
+data Application = Application Identifier [Expression] (Maybe Block) deriving (Eq, Show)
 
-data Loop = Loop Integer (Maybe Identifier) Block
-          deriving (Eq, Show)
+data Loop = Loop Integer (Maybe Identifier) Block deriving (Eq, Show)
 
-data Assignment = AsVar Identifier Expression
-                | AsLambda Lambda
-                deriving (Eq, Show)
+data Assignment = Assignment Identifier Expression deriving (Eq, Show)
 
 data Expression = EApp Application
                 | BinaryOp String Expression Expression
                 | UnaryOp String Expression
                 | EVar Variable
                 | EVal Value
-                | ELam Lambda
                 deriving (Eq, Show)
-
-data Lambda = Lambda [Identifier] Expression deriving (Eq, Show)
 
 data Variable = Variable Identifier deriving (Eq, Show)
 
-data Value = Num Number | Null deriving (Eq, Show)
-
-data Number = Number Double deriving (Eq, Show)
+data Value = Number Double | Null | Lambda [Identifier] Block deriving (Eq, Show)
 
 type Identifier = String

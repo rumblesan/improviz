@@ -39,40 +39,47 @@ table = [ [Prefix (m_reservedOp "-" >> return (UnaryOp "-"))]
 atom :: LangParser Expression
 atom =     m_parens expression
        <|> fmap EApp (try application)
-       <|> fmap EVal value
-       <|> fmap (EVar . Variable) (m_identifier <* m_whiteSpace)
+       <|> fmap EVar (try variable)
+       <|> fmap EVal (try value)
 
 block :: LangParser Block
-block = Block <$> many element
+block = Block <$> many element <?> "block"
 
 element :: LangParser Element
 element =     (ElApplication <$> application)
           <|> (ElLoop <$> loop)
           <|> (ElAssign <$> assignment)
+          <?> "element"
+
+application :: LangParser Application
+application = Application <$> m_identifier <*> m_parens (many expression) <*> optionMaybe (m_braces block) <?> "application"
+
+loop :: LangParser Loop
+loop = Loop <$> m_integer <* m_symbol "times" <*> optionMaybe (m_symbol "with" *> m_identifier) <*> m_braces block <?> "loop"
+
+assignment :: LangParser Assignment
+assignment = Assignment <$> m_identifier <* m_symbol "=" <*> expression <?> "assignment"
 
 expression :: LangParser Expression
 expression = buildExpressionParser table atom <?> "expression"
 
-lambda :: LangParser Lambda
-lambda = Lambda <$> many m_identifier <* m_symbol "=>" <*> expression
+variable :: LangParser Variable
+variable = Variable <$> m_identifier
 
-loop :: LangParser Loop
-loop = Loop <$> m_integer <* m_symbol "times" <*> optionMaybe (m_symbol "with" <* m_identifier) <*> m_braces block
+value :: LangParser Value
+value = number <|> lambda <|> v_null
+  where
+    v_null = Null <$ m_symbol "null" <?> "null"
 
-assignment :: LangParser Assignment
-assignment = AsVar <$> m_identifier <*> expression
+lambda :: LangParser Value
+lambda = Lambda <$> m_parens (many m_identifier) <* m_symbol "=>" <*> block <?> "lambda"
 
-application :: LangParser Application
-application = Application <$> m_identifier <*> m_parens (many expression) <*> optionMaybe (m_braces block)
-
-number :: LangParser Number
-number = Number <$> (m_intToFloat <|> m_float)
+number :: LangParser Value
+number = Number <$> (m_intToFloat <|> m_float) <?> "number"
   where
     m_intToFloat = fmap fromIntegral m_integer
 
-value :: LangParser Value
-value = Num <$> number <|> m_null
-  where m_null = Null <$ m_symbol "null"
 
 parseProgram :: String -> Either ParseError Block
 parseProgram = runParser block () "program"
+
