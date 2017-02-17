@@ -4,5 +4,11 @@ import Data.Monoid (mempty)
 
 import Test.Framework
 
+import Tests.LCLangLite (lclangLiteTests)
+
 main :: IO ()
-main = defaultMainWithOpts [] mempty
+main = defaultMainWithOpts
+  [
+    lclangLiteTests
+  ]
+  mempty

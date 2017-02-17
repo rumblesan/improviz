@@ -1,4 +1,7 @@
-module LCLangLite where
+module LCLangLite (
+  parseLCLang,
+  module LCLangLite.LanguageAst
+  ) where
 
 import LCLangLite.LanguageParser (parseProgram)
 import LCLangLite.LanguageAst (Block)
