@@ -9,12 +9,15 @@ import Control.Monad.State.Strict
 
 import LCLangLite
 import LCLangLite.LanguageAst
+import LCLangLite.LanguageInterpreter
 
 
 lclangLiteTests :: Test
 lclangLiteTests =
   testGroup "LCLang Lite Tests" [
-    testCase "Parsing workds as expected" test_simple_parse
+    testCase "Parsing works as expected" test_simple_parse,
+    testCase "Interpreting works as expected" test_simple_interpreter,
+    testCase "Interpreting expression works as expected" test_interpret_expression
   ]
 
 test_simple_parse :: Assertion
@@ -25,3 +28,21 @@ test_simple_parse =
     expected = Just $ Block [ElExpression $ EApp cube]
   in
     assertEqual "" expected (parseLCLang program)
+
+test_simple_interpreter :: Assertion
+test_simple_interpreter =
+  let
+    block = Block [ElExpression $ EVal $ Number 3]
+    result = evalState (interpretLanguage block) emptyState :: Value
+    expected = Number 3
+  in
+    assertEqual "" expected result
+
+test_interpret_expression :: Assertion
+test_interpret_expression =
+  let
+    expr = EVal $ Number 3
+    result = evalState (interpretExpression expr) emptyState
+    expected = Number 3
+  in
+    assertEqual "" expected result
