@@ -5,9 +5,7 @@ import Graphics.UI.GLUT hiding (Cube, get, Fill)
 import Data.Map.Strict hiding (size)
 import Control.Monad.State.Strict
 
-import GfxAst
-import GfxInterpreter
-import GfxEngineState
+import Gfx
 
 import Data.IORef
 

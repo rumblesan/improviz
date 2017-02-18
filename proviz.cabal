@@ -26,12 +26,14 @@ executable proviz
                      , GLUT
                      , OpenGL
   other-modules:       Geometries
-                     , GfxAst
-                     , GfxInterpreter
-                     , GfxEngineState
+                     , Gfx
+                     , Gfx.GfxAst
+                     , Gfx.GfxInterpreter
+                     , Gfx.GfxEngineState
                      , LCLangLite
                      , LCLangLite.LanguageAst
                      , LCLangLite.LanguageParser
+                     , LCLangLite.LanguageInterpreter
   default-language:    Haskell2010
 
 test-suite proviz-test
@@ -49,12 +51,14 @@ test-suite proviz-test
                      , test-framework-hunit
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   other-modules:       Geometries
-                     , GfxAst
-                     , GfxInterpreter
-                     , GfxEngineState
+                     , Gfx
+                     , Gfx.GfxAst
+                     , Gfx.GfxInterpreter
+                     , Gfx.GfxEngineState
                      , LCLangLite
                      , LCLangLite.LanguageAst
                      , LCLangLite.LanguageParser
+                     , LCLangLite.LanguageInterpreter
                      , Tests.GfxInterpreter
                      , Tests.LCLangLite
   default-language:    Haskell2010

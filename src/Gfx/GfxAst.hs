@@ -1,4 +1,4 @@
-module GfxAst where
+module Gfx.GfxAst where
 
 type Block = [GfxCommand]
 

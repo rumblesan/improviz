@@ -1,4 +1,4 @@
-module GfxEngineState where
+module Gfx.GfxEngineState where
 
 import Data.Map.Strict (Map)
 

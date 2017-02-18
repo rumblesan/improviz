@@ -1,4 +1,4 @@
-module GfxInterpreter where
+module Gfx.GfxInterpreter where
 
 import Data.Map.Strict hiding (foldl)
 import Data.Maybe (maybe)
@@ -7,9 +7,9 @@ import Control.Monad.State.Strict
 
 import Graphics.Rendering.OpenGL hiding (Fill, get)
 
-import GfxAst
+import Gfx.GfxAst
+import Gfx.GfxEngineState
 import Geometries
-import GfxEngineState
 
 hasTransparency :: Color4 Double -> Bool
 hasTransparency (Color4 _ _ _ a) = a < 1.0

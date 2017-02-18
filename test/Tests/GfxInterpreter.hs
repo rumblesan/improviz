@@ -7,8 +7,7 @@ import Test.Framework.Providers.HUnit (testCase)
 import Data.Map.Strict
 import Control.Monad.State.Strict
 
-import GfxAst
-import GfxInterpreter
+import Gfx
 
 gfxInterpreterTests :: Test
 gfxInterpreterTests =
