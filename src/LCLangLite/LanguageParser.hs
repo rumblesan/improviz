@@ -49,6 +49,7 @@ element :: LangParser Element
 element =     (ElLoop <$> try loop)
           <|> (ElAssign <$> try assignment)
           <|> (ElExpression <$> try expression)
+          <* eol
           <?> "element"
 
 application :: LangParser Application
@@ -83,3 +84,5 @@ number = Number <$> (m_intToFloat <|> m_float) <?> "number"
 parseProgram :: String -> Either ParseError Block
 parseProgram = runParser block () "program"
 
+eol :: LangParser ()
+eol = (char '\n' >> return ()) <|> eof
