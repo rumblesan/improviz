@@ -18,10 +18,10 @@ gfxInterpreterTests =
 test_simple :: Assertion
 test_simple =
   let
-    state = EngineState { variables=fromList [("time", 2)] }
-    shape = Cube (Number 1) (Number 1) (Variable "time")
+    state = EngineState { }
+    shape = Cube 1 1 2
     shapeblock = Just $ [ShapeCommand shape Nothing]
-    matrix = Rotate (Number 1) (Variable "time") (Number 1)
+    matrix = Rotate 1 2 1
     ast = [MatrixCommand matrix shapeblock]
     expected = ["Rotate,1.0,2.0,1.0 scope enter", "Cube,1.0,1.0,2.0", "Rotate,1.0,2.0,1.0 scope leave"]
   in

@@ -1,12 +1,9 @@
 module Gfx.GfxEngineState where
 
-import Data.Map.Strict (Map)
-
 import Graphics.Rendering.OpenGL (Color4, GLfloat)
 
 data EngineState = EngineState {
-    variables :: Map String Double
-  , fillColours :: [ Color4 Double ]
+    fillColours :: [ Color4 Double ]
   , strokeColours :: [ Color4 Double ]
   , backgroundColour :: Color4 GLfloat
   , drawTransparencies :: Bool

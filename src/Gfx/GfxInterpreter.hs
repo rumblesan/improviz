@@ -1,6 +1,5 @@
 module Gfx.GfxInterpreter where
 
-import Data.Map.Strict hiding (foldl)
 import Data.Maybe (maybe)
 import Control.Monad (mapM, when, void)
 import Control.Monad.State.Strict
@@ -47,11 +46,8 @@ interpretCommand (MatrixCommand matrixAst block) = interpretCommand' (interpretM
 interpretCommand (ColourCommand colourAst block) = interpretCommand' (interpretColour colourAst) block
 
 interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
-interpretShape (Cube xV yV zV) =
+interpretShape (Cube x y z) =
   do
-    x <- getValue xV
-    y <- getValue yV
-    z <- getValue zV
     es <- get
     strokeC <- gets currentStrokeColour
     fillC <- gets currentFillColour
@@ -61,48 +57,20 @@ interpretShape (Cube xV yV zV) =
       drawNow es strokeC (color strokeC >> cubeFrame 1)
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
-interpretMatrix (Rotate xV yV zV) =
+interpretMatrix (Rotate x y z) =
   do
-    x <- getValue xV
-    y <- getValue yV
-    z <- getValue zV
     lift $ rotate x $ Vector3 1 0 0
     lift $ rotate y $ Vector3 0 1 0
     lift $ rotate z $ Vector3 0 0 1
-interpretMatrix (Scale xV yV zV) =
-  do
-    x <- getValue xV
-    y <- getValue yV
-    z <- getValue zV
-    lift $ scale x y z
-interpretMatrix (Move xV yV zV) =
-  do
-    x <- getValue xV
-    y <- getValue yV
-    z <- getValue zV
-    lift $ translate $ Vector3 x y z
+interpretMatrix (Scale x y z) = lift $ scale x y z
+interpretMatrix (Move x y z) = lift $ translate $ Vector3 x y z
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
-interpretColour (Fill rV gV bV aV) = do
-  r <- getValue rV
-  g <- getValue gV
-  b <- getValue bV
-  a <- getValue aV
-  modify' (pushFillColour $ Color4 r g b a)
+interpretColour (Fill r g b a) = modify' (pushFillColour $ Color4 r g b a)
 interpretColour NoFill = modify' (pushFillColour $ Color4 0 0 0 0)
 
-interpretColour (Stroke rV gV bV aV) = do
-  r <- getValue rV
-  g <- getValue gV
-  b <- getValue bV
-  a <- getValue aV
-  modify' (pushStrokeColour $ Color4 r g b a)
+interpretColour (Stroke r g b a) = modify' (pushStrokeColour $ Color4 r g b a)
 interpretColour NoStroke = modify' (pushStrokeColour $ Color4 0 0 0 0)
-
-getValue :: Value -> GraphicsEngine Double
-getValue (Number v) = return v
-getValue (Variable name) = gets $ findWithDefault 0 name . variables
-
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
 newScope gfx block =

@@ -13,11 +13,6 @@ addGfx block cmd = block ++ [cmd]
 
 type GfxAst = Block
 
-data Value
-  = Variable String
-  | Number Double
-  deriving (Show, Eq)
-
 data GfxCommand
   = ShapeCommand ShapeGfx (Maybe Block)
   | MatrixCommand MatrixGfx (Maybe Block)
@@ -25,18 +20,18 @@ data GfxCommand
   deriving (Show, Eq)
 
 data ShapeGfx
-  = Cube Value Value Value
+  = Cube Double Double Double
   deriving (Show, Eq)
 
 data MatrixGfx
-  = Rotate Value Value Value
-  | Scale Value Value Value
-  | Move Value Value Value
+  = Rotate Double Double Double
+  | Scale Double Double Double
+  | Move Double Double Double
   deriving (Show, Eq)
 
 data ColourGfx
-  = Fill Value Value Value Value
+  = Fill Double Double Double Double
   | NoFill
-  | Stroke Value Value Value Value
+  | Stroke Double Double Double Double
   | NoStroke
   deriving (Show, Eq)
