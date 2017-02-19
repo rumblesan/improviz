@@ -1,23 +1,22 @@
 module LCLangLite.LanguageInterpreter where
 
 import Data.Map.Strict as M
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Control.Monad.State.Strict
 
 import LCLangLite.LanguageAst
 
 
 data InterpreterState m = InterpreterState {
-  variables :: Map Identifier (InterpreterProcess m Value)
+  variables :: Map Identifier (InterpreterProcess m Value),
+  blockStack :: [Block]
 }
 
 emptyState :: InterpreterState m
-emptyState = InterpreterState { variables = M.fromList [] }
+emptyState = InterpreterState { variables = M.fromList [], blockStack = [] }
 
 setVariable :: (Monad m) => Identifier -> Value -> InterpreterProcess m Value
-setVariable name val = modify updateVars >> return val
-  where
-    updateVars s = s { variables = M.insert name (return val) (variables s) }
+setVariable name val = modify (\s -> s { variables = M.insert name (return val) (variables s) }) >> return val
 
 getVariable :: (Monad m) => Identifier -> InterpreterProcess m Value
 getVariable name = do
@@ -31,6 +30,11 @@ newScope childScope = do
   put s
   return v
 
+pushBlock :: (Monad m) => Block -> InterpreterProcess m ()
+pushBlock b = modify (\s -> s { blockStack = b : blockStack s })
+
+removeBlock :: (Monad m) => InterpreterProcess m ()
+removeBlock = modify (\s -> s { blockStack = tail $ blockStack s })
 
 type InterpreterProcess m v = StateT (InterpreterState m) m v
 
@@ -56,7 +60,10 @@ interpretApplication (Application name args block) = do
         do
           argValues <- mapM interpretExpression args
           zipWithM_ setVariable argNames argValues
-          interpretBlock lBlock
+          maybe (return ()) pushBlock block
+          ret <- interpretBlock lBlock
+          when (isJust block) removeBlock
+          return ret
       )
     _ -> return Null
 
