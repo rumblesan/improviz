@@ -8,23 +8,23 @@ import LCLangLite.LanguageAst
 
 
 data InterpreterState m = InterpreterState {
-  variables :: Map Identifier (InterpreterProcess m)
+  variables :: Map Identifier (InterpreterProcess m Value)
 }
 
 emptyState :: InterpreterState m
 emptyState = InterpreterState { variables = M.fromList [] }
 
-setVariable :: (Monad m) => Identifier -> Value -> InterpreterProcess m
+setVariable :: (Monad m) => Identifier -> Value -> InterpreterProcess m Value
 setVariable name val = modify updateVars >> return val
   where
     updateVars s = s { variables = M.insert name (return val) (variables s) }
 
-getVariable :: (Monad m) => Identifier -> InterpreterProcess m
+getVariable :: (Monad m) => Identifier -> InterpreterProcess m Value
 getVariable name = do
   s <- get
   fromMaybe (return Null) $ M.lookup name $ variables s
 
-newScope :: (Monad m) => InterpreterProcess m -> InterpreterProcess m
+newScope :: (Monad m) => InterpreterProcess m Value -> InterpreterProcess m Value
 newScope childScope = do
   s <- get
   v <- childScope
@@ -32,22 +32,22 @@ newScope childScope = do
   return v
 
 
-type InterpreterProcess m = StateT (InterpreterState m) m Value
+type InterpreterProcess m v = StateT (InterpreterState m) m v
 
-interpretLanguage :: (Monad m) => Block -> InterpreterProcess m
+interpretLanguage :: (Monad m) => Block -> InterpreterProcess m Value
 interpretLanguage = interpretBlock
 
-interpretBlock :: (Monad m) => Block -> InterpreterProcess m
+interpretBlock :: (Monad m) => Block -> InterpreterProcess m Value
 interpretBlock (Block elements) = last <$> mapM interpretElement elements
 
-interpretElement :: (Monad m) => Element -> InterpreterProcess m
+interpretElement :: (Monad m) => Element -> InterpreterProcess m Value
 interpretElement (ElLoop loop) = interpretLoop loop
 interpretElement (ElAssign assignment) = interpretAssignment assignment
 interpretElement (ElExpression expression) = interpretExpression expression
 
 -- TODO
 -- figure out scoping around function arg blocks
-interpretApplication :: (Monad m) => Application -> InterpreterProcess m
+interpretApplication :: (Monad m) => Application -> InterpreterProcess m Value
 interpretApplication (Application name args block) = do
   f <- getVariable name
   case f of
@@ -60,7 +60,7 @@ interpretApplication (Application name args block) = do
       )
     _ -> return Null
 
-interpretLoop :: (Monad m) => Loop -> InterpreterProcess m
+interpretLoop :: (Monad m) => Loop -> InterpreterProcess m Value
 interpretLoop (Loop num loopVar block) =
   let
     loopNums = fromIntegral <$> [0..(num-1)]
@@ -71,12 +71,12 @@ interpretLoop (Loop num loopVar block) =
       _ <- maybe (return Null) (\vn -> setVariable vn (Number n)) loopVar
       interpretBlock block
 
-interpretAssignment :: (Monad m) => Assignment -> InterpreterProcess m
+interpretAssignment :: (Monad m) => Assignment -> InterpreterProcess m Value
 interpretAssignment (Assignment name expression) = do
   value <- interpretExpression expression
   setVariable name value
 
-interpretExpression :: (Monad m) => Expression -> InterpreterProcess m
+interpretExpression :: (Monad m) => Expression -> InterpreterProcess m Value
 interpretExpression (EApp application) = interpretApplication application
 interpretExpression (BinaryOp _ _ _) = undefined
 interpretExpression (UnaryOp _ _) = undefined
