@@ -31,10 +31,6 @@ newScope childScope = do
   put s
   return v
 
-isLambda :: Value -> Bool
-isLambda (Lambda _ _) = True
-isLambda _ = False
-
 
 type InterpreterProcess m = StateT (InterpreterState m) m Value
 
