@@ -5,23 +5,55 @@ import Data.Maybe (fromMaybe, isJust)
 import Control.Monad.State.Strict
 
 import LCLangLite.LanguageAst
+import qualified Gfx.GfxAst as GA
 
 
 data InterpreterState m = InterpreterState {
   variables :: Map Identifier (InterpreterProcess m Value),
-  blockStack :: [Block]
+  blockStack :: [Block],
+  currentGfx :: GA.Block,
+  gfxStack :: [GA.Block]
 }
 
 emptyState :: InterpreterState m
-emptyState = InterpreterState { variables = M.fromList [], blockStack = [] }
+emptyState = InterpreterState {
+  variables = M.fromList [],
+  blockStack = [],
+  currentGfx = GA.emptyGfx,
+  gfxStack = []
+  }
 
 setVariable :: (Monad m) => Identifier -> Value -> InterpreterProcess m Value
-setVariable name val = modify (\s -> s { variables = M.insert name (return val) (variables s) }) >> return val
+setVariable name val = modify (\s -> s {
+                                  variables = M.insert name (return val) (variables s)
+                                  }) >> return val
 
 getVariable :: (Monad m) => Identifier -> InterpreterProcess m Value
 getVariable name = do
   s <- get
   fromMaybe (return Null) $ M.lookup name $ variables s
+
+addGfxCommand :: (Monad m) => GA.GfxCommand -> InterpreterProcess m ()
+addGfxCommand cmd = modify (\s -> s {
+                               currentGfx = GA.addGfx (currentGfx s) cmd
+                               })
+
+newGfxScope :: (Monad m) => InterpreterProcess m ()
+newGfxScope = modify (\s -> s {
+                         currentGfx = GA.emptyGfx,
+                         gfxStack = currentGfx s : gfxStack s
+                         })
+
+newGfxCommandFromBlock :: (Monad m) => (GA.Block -> GA.GfxCommand) -> InterpreterProcess m ()
+newGfxCommandFromBlock partialCmd = do
+  s <- get
+  let cmd = partialCmd $ currentGfx s
+  modify (\sm -> sm {
+             currentGfx = head $ gfxStack sm,
+             gfxStack = tail $ gfxStack sm
+                  })
+  addGfxCommand cmd
+
 
 newScope :: (Monad m) => InterpreterProcess m Value -> InterpreterProcess m Value
 newScope childScope = do
@@ -49,8 +81,6 @@ interpretElement (ElLoop loop) = interpretLoop loop
 interpretElement (ElAssign assignment) = interpretAssignment assignment
 interpretElement (ElExpression expression) = interpretExpression expression
 
--- TODO
--- figure out scoping around function arg blocks
 interpretApplication :: (Monad m) => Application -> InterpreterProcess m Value
 interpretApplication (Application name args block) = do
   f <- getVariable name
