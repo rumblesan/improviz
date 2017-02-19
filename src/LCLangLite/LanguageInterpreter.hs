@@ -7,9 +7,15 @@ import Control.Monad.State.Strict
 import LCLangLite.LanguageAst
 import qualified Gfx.GfxAst as GA
 
+type BuiltInFunction m = Maybe Block -> InterpreterProcess m Value
+
+noop :: (Monad m) => BuiltInFunction m
+noop _ = return Null
+
 
 data InterpreterState m = InterpreterState {
   variables :: Map Identifier (InterpreterProcess m Value),
+  builtins :: Map Identifier (BuiltInFunction m),
   blockStack :: [Block],
   currentGfx :: GA.Block,
   gfxStack :: [GA.Block]
@@ -18,6 +24,7 @@ data InterpreterState m = InterpreterState {
 emptyState :: InterpreterState m
 emptyState = InterpreterState {
   variables = M.fromList [],
+  builtins = M.fromList [],
   blockStack = [],
   currentGfx = GA.emptyGfx,
   gfxStack = []
@@ -32,6 +39,17 @@ getVariable :: (Monad m) => Identifier -> InterpreterProcess m Value
 getVariable name = do
   s <- get
   fromMaybe (return Null) $ M.lookup name $ variables s
+
+setBuiltIn :: (Monad m) => Identifier -> BuiltInFunction m -> [Identifier] -> InterpreterProcess m ()
+setBuiltIn name func argNames = modify (\s -> s {
+                                  variables = M.insert name (return $ BuiltIn argNames) (variables s),
+                                  builtins = M.insert name func (builtins s)
+                                  })
+
+getBuiltIn :: (Monad m) => Identifier -> InterpreterProcess m (BuiltInFunction m)
+getBuiltIn name = do
+  s <- get
+  return $ fromMaybe noop $ M.lookup name $ builtins s
 
 addGfxCommand :: (Monad m) => GA.GfxCommand -> InterpreterProcess m ()
 addGfxCommand cmd = modify (\s -> s {
@@ -94,6 +112,14 @@ interpretApplication (Application name args block) = do
           ret <- interpretBlock lBlock
           when (isJust block) removeBlock
           return ret
+      )
+    (BuiltIn argNames) ->
+      newScope (
+        do
+          argValues <- mapM interpretExpression args
+          zipWithM_ setVariable argNames argValues
+          b <- getBuiltIn name
+          b block
       )
     _ -> return Null
 
