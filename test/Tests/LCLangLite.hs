@@ -16,6 +16,7 @@ lclangLiteTests :: Test
 lclangLiteTests =
   testGroup "LCLang Lite Tests" [
     testCase "Parsing works as expected" test_simple_parse,
+    testCase "Parsing assignments works as expected" test_parse_assignment,
     testCase "Interpreting works as expected" test_simple_interpreter,
     testCase "Interpreting expression works as expected" test_interpret_expression
   ]
@@ -23,9 +24,18 @@ lclangLiteTests =
 test_simple_parse :: Assertion
 test_simple_parse =
   let
-    program = "cube 1 2 3"
+    program = "cube(1 2 3)"
     cube = Application "cube" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 3] Nothing
     expected = Just $ Block [ElExpression $ EApp cube]
+  in
+    assertEqual "" expected (parseLCLang program)
+
+test_parse_assignment :: Assertion
+test_parse_assignment =
+  let
+    program = "a = 1"
+    assignment = Assignment "a" (EVal $ Number 1)
+    expected = Just $ Block [ElAssign assignment]
   in
     assertEqual "" expected (parseLCLang program)
 
