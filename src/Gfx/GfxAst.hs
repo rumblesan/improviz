@@ -2,6 +2,15 @@ module Gfx.GfxAst where
 
 type Block = [GfxCommand]
 
+emptyGfx :: Block
+emptyGfx = []
+
+-- TODO
+-- This could be more efficient
+addGfx :: Block -> GfxCommand -> Block
+addGfx block cmd = block ++ [cmd]
+
+
 type GfxAst = Block
 
 data Value
