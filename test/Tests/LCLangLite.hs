@@ -6,6 +6,7 @@ import Test.Framework.Providers.HUnit (testCase)
 
 import Data.Map.Strict
 import Control.Monad.State.Strict
+import Control.Monad.Writer.Strict
 
 import qualified Gfx.GfxAst as GA
 
@@ -46,8 +47,9 @@ test_simple_interpreter :: Assertion
 test_simple_interpreter =
   let
     block = Block [ElExpression $ EVal $ Number 3]
-    result = evalState (interpretLanguage block) emptyState :: Value
-    expected = Number 3
+    result = evalState (runWriterT $ interpretLanguage block) emptyState
+    logs = []
+    expected = (Number 3, logs)
   in
     assertEqual "" expected result
 
@@ -55,8 +57,9 @@ test_interpret_expression :: Assertion
 test_interpret_expression =
   let
     expr = EVal $ Number 3
-    result = evalState (interpretExpression expr) emptyState
-    expected = Number 3
+    result = evalState (runWriterT $ interpretExpression expr) emptyState
+    logs = []
+    expected = (Number 3, logs)
   in
     assertEqual "" expected result
 
@@ -66,6 +69,7 @@ test_create_gfx =
     box = EApp $ Application "box" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1] Nothing
     block = Block [ElExpression box]
     result = createGfx block
-    expected = [GA.ShapeCommand (GA.Cube 1 2 1) Nothing]
+    logs = []
+    expected = ([GA.ShapeCommand (GA.Cube 1 2 1) Nothing], logs)
   in
     assertEqual "" expected result

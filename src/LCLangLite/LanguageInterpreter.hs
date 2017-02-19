@@ -3,6 +3,7 @@ module LCLangLite.LanguageInterpreter where
 import Data.Map.Strict as M
 import Data.Maybe (fromMaybe, isJust)
 import Control.Monad.State.Strict
+import Control.Monad.Writer.Strict
 
 import LCLangLite.LanguageAst
 import qualified Gfx.GfxAst as GA
@@ -86,7 +87,11 @@ pushBlock b = modify (\s -> s { blockStack = b : blockStack s })
 removeBlock :: (Monad m) => InterpreterProcess m ()
 removeBlock = modify (\s -> s { blockStack = tail $ blockStack s })
 
-type InterpreterProcess m v = StateT (InterpreterState m) m v
+
+type InterpreterProcessing m = StateT (InterpreterState m) m
+type InterpreterLogging m = WriterT [String] m
+type InterpreterProcess m v = InterpreterLogging (InterpreterProcessing m) v
+
 
 interpretLanguage :: (Monad m) => Block -> InterpreterProcess m Value
 interpretLanguage = interpretBlock
@@ -106,6 +111,7 @@ interpretApplication (Application name args block) = do
     (Lambda argNames lBlock) ->
       newScope (
         do
+          tell ["Running lambda"]
           argValues <- mapM interpretExpression args
           zipWithM_ setVariable argNames argValues
           maybe (return ()) pushBlock block
