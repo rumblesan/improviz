@@ -1,4 +1,4 @@
-module LCLangLite.LanguageInterpreter where
+module LCLangLite.Interpreter where
 
 import Data.Map.Strict as M
 import Data.Maybe (fromMaybe, isJust)
@@ -6,6 +6,7 @@ import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 
 import LCLangLite.LanguageAst
+import qualified LCLangLite.Interpreter.Scope as LS
 import qualified Gfx.GfxAst as GA
 
 type BuiltInFunction m = Maybe Block -> InterpreterProcess m Value
@@ -15,7 +16,7 @@ noop _ = return Null
 
 
 data InterpreterState m = InterpreterState {
-  variables :: Map Identifier (InterpreterProcess m Value),
+  variables :: LS.ScopeStack Identifier (InterpreterProcess m Value),
   builtins :: Map Identifier (BuiltInFunction m),
   blockStack :: [Block],
   currentGfx :: GA.Block,
@@ -24,7 +25,7 @@ data InterpreterState m = InterpreterState {
 
 emptyState :: InterpreterState m
 emptyState = InterpreterState {
-  variables = M.fromList [],
+  variables = LS.empty,
   builtins = M.fromList [],
   blockStack = [],
   currentGfx = GA.emptyGfx,
@@ -33,17 +34,17 @@ emptyState = InterpreterState {
 
 setVariable :: (Monad m) => Identifier -> Value -> InterpreterProcess m Value
 setVariable name val = modify (\s -> s {
-                                  variables = M.insert name (return val) (variables s)
+                                  variables = LS.setVariable (variables s) name (return val)
                                   }) >> return val
 
 getVariable :: (Monad m) => Identifier -> InterpreterProcess m Value
 getVariable name = do
   s <- get
-  fromMaybe (return Null) $ M.lookup name $ variables s
+  fromMaybe (return Null) $ LS.getVariable (variables s) name
 
 setBuiltIn :: (Monad m) => Identifier -> BuiltInFunction m -> [Identifier] -> InterpreterProcess m ()
 setBuiltIn name func argNames = modify (\s -> s {
-                                  variables = M.insert name (return $ BuiltIn argNames) (variables s),
+                                  variables = LS.setVariable (variables s) name (return $ BuiltIn argNames),
                                   builtins = M.insert name func (builtins s)
                                   })
 
@@ -53,33 +54,29 @@ getBuiltIn name = do
   return $ fromMaybe noop $ M.lookup name $ builtins s
 
 addGfxCommand :: (Monad m) => GA.GfxCommand -> InterpreterProcess m ()
-addGfxCommand cmd = modify (\s -> s {
-                               currentGfx = GA.addGfx (currentGfx s) cmd
-                               })
+addGfxCommand cmd = do
+  modify (\s -> s {
+    currentGfx = GA.addGfx (currentGfx s) cmd
+  })
 
 newGfxScope :: (Monad m) => InterpreterProcess m ()
-newGfxScope = modify (\s -> s {
-                         currentGfx = GA.emptyGfx,
-                         gfxStack = currentGfx s : gfxStack s
-                         })
-
-newGfxCommandFromBlock :: (Monad m) => (GA.Block -> GA.GfxCommand) -> InterpreterProcess m ()
-newGfxCommandFromBlock partialCmd = do
-  s <- get
-  let cmd = partialCmd $ currentGfx s
-  modify (\sm -> sm {
-             currentGfx = head $ gfxStack sm,
-             gfxStack = tail $ gfxStack sm
-                  })
-  addGfxCommand cmd
-
+newGfxScope = do
+  modify (\s -> s {
+    currentGfx = GA.emptyGfx,
+    gfxStack = currentGfx s : gfxStack s
+  })
 
 newScope :: (Monad m) => InterpreterProcess m Value -> InterpreterProcess m Value
 newScope childScope = do
-  s <- get
+  modify (\s -> s { variables = LS.newScope (variables s) })
   v <- childScope
-  put s
+  modify (\s -> s { variables = popScope (variables s) })
   return v
+ where
+   popScope :: LS.ScopeStack k v -> LS.ScopeStack k v
+   popScope oldS = case LS.popScope oldS of
+     Left _ -> oldS
+     Right popped -> popped
 
 pushBlock :: (Monad m) => Block -> InterpreterProcess m ()
 pushBlock b = modify (\s -> s { blockStack = b : blockStack s })
@@ -102,12 +99,16 @@ interpretBlock (Block elements) = last <$> mapM interpretElement elements
 interpretElement :: (Monad m) => Element -> InterpreterProcess m Value
 interpretElement (ElLoop loop) = interpretLoop loop
 interpretElement (ElAssign assignment) = interpretAssignment assignment
-interpretElement (ElExpression expression) = interpretExpression expression
+interpretElement (ElExpression expression) = do
+  s1 <- get
+  val <- interpretExpression expression
+  s2 <- get
+  return val
 
 interpretApplication :: (Monad m) => Application -> InterpreterProcess m Value
 interpretApplication (Application name args block) = do
   f <- getVariable name
-  case f of
+  v <- case f of
     (Lambda argNames lBlock) ->
       newScope (
         do
@@ -122,12 +123,17 @@ interpretApplication (Application name args block) = do
     (BuiltIn argNames) ->
       newScope (
         do
+          tell ["Running BuiltIn: " ++ name]
           argValues <- mapM interpretExpression args
           zipWithM_ setVariable argNames argValues
           b <- getBuiltIn name
-          b block
+          res <- b block
+          s <- get
+          return res
       )
     _ -> return Null
+  s <- get
+  return v
 
 interpretLoop :: (Monad m) => Loop -> InterpreterProcess m Value
 interpretLoop (Loop num loopVar block) =
@@ -146,7 +152,10 @@ interpretAssignment (Assignment name expression) = do
   setVariable name value
 
 interpretExpression :: (Monad m) => Expression -> InterpreterProcess m Value
-interpretExpression (EApp application) = interpretApplication application
+interpretExpression (EApp application) = do
+  v <- interpretApplication application
+  s <- get
+  return v
 interpretExpression (BinaryOp _ _ _) = undefined
 interpretExpression (UnaryOp _ _) = undefined
 interpretExpression (EVar (Variable varName)) = getVariable varName

@@ -1,8 +1,9 @@
 module LCLangLite.StdLib where
 
 import Control.Monad.State.Strict
+import Control.Monad.Writer.Strict
 
-import LCLangLite.LanguageInterpreter (InterpreterProcess, newGfxScope, interpretBlock, addGfxCommand, currentGfx, gfxStack, getVariable)
+import LCLangLite.Interpreter (InterpreterProcess, newGfxScope, interpretBlock, addGfxCommand, currentGfx, gfxStack, getVariable)
 import LCLangLite.LanguageAst
 import qualified Gfx.GfxAst as GA
 
@@ -11,9 +12,10 @@ box block = do
     a <- getVariable "a"
     b <- getVariable "b"
     c <- getVariable "c"
+    tell ["Inside box"]
     let partialCmd = GA.ShapeCommand $ GA.Cube 1 2 1
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
-    return Null
+    return $ Number 3
   where
     handleGfxBlock :: (Monad m) => (Maybe GA.Block -> GA.GfxCommand) -> Block -> InterpreterProcess m ()
     handleGfxBlock pc b = do

@@ -12,7 +12,7 @@ import qualified Gfx.GfxAst as GA
 
 import LCLangLite
 import LCLangLite.LanguageAst
-import LCLangLite.LanguageInterpreter
+import LCLangLite.Interpreter
 
 
 lclangLiteTests :: Test
@@ -69,7 +69,7 @@ test_create_gfx =
     box = EApp $ Application "box" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1] Nothing
     block = Block [ElExpression box]
     result = createGfx block
-    logs = []
+    logs = ["Running BuiltIn: box", "Inside box"]
     expected = ([GA.ShapeCommand (GA.Cube 1 2 1) Nothing], logs)
   in
     assertEqual "" expected result

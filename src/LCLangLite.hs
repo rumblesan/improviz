@@ -9,7 +9,7 @@ import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 
 import LCLangLite.LanguageParser (parseProgram)
-import LCLangLite.LanguageInterpreter (interpretLanguage, emptyState, setBuiltIn, currentGfx)
+import LCLangLite.Interpreter (interpretLanguage, emptyState, setBuiltIn, currentGfx)
 import LCLangLite.LanguageAst (Block, Value)
 import qualified LCLangLite.StdLib as SL
 import qualified Gfx.GfxAst as GA
