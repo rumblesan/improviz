@@ -5,23 +5,14 @@ import Data.Maybe (fromMaybe, isJust)
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 
+import LCLangLite.Interpreter.Types
+
 import LCLangLite.LanguageAst
 import qualified LCLangLite.Interpreter.Scope as LS
 import qualified Gfx.GfxAst as GA
 
-type BuiltInFunction m = Maybe Block -> InterpreterProcess m Value
-
 noop :: (Monad m) => BuiltInFunction m
 noop _ = return Null
-
-
-data InterpreterState m = InterpreterState {
-  variables :: LS.ScopeStack Identifier (InterpreterProcess m Value),
-  builtins :: Map Identifier (BuiltInFunction m),
-  blockStack :: [Block],
-  currentGfx :: GA.Block,
-  gfxStack :: [GA.Block]
-}
 
 emptyState :: InterpreterState m
 emptyState = InterpreterState {
@@ -83,11 +74,6 @@ pushBlock b = modify (\s -> s { blockStack = b : blockStack s })
 
 removeBlock :: (Monad m) => InterpreterProcess m ()
 removeBlock = modify (\s -> s { blockStack = tail $ blockStack s })
-
-
-type InterpreterProcessing m = StateT (InterpreterState m) m
-type InterpreterLogging m = WriterT [String] m
-type InterpreterProcess m v = InterpreterLogging (InterpreterProcessing m) v
 
 
 interpretLanguage :: (Monad m) => Block -> InterpreterProcess m Value

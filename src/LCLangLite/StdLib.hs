@@ -3,7 +3,8 @@ module LCLangLite.StdLib where
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 
-import LCLangLite.Interpreter (InterpreterProcess, newGfxScope, interpretBlock, addGfxCommand, currentGfx, gfxStack, getVariable)
+import LCLangLite.Interpreter.Types
+import LCLangLite.Interpreter (newGfxScope, interpretBlock, addGfxCommand, getVariable)
 import LCLangLite.LanguageAst
 import qualified Gfx.GfxAst as GA
 

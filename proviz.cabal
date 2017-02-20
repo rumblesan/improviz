@@ -35,6 +35,7 @@ executable proviz
                      , LCLangLite.LanguageParser
                      , LCLangLite.Interpreter
                      , LCLangLite.Interpreter.Scope
+                     , LCLangLite.Interpreter.Types
                      , LCLangLite.StdLib
   default-language:    Haskell2010
 
@@ -62,6 +63,7 @@ test-suite proviz-test
                      , LCLangLite.LanguageParser
                      , LCLangLite.Interpreter
                      , LCLangLite.Interpreter.Scope
+                     , LCLangLite.Interpreter.Types
                      , LCLangLite.StdLib
                      , Tests.GfxInterpreter
                      , Tests.LCLangLite
