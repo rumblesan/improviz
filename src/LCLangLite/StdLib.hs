@@ -8,6 +8,9 @@ import LCLangLite.Interpreter (newGfxScope, interpretBlock, addGfxCommand, getVa
 import LCLangLite.LanguageAst
 import qualified Gfx.GfxAst as GA
 
+noop :: BuiltInFunction
+noop _ = return Null
+
 box :: Maybe Block -> InterpreterProcess Value
 box block = do
     a <- getVariable "a"

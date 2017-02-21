@@ -12,9 +12,6 @@ import LCLangLite.LanguageAst
 import qualified LCLangLite.Interpreter.Scope as LS
 import qualified Gfx.GfxAst as GA
 
-noop :: BuiltInFunction
-noop _ = return Null
-
 emptyState :: InterpreterState
 emptyState = InterpreterState {
   variables = LS.empty,
