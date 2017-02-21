@@ -1,7 +1,7 @@
 module LCLangLite.Interpreter where
 
 import Data.Map.Strict as M
-import Data.Maybe (fromMaybe, isJust)
+import Data.Maybe (isJust)
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 import Control.Monad.Except
@@ -29,7 +29,9 @@ setVariable name val = modify (\s -> s {
 getVariable :: Identifier -> InterpreterProcess Value
 getVariable name = do
   s <- get
-  return $ fromMaybe Null $ LS.getVariable (variables s) name
+  case LS.getVariable (variables s) name of
+    Just v -> return v
+    Nothing -> throwError $ "Could not get variable: " ++ name
 
 setBuiltIn :: Identifier -> BuiltInFunction -> [Identifier] -> InterpreterProcess ()
 setBuiltIn name func argNames = modify (\s -> s {
@@ -40,7 +42,9 @@ setBuiltIn name func argNames = modify (\s -> s {
 getBuiltIn :: Identifier -> InterpreterProcess BuiltInFunction
 getBuiltIn name = do
   s <- get
-  return $ fromMaybe noop $ M.lookup name $ builtins s
+  case M.lookup name (builtins s) of
+    Just b -> return b
+    Nothing -> throwError $ "Could not get builtin: " ++ name
 
 addGfxCommand :: GA.GfxCommand -> InterpreterProcess ()
 addGfxCommand cmd = modify (\s -> s {currentGfx = GA.addGfx (currentGfx s) cmd})
