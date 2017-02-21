@@ -18,7 +18,7 @@ type InterpreterErrors m = ExceptT String m
 type InterpreterProcess v = InterpreterErrors (InterpreterLogging InterpreterProcessing) v
 
 data InterpreterState = InterpreterState {
-  variables :: LS.ScopeStack Identifier (InterpreterProcess Value),
+  variables :: LS.ScopeStack Identifier Value,
   builtins :: M.Map Identifier BuiltInFunction,
   blockStack :: [Block],
   currentGfx :: GA.Block,

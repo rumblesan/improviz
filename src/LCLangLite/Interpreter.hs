@@ -26,17 +26,17 @@ emptyState = InterpreterState {
 
 setVariable :: Identifier -> Value -> InterpreterProcess Value
 setVariable name val = modify (\s -> s {
-    variables = LS.setVariable (variables s) name (return val)
+    variables = LS.setVariable (variables s) name val
   }) >> return val
 
 getVariable :: Identifier -> InterpreterProcess Value
 getVariable name = do
   s <- get
-  fromMaybe (return Null) $ LS.getVariable (variables s) name
+  return $ fromMaybe Null $ LS.getVariable (variables s) name
 
 setBuiltIn :: Identifier -> BuiltInFunction -> [Identifier] -> InterpreterProcess ()
 setBuiltIn name func argNames = modify (\s -> s {
-                                  variables = LS.setVariable (variables s) name (return $ BuiltIn argNames),
+                                  variables = LS.setVariable (variables s) name (BuiltIn argNames),
                                   builtins = M.insert name func (builtins s)
                                   })
 
