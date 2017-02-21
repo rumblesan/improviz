@@ -4,6 +4,7 @@ import Data.Map.Strict as M
 import Data.Maybe (fromMaybe, isJust)
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
+import Control.Monad.Except
 
 import LCLangLite.Interpreter.Types
 

@@ -7,6 +7,7 @@ module LCLangLite (
 
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
+import Control.Monad.Except
 
 import LCLangLite.LanguageParser (parseProgram)
 import LCLangLite.Interpreter.Types (currentGfx)
@@ -20,16 +21,16 @@ parseLCLang program = case parseProgram program of
   Left _ -> Nothing
   Right ast -> Just ast
 
-interpretLCLang :: Block -> (Value, [String])
+interpretLCLang :: Block -> (Either String Value, [String])
 interpretLCLang block =
   let
      run = do
        setBuiltIn "box" SL.box ["a", "b", "c"]
        interpretLanguage block
   in
-    evalState (runWriterT run) emptyState
+    evalState (runWriterT (runExceptT run)) emptyState
 
-createGfx :: Block -> (GA.Block, [String])
+createGfx :: Block -> (Either String GA.Block, [String])
 createGfx block =
   let
      run = do
@@ -38,4 +39,4 @@ createGfx block =
        s <- get
        return $ currentGfx s
   in
-    evalState (runWriterT run) emptyState
+    evalState (runWriterT (runExceptT run)) emptyState
