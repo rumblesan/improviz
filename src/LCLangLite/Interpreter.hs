@@ -26,8 +26,8 @@ emptyState = InterpreterState {
 
 setVariable :: (Monad m) => Identifier -> Value -> InterpreterProcess m Value
 setVariable name val = modify (\s -> s {
-                                  variables = LS.setVariable (variables s) name (return val)
-                                  }) >> return val
+    variables = LS.setVariable (variables s) name (return val)
+  }) >> return val
 
 getVariable :: (Monad m) => Identifier -> InterpreterProcess m Value
 getVariable name = do
@@ -46,14 +46,10 @@ getBuiltIn name = do
   return $ fromMaybe noop $ M.lookup name $ builtins s
 
 addGfxCommand :: (Monad m) => GA.GfxCommand -> InterpreterProcess m ()
-addGfxCommand cmd = do
-  modify (\s -> s {
-    currentGfx = GA.addGfx (currentGfx s) cmd
-  })
+addGfxCommand cmd = modify (\s -> s {currentGfx = GA.addGfx (currentGfx s) cmd})
 
 newGfxScope :: (Monad m) => InterpreterProcess m ()
-newGfxScope = do
-  modify (\s -> s {
+newGfxScope = modify (\s -> s {
     currentGfx = GA.emptyGfx,
     gfxStack = currentGfx s : gfxStack s
   })
@@ -91,7 +87,7 @@ interpretElement (ElExpression expression) = interpretExpression expression
 interpretApplication :: (Monad m) => Application -> InterpreterProcess m Value
 interpretApplication (Application name args block) = do
   f <- getVariable name
-  v <- case f of
+  case f of
     (Lambda argNames lBlock) ->
       newScope (
         do
@@ -110,13 +106,9 @@ interpretApplication (Application name args block) = do
           argValues <- mapM interpretExpression args
           zipWithM_ setVariable argNames argValues
           b <- getBuiltIn name
-          res <- b block
-          s <- get
-          return res
+          b block
       )
     _ -> return Null
-  s <- get
-  return v
 
 interpretLoop :: (Monad m) => Loop -> InterpreterProcess m Value
 interpretLoop (Loop num loopVar block) =
@@ -135,10 +127,7 @@ interpretAssignment (Assignment name expression) = do
   setVariable name value
 
 interpretExpression :: (Monad m) => Expression -> InterpreterProcess m Value
-interpretExpression (EApp application) = do
-  v <- interpretApplication application
-  s <- get
-  return v
+interpretExpression (EApp application) = interpretApplication application
 interpretExpression (BinaryOp _ _ _) = undefined
 interpretExpression (UnaryOp _ _) = undefined
 interpretExpression (EVar (Variable varName)) = getVariable varName
