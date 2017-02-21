@@ -86,11 +86,7 @@ interpretBlock (Block elements) = last <$> mapM interpretElement elements
 interpretElement :: (Monad m) => Element -> InterpreterProcess m Value
 interpretElement (ElLoop loop) = interpretLoop loop
 interpretElement (ElAssign assignment) = interpretAssignment assignment
-interpretElement (ElExpression expression) = do
-  s1 <- get
-  val <- interpretExpression expression
-  s2 <- get
-  return val
+interpretElement (ElExpression expression) = interpretExpression expression
 
 interpretApplication :: (Monad m) => Application -> InterpreterProcess m Value
 interpretApplication (Application name args block) = do
