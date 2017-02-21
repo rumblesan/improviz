@@ -10,16 +10,16 @@ import qualified LCLangLite.Interpreter.Scope as LS
 import qualified Data.Map.Strict as M
 import qualified Gfx.GfxAst as GA
 
-type BuiltInFunction m = Maybe Block -> InterpreterProcess m Value
+type BuiltInFunction = Maybe Block -> InterpreterProcess Value
 
-type InterpreterProcessing m = StateT (InterpreterState m) m
+type InterpreterProcessing = State InterpreterState
 type InterpreterLogging m = WriterT [String] m
 type InterpreterErrors m = ExceptT String m
-type InterpreterProcess m v = InterpreterErrors (InterpreterLogging (InterpreterProcessing m)) v
+type InterpreterProcess v = InterpreterErrors (InterpreterLogging InterpreterProcessing) v
 
-data InterpreterState m = InterpreterState {
-  variables :: LS.ScopeStack Identifier (InterpreterProcess m Value),
-  builtins :: M.Map Identifier (BuiltInFunction m),
+data InterpreterState = InterpreterState {
+  variables :: LS.ScopeStack Identifier (InterpreterProcess Value),
+  builtins :: M.Map Identifier BuiltInFunction,
   blockStack :: [Block],
   currentGfx :: GA.Block,
   gfxStack :: [GA.Block]

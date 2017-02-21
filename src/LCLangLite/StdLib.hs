@@ -8,7 +8,7 @@ import LCLangLite.Interpreter (newGfxScope, interpretBlock, addGfxCommand, getVa
 import LCLangLite.LanguageAst
 import qualified Gfx.GfxAst as GA
 
-box :: (Monad m) => Maybe Block -> InterpreterProcess m Value
+box :: Maybe Block -> InterpreterProcess Value
 box block = do
     a <- getVariable "a"
     b <- getVariable "b"
@@ -18,7 +18,7 @@ box block = do
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return $ Number 3
   where
-    handleGfxBlock :: (Monad m) => (Maybe GA.Block -> GA.GfxCommand) -> Block -> InterpreterProcess m ()
+    handleGfxBlock :: (Maybe GA.Block -> GA.GfxCommand) -> Block -> InterpreterProcess ()
     handleGfxBlock pc b = do
       newGfxScope
       _ <- interpretBlock b

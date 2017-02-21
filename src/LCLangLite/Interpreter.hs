@@ -12,10 +12,10 @@ import LCLangLite.LanguageAst
 import qualified LCLangLite.Interpreter.Scope as LS
 import qualified Gfx.GfxAst as GA
 
-noop :: (Monad m) => BuiltInFunction m
+noop :: BuiltInFunction
 noop _ = return Null
 
-emptyState :: InterpreterState m
+emptyState :: InterpreterState
 emptyState = InterpreterState {
   variables = LS.empty,
   builtins = M.fromList [],
@@ -24,37 +24,37 @@ emptyState = InterpreterState {
   gfxStack = []
   }
 
-setVariable :: (Monad m) => Identifier -> Value -> InterpreterProcess m Value
+setVariable :: Identifier -> Value -> InterpreterProcess Value
 setVariable name val = modify (\s -> s {
     variables = LS.setVariable (variables s) name (return val)
   }) >> return val
 
-getVariable :: (Monad m) => Identifier -> InterpreterProcess m Value
+getVariable :: Identifier -> InterpreterProcess Value
 getVariable name = do
   s <- get
   fromMaybe (return Null) $ LS.getVariable (variables s) name
 
-setBuiltIn :: (Monad m) => Identifier -> BuiltInFunction m -> [Identifier] -> InterpreterProcess m ()
+setBuiltIn :: Identifier -> BuiltInFunction -> [Identifier] -> InterpreterProcess ()
 setBuiltIn name func argNames = modify (\s -> s {
                                   variables = LS.setVariable (variables s) name (return $ BuiltIn argNames),
                                   builtins = M.insert name func (builtins s)
                                   })
 
-getBuiltIn :: (Monad m) => Identifier -> InterpreterProcess m (BuiltInFunction m)
+getBuiltIn :: Identifier -> InterpreterProcess BuiltInFunction
 getBuiltIn name = do
   s <- get
   return $ fromMaybe noop $ M.lookup name $ builtins s
 
-addGfxCommand :: (Monad m) => GA.GfxCommand -> InterpreterProcess m ()
+addGfxCommand :: GA.GfxCommand -> InterpreterProcess ()
 addGfxCommand cmd = modify (\s -> s {currentGfx = GA.addGfx (currentGfx s) cmd})
 
-newGfxScope :: (Monad m) => InterpreterProcess m ()
+newGfxScope :: InterpreterProcess ()
 newGfxScope = modify (\s -> s {
     currentGfx = GA.emptyGfx,
     gfxStack = currentGfx s : gfxStack s
   })
 
-newScope :: (Monad m) => InterpreterProcess m Value -> InterpreterProcess m Value
+newScope :: InterpreterProcess Value -> InterpreterProcess Value
 newScope childScope = do
   modify (\s -> s { variables = LS.newScope (variables s) })
   v <- childScope
@@ -66,25 +66,25 @@ newScope childScope = do
      Left _ -> oldS
      Right popped -> popped
 
-pushBlock :: (Monad m) => Block -> InterpreterProcess m ()
+pushBlock :: Block -> InterpreterProcess ()
 pushBlock b = modify (\s -> s { blockStack = b : blockStack s })
 
-removeBlock :: (Monad m) => InterpreterProcess m ()
+removeBlock :: InterpreterProcess ()
 removeBlock = modify (\s -> s { blockStack = tail $ blockStack s })
 
 
-interpretLanguage :: (Monad m) => Block -> InterpreterProcess m Value
+interpretLanguage :: Block -> InterpreterProcess Value
 interpretLanguage = interpretBlock
 
-interpretBlock :: (Monad m) => Block -> InterpreterProcess m Value
+interpretBlock :: Block -> InterpreterProcess Value
 interpretBlock (Block elements) = last <$> mapM interpretElement elements
 
-interpretElement :: (Monad m) => Element -> InterpreterProcess m Value
+interpretElement :: Element -> InterpreterProcess Value
 interpretElement (ElLoop loop) = interpretLoop loop
 interpretElement (ElAssign assignment) = interpretAssignment assignment
 interpretElement (ElExpression expression) = interpretExpression expression
 
-interpretApplication :: (Monad m) => Application -> InterpreterProcess m Value
+interpretApplication :: Application -> InterpreterProcess Value
 interpretApplication (Application name args block) = do
   f <- getVariable name
   case f of
@@ -110,7 +110,7 @@ interpretApplication (Application name args block) = do
       )
     _ -> return Null
 
-interpretLoop :: (Monad m) => Loop -> InterpreterProcess m Value
+interpretLoop :: Loop -> InterpreterProcess Value
 interpretLoop (Loop num loopVar block) =
   let
     loopNums = fromIntegral <$> [0..(num-1)]
@@ -121,12 +121,12 @@ interpretLoop (Loop num loopVar block) =
       _ <- maybe (return Null) (\vn -> setVariable vn (Number n)) loopVar
       interpretBlock block
 
-interpretAssignment :: (Monad m) => Assignment -> InterpreterProcess m Value
+interpretAssignment :: Assignment -> InterpreterProcess Value
 interpretAssignment (Assignment name expression) = do
   value <- interpretExpression expression
   setVariable name value
 
-interpretExpression :: (Monad m) => Expression -> InterpreterProcess m Value
+interpretExpression :: Expression -> InterpreterProcess Value
 interpretExpression (EApp application) = interpretApplication application
 interpretExpression (BinaryOp _ _ _) = undefined
 interpretExpression (UnaryOp _ _) = undefined
