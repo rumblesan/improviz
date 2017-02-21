@@ -123,9 +123,8 @@ interpretLoop (Loop num loopVar block) =
       interpretBlock block
 
 interpretAssignment :: Assignment -> InterpreterProcess Value
-interpretAssignment (Assignment name expression) = do
-  value <- interpretExpression expression
-  setVariable name value
+interpretAssignment (Assignment name expression) =
+  interpretExpression expression >>= setVariable name
 
 interpretExpression :: Expression -> InterpreterProcess Value
 interpretExpression (EApp application) = interpretApplication application
