@@ -1,5 +1,7 @@
 module LCLangLite.LanguageParser where
 
+import Control.Monad (void)
+
 import Text.Parsec
 import Text.Parsec.Expr
 import Text.Parsec.Token
@@ -85,4 +87,4 @@ parseProgram :: String -> Either ParseError Block
 parseProgram = runParser block () "program"
 
 eol :: LangParser ()
-eol = (char '\n' >> return ()) <|> eof
+eol = void newline <|> eof
