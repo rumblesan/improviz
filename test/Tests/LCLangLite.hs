@@ -4,6 +4,7 @@ import Test.Framework (Test, testGroup)
 import Test.HUnit (Assertion, assertEqual)
 import Test.Framework.Providers.HUnit (testCase)
 
+import Data.Maybe
 import Data.Map.Strict
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
@@ -19,30 +20,11 @@ import LCLangLite.Interpreter
 lclangLiteTests :: Test
 lclangLiteTests =
   testGroup "LCLang Lite Tests" [
-    testCase "Parsing works as expected" test_simple_parse,
-    testCase "Parsing assignments works as expected" test_parse_assignment,
     testCase "Interpreting works as expected" test_simple_interpreter,
     testCase "Interpreting expression works as expected" test_interpret_expression,
-    testCase "Graphics Creation" test_create_gfx
+    testCase "Graphics Creation" test_create_gfx,
+    testCase "Basic program" test_basic_program
   ]
-
-test_simple_parse :: Assertion
-test_simple_parse =
-  let
-    program = "cube(1 2 3)"
-    cube = Application "cube" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 3] Nothing
-    expected = Just $ Block [ElExpression $ EApp cube]
-  in
-    assertEqual "" expected (parseLCLang program)
-
-test_parse_assignment :: Assertion
-test_parse_assignment =
-  let
-    program = "a = 1"
-    assignment = Assignment "a" (EVal $ Number 1)
-    expected = Just $ Block [ElAssign assignment]
-  in
-    assertEqual "" expected (parseLCLang program)
 
 test_simple_interpreter :: Assertion
 test_simple_interpreter =
@@ -61,6 +43,18 @@ test_interpret_expression =
     result = evalState (runWriterT $ runExceptT $ interpretExpression expr) emptyState
     logs = []
     expected = (Right $ Number 3, logs)
+  in
+    assertEqual "" expected result
+
+test_basic_program :: Assertion
+test_basic_program =
+  let
+    program = "a = 2\nb = 2\nfoo = (c d) => {\nc * d\n}\nbox(b a) foo a)\n"
+    box = EApp $ Application "box" [EVal $ Number 2, EVal $ Number 4, EVal $ Number 2] Nothing
+    block = Block [ElExpression box]
+    logs = ["Running BuiltIn: box"]
+    result = createGfx $ fromJust (parseLCLang program)
+    expected = (Right [GA.ShapeCommand (GA.Cube 1 2 1) Nothing], logs)
   in
     assertEqual "" expected result
 
