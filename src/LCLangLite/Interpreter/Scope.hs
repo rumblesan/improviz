@@ -6,7 +6,7 @@ type Scope k v = M.Map k v
 data ScopeStack k v = ScopeStack {
   current :: Scope k v,
   stack :: [Scope k v]
-}
+} deriving (Show)
 
 empty :: Ord k => ScopeStack k v
 empty = ScopeStack {
