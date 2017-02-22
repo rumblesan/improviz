@@ -7,6 +7,7 @@ import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
 import LCLangLite.Interpreter.Types
+import LCLangLite.Interpreter.Operators
 
 import LCLangLite.LanguageAst
 import qualified LCLangLite.Interpreter.Scope as LS
@@ -128,7 +129,12 @@ interpretAssignment (Assignment name expression) =
 
 interpretExpression :: Expression -> InterpreterProcess Value
 interpretExpression (EApp application) = interpretApplication application
-interpretExpression (BinaryOp _ _ _) = undefined
-interpretExpression (UnaryOp _ _) = undefined
+interpretExpression (BinaryOp op v1 v2) = do
+  n1 <- interpretExpression v1
+  n2 <- interpretExpression v2
+  binaryOp op n1 n2
+interpretExpression (UnaryOp op v) = do
+  n <- interpretExpression v
+  unaryOp op n
 interpretExpression (EVar (Variable varName)) = getVariable varName
 interpretExpression (EVal value) = return value
