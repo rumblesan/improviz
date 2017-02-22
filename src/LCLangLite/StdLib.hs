@@ -16,7 +16,6 @@ box block = do
     a <- getVariable "a"
     b <- getVariable "b"
     c <- getVariable "c"
-    tell ["Inside box"]
     let partialCmd = GA.ShapeCommand $ GA.Cube 1 2 1
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return $ Number 3

@@ -70,7 +70,7 @@ test_create_gfx =
     box = EApp $ Application "box" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1] Nothing
     block = Block [ElExpression box]
     result = createGfx block
-    logs = ["Running BuiltIn: box", "Inside box"]
+    logs = ["Running BuiltIn: box"]
     expected = (Right [GA.ShapeCommand (GA.Cube 1 2 1) Nothing], logs)
   in
     assertEqual "" expected result
