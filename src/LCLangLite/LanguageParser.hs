@@ -81,7 +81,7 @@ lambda = Lambda <$> m_parens (many m_identifier) <* m_symbol "=>" <*> (lbody <|>
     lbody = m_braces block
 
 number :: LangParser Value
-number = Number <$> (m_intToFloat <|> m_float) <?> "number"
+number = Number <$> (try m_float <|> try m_intToFloat) <?> "number"
   where
     m_intToFloat = fmap fromIntegral m_integer
 
