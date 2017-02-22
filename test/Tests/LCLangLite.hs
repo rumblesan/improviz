@@ -49,12 +49,10 @@ test_interpret_expression =
 test_basic_program :: Assertion
 test_basic_program =
   let
-    program = "a = 2\nb = 2\nfoo = (c d) => {\nc * d\n}\nbox(b a) foo a)\n"
-    box = EApp $ Application "box" [EVal $ Number 2, EVal $ Number 4, EVal $ Number 2] Nothing
-    block = Block [ElExpression box]
-    logs = ["Running BuiltIn: box"]
+    program = "a = 2;\nb = 3;\nfoo = (c d) => c * d;\nbox(b a foo(a b));\n"
+    logs = ["Running BuiltIn: box", "Running lambda"]
     result = createGfx $ fromJust (parseLCLang program)
-    expected = (Right [GA.ShapeCommand (GA.Cube 1 2 1) Nothing], logs)
+    expected = (Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing], logs)
   in
     assertEqual "" expected result
 

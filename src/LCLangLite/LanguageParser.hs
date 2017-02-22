@@ -39,19 +39,19 @@ table = [ [Prefix (m_reservedOp "-" >> return (UnaryOp "-"))]
         ]
 
 atom :: LangParser Expression
-atom =     m_parens expression
-       <|> fmap EApp (try application)
-       <|> fmap EVar (try variable)
-       <|> fmap EVal (try value)
+atom = try (m_parens expression)
+       <|> EApp <$> try application
+       <|> EVar <$> try variable
+       <|> EVal <$> try value
 
 block :: LangParser Block
 block = Block <$> many element <?> "block"
 
 element :: LangParser Element
-element =     (ElLoop <$> try loop)
+element = (    (ElLoop <$> try loop)
           <|> (ElAssign <$> try assignment)
-          <|> (ElExpression <$> try expression)
-          <* eol
+          <|> (ElExpression <$> try expression))
+          <* eos
           <?> "element"
 
 application :: LangParser Application
@@ -75,7 +75,10 @@ value = number <|> lambda <|> v_null
     v_null = Null <$ m_symbol "null" <?> "null"
 
 lambda :: LangParser Value
-lambda = Lambda <$> m_parens (many m_identifier) <* m_symbol "=>" <*> block <?> "lambda"
+lambda = Lambda <$> m_parens (many m_identifier) <* m_symbol "=>" <*> (lbody <|> lexpr) <?> "lambda"
+  where
+    lexpr = (\e -> Block [ElExpression e]) <$> expression
+    lbody = m_braces block
 
 number :: LangParser Value
 number = Number <$> (m_intToFloat <|> m_float) <?> "number"
@@ -85,6 +88,9 @@ number = Number <$> (m_intToFloat <|> m_float) <?> "number"
 
 parseProgram :: String -> Either ParseError Block
 parseProgram = runParser block () "program"
+
+eos :: LangParser Char
+eos = char ';' <* many newline
 
 eol :: LangParser ()
 eol = void newline <|> eof
