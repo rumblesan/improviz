@@ -1,7 +1,7 @@
 module Language.Interpreter where
 
 import Data.Map.Strict as M
-import Data.Maybe (isJust)
+import Data.Maybe (fromMaybe, isJust)
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 import Control.Monad.Except
@@ -33,6 +33,18 @@ getVariable name = do
   case LS.getVariable (variables s) name of
     Just v -> return v
     Nothing -> throwError $ "Could not get variable: " ++ name
+
+getVariableWithDefault :: Identifier -> Value -> InterpreterProcess Value
+getVariableWithDefault name defValue = do
+  s <- get
+  return $ fromMaybe defValue (LS.getVariable (variables s) name)
+
+getVariableWithBackup :: Identifier -> Identifier -> InterpreterProcess Value
+getVariableWithBackup name bkp = do
+  s <- get
+  case LS.getVariable (variables s) name of
+    Just v -> return v
+    Nothing -> getVariable bkp
 
 setBuiltIn :: Identifier -> BuiltInFunction -> [Identifier] -> InterpreterProcess ()
 setBuiltIn name func argNames = modify (\s -> s {
