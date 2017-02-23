@@ -1,6 +1,6 @@
 module Gfx.GfxEngineState where
 
-import Graphics.Rendering.OpenGL (Color4, GLfloat)
+import Graphics.Rendering.OpenGL (Color4(..), GLfloat)
 
 data EngineState = EngineState {
     fillColours :: [ Color4 Double ]
@@ -8,6 +8,15 @@ data EngineState = EngineState {
   , backgroundColour :: Color4 GLfloat
   , drawTransparencies :: Bool
 } deriving (Show, Eq)
+
+baseState :: EngineState
+baseState = EngineState {
+    fillColours = [Color4 1 1 1 1]
+  , strokeColours = [Color4 0 0 0 1]
+  , backgroundColour = Color4 1 1 1 1
+  , drawTransparencies = False
+}
+
 
 pushFillColour :: Color4 Double -> EngineState -> EngineState
 pushFillColour c es = es { fillColours = c : fillColours es }
