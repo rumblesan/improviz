@@ -10,8 +10,9 @@ import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
 import Language.LanguageParser (parseProgram)
+import Language.LanguageAst (Identifier)
 import Language.Interpreter.Types (currentGfx, InterpreterProcess)
-import Language.Interpreter (interpretLanguage, emptyState, setBuiltIn)
+import Language.Interpreter (interpretLanguage, emptyState, setBuiltIn, setVariable)
 import Language.LanguageAst (Block, Value)
 import qualified Language.StdLib as SL
 import qualified Gfx.GfxAst as GA
@@ -21,23 +22,24 @@ parse program = case parseProgram program of
   Left _ -> Nothing
   Right ast -> Just ast
 
-interpret :: Block -> (Either String Value, [String])
-interpret block =
+interpret :: [(Identifier, Value)] -> Block -> (Either String Value, [String])
+interpret initialVars block =
   let
      run = do
        addStdLib
+       addInitialVariables initialVars
        interpretLanguage block
   in
     evalState (runWriterT (runExceptT run)) emptyState
 
-createGfx :: Block -> (Either String GA.Block, [String])
-createGfx block =
+createGfx :: [(Identifier, Value)] -> Block -> (Either String GA.Block, [String])
+createGfx initialVars block =
   let
      run = do
        addStdLib
+       addInitialVariables initialVars
        _ <- interpretLanguage block
-       s <- get
-       return $ currentGfx s
+       gets currentGfx
   in
     evalState (runWriterT (runExceptT run)) emptyState
 
@@ -48,3 +50,6 @@ addStdLib = do
   setBuiltIn "rotate" SL.rotate ["a", "b", "c"]
   setBuiltIn "scale" SL.scale ["a", "b", "c"]
   setBuiltIn "move" SL.move ["a", "b", "c"]
+
+addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess()
+addInitialVariables vars = forM_ vars (uncurry setVariable)

@@ -51,7 +51,7 @@ test_basic_program =
   let
     program = "a = 2;\nb = 3;\nfoo = (c d) => c * d;\nbox(b a foo(a b));\n"
     logs = ["Running BuiltIn: box", "Running lambda"]
-    result = Language.createGfx $ fromJust (Language.parse program)
+    result = Language.createGfx [] $ fromJust (Language.parse program)
     expected = (Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing], logs)
   in
     assertEqual "" expected result
@@ -61,7 +61,7 @@ test_create_gfx =
   let
     box = EApp $ Application "box" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1] Nothing
     block = Block [ElExpression box]
-    result = Language.createGfx block
+    result = Language.createGfx [] block
     logs = ["Running BuiltIn: box"]
     expected = (Right [GA.ShapeCommand (GA.Cube 1 2 1) Nothing], logs)
   in
