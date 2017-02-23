@@ -2,36 +2,20 @@ module Main where
 
 import Graphics.UI.GLUT hiding (Cube, get, Fill)
 
-import Data.Map.Strict hiding (size)
+import Data.Maybe (fromMaybe)
 import Control.Monad.State.Strict
 
-import Gfx
+import qualified Gfx as G
+import qualified Language as L
+import qualified Language.LanguageAst as LA
 
 import Data.IORef
 
-displayAst :: GfxAst
-displayAst = [
-  ColourCommand (Stroke 0 0 0 1) Nothing,
-  ColourCommand NoFill Nothing,
-  MatrixCommand (Rotate 0 0 1) $ Just [
-    ShapeCommand (Cube 0.3 0.6 0.2) $ Just [
-      ColourCommand (Fill 0 0.7 0.2 0.5) Nothing,
-      MatrixCommand (Rotate 2 3 3) Nothing,
-      MatrixCommand (Move 1 0.3 0) Nothing,
-      ShapeCommand (Cube 0.3 0.5 0.1) Nothing
-    ],
-    ColourCommand (Fill 1 0 0.2 0) Nothing,
-    MatrixCommand (Rotate 3 3 0.3) Nothing,
-    ShapeCommand (Cube 0.4 0.3 0.5) Nothing
-    ]]
+program :: String
+program = "rotate(time);\nbox(2 0.5 0.5);\n"
 
-startState :: EngineState
-startState = EngineState {
-    fillColours = [Color4 1 1 1 1]
-  , strokeColours = [Color4 0 0 0 1]
-  , backgroundColour = Color4 1 1 1 1
-  , drawTransparencies = False
-}
+startTime :: Double
+startTime = 0
 
 main :: IO ()
 main = do
@@ -42,22 +26,32 @@ main = do
   depthFunc $= Just Less
   blend $= Enabled
   blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
-  initialState <- newIORef startState
-  displayCallback $= display initialState
-  idleCallback $= Just (idle initialState)
+  time <- newIORef startTime
+  displayCallback $= display time
+  idleCallback $= Just (idle time)
   mainLoop
 
-display :: IORef EngineState -> DisplayCallback
-display engineState = do
+display :: IORef Double -> DisplayCallback
+display time = do
   putStrLn "display loop"
-  es <- readIORef engineState
-  clearColor $= backgroundColour es
-  clear [ ColorBuffer, DepthBuffer ]
-  loadIdentity
-  evalStateT (interpretGfx displayAst) es
-  loadIdentity
-  evalStateT (interpretGfx displayAst) es { drawTransparencies = True }
-  flush
+  t <- readIORef time
+
+  parsed <- case L.parse program of
+    Nothing -> do
+      putStrLn "Could not parse program"
+      return $ LA.Block []
+    Just p -> return p
+  case fst $ L.createGfx [("time", LA.Number t)] parsed of
+    Left msg -> putStrLn $ "Could not interpret program: " ++ msg
+    Right gfx ->
+      do
+        clearColor $= G.backgroundColour G.baseState
+        clear [ ColorBuffer, DepthBuffer ]
+        loadIdentity
+        evalStateT (G.interpretGfx gfx) G.baseState
+        loadIdentity
+        evalStateT (G.interpretGfx gfx) G.baseState { G.drawTransparencies = True }
+        flush
 
 reshape :: ReshapeCallback
 reshape size = do
@@ -65,7 +59,8 @@ reshape size = do
   postRedisplay Nothing
 
 
-idle :: IORef EngineState -> IdleCallback
-idle engineState = do
-  es <- readIORef engineState
+idle :: IORef Double -> IdleCallback
+idle time = do
+  t <- readIORef time
+  writeIORef time (t + 0.1)
   postRedisplay Nothing
