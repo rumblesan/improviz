@@ -40,6 +40,7 @@ executable proviz
                      , Language.Interpreter.Operators
                      , Language.StdLib
                      , Language.StdLib.Shapes
+                     , Language.StdLib.BlockHandling
   default-language:    Haskell2010
 
 test-suite proviz-test
@@ -71,6 +72,7 @@ test-suite proviz-test
                      , Language.Interpreter.Operators
                      , Language.StdLib
                      , Language.StdLib.Shapes
+                     , Language.StdLib.BlockHandling
                      , Tests.GfxInterpreter
                      , Tests.Language
                      , Tests.LanguageParser
