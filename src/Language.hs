@@ -10,7 +10,7 @@ import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
 import Language.LanguageParser (parseProgram)
-import Language.Interpreter.Types (currentGfx)
+import Language.Interpreter.Types (currentGfx, InterpreterProcess)
 import Language.Interpreter (interpretLanguage, emptyState, setBuiltIn)
 import Language.LanguageAst (Block, Value)
 import qualified Language.StdLib as SL
@@ -25,7 +25,7 @@ interpret :: Block -> (Either String Value, [String])
 interpret block =
   let
      run = do
-       setBuiltIn "box" SL.box ["a", "b", "c"]
+       addStdLib
        interpretLanguage block
   in
     evalState (runWriterT (runExceptT run)) emptyState
@@ -34,9 +34,17 @@ createGfx :: Block -> (Either String GA.Block, [String])
 createGfx block =
   let
      run = do
-       setBuiltIn "box" SL.box ["a", "b", "c"]
+       addStdLib
        _ <- interpretLanguage block
        s <- get
        return $ currentGfx s
   in
     evalState (runWriterT (runExceptT run)) emptyState
+
+addStdLib :: InterpreterProcess ()
+addStdLib = do
+  setBuiltIn "noop" SL.noop []
+  setBuiltIn "box" SL.box ["a", "b", "c"]
+  setBuiltIn "rotate" SL.rotate ["a", "b", "c"]
+  setBuiltIn "scale" SL.scale ["a", "b", "c"]
+  setBuiltIn "move" SL.move ["a", "b", "c"]
