@@ -1,4 +1,4 @@
-module LCLangLite.Interpreter.Scope where
+module Language.Interpreter.Scope where
 
 import qualified Data.Map.Strict as M
 

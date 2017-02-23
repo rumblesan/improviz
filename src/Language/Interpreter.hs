@@ -1,4 +1,4 @@
-module LCLangLite.Interpreter where
+module Language.Interpreter where
 
 import Data.Map.Strict as M
 import Data.Maybe (isJust)
@@ -6,11 +6,11 @@ import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
-import LCLangLite.Interpreter.Types
-import LCLangLite.Interpreter.Operators
+import Language.Interpreter.Types
+import Language.Interpreter.Operators
 
-import LCLangLite.LanguageAst
-import qualified LCLangLite.Interpreter.Scope as LS
+import Language.LanguageAst
+import qualified Language.Interpreter.Scope as LS
 import qualified Gfx.GfxAst as GA
 
 emptyState :: InterpreterState

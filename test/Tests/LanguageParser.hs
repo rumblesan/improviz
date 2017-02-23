@@ -1,4 +1,4 @@
-module Tests.LanguageParser (lclangParserTests) where
+module Tests.LanguageParser (parserTests) where
 
 import Test.Framework (Test, testGroup)
 import Test.HUnit (Assertion, assertEqual)
@@ -12,14 +12,14 @@ import Control.Monad.Except
 
 import qualified Gfx.GfxAst as GA
 
-import LCLangLite
-import LCLangLite.LanguageAst
-import LCLangLite.Interpreter
+import qualified Language
+import Language.LanguageAst
+import Language.Interpreter
 
 
-lclangParserTests :: Test
-lclangParserTests =
-  testGroup "LCLang Parser Tests" [
+parserTests :: Test
+parserTests =
+  testGroup "Parser Tests" [
     testCase "Parsing works as expected" test_simple_parse,
     testCase "Parsing assignments works as expected" test_parse_assignment,
     testCase "Parse Assignment" test_parse_expr_assignment,
@@ -35,7 +35,7 @@ test_simple_parse =
     cube = Application "cube" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 3] Nothing
     expected = Just $ Block [ElExpression $ EApp cube]
   in
-    assertEqual "" expected (parseLCLang program)
+    assertEqual "" expected (Language.parse program)
 
 test_parse_assignment :: Assertion
 test_parse_assignment =
@@ -44,7 +44,7 @@ test_parse_assignment =
     assignment = Assignment "a" (EVal $ Number 1)
     expected = Just $ Block [ElAssign assignment]
   in
-    assertEqual "" expected (parseLCLang program)
+    assertEqual "" expected (Language.parse program)
 
 test_parse_expr_assignment :: Assertion
 test_parse_expr_assignment =
@@ -52,7 +52,7 @@ test_parse_expr_assignment =
     program = "foo = a + b;"
     bop = BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
     expected = Just $ Block [ElAssign $ Assignment "foo" $ bop]
-    result = parseLCLang program
+    result = Language.parse program
   in
     assertEqual "" expected result
 
@@ -63,7 +63,7 @@ test_parse_expr_lambda =
     block = Block [ElExpression $ BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")]
     lambda = Lambda ["a", "b"] block
     expected = Just $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
-    result = parseLCLang program
+    result = Language.parse program
   in
     assertEqual "" expected result
 
@@ -75,7 +75,7 @@ test_parse_multiline_lambda =
     blockE2 = ElExpression $ BinaryOp "*" (EVar $ Variable "c") (EVal $ Number 2)
     lambda = Lambda ["a", "b"] (Block [blockE1, blockE2])
     expected = Just $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
-    result = parseLCLang program
+    result = Language.parse program
   in
     assertEqual "" expected result
 
@@ -96,6 +96,6 @@ test_parse_function_blocks =
         (EVal $ Number 2)
       ] $ Just (Block [ass2, box2])
     expected = Just $ Block [ass1, box1]
-    result = parseLCLang program
+    result = Language.parse program
   in
     assertEqual "" expected result

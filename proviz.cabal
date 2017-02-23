@@ -30,15 +30,16 @@ executable proviz
                      , Gfx.GfxAst
                      , Gfx.GfxInterpreter
                      , Gfx.GfxEngineState
-                     , LCLangLite
-                     , LCLangLite.LanguageAst
-                     , LCLangLite.LanguageParser
-                     , LCLangLite.Interpreter
-                     , LCLangLite.Interpreter.Scope
-                     , LCLangLite.Interpreter.Types
-                     , LCLangLite.Interpreter.Values
-                     , LCLangLite.Interpreter.Operators
-                     , LCLangLite.StdLib
+                     , Language
+                     , Language.LanguageAst
+                     , Language.LanguageParser
+                     , Language.Interpreter
+                     , Language.Interpreter.Scope
+                     , Language.Interpreter.Types
+                     , Language.Interpreter.Values
+                     , Language.Interpreter.Operators
+                     , Language.StdLib
+                     , Language.StdLib.Shapes
   default-language:    Haskell2010
 
 test-suite proviz-test
@@ -60,17 +61,18 @@ test-suite proviz-test
                      , Gfx.GfxAst
                      , Gfx.GfxInterpreter
                      , Gfx.GfxEngineState
-                     , LCLangLite
-                     , LCLangLite.LanguageAst
-                     , LCLangLite.LanguageParser
-                     , LCLangLite.Interpreter
-                     , LCLangLite.Interpreter.Scope
-                     , LCLangLite.Interpreter.Types
-                     , LCLangLite.Interpreter.Values
-                     , LCLangLite.Interpreter.Operators
-                     , LCLangLite.StdLib
+                     , Language
+                     , Language.LanguageAst
+                     , Language.LanguageParser
+                     , Language.Interpreter
+                     , Language.Interpreter.Scope
+                     , Language.Interpreter.Types
+                     , Language.Interpreter.Values
+                     , Language.Interpreter.Operators
+                     , Language.StdLib
+                     , Language.StdLib.Shapes
                      , Tests.GfxInterpreter
-                     , Tests.LCLangLite
+                     , Tests.Language
                      , Tests.LanguageParser
   default-language:    Haskell2010
 

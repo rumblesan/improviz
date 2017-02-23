@@ -1,12 +1,12 @@
-module LCLangLite.Interpreter.Types where
+module Language.Interpreter.Types where
 
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
-import LCLangLite.LanguageAst
+import Language.LanguageAst
 
-import qualified LCLangLite.Interpreter.Scope as LS
+import qualified Language.Interpreter.Scope as LS
 import qualified Data.Map.Strict as M
 import qualified Gfx.GfxAst as GA
 

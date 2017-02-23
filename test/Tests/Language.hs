@@ -1,4 +1,4 @@
-module Tests.LCLangLite (lclangLiteTests) where
+module Tests.Language (languageTests) where
 
 import Test.Framework (Test, testGroup)
 import Test.HUnit (Assertion, assertEqual)
@@ -12,14 +12,14 @@ import Control.Monad.Except
 
 import qualified Gfx.GfxAst as GA
 
-import LCLangLite
-import LCLangLite.LanguageAst
-import LCLangLite.Interpreter
+import qualified Language
+import Language.LanguageAst
+import Language.Interpreter
 
 
-lclangLiteTests :: Test
-lclangLiteTests =
-  testGroup "LCLang Lite Tests" [
+languageTests :: Test
+languageTests =
+  testGroup "Language Tests" [
     testCase "Interpreting works as expected" test_simple_interpreter,
     testCase "Interpreting expression works as expected" test_interpret_expression,
     testCase "Graphics Creation" test_create_gfx,
@@ -51,7 +51,7 @@ test_basic_program =
   let
     program = "a = 2;\nb = 3;\nfoo = (c d) => c * d;\nbox(b a foo(a b));\n"
     logs = ["Running BuiltIn: box", "Running lambda"]
-    result = createGfx $ fromJust (parseLCLang program)
+    result = Language.createGfx $ fromJust (Language.parse program)
     expected = (Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing], logs)
   in
     assertEqual "" expected result
@@ -61,7 +61,7 @@ test_create_gfx =
   let
     box = EApp $ Application "box" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1] Nothing
     block = Block [ElExpression box]
-    result = createGfx block
+    result = Language.createGfx block
     logs = ["Running BuiltIn: box"]
     expected = (Right [GA.ShapeCommand (GA.Cube 1 2 1) Nothing], logs)
   in

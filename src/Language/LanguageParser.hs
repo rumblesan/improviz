@@ -1,4 +1,4 @@
-module LCLangLite.LanguageParser where
+module Language.LanguageParser where
 
 import Control.Monad (void)
 
@@ -7,7 +7,7 @@ import Text.Parsec.Expr
 import Text.Parsec.Token
 import Text.Parsec.Language
 
-import LCLangLite.LanguageAst
+import Language.LanguageAst
 
 type LangParser e = Parsec String () e
 

@@ -1,16 +1,13 @@
-module LCLangLite.StdLib where
+module Language.StdLib.Shapes where
 
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 
-import LCLangLite.Interpreter.Types
-import LCLangLite.Interpreter (newGfxScope, interpretBlock, addGfxCommand, getVariable)
-import LCLangLite.Interpreter.Values
-import LCLangLite.LanguageAst
+import Language.Interpreter.Types
+import Language.Interpreter (newGfxScope, interpretBlock, addGfxCommand, getVariable)
+import Language.Interpreter.Values
+import Language.LanguageAst
 import qualified Gfx.GfxAst as GA
-
-noop :: BuiltInFunction
-noop _ = return Null
 
 box :: Maybe Block -> InterpreterProcess Value
 box block = do

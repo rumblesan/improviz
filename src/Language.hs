@@ -1,28 +1,28 @@
-module LCLangLite (
-  parseLCLang,
-  interpretLCLang,
+module Language (
+  parse,
+  interpret,
   createGfx,
-  module LCLangLite.LanguageAst
+  module Language.LanguageAst
   ) where
 
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
-import LCLangLite.LanguageParser (parseProgram)
-import LCLangLite.Interpreter.Types (currentGfx)
-import LCLangLite.Interpreter (interpretLanguage, emptyState, setBuiltIn)
-import LCLangLite.LanguageAst (Block, Value)
-import qualified LCLangLite.StdLib as SL
+import Language.LanguageParser (parseProgram)
+import Language.Interpreter.Types (currentGfx)
+import Language.Interpreter (interpretLanguage, emptyState, setBuiltIn)
+import Language.LanguageAst (Block, Value)
+import qualified Language.StdLib as SL
 import qualified Gfx.GfxAst as GA
 
-parseLCLang :: String -> Maybe Block
-parseLCLang program = case parseProgram program of
+parse :: String -> Maybe Block
+parse program = case parseProgram program of
   Left _ -> Nothing
   Right ast -> Just ast
 
-interpretLCLang :: Block -> (Either String Value, [String])
-interpretLCLang block =
+interpret :: Block -> (Either String Value, [String])
+interpret block =
   let
      run = do
        setBuiltIn "box" SL.box ["a", "b", "c"]

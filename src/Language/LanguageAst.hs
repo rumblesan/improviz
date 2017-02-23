@@ -1,4 +1,4 @@
-module LCLangLite.LanguageAst
+module Language.LanguageAst
   (
     Block(..),
     Element(..),

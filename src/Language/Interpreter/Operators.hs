@@ -1,10 +1,10 @@
-module LCLangLite.Interpreter.Operators where
+module Language.Interpreter.Operators where
 
 import Control.Monad.Except
 
-import LCLangLite.LanguageAst
-import LCLangLite.Interpreter.Types
-import LCLangLite.Interpreter.Values
+import Language.LanguageAst
+import Language.Interpreter.Types
+import Language.Interpreter.Values
 
 binaryOp :: String -> Value -> Value -> InterpreterProcess Value
 binaryOp op v1 v2 = do

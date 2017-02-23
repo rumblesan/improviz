@@ -1,9 +1,9 @@
-module LCLangLite.Interpreter.Values where
+module Language.Interpreter.Values where
 
 import Control.Monad.Except
 
-import LCLangLite.LanguageAst
-import LCLangLite.Interpreter.Types
+import Language.LanguageAst
+import Language.Interpreter.Types
 
 getValueType :: Value -> String
 getValueType (Number _) = "Number"

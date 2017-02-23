@@ -4,13 +4,13 @@ import Data.Monoid (mempty)
 
 import Test.Framework
 
-import Tests.LCLangLite (lclangLiteTests)
-import Tests.LanguageParser (lclangParserTests)
+import Tests.Language (languageTests)
+import Tests.LanguageParser (parserTests)
 
 main :: IO ()
 main = defaultMainWithOpts
   [
-    lclangLiteTests,
-    lclangParserTests
+    languageTests,
+    parserTests
   ]
   mempty
