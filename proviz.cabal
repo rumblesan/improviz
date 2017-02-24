@@ -22,11 +22,15 @@ executable proviz
                      , parsec
                      , indents
                      , mtl
+                     , scotty
+                     , bytestring
+                     , text
                      , time
                      , GLURaw
                      , GLUT
                      , OpenGL
-  other-modules:       AppTypes
+  other-modules:       AppServer
+                     , AppTypes
                      , Geometries
                      , Gfx
                      , Gfx.GfxAst
