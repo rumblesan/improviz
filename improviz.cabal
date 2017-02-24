@@ -1,8 +1,8 @@
-name:                proviz
+name:                improviz
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
-homepage:            https://github.com/rumblesan/proviz#README.md
+homepage:            https://github.com/rumblesan/improviz#README.md
 license:             BSD3
 license-file:        LICENSE
 author:              Guy John
@@ -13,7 +13,7 @@ build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
-executable proviz
+executable improviz
   hs-source-dirs:      src
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
@@ -51,7 +51,7 @@ executable proviz
                      , Language.StdLib.BlockHandling
   default-language:    Haskell2010
 
-test-suite proviz-test
+test-suite improviz-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
                      , src
@@ -90,4 +90,4 @@ test-suite proviz-test
 
 source-repository head
   type:     git
-  location: https://github.com/rumblesan/proviz
+  location: https://github.com/rumblesan/improviz
