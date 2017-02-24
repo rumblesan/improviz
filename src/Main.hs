@@ -12,7 +12,7 @@ import qualified Language.LanguageAst as LA
 import Data.IORef
 
 program :: String
-program = "rotate(time);\nbox(2 0.5 0.5);\n"
+program = "fill(0.5 0 1);\nstroke(0 0 0);\nrotate(time);\nbox(0.2 0.5 0.5);\n"
 
 startTime :: Double
 startTime = 0

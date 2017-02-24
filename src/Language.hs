@@ -50,6 +50,10 @@ addStdLib = do
   setBuiltIn "rotate" SL.rotate ["a", "b", "c"]
   setBuiltIn "scale" SL.scale ["a", "b", "c"]
   setBuiltIn "move" SL.move ["a", "b", "c"]
+  setBuiltIn "fill" SL.fill ["r", "g", "b", "a"]
+  setBuiltIn "noFill" SL.noFill []
+  setBuiltIn "stroke" SL.stroke ["r", "g", "b", "a"]
+  setBuiltIn "noStroke" SL.noStroke []
 
 addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess()
 addInitialVariables vars = forM_ vars (uncurry setVariable)
