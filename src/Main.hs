@@ -2,6 +2,8 @@ module Main where
 
 import Graphics.UI.GLUT hiding (Cube, get, Fill)
 
+import Data.Time.Clock.POSIX
+
 import Data.Maybe (fromMaybe)
 import Control.Monad.State.Strict
 
@@ -11,11 +13,18 @@ import qualified Language.LanguageAst as LA
 
 import Data.IORef
 
-program :: String
-program = "fill(0.5 0 1);\nstroke(0 0 0);\nrotate(time);\nbox(0.2 0.5 0.5);\n"
+programText :: String
+programText = "fill(0.5 0 1);\nstroke(0 0 0);\nrotate(time);\nbox(0.2 0.5 0.5);\n"
 
 startTime :: Double
 startTime = 0
+
+data AppState = AppState {
+  time :: Double,
+  program :: String,
+  validAst :: LA.Block,
+  timeAtStart :: Double
+}
 
 main :: IO ()
 main = do
@@ -26,25 +35,35 @@ main = do
   depthFunc $= Just Less
   blend $= Enabled
   blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
-  time <- newIORef startTime
-  displayCallback $= display time
-  idleCallback $= Just (idle time)
+  timeNow <- realToFrac <$> getPOSIXTime
+  appState <- newIORef AppState {
+    time = 0, program = programText, validAst = LA.Block [], timeAtStart = timeNow
+  }
+  displayCallback $= display appState
+  idleCallback $= Just (idle appState)
   mainLoop
 
-display :: IORef Double -> DisplayCallback
-display time = do
+display :: IORef AppState -> DisplayCallback
+display appState = do
   putStrLn "display loop"
-  t <- readIORef time
+  as <- readIORef appState
 
-  parsed <- case L.parse program of
-    Nothing -> do
-      putStrLn "Could not parse program"
-      return $ LA.Block []
-    Just p -> return p
-  case fst $ L.createGfx [("time", LA.Number t)] parsed of
+  ast <- if program as /= "" then
+    case L.parse programText of
+      Nothing -> do
+        putStrLn "Could not parse program"
+        return $ LA.Block []
+      Just newAst -> do
+        writeIORef appState as { program = "", validAst = newAst }
+        return newAst
+   else
+    return $ validAst as
+
+  case fst $ L.createGfx [("time", LA.Number (time as))] ast of
     Left msg -> putStrLn $ "Could not interpret program: " ++ msg
     Right gfx ->
       do
+        putStrLn "Interpreting program"
         clearColor $= G.backgroundColour G.baseState
         clear [ ColorBuffer, DepthBuffer ]
         loadIdentity
@@ -59,8 +78,11 @@ reshape size = do
   postRedisplay Nothing
 
 
-idle :: IORef Double -> IdleCallback
-idle time = do
-  t <- readIORef time
-  writeIORef time (t + 0.1)
+idle :: IORef AppState -> IdleCallback
+idle appState = do
+  t <- readIORef appState
+  timeNow <- realToFrac <$> getPOSIXTime
+  let newTime = timeNow - timeAtStart t
+  putStrLn $ "New time " ++ show newTime
+  writeIORef appState t { time = newTime }
   postRedisplay Nothing
