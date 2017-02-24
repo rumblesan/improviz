@@ -22,10 +22,7 @@ main = do
   depthFunc $= Just Less
   blend $= Enabled
   blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
-  timeNow <- realToFrac <$> getPOSIXTime
-  appState <- newMVar AppState {
-    time = 0, validAst = LA.Block [], timeAtStart = timeNow
-  }
+  appState <- makeAppState >>= newMVar
   _ <- forkIO $ runServer appState
   displayCallback $= display appState
   idleCallback $= Just (idle appState)

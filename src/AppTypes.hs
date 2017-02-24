@@ -1,9 +1,18 @@
 module AppTypes where
 
-import qualified Language.LanguageAst as LA
+import Data.Time.Clock.POSIX (getPOSIXTime)
+
+import Language.LanguageAst ( Block(..) )
 
 data AppState = AppState {
   time :: Double,
-  validAst :: LA.Block,
+  validAst :: Block,
   timeAtStart :: Double
 }
+
+makeAppState :: IO AppState
+makeAppState = do
+  timeNow <- realToFrac <$> getPOSIXTime
+  return AppState {
+    time = 0, validAst = Block [], timeAtStart = timeNow
+  }
