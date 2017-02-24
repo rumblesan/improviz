@@ -26,7 +26,8 @@ executable proviz
                      , GLURaw
                      , GLUT
                      , OpenGL
-  other-modules:       Geometries
+  other-modules:       AppTypes
+                     , Geometries
                      , Gfx
                      , Gfx.GfxAst
                      , Gfx.GfxInterpreter
