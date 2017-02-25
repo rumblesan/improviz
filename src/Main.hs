@@ -1,10 +1,10 @@
 module Main where
 
-import Graphics.UI.GLUT hiding (Cube, get, Fill)
+import Graphics.UI.GLUT hiding (Cube, Fill)
 
 import Data.Time.Clock.POSIX
 
-import Control.Monad.State.Strict
+import Control.Monad.State.Strict (evalStateT)
 import Control.Concurrent
 
 import qualified Gfx as G
@@ -16,7 +16,11 @@ import AppTypes
 main :: IO ()
 main = do
   (_progName, _args) <- getArgsAndInitialize
-  initialDisplayMode $= [WithDepthBuffer]
+  get glutVersion >>= print
+  scrSize <- get screenSize
+  --initialWindowSize $= scrSize
+  print scrSize
+  initialDisplayMode $= [WithDepthBuffer, Borderless, Captionless]
   _window <- createWindow _progName
   reshapeCallback $= Just reshape
   depthFunc $= Just Less
@@ -30,13 +34,11 @@ main = do
 
 display :: MVar AppState -> DisplayCallback
 display appState = do
-  putStrLn "display loop"
   as <- readMVar appState
   case fst $ L.createGfx [("time", LA.Number (time as))] (validAst as) of
     Left msg -> putStrLn $ "Could not interpret program: " ++ msg
     Right gfx ->
       do
-        putStrLn "Interpreting program"
         clearColor $= G.backgroundColour G.baseState
         clear [ ColorBuffer, DepthBuffer ]
         loadIdentity
@@ -61,5 +63,4 @@ idle appState =
       do
         timeNow <- realToFrac <$> getPOSIXTime
         let newTime = 10 * (timeNow - timeAtStart as)
-        putStrLn $ "New time " ++ show newTime
         return as { time = newTime }
