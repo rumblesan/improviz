@@ -47,6 +47,10 @@ addStdLib :: InterpreterProcess ()
 addStdLib = do
   setBuiltIn "noop" SL.noop []
   setBuiltIn "box" SL.box ["a", "b", "c"]
+  setBuiltIn "sphere" SL.sphere ["a", "b", "c"]
+  setBuiltIn "cylinder" SL.cylinder ["a", "b", "c"]
+  setBuiltIn "rectangle" SL.rectangle ["a", "b"]
+  setBuiltIn "line" SL.line ["a"]
   setBuiltIn "rotate" SL.rotate ["a", "b", "c"]
   setBuiltIn "scale" SL.scale ["a", "b", "c"]
   setBuiltIn "move" SL.move ["a", "b", "c"]

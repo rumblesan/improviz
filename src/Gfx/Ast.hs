@@ -21,6 +21,10 @@ data GfxCommand
 
 data ShapeGfx
   = Cube Double Double Double
+  | Sphere Double Double Double
+  | Cylinder Double Double Double
+  | Rectangle Double Double
+  | Line Double
   deriving (Show, Eq)
 
 data MatrixGfx

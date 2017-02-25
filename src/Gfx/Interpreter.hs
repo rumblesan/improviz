@@ -1,14 +1,15 @@
 module Gfx.Interpreter where
 
+import qualified Graphics.UI.GLUT.Objects as O
+
 import Data.Maybe (maybe)
 import Control.Monad (mapM, when, void)
 import Control.Monad.State.Strict
 
-import Graphics.Rendering.OpenGL hiding (Fill, get)
+import Graphics.Rendering.OpenGL hiding (Fill, get, Sphere, Cylinder, Line)
 
 import Gfx.Ast
 import Gfx.EngineState
-import Gfx.Geometries
 
 hasTransparency :: Color4 Double -> Bool
 hasTransparency (Color4 _ _ _ a) = a < 1.0
@@ -47,14 +48,46 @@ interpretCommand (ColourCommand colourAst block) = interpretCommand' (interpretC
 
 interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
 interpretShape (Cube x y z) =
+  let
+    poly = O.renderObject O.Solid (O.Cube 1)
+    frame = O.renderObject O.Wireframe (O.Cube 1)
+  in
+    drawShape x y z poly frame
+interpretShape (Sphere x y z) =
+  let
+    poly = O.renderObject O.Solid (O.Sphere' 1 8 8)
+    frame = O.renderObject O.Wireframe (O.Sphere' 1 8 8)
+  in
+    drawShape x y z poly frame
+interpretShape (Cylinder x y z) =
+  let
+    poly = O.renderObject O.Solid (O.Cylinder' 1 1 8 8)
+    frame = O.renderObject O.Wireframe (O.Cylinder' 1 1 8 8)
+  in
+    drawShape x y z poly frame
+interpretShape (Rectangle x y) =
+  let
+    poly = O.renderObject O.Solid (O.Cube 1)
+    frame = O.renderObject O.Wireframe (O.Cube 1)
+  in
+    drawShape x y 0.1 poly frame
+interpretShape (Line l) =
+  let
+    poly = O.renderObject O.Solid (O.Cube 1)
+    frame = O.renderObject O.Wireframe (O.Cube 1)
+  in
+    drawShape 0.1 l 0.1 poly frame
+
+drawShape :: Double -> Double -> Double -> IO () -> IO () -> GraphicsEngine GfxOutput
+drawShape x y z shape frame =
   do
     es <- get
     strokeC <- gets currentStrokeColour
     fillC <- gets currentFillColour
     lift $ preservingMatrix $ do
       scale x y z
-      drawNow es fillC (color fillC >> cube 1)
-      drawNow es strokeC (color strokeC >> cubeFrame 1)
+      drawNow es fillC (color fillC >> shape)
+      drawNow es strokeC (color strokeC >> frame)
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
 interpretMatrix (Rotate x y z) =
