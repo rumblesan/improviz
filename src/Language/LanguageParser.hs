@@ -86,8 +86,10 @@ number = Number <$> (try m_float <|> try m_intToFloat) <?> "number"
     m_intToFloat = fmap fromIntegral m_integer
 
 
-parseProgram :: String -> Either ParseError Block
-parseProgram = runParser block () "program"
+parseProgram :: String -> Either String Block
+parseProgram program = case runParser block () "program" program of
+  Right ast -> Right ast
+  Left err -> Left $ show err
 
 eos :: LangParser Char
 eos = char ';' <* many newline

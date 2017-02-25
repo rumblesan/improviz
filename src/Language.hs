@@ -17,10 +17,8 @@ import Language.LanguageAst (Block, Value)
 import qualified Language.StdLib as SL
 import qualified Gfx.Ast as GA
 
-parse :: String -> Maybe Block
-parse program = case parseProgram program of
-  Left _ -> Nothing
-  Right ast -> Just ast
+parse :: String -> Either String Block
+parse = parseProgram
 
 interpret :: [(Identifier, Value)] -> Block -> (Either String Value, [String])
 interpret initialVars block =
