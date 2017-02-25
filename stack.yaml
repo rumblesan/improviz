@@ -66,4 +66,4 @@ extra-lib-dirs: [/usr/local/opt/freeglut/lib]
 # compiler-check: newer-minor
 
 ghc-options:
-  GLUT: -lglut
+  GLUT: -lGLUT
