@@ -48,10 +48,17 @@ display appState = do
         flush
 
 reshape :: ReshapeCallback
-reshape size = do
-  viewport $= (Position 0 0, size)
-  postRedisplay Nothing
-
+reshape size@(Size w h) = do
+   viewport $= (Position 0 0, size)
+   matrixMode $= Projection
+   loadIdentity
+   let wf = fromIntegral w
+       hf = fromIntegral h
+   if w <= h
+      then ortho (-2.5) 2.5 (-2.5 * hf/wf) (2.5 * hf/wf) (-10) 10
+      else ortho (-2.5 * wf/hf) (2.5 * wf/hf) (-2.5) 2.5 (-10) 10
+   matrixMode $= Modelview 0
+   loadIdentity
 
 idle :: MVar AppState -> IdleCallback
 idle appState =
