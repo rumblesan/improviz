@@ -22,19 +22,18 @@ updateProgram appState newProgram =
     ast = L.parse newProgram
   in
     case ast of
-      Just newAst -> do
+      Right newAst -> do
         modifyMVar_ appState (\as -> return as { validAst = newAst })
-        return $ mconcat ["Parsed (", newProgram, ") into ", show newAst]
-      Nothing -> return "Could not parse input"
-      
+        return "{'status': 'OK', 'message': 'Parsed Succesfully'}"
+      Left err -> return $ mconcat ["{'status': 'OK', 'message': '", err, "'}"]
 
 runServer :: MVar AppState -> IO ()
 runServer appState = scotty 3000 $ do
-  get "/" $ do
-    text "SERVING"
+  get "/" $ text "SERVING"
   post "/read" $ do
     b <- body
     resp <- liftIO $ updateProgram appState (unpack b)
-    text $ pack resp
+    liftIO $ print resp
+    json $ pack resp
 
 
