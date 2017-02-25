@@ -20,7 +20,7 @@ main = do
   scrSize <- get screenSize
   --initialWindowSize $= scrSize
   print scrSize
-  initialDisplayMode $= [WithDepthBuffer, Borderless, Captionless]
+  initialDisplayMode $= [WithDepthBuffer]
   _window <- createWindow _progName
   reshapeCallback $= Just reshape
   depthFunc $= Just Less
