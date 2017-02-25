@@ -8,7 +8,7 @@ import Language.Interpreter.Types
 import Language.Interpreter (newGfxScope, interpretBlock, addGfxCommand)
 import Language.LanguageAst
 
-import qualified Gfx.GfxAst as GA
+import qualified Gfx.Ast as GA
 
 handleGfxBlock :: (Maybe GA.Block -> GA.GfxCommand) -> Block -> InterpreterProcess ()
 handleGfxBlock pc b = do

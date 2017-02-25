@@ -9,7 +9,7 @@ import Language.Interpreter.Types
 import Language.Interpreter (addGfxCommand, getVariableWithDefault)
 import Language.Interpreter.Values
 import Language.LanguageAst
-import qualified Gfx.GfxAst as GA
+import qualified Gfx.Ast as GA
 
 import Language.StdLib.BlockHandling (handleGfxBlock)
 

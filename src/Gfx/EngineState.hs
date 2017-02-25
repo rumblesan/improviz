@@ -1,4 +1,4 @@
-module Gfx.GfxEngineState where
+module Gfx.EngineState where
 
 import Graphics.Rendering.OpenGL (Color4(..), GLfloat)
 

@@ -8,7 +8,7 @@ import Language.LanguageAst
 
 import qualified Language.Interpreter.Scope as LS
 import qualified Data.Map.Strict as M
-import qualified Gfx.GfxAst as GA
+import qualified Gfx.Ast as GA
 
 type BuiltInFunction = Maybe Block -> InterpreterProcess Value
 

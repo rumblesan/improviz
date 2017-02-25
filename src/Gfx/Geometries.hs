@@ -1,4 +1,4 @@
-module Geometries where
+module Gfx.Geometries where
 
 import Graphics.UI.GLUT
 

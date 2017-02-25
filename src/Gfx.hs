@@ -1,9 +1,9 @@
 module Gfx (
-  module Gfx.GfxInterpreter,
-  module Gfx.GfxEngineState,
-  module Gfx.GfxAst
+  module Gfx.Interpreter,
+  module Gfx.EngineState,
+  module Gfx.Ast
   ) where
 
-import Gfx.GfxAst
-import Gfx.GfxEngineState
-import Gfx.GfxInterpreter
+import Gfx.Ast
+import Gfx.EngineState
+import Gfx.Interpreter

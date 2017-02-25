@@ -11,7 +11,7 @@ import Language.Interpreter.Operators
 
 import Language.LanguageAst
 import qualified Language.Interpreter.Scope as LS
-import qualified Gfx.GfxAst as GA
+import qualified Gfx.Ast as GA
 
 emptyState :: InterpreterState
 emptyState = InterpreterState {

@@ -31,11 +31,11 @@ executable improviz
                      , OpenGL
   other-modules:       AppServer
                      , AppTypes
-                     , Geometries
                      , Gfx
-                     , Gfx.GfxAst
-                     , Gfx.GfxInterpreter
-                     , Gfx.GfxEngineState
+                     , Gfx.Ast
+                     , Gfx.Geometries
+                     , Gfx.Interpreter
+                     , Gfx.EngineState
                      , Language
                      , Language.LanguageAst
                      , Language.LanguageParser
@@ -65,11 +65,11 @@ test-suite improviz-test
                      , test-framework
                      , test-framework-hunit
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  other-modules:       Geometries
-                     , Gfx
-                     , Gfx.GfxAst
-                     , Gfx.GfxInterpreter
-                     , Gfx.GfxEngineState
+  other-modules:       Gfx
+                     , Gfx.Ast
+                     , Gfx.Geometries
+                     , Gfx.Interpreter
+                     , Gfx.EngineState
                      , Language
                      , Language.LanguageAst
                      , Language.LanguageParser

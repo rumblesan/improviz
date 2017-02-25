@@ -15,7 +15,7 @@ import Language.Interpreter.Types (currentGfx, InterpreterProcess)
 import Language.Interpreter (interpretLanguage, emptyState, setBuiltIn, setVariable)
 import Language.LanguageAst (Block, Value)
 import qualified Language.StdLib as SL
-import qualified Gfx.GfxAst as GA
+import qualified Gfx.Ast as GA
 
 parse :: String -> Maybe Block
 parse program = case parseProgram program of
