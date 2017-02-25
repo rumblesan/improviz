@@ -1,11 +1,10 @@
 module Gfx.EngineState where
 
-import Graphics.Rendering.OpenGL (Color4(..), GLfloat)
+import Graphics.Rendering.OpenGL (Color4(..))
 
 data EngineState = EngineState {
     fillColours :: [ Color4 Double ]
   , strokeColours :: [ Color4 Double ]
-  , backgroundColour :: Color4 GLfloat
   , drawTransparencies :: Bool
 } deriving (Show, Eq)
 
@@ -13,7 +12,6 @@ baseState :: EngineState
 baseState = EngineState {
     fillColours = [Color4 1 1 1 1]
   , strokeColours = [Color4 0 0 0 1]
-  , backgroundColour = Color4 1 1 1 1
   , drawTransparencies = False
 }
 
@@ -35,6 +33,3 @@ currentStrokeColour = head . strokeColours
 
 popStrokeColour :: EngineState -> EngineState
 popStrokeColour es = es { strokeColours = tail $ strokeColours es }
-
-setBackgroundColour :: Color4 GLfloat -> EngineState -> EngineState
-setBackgroundColour c es = es { backgroundColour = c }
