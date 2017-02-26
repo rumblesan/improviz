@@ -1,12 +1,14 @@
 module Language.StdLib.ColourOps (
-  fill, noFill, stroke, noStroke
+  fill, noFill, stroke, noStroke, background
 ) where
 
+import GHC.Float (double2Float)
+import Data.Maybe (isJust)
 import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 
 import Language.Interpreter.Types
-import Language.Interpreter (addGfxCommand, getVariable, getVariableWithDefault)
+import Language.Interpreter (addGfxCommand, getVariable, getVariableWithDefault, interpretBlock, setGfxBackground)
 import Language.Interpreter.Values
 import Language.LanguageAst
 import qualified Gfx.Ast as GA
@@ -45,3 +47,15 @@ noStroke block = do
     let partialCmd = GA.ColourCommand GA.NoStroke
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
+
+background :: Maybe Block -> InterpreterProcess Value
+background block =
+  do
+    r <- getVariableWithDefault "r" (Number 1) >>= getNumberValue
+    g <- getVariableWithDefault "g" (Number 1) >>= getNumberValue
+    b <- getVariableWithDefault "b" (Number 1) >>= getNumberValue
+    _ <- setGfxBackground (dToC r, dToC g, dToC b)
+    maybe (return Null) interpretBlock block
+  where
+    dToC :: Double -> Float
+    dToC c = double2Float $ max 0 (min c 255) / 255

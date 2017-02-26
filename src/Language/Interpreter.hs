@@ -1,5 +1,7 @@
 module Language.Interpreter where
 
+import Graphics.Rendering.OpenGL (Color4(..))
+
 import Data.Map.Strict as M
 import Data.Maybe (fromMaybe, isJust)
 import Control.Monad.State.Strict
@@ -18,6 +20,7 @@ emptyState = InterpreterState {
   variables = LS.empty,
   builtins = M.fromList [],
   blockStack = [],
+  gfxBackground = Color4 1 1 1 0,
   currentGfx = GA.emptyGfx,
   gfxStack = []
   }
@@ -85,6 +88,10 @@ pushBlock b = modify (\s -> s { blockStack = b : blockStack s })
 
 removeBlock :: InterpreterProcess ()
 removeBlock = modify (\s -> s { blockStack = tail $ blockStack s })
+
+setGfxBackground :: (Float, Float, Float) -> InterpreterProcess Value
+setGfxBackground (r, g, b) =
+    modify (\s -> s {gfxBackground = Color4 r g b 0}) >> return Null
 
 
 interpretLanguage :: Block -> InterpreterProcess Value

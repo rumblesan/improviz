@@ -9,13 +9,12 @@ import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
+import Gfx (Scene(..))
 import Language.LanguageParser (parseProgram)
-import Language.LanguageAst (Identifier)
-import Language.Interpreter.Types (currentGfx, InterpreterProcess)
+import Language.Interpreter.Types (currentGfx, InterpreterProcess, InterpreterState(..))
 import Language.Interpreter (interpretLanguage, emptyState, setBuiltIn, setVariable)
-import Language.LanguageAst (Block, Value)
+import Language.LanguageAst (Block, Value, Identifier)
 import qualified Language.StdLib as SL
-import qualified Gfx.Ast as GA
 
 parse :: String -> Either String Block
 parse = parseProgram
@@ -30,14 +29,16 @@ interpret initialVars block =
   in
     evalState (runWriterT (runExceptT run)) emptyState
 
-createGfx :: [(Identifier, Value)] -> Block -> (Either String GA.Block, [String])
+createGfx :: [(Identifier, Value)] -> Block -> (Either String Scene, [String])
 createGfx initialVars block =
   let
      run = do
        addStdLib
        addInitialVariables initialVars
        _ <- interpretLanguage block
-       gets currentGfx
+       gfxB <- gets currentGfx
+       gfxBg <- gets gfxBackground
+       return Scene { sceneBackground = gfxBg, sceneGfx = gfxB }
   in
     evalState (runWriterT (runExceptT run)) emptyState
 
@@ -56,6 +57,7 @@ addStdLib = do
   setBuiltIn "noFill" SL.noFill []
   setBuiltIn "stroke" SL.stroke ["r", "g", "b", "a"]
   setBuiltIn "noStroke" SL.noStroke []
+  setBuiltIn "background" SL.background ["r", "g", "b"]
 
 addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess()
 addInitialVariables vars = forM_ vars (uncurry setVariable)

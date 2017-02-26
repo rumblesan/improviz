@@ -37,14 +37,14 @@ display appState = do
   as <- readMVar appState
   case fst $ L.createGfx [("time", LA.Number (time as))] (validAst as) of
     Left msg -> putStrLn $ "Could not interpret program: " ++ msg
-    Right gfx ->
+    Right scene ->
       do
-        clearColor $= G.backgroundColour G.baseState
+        clearColor $= G.sceneBackground scene
         clear [ ColorBuffer, DepthBuffer ]
         loadIdentity
-        evalStateT (G.interpretGfx gfx) G.baseState
+        evalStateT (G.interpretGfx $ G.sceneGfx scene) G.baseState
         loadIdentity
-        evalStateT (G.interpretGfx gfx) G.baseState { G.drawTransparencies = True }
+        evalStateT (G.interpretGfx $ G.sceneGfx scene) G.baseState { G.drawTransparencies = True }
         flush
 
 reshape :: ReshapeCallback

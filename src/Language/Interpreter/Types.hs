@@ -4,6 +4,8 @@ import Control.Monad.State.Strict
 import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
+import Graphics.Rendering.OpenGL (Color4(..))
+
 import Language.LanguageAst
 
 import qualified Language.Interpreter.Scope as LS
@@ -21,6 +23,7 @@ data InterpreterState = InterpreterState {
   variables :: LS.ScopeStack Identifier Value,
   builtins :: M.Map Identifier BuiltInFunction,
   blockStack :: [Block],
+  gfxBackground :: Color4 Float,
   currentGfx :: GA.Block,
   gfxStack :: [GA.Block]
 }
