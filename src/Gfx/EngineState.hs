@@ -2,6 +2,13 @@ module Gfx.EngineState where
 
 import Graphics.Rendering.OpenGL (Color4(..))
 
+import Gfx.Ast (Block)
+
+data Scene = Scene {
+  sceneBackground :: Color4 Float,
+  sceneGfx :: Block
+}
+
 data EngineState = EngineState {
     fillColours :: [ Color4 Double ]
   , strokeColours :: [ Color4 Double ]
