@@ -33,26 +33,28 @@ test_simple_parse =
   let
     program = "cube(1 2 3);"
     cube = Application "cube" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 3] Nothing
-    expected = Just $ Block [ElExpression $ EApp cube]
+    expected = Block [ElExpression $ EApp cube]
+    result = either (const $ Block []) id (Language.parse program)
   in
-    assertEqual "" expected (Language.parse program)
+    assertEqual "" expected result
 
 test_parse_assignment :: Assertion
 test_parse_assignment =
   let
     program = "a = 1;"
     assignment = Assignment "a" (EVal $ Number 1)
-    expected = Just $ Block [ElAssign assignment]
+    expected = Block [ElAssign assignment]
+    result = either (const $ Block []) id (Language.parse program)
   in
-    assertEqual "" expected (Language.parse program)
+    assertEqual "" expected result
 
 test_parse_expr_assignment :: Assertion
 test_parse_expr_assignment =
   let
     program = "foo = a + b;"
     bop = BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
-    expected = Just $ Block [ElAssign $ Assignment "foo" $ bop]
-    result = Language.parse program
+    expected = Block [ElAssign $ Assignment "foo" $ bop]
+    result = either (const $ Block []) id (Language.parse program)
   in
     assertEqual "" expected result
 
@@ -62,8 +64,8 @@ test_parse_expr_lambda =
     program = "foo = (a b) => a + b;"
     block = Block [ElExpression $ BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")]
     lambda = Lambda ["a", "b"] block
-    expected = Just $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
-    result = Language.parse program
+    expected = Block [ElAssign $ Assignment "foo" $ EVal lambda]
+    result = either (const $ Block []) id (Language.parse program)
   in
     assertEqual "" expected result
 
@@ -74,8 +76,8 @@ test_parse_multiline_lambda =
     blockE1 = ElAssign $ Assignment "c" $ BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
     blockE2 = ElExpression $ BinaryOp "*" (EVar $ Variable "c") (EVal $ Number 2)
     lambda = Lambda ["a", "b"] (Block [blockE1, blockE2])
-    expected = Just $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
-    result = Language.parse program
+    expected = Block [ElAssign $ Assignment "foo" $ EVal lambda]
+    result = either (const $ Block []) id (Language.parse program)
   in
     assertEqual "" expected result
 
@@ -95,7 +97,7 @@ test_parse_function_blocks =
         (EVar $ Variable "a"),
         (EVal $ Number 2)
       ] $ Just (Block [ass2, box2])
-    expected = Just $ Block [ass1, box1]
-    result = Language.parse program
+    expected = Block [ass1, box1]
+    result = either (const $ Block []) id (Language.parse program)
   in
     assertEqual "" expected result

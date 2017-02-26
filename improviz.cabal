@@ -63,6 +63,8 @@ test-suite improviz-test
                      , HUnit
                      , test-framework
                      , test-framework-hunit
+                     , GLUT
+                     , OpenGL
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   other-modules:       Gfx
                      , Gfx.Ast

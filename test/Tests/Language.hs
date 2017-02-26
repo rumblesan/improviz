@@ -4,6 +4,7 @@ import Test.Framework (Test, testGroup)
 import Test.HUnit (Assertion, assertEqual)
 import Test.Framework.Providers.HUnit (testCase)
 
+import Data.Either
 import Data.Maybe
 import Data.Map.Strict
 import Control.Monad.State.Strict
@@ -11,6 +12,7 @@ import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
 import qualified Gfx.Ast as GA
+import Gfx (Scene(..))
 
 import qualified Language
 import Language.LanguageAst
@@ -51,8 +53,13 @@ test_basic_program =
   let
     program = "a = 2;\nb = 3;\nfoo = (c d) => c * d;\nbox(b a foo(a b));\n"
     logs = ["Running BuiltIn: box", "Running lambda"]
-    result = Language.createGfx [] $ fromJust (Language.parse program)
-    expected = (Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing], logs)
+    maybeGfx = do
+      ast <- Language.parse program
+      let result = Language.createGfx [] ast
+      scene <- fst result
+      return $ sceneGfx scene
+    result = either (const []) id maybeGfx
+    expected = [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
   in
     assertEqual "" expected result
 
@@ -61,8 +68,8 @@ test_create_gfx =
   let
     box = EApp $ Application "box" [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1] Nothing
     block = Block [ElExpression box]
-    result = Language.createGfx [] block
-    logs = ["Running BuiltIn: box"]
-    expected = (Right [GA.ShapeCommand (GA.Cube 1 2 1) Nothing], logs)
+    scene = fst $ Language.createGfx [] block :: Either String Scene
+    result = either (const []) sceneGfx scene
+    expected = [GA.ShapeCommand (GA.Cube 1 2 1) Nothing]
   in
     assertEqual "" expected result
