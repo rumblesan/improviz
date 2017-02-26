@@ -1,4 +1,4 @@
-# ProViz
+# Improviz
 
 An offshoot of LiveCodeLab
 
