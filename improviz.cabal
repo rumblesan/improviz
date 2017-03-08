@@ -35,6 +35,7 @@ executable improviz
                      , Gfx.Ast
                      , Gfx.Interpreter
                      , Gfx.EngineState
+                     , Gfx.Geometries
                      , Language
                      , Language.LanguageAst
                      , Language.LanguageParser
@@ -70,6 +71,7 @@ test-suite improviz-test
                      , Gfx.Ast
                      , Gfx.Interpreter
                      , Gfx.EngineState
+                     , Gfx.Geometries
                      , Language
                      , Language.LanguageAst
                      , Language.LanguageParser
