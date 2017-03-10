@@ -1,9 +1,23 @@
 module Gfx.Geometries where
 
-cubeVertices :: Float -> [(Float, Float, Float)]
+import Data.List (genericIndex)
+import Graphics.Rendering.OpenGL (Vertex3(..), GLfloat)
+
+triVertexArray :: [Vertex3 GLfloat] -> [(Integer, Integer, Integer)] -> [Vertex3 GLfloat]
+triVertexArray verts points =
+  reverse $ foldl (\va (p1, p2, p3) -> genericIndex verts p1:genericIndex verts p2:genericIndex verts p3:va) [] points
+
+lineVertexArray :: [Vertex3 GLfloat] -> [(Integer, Integer)] -> [Vertex3 GLfloat]
+lineVertexArray verts points =
+  reverse $ foldl (\va (p1, p2) -> genericIndex verts p1:genericIndex verts p2:va) [] points
+
+
+cubeVertices :: GLfloat -> [Vertex3 GLfloat]
 cubeVertices s = [
-    (-s, -s, -s), (-s, -s, s), (s, -s, s), (s, -s, -s),
-    (-s, s, -s), (-s, s, s), (s, s, s), (s, s, -s)
+    (Vertex3 (-s) (-s) (-s)), (Vertex3 (-s) (-s) s),
+    (Vertex3 s (-s) s),       (Vertex3 s (-s) (-s)),
+    (Vertex3 (-s) s (-s)),    (Vertex3 (-s) s s),
+    (Vertex3 s s s),          (Vertex3 s s (-s))
   ]
 
 cubeTriangles :: [(Integer, Integer, Integer)]
@@ -23,10 +37,10 @@ cubeWireframe = [
     (4, 5), (5, 6), (6, 7), (7, 0)
   ]
 
-rectVertices :: Float -> [(Float, Float, Float)]
+rectVertices :: GLfloat -> [Vertex3 GLfloat]
 rectVertices s = [
-    (-s, -s, 0), (s, -s, 0),
-    (s, s, 0), (-s, s, 0)
+    (Vertex3 (-s) (-s) 0), (Vertex3 s (-s) 0),
+    (Vertex3 s s 0),       (Vertex3 (-s) s 0)
   ]
 
 rectTriangles :: [(Integer, Integer, Integer)]
@@ -39,9 +53,9 @@ rectWireframe = [
     (0, 1), (1, 2), (2, 3), (3, 0)
   ]
 
-lineVertices :: Float -> [(Float, Float, Float)]
+lineVertices :: GLfloat -> [Vertex3 GLfloat]
 lineVertices s = [
-    (0, -s, 0), (0, s, 0)
+    (Vertex3 0 (-s) 0), (Vertex3 0 s 0)
   ]
 
 lineWireframe :: [(Integer, Integer)]
@@ -51,7 +65,7 @@ lineWireframe = [
 
 
 {--
-cylinderVertices :: Float -> Float -> Integer -> [(Float, Float, Float)]
+cylinderVertices :: GLfloat -> GLfloat -> Integer -> [(GLfloat, GLfloat, GLfloat)]
 cylinderVertices height radius segments =
   let
     p = fromInteger <$> [0..segments-1]
@@ -80,7 +94,7 @@ cylinderTriangles segments =
 cylinderWireframe :: Integer -> [(Integer, Integer)]
 cylinderWireframe segments = undefined
 
-sphereVertices :: Float -> Integer -> [(Float, Float, Float)]
+sphereVertices :: GLfloat -> Integer -> [(GLfloat, GLfloat, GLfloat)]
 sphereVertices radius segments = undefined
 
 sphereTriangles :: Integer -> [(Integer, Integer, Integer)]

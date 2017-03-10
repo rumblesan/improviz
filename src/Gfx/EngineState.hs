@@ -3,6 +3,7 @@ module Gfx.EngineState where
 import Graphics.Rendering.OpenGL (Color4(..))
 
 import Gfx.Ast (Block)
+import Gfx.GeometryBuffers (GeometryBuffers, createAllBuffers)
 
 data Scene = Scene {
   sceneBackground :: Color4 Float,
@@ -13,13 +14,17 @@ data EngineState = EngineState {
     fillColours :: [ Color4 Double ]
   , strokeColours :: [ Color4 Double ]
   , drawTransparencies :: Bool
+  , geometryBuffers :: GeometryBuffers
 } deriving (Show, Eq)
 
-baseState :: EngineState
-baseState = EngineState {
+baseState :: IO EngineState
+baseState = do
+  gbos <- createAllBuffers
+  return EngineState {
     fillColours = [Color4 1 1 1 1]
   , strokeColours = [Color4 0 0 0 1]
   , drawTransparencies = False
+  , geometryBuffers = gbos
 }
 
 

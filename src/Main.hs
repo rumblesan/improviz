@@ -8,6 +8,7 @@ import Control.Monad.State.Strict (evalStateT)
 import Control.Concurrent
 
 import qualified Gfx as G
+import qualified Gfx.Pipeline as GP
 import qualified Language as L
 import qualified Language.LanguageAst as LA
 import AppServer
@@ -26,14 +27,16 @@ main = do
   depthFunc $= Just Less
   blend $= Enabled
   blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
+  gfxState <- G.baseState
+  shaders <- GP.initShaders
   appState <- makeAppState >>= newMVar
   _ <- forkIO $ runServer appState
-  displayCallback $= display appState
+  displayCallback $= display gfxState appState shaders
   idleCallback $= Just (idle appState)
   mainLoop
 
-display :: MVar AppState -> DisplayCallback
-display appState = do
+display :: G.EngineState -> MVar AppState -> GP.Shaders -> DisplayCallback
+display gfxState appState shaders = do
   as <- readMVar appState
   case fst $ L.createGfx [("time", LA.Number (time as))] (validAst as) of
     Left msg -> putStrLn $ "Could not interpret program: " ++ msg
@@ -41,10 +44,13 @@ display appState = do
       do
         clearColor $= G.sceneBackground scene
         clear [ ColorBuffer, DepthBuffer ]
+        currentProgram $= Just (GP.program shaders)
+        let ic = Vector4 0.5 1 0.1 1 :: Vector4 GLfloat
+        uniform (GP.inputColourU shaders) $= ic
         loadIdentity
-        evalStateT (G.interpretGfx $ G.sceneGfx scene) G.baseState
+        evalStateT (G.interpretGfx $ G.sceneGfx scene) gfxState
         loadIdentity
-        evalStateT (G.interpretGfx $ G.sceneGfx scene) G.baseState { G.drawTransparencies = True }
+        evalStateT (G.interpretGfx $ G.sceneGfx scene) gfxState { G.drawTransparencies = True }
         flush
 
 reshape :: ReshapeCallback
