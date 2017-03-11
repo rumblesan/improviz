@@ -39,7 +39,7 @@ packages:
 - '.'
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps: [ GLFW-b-1.4.8.1 ]
 
 # Override default flag values for local packages and extra-deps
 flags: {}
@@ -59,11 +59,8 @@ extra-package-dbs: []
 # arch: x86_64
 #
 # Extra directories used by stack for building
-extra-include-dirs: [/usr/local/opt/freeglut/include]
-extra-lib-dirs: [/usr/local/opt/freeglut/lib]
+# extra-include-dirs: []
+# extra-lib-dirs: []
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
-
-ghc-options:
-  GLUT: -lGLUT
