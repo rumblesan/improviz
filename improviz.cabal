@@ -37,6 +37,7 @@ executable improviz
                      , Gfx.EngineState
                      , Gfx.Geometries
                      , Gfx.GeometryBuffers
+                     , Gfx.LoadShaders
                      , Language
                      , Language.LanguageAst
                      , Language.LanguageParser
@@ -74,6 +75,7 @@ test-suite improviz-test
                      , Gfx.EngineState
                      , Gfx.Geometries
                      , Gfx.GeometryBuffers
+                     , Gfx.LoadShaders
                      , Language
                      , Language.LanguageAst
                      , Language.LanguageParser
