@@ -1,9 +1,11 @@
 module Gfx.EngineState where
 
-import Graphics.Rendering.OpenGL (Color4(..))
+import Graphics.Rendering.OpenGL (Color4(..), GLfloat)
+import Data.Vec (Mat44)
 
 import Gfx.Ast (Block)
 import Gfx.GeometryBuffers (GeometryBuffers, createAllBuffers)
+import Gfx.Shaders
 
 data Scene = Scene {
   sceneBackground :: Color4 Float,
@@ -15,16 +17,23 @@ data EngineState = EngineState {
   , strokeColours :: [ Color4 Double ]
   , drawTransparencies :: Bool
   , geometryBuffers :: GeometryBuffers
+  , shaders :: Shaders
+  , viewMatrix :: Mat44 GLfloat
+  , projectionMatrix :: Mat44 GLfloat
 } deriving (Show, Eq)
 
-baseState :: IO EngineState
-baseState = do
+baseState :: Mat44 GLfloat -> Mat44 GLfloat -> IO EngineState
+baseState projection view = do
   gbos <- createAllBuffers
+  shd <- createShaders
   return EngineState {
     fillColours = [Color4 1 1 1 1]
   , strokeColours = [Color4 0 0 0 1]
   , drawTransparencies = False
   , geometryBuffers = gbos
+  , shaders = shd
+  , viewMatrix = view
+  , projectionMatrix = projection
 }
 
 
