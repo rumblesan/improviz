@@ -5,16 +5,9 @@ import Graphics.Rendering.OpenGL
 import System.Exit
 import System.IO
 
-import Data.Time.Clock.POSIX
-import Foreign.Marshal.Array
-import Foreign.Ptr
-import Foreign.Storable
-
 import Control.Monad
 import Control.Monad.State.Strict (evalStateT)
 import Control.Concurrent
-import Gfx.GeometryBuffers
-import Gfx.Geometries
 import qualified Gfx.Matrices as GM
 
 import Gfx
@@ -39,8 +32,7 @@ maybe' m nothingRes f = case m of
 
 -- type ErrorCallback = Error -> String -> IO ()
 errorCallback :: GLFW.ErrorCallback
-errorCallback err description = hPutStrLn stderr description
-
+errorCallback _ = hPutStrLn stderr
 
 main :: IO ()
 main = do
