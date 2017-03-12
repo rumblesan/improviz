@@ -1,8 +1,9 @@
 #version 410 core
 
-out vec4 fColor;
+in vec4 fragmentColor;
+out vec4 finalColor;
 void
 main()
 {
-   fColor = vec4(0.0, 0.0, 1.0, 1.0);
+   finalColor = fragmentColor;
 }

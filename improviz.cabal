@@ -26,9 +26,11 @@ executable improviz
                      , bytestring
                      , text
                      , time
+                     , Vec
                      , GLURaw
                      , GLFW-b
                      , OpenGL
+                     , OpenGLRaw
   other-modules:       AppServer
                      , AppTypes
                      , Gfx
