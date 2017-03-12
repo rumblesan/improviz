@@ -4,9 +4,11 @@ import Data.Maybe (maybe)
 import Control.Monad (mapM, when, void)
 import Control.Monad.State.Strict
 
-import Ast
-import EngineState
-import GeometryBuffers
+import Graphics.Rendering.OpenGL hiding (Fill, Line, get)
+
+import Gfx.Ast
+import Gfx.EngineState
+import Gfx.GeometryBuffers
 
 hasTransparency :: Color4 Double -> Bool
 hasTransparency (Color4 _ _ _ a) = a < 1.0
@@ -35,6 +37,33 @@ interpretCommand (MatrixCommand matrixAst block) = interpretCommand' (interpretM
 interpretCommand (ColourCommand colourAst block) = interpretCommand' (interpretColour colourAst) block
 
 interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
+interpretShape (Cube x y z) = do
+  es <- get
+  let
+    gbos = geometryBuffers es
+    (VBO cbo cbai cbn) = cubeBuffer gbos
+    (VBO cwbo cwbai cwbn) = cubeWireBuffer gbos
+  bindVertexArrayObject $= Just cbo
+  lift $ drawArrays Triangles cbai cbn
+  bindVertexArrayObject $= Just cwbo
+  lift $ drawArrays Lines cwbai cwbn
+interpretShape (Rectangle x y) = do
+  es <- get
+  let
+    gbos = geometryBuffers es
+    (VBO rbo rbai rbn) = rectBuffer gbos
+    (VBO rwbo rwbai rwbn) = rectWireBuffer gbos
+  bindVertexArrayObject $= Just rbo
+  lift $ drawArrays Triangles rbai rbn
+  bindVertexArrayObject $= Just rwbo
+  lift $ drawArrays Lines rwbai rwbn
+interpretShape (Line l) = do
+  es <- get
+  let
+    gbos = geometryBuffers es
+    (VBO lbo lbai lbn) = lineBuffer gbos
+  bindVertexArrayObject $= Just lbo
+  lift $ drawArrays Lines lbai lbn
 interpretShape _ = undefined
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput

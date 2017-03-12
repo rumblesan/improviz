@@ -1,79 +1,103 @@
 module Main where
 
-import Graphics.UI.GLUT hiding (Cube, Fill)
+import Graphics.UI.GLFW as GLFW
+import Graphics.Rendering.OpenGL
+import System.Exit
+import System.IO
 
 import Data.Time.Clock.POSIX
+import Foreign.Marshal.Array
+import Foreign.Ptr
+import Foreign.Storable
 
+import Control.Monad
 import Control.Monad.State.Strict (evalStateT)
 import Control.Concurrent
+import Gfx.LoadShaders
+import Gfx.GeometryBuffers
+import Gfx.Geometries
 
-import qualified Gfx as G
-import qualified Gfx.Pipeline as GP
+import Gfx
 import qualified Language as L
 import qualified Language.LanguageAst as LA
 import AppServer
 import AppTypes
 
+bool :: Bool -> a -> a -> a
+bool b falseRes trueRes = if b then trueRes else falseRes
+
+unless' :: Monad m => m Bool -> m () -> m ()
+unless' action falseAction = do
+    b <- action
+    unless b falseAction
+
+maybe' :: Maybe a -> b -> (a -> b) -> b
+maybe' m nothingRes f = case m of
+    Nothing -> nothingRes
+    Just x  -> f x
+
+
+-- type ErrorCallback = Error -> String -> IO ()
+errorCallback :: GLFW.ErrorCallback
+errorCallback err description = hPutStrLn stderr description
+
+
 main :: IO ()
 main = do
-  (_progName, _args) <- getArgsAndInitialize
-  get glutVersion >>= print
-  scrSize <- get screenSize
-  --initialWindowSize $= scrSize
-  print scrSize
-  initialDisplayMode $= [WithDepthBuffer]
-  _window <- createWindow _progName
-  reshapeCallback $= Just reshape
-  depthFunc $= Just Less
-  blend $= Enabled
-  blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
-  gfxState <- G.baseState
-  shaders <- GP.initShaders
-  appState <- makeAppState >>= newMVar
-  _ <- forkIO $ runServer appState
-  displayCallback $= display gfxState appState shaders
-  idleCallback $= Just (idle appState)
-  mainLoop
+  GLFW.setErrorCallback (Just errorCallback)
+  successfulInit <- GLFW.init
+  bool successfulInit exitFailure $
+    do
+      v <- GLFW.getVersion
+      print v
+      GLFW.windowHint $ WindowHint'ContextVersionMajor 3
+      GLFW.windowHint $ WindowHint'ContextVersionMinor 2
+      GLFW.windowHint $ WindowHint'OpenGLForwardCompat True
+      GLFW.windowHint $ WindowHint'OpenGLProfile OpenGLProfile'Core
+      mw <- GLFW.createWindow 400 400 "Improviz" Nothing Nothing
+      maybe' mw (GLFW.terminate >> exitFailure) $ \window -> do
+        GLFW.makeContextCurrent mw
+        cvma <- getWindowContextVersionMajor window
+        cvmi <- getWindowContextVersionMinor window
+        cvr <- getWindowContextVersionRevision window
+        print $ show cvma ++ ":" ++ show cvmi ++ ":" ++ show cvr
+        program <- loadShaders [
+            ShaderInfo VertexShader (FileSource "shaders/triangles.vert"),
+            ShaderInfo FragmentShader (FileSource "shaders/triangles.frag")]
+        currentProgram $= Just program
+        gfxState <- baseState
+        appState <- newMVar makeAppState
+        _ <- forkIO $ runServer appState
+        display window gfxState appState
+        GLFW.destroyWindow window
+        GLFW.terminate
+        exitSuccess
 
-display :: G.EngineState -> MVar AppState -> GP.Shaders -> DisplayCallback
-display gfxState appState shaders = do
+display :: GLFW.Window -> EngineState -> MVar AppState -> IO ()
+display w gfxState appState = unless' (GLFW.windowShouldClose w) $ do
   as <- readMVar appState
-  case fst $ L.createGfx [("time", LA.Number (time as))] (validAst as) of
+  Just t <- GLFW.getTime
+  case fst $ L.createGfx [("time", LA.Number t)] (validAst as) of
     Left msg -> putStrLn $ "Could not interpret program: " ++ msg
     Right scene ->
       do
-        clearColor $= G.sceneBackground scene
+
+        (width, height) <- GLFW.getFramebufferSize w
+        let ratio = fromIntegral width / fromIntegral height
+        viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
+
+        clearColor $= sceneBackground scene
         clear [ ColorBuffer, DepthBuffer ]
-        currentProgram $= Just (GP.program shaders)
-        let ic = Vector4 0.5 1 0.1 1 :: Vector4 GLfloat
-        uniform (GP.inputColourU shaders) $= ic
-        loadIdentity
-        evalStateT (G.interpretGfx $ G.sceneGfx scene) gfxState
-        loadIdentity
-        evalStateT (G.interpretGfx $ G.sceneGfx scene) gfxState { G.drawTransparencies = True }
-        flush
 
-reshape :: ReshapeCallback
-reshape size@(Size w h) = do
-   viewport $= (Position 0 0, size)
-   matrixMode $= Projection
-   loadIdentity
-   let wf = fromIntegral w
-       hf = fromIntegral h
-   if w <= h
-      then ortho (-2.5) 2.5 (-2.5 * hf/wf) (2.5 * hf/wf) (-10) 10
-      else ortho (-2.5 * wf/hf) (2.5 * wf/hf) (-2.5) 2.5 (-10) 10
-   matrixMode $= Modelview 0
-   loadIdentity
+        matrixMode $= Projection
+        loadIdentity
+        ortho (negate ratio) ratio (negate 1.0) 1.0 1.0 (negate 1.0)
+        matrixMode $= Modelview 0
 
-idle :: MVar AppState -> IdleCallback
-idle appState =
-  do
-    modifyMVar_ appState incrementTime
-    postRedisplay Nothing
-  where
-    incrementTime as =
-      do
-        timeNow <- realToFrac <$> getPOSIXTime
-        let newTime = 10 * (timeNow - timeAtStart as)
-        return as { time = newTime }
+        loadIdentity
+
+        evalStateT (Gfx.interpretGfx $ Gfx.sceneGfx scene) gfxState
+
+        GLFW.swapBuffers w
+        GLFW.pollEvents
+        display w gfxState appState
