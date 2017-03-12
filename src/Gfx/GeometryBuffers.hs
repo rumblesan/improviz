@@ -2,6 +2,7 @@ module Gfx.GeometryBuffers where
 
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Ptr
 
 import Graphics.Rendering.OpenGL
 
@@ -17,6 +18,9 @@ data GeometryBuffers = GeometryBuffers {
     lineBuffer :: VBO
   } deriving (Show, Eq)
 
+bufferOffset :: Integral a => a -> Ptr b
+bufferOffset = plusPtr nullPtr . fromIntegral
+
 createBuffer :: [Vertex3 GLfloat] -> IO VBO
 createBuffer verts = do
   vbo <- genObjectName
@@ -24,12 +28,16 @@ createBuffer verts = do
   arrayBuffer <- genObjectName
   bindBuffer ArrayBuffer $= Just arrayBuffer
   let
+    firstIndex = 0
+    vPosition = AttribLocation 0
     numVertices = length verts
     vertexSize = sizeOf (head verts)
     size = fromIntegral (numVertices * vertexSize)
   withArray verts $ \ptr ->
     bufferData ArrayBuffer $= (size, ptr, StaticDraw)
-  return $ VBO vbo 0 (fromIntegral numVertices)
+  vertexAttribPointer vPosition $= (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset firstIndex))
+  vertexAttribArray vPosition $= Enabled
+  return $ VBO vbo firstIndex (fromIntegral numVertices)
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers = let
