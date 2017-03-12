@@ -3,7 +3,7 @@ module Gfx.GeometryBuffers where
 import Foreign.Marshal.Array
 import Foreign.Storable
 
-import Graphics.UI.GLUT
+import Graphics.Rendering.OpenGL
 
 import Gfx.Geometries
 
