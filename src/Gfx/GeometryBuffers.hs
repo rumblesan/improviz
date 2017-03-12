@@ -41,10 +41,10 @@ createBuffer verts = do
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers = let
-    cb = createBuffer $ triVertexArray (cubeVertices 1) cubeTriangles
-    cwb = createBuffer $ lineVertexArray (cubeVertices 1) cubeWireframe
-    rb = createBuffer $ triVertexArray (rectVertices 1) rectTriangles
-    rwb = createBuffer $ lineVertexArray (rectVertices 1) rectWireframe
-    lwb = createBuffer $ lineVertexArray (lineVertices 1) lineWireframe
+    cb = createBuffer $ triVertexArray (cubeVertices 0.2) cubeTriangles
+    cwb = createBuffer $ lineVertexArray (cubeVertices 0.2) cubeWireframe
+    rb = createBuffer $ triVertexArray (rectVertices 0.2) rectTriangles
+    rwb = createBuffer $ lineVertexArray (rectVertices 0.2) rectWireframe
+    lwb = createBuffer $ lineVertexArray (lineVertices 0.2) lineWireframe
   in
     GeometryBuffers <$> cb <*> cwb <*> rb <*> rwb <*> lwb
