@@ -9,7 +9,7 @@ import Data.Vec (Mat44, multmm)
 import Graphics.Rendering.OpenGL hiding (Fill, Line, get)
 
 import Gfx.Ast
-import Gfx.EngineState
+import Gfx.EngineState as ES
 import Gfx.GeometryBuffers
 import Gfx.Shaders
 import Gfx.Matrices
@@ -88,9 +88,9 @@ interpretShape (Line l) = do
 interpretShape _ = undefined
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
-interpretMatrix (Rotate x y z) = modify' (\es -> pushMatrix es $ rotMat x y z)
-interpretMatrix (Scale x y z) = modify' (\es -> pushMatrix es $ scaleMat x y z)
-interpretMatrix (Move x y z) = modify' (\es -> pushMatrix es $ translateMat x y z)
+interpretMatrix (Rotate x y z) = modify' (\es -> ES.multMatrix es $ rotMat x y z)
+interpretMatrix (Scale x y z) = modify' (\es -> ES.multMatrix es $ scaleMat x y z)
+interpretMatrix (Move x y z) = modify' (\es -> ES.multMatrix es $ translateMat x y z)
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
 interpretColour (Fill r g b a) = modify' (pushFillColour $ Color4 r g b a)
