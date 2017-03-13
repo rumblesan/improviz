@@ -59,7 +59,7 @@ main = do
         cvr <- getWindowContextVersionRevision window
         print $ show cvma ++ ":" ++ show cvmi ++ ":" ++ show cvr
         let proj = GM.projectionMat 0.1 100 (pi/4) ratio
-            view = GM.viewMat (GM.vec3 4 3 3) (GM.vec3 0 0 0) (GM.vec3 0 1 0)
+            view = GM.viewMat (GM.vec3 0 0 10) (GM.vec3 0 0 0) (GM.vec3 0 1 0)
         gfxState <- baseState proj view >>= newMVar
         appState <- newMVar makeAppState
         GLFW.setWindowSizeCallback window $ Just (resize gfxState)
