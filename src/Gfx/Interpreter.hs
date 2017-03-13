@@ -4,11 +4,15 @@ import Data.Maybe (maybe)
 import Control.Monad (mapM, when, void)
 import Control.Monad.State.Strict
 
+import Data.Vec (Mat44, multmm)
+
 import Graphics.Rendering.OpenGL hiding (Fill, Line, get)
 
 import Gfx.Ast
 import Gfx.EngineState
 import Gfx.GeometryBuffers
+import Gfx.Shaders
+import Gfx.Matrices
 
 hasTransparency :: Color4 GLfloat -> Bool
 hasTransparency (Color4 _ _ _ a) = a < 1.0
@@ -36,44 +40,57 @@ interpretCommand (ShapeCommand shapeAst block) = interpretCommand' (interpretSha
 interpretCommand (MatrixCommand matrixAst block) = interpretCommand' (interpretMatrix matrixAst) block
 interpretCommand (ColourCommand colourAst block) = interpretCommand' (interpretColour colourAst) block
 
+getFullMatrix :: GraphicsEngine (Mat44 GLfloat)
+getFullMatrix = do
+  mMat <- gets modelMatrix
+  pMat <- gets projectionMatrix
+  vMat <- gets viewMatrix
+  return $ multmm (multmm pMat vMat) mMat
+
+drawShape :: VBO -> GraphicsEngine GfxOutput
+drawShape (VBO bufferObject arrayIndex offset) = do
+  fillC <- gets currentFillColour
+  mvp <- getFullMatrix
+  program <- gets shaders
+  lift $ setMVPMatrixUniform program mvp
+  lift $ setColourUniform program fillC
+  bindVertexArrayObject $= Just bufferObject
+  lift $ drawArrays Triangles arrayIndex offset
+
+drawWireframe :: VBO -> GraphicsEngine GfxOutput
+drawWireframe (VBO bufferObject arrayIndex offset) = do
+  strokeC <- gets currentStrokeColour
+  mvp <- getFullMatrix
+  program <- gets shaders
+  lift $ setMVPMatrixUniform program mvp
+  lift $ setColourUniform program strokeC
+  bindVertexArrayObject $= Just bufferObject
+  lift $ drawArrays Lines arrayIndex offset
+
 interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
 interpretShape (Cube x y z) = do
-  es <- get
-  let
-    gbos = geometryBuffers es
-    (VBO cbo cbai cbn) = cubeBuffer gbos
-    (VBO cwbo cwbai cwbn) = cubeWireBuffer gbos
-  bindVertexArrayObject $= Just cbo
-  lift $ drawArrays Triangles cbai cbn
-  bindVertexArrayObject $= Just cwbo
-  lift $ drawArrays Lines cwbai cwbn
+  gbos <- gets geometryBuffers
+  modify' (\es -> pushMatrix es (scaleMat x y z))
+  drawShape (cubeBuffer gbos)
+  drawWireframe (cubeWireBuffer gbos)
+  modify' popMatrix
 interpretShape (Rectangle x y) = do
-  es <- get
-  let
-    gbos = geometryBuffers es
-    (VBO rbo rbai rbn) = rectBuffer gbos
-    (VBO rwbo rwbai rwbn) = rectWireBuffer gbos
-  bindVertexArrayObject $= Just rbo
-  lift $ drawArrays Triangles rbai rbn
-  bindVertexArrayObject $= Just rwbo
-  lift $ drawArrays Lines rwbai rwbn
+  gbos <- gets geometryBuffers
+  modify' (\es -> pushMatrix es (scaleMat x y 1))
+  drawShape (rectBuffer gbos)
+  drawWireframe (rectWireBuffer gbos)
+  modify' popMatrix
 interpretShape (Line l) = do
-  es <- get
-  let
-    gbos = geometryBuffers es
-    (VBO lbo lbai lbn) = lineBuffer gbos
-  bindVertexArrayObject $= Just lbo
-  lift $ drawArrays Lines lbai lbn
+  gbos <- gets geometryBuffers
+  modify' (\es -> pushMatrix es (scaleMat l 1 1))
+  drawWireframe (lineBuffer gbos)
+  modify' popMatrix
 interpretShape _ = undefined
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
-interpretMatrix (Rotate x y z) =
-  do
-    lift $ rotate x $ Vector3 1 0 0
-    lift $ rotate y $ Vector3 0 1 0
-    lift $ rotate z $ Vector3 0 0 1
-interpretMatrix (Scale x y z) = lift $ scale x y z
-interpretMatrix (Move x y z) = lift $ translate $ Vector3 x y z
+interpretMatrix (Rotate x y z) = modify' (\es -> pushMatrix es $ rotMat x y z)
+interpretMatrix (Scale x y z) = modify' (\es -> pushMatrix es $ scaleMat x y z)
+interpretMatrix (Move x y z) = modify' (\es -> pushMatrix es $ translateMat x y z)
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
 interpretColour (Fill r g b a) = modify' (pushFillColour $ Color4 r g b a)
@@ -83,12 +100,8 @@ interpretColour (Stroke r g b a) = modify' (pushStrokeColour $ Color4 r g b a)
 interpretColour NoStroke = modify' (pushStrokeColour $ Color4 0 0 0 0)
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
-newScope gfx block =
-  let
-    stateMap :: IO (a, EngineState) -> IO (GfxOutput, EngineState)
-    stateMap d = preservingMatrix $ do
-      (_, engineState) <- d
-      _ <- evalStateT (interpretBlock block) engineState
-      return ((), engineState)
-  in
-    mapStateT stateMap gfx
+newScope gfx block = do
+  priorState <- get
+  gfx
+  _ <- interpretBlock block
+  put priorState
