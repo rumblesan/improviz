@@ -2,13 +2,9 @@ module Language.StdLib.ColourOps (
   fill, noFill, stroke, noStroke, background
 ) where
 
-import GHC.Float (double2Float)
-import Data.Maybe (isJust)
-import Control.Monad.State.Strict
-import Control.Monad.Writer.Strict
 
 import Language.Interpreter.Types
-import Language.Interpreter (addGfxCommand, getVariable, getVariableWithDefault, interpretBlock, setGfxBackground)
+import Language.Interpreter (addGfxCommand, getVariableWithDefault, interpretBlock, setGfxBackground)
 import Language.Interpreter.Values
 import Language.LanguageAst
 import qualified Gfx.Ast as GA
