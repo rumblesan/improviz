@@ -1,7 +1,7 @@
 module Gfx.EngineState where
 
 import Graphics.Rendering.OpenGL (Color4(..), GLfloat)
-import Data.Vec (Mat44)
+import Data.Vec (Mat44, multmm)
 
 import Gfx.Ast (Block)
 import Gfx.GeometryBuffers (GeometryBuffers, createAllBuffers)
@@ -20,6 +20,7 @@ data EngineState = EngineState {
   , shaders :: Shaders
   , viewMatrix :: Mat44 GLfloat
   , projectionMatrix :: Mat44 GLfloat
+  , matrixStack :: [ Mat44 GLfloat ]
 } deriving (Show, Eq)
 
 baseState :: Mat44 GLfloat -> Mat44 GLfloat -> IO EngineState
@@ -34,6 +35,7 @@ baseState projection view = do
   , shaders = shd
   , viewMatrix = view
   , projectionMatrix = projection
+  , matrixStack = []
 }
 
 
@@ -54,3 +56,27 @@ currentStrokeColour = head . strokeColours
 
 popStrokeColour :: EngineState -> EngineState
 popStrokeColour es = es { strokeColours = tail $ strokeColours es }
+
+pushMatrix :: EngineState -> Mat44 Float -> EngineState
+pushMatrix es mat =
+  let
+    comp = foldl multmm mat (matrixStack es)
+  in
+    es { matrixStack = comp : matrixStack es }
+
+popMatrix :: EngineState -> EngineState
+popMatrix es = es { matrixStack = tail $ matrixStack es }
+
+modelMatrix :: EngineState -> Mat44 Float
+modelMatrix = head . matrixStack
+
+multMatrix :: EngineState -> Mat44 Float -> EngineState
+multMatrix es mat =
+  let
+    newhead = multmm (head $ matrixStack es) mat
+  in
+    es { matrixStack = newhead : tail (matrixStack es) }
+
+dupeHeadMatrix :: EngineState -> EngineState
+dupeHeadMatrix es =
+  es { matrixStack = head (matrixStack es) : matrixStack es }
