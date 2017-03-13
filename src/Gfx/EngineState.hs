@@ -13,8 +13,8 @@ data Scene = Scene {
 }
 
 data EngineState = EngineState {
-    fillColours :: [ Color4 Double ]
-  , strokeColours :: [ Color4 Double ]
+    fillColours :: [ Color4 GLfloat ]
+  , strokeColours :: [ Color4 GLfloat ]
   , drawTransparencies :: Bool
   , geometryBuffers :: GeometryBuffers
   , shaders :: Shaders
@@ -37,19 +37,19 @@ baseState projection view = do
 }
 
 
-pushFillColour :: Color4 Double -> EngineState -> EngineState
+pushFillColour :: Color4 GLfloat -> EngineState -> EngineState
 pushFillColour c es = es { fillColours = c : fillColours es }
 
-currentFillColour :: EngineState -> Color4 Double
+currentFillColour :: EngineState -> Color4 GLfloat
 currentFillColour = head . fillColours
 
 popFillColour :: EngineState -> EngineState
 popFillColour es = es { fillColours = tail $ fillColours es }
 
-pushStrokeColour :: Color4 Double -> EngineState -> EngineState
+pushStrokeColour :: Color4 GLfloat -> EngineState -> EngineState
 pushStrokeColour c es = es { strokeColours = c : strokeColours es }
 
-currentStrokeColour :: EngineState -> Color4 Double
+currentStrokeColour :: EngineState -> Color4 GLfloat
 currentStrokeColour = head . strokeColours
 
 popStrokeColour :: EngineState -> EngineState

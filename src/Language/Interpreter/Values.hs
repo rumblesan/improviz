@@ -11,6 +11,6 @@ getValueType Null = "Null"
 getValueType (Lambda _ _) = "Lambda"
 getValueType (BuiltIn _) = "BuiltIn"
 
-getNumberValue :: Value -> InterpreterProcess Double
+getNumberValue :: Value -> InterpreterProcess Float
 getNumberValue (Number v) = return v
 getNumberValue v = throwError ("Expected number but got " ++ getValueType v)

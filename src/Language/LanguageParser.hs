@@ -2,6 +2,8 @@ module Language.LanguageParser where
 
 import Control.Monad (void)
 
+import GHC.Float (double2Float)
+
 import Text.Parsec
 import Text.Parsec.Expr
 import Text.Parsec.Token
@@ -81,7 +83,7 @@ lambda = Lambda <$> m_parens (many m_identifier) <* m_symbol "=>" <*> (lbody <|>
     lbody = m_braces block
 
 number :: LangParser Value
-number = Number <$> (try m_float <|> try m_intToFloat) <?> "number"
+number = Number <$> (try (fmap double2Float m_float) <|> try m_intToFloat) <?> "number"
   where
     m_intToFloat = fmap fromIntegral m_integer
 

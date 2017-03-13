@@ -33,7 +33,7 @@ data Expression = EApp Application
 
 data Variable = Variable Identifier deriving (Eq, Show)
 
-data Value = Number Double
+data Value = Number Float
            | Null
            | Lambda [Identifier] Block
            | BuiltIn [Identifier]

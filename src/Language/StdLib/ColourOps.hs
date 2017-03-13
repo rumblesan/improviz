@@ -57,5 +57,5 @@ background block =
     _ <- setGfxBackground (dToC r, dToC g, dToC b)
     maybe (return Null) interpretBlock block
   where
-    dToC :: Double -> Float
-    dToC c = double2Float $ max 0 (min c 255) / 255
+    dToC :: Float -> Float
+    dToC c = max 0 (min c 255) / 255

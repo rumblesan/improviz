@@ -10,10 +10,10 @@ import Gfx.Ast
 import Gfx.EngineState
 import Gfx.GeometryBuffers
 
-hasTransparency :: Color4 Double -> Bool
+hasTransparency :: Color4 GLfloat -> Bool
 hasTransparency (Color4 _ _ _ a) = a < 1.0
 
-fullyTransparent :: Color4 Double -> Bool
+fullyTransparent :: Color4 GLfloat -> Bool
 fullyTransparent (Color4 _ _ _ a) = a == 0
 
 type GfxAction = IO

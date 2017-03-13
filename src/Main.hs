@@ -1,5 +1,7 @@
 module Main where
 
+import GHC.Float (double2Float)
+
 import Graphics.UI.GLFW as GLFW
 import Graphics.Rendering.OpenGL
 import System.Exit
@@ -80,7 +82,7 @@ display w gfxState appState = unless' (GLFW.windowShouldClose w) $ do
   as <- readMVar appState
   gs <- readMVar gfxState
   Just t <- GLFW.getTime
-  case fst $ L.createGfx [("time", LA.Number t)] (validAst as) of
+  case fst $ L.createGfx [("time", LA.Number (double2Float t))] (validAst as) of
     Left msg -> putStrLn $ "Could not interpret program: " ++ msg
     Right scene ->
       do

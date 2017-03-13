@@ -20,22 +20,22 @@ data GfxCommand
   deriving (Show, Eq)
 
 data ShapeGfx
-  = Cube Double Double Double
-  | Sphere Double Double Double
-  | Cylinder Double Double Double
-  | Rectangle Double Double
-  | Line Double
+  = Cube Float Float Float
+  | Sphere Float Float Float
+  | Cylinder Float Float Float
+  | Rectangle Float Float
+  | Line Float
   deriving (Show, Eq)
 
 data MatrixGfx
-  = Rotate Double Double Double
-  | Scale Double Double Double
-  | Move Double Double Double
+  = Rotate Float Float Float
+  | Scale Float Float Float
+  | Move Float Float Float
   deriving (Show, Eq)
 
 data ColourGfx
-  = Fill Double Double Double Double
+  = Fill Float Float Float Float
   | NoFill
-  | Stroke Double Double Double Double
+  | Stroke Float Float Float Float
   | NoStroke
   deriving (Show, Eq)
