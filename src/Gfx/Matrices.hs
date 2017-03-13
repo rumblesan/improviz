@@ -27,3 +27,9 @@ lookAt eye target up = x :. y :. z :. h :. ()
 
 rotMat :: Float -> Float -> Float -> Mat44 Float
 rotMat xRot yRot zRot = rotationEuler $ xRot :. yRot :. zRot :. ()
+
+scaleMat :: Float -> Float -> Float -> Mat44 Float
+scaleMat xS yS zS = scaling $ vec3 xS yS zS
+
+translateMat :: Float -> Float -> Float -> Mat44 Float
+translateMat xT yT zT = translation $ vec3 xT yT zT
