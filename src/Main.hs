@@ -48,6 +48,7 @@ main = do
       GLFW.windowHint $ WindowHint'ContextVersionMinor 2
       GLFW.windowHint $ WindowHint'OpenGLForwardCompat True
       GLFW.windowHint $ WindowHint'OpenGLProfile OpenGLProfile'Core
+      GLFW.windowHint $ WindowHint'DepthBits 16
       let width = 640
           height = 480
           ratio = fromIntegral width / fromIntegral height
@@ -58,6 +59,7 @@ main = do
         cvmi <- getWindowContextVersionMinor window
         cvr <- getWindowContextVersionRevision window
         print $ show cvma ++ ":" ++ show cvmi ++ ":" ++ show cvr
+        depthFunc $= Just Less
         let proj = GM.projectionMat 0.1 100 (pi/4) ratio
             view = GM.viewMat (GM.vec3 0 0 10) (GM.vec3 0 0 0) (GM.vec3 0 1 0)
         gfxState <- baseState proj view >>= newMVar
