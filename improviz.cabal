@@ -41,6 +41,7 @@ executable improviz
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
                      , Gfx.Matrices
+                     , Gfx.PostProcessing
                      , Gfx.Shaders
                      , Language
                      , Language.LanguageAst
@@ -81,6 +82,7 @@ test-suite improviz-test
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
                      , Gfx.Matrices
+                     , Gfx.PostProcessing
                      , Gfx.Shaders
                      , Language
                      , Language.LanguageAst

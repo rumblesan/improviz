@@ -4,6 +4,7 @@ import Graphics.Rendering.OpenGL (Color4(..), GLfloat)
 import Data.Vec (Mat44, multmm, identity)
 
 import Gfx.Ast (Block)
+import Gfx.PostProcessing (PostProcessing)
 import Gfx.GeometryBuffers (GeometryBuffers, createAllBuffers)
 import Gfx.Shaders
 
@@ -20,11 +21,12 @@ data EngineState = EngineState {
   , shaders :: Shaders
   , viewMatrix :: Mat44 GLfloat
   , projectionMatrix :: Mat44 GLfloat
+  , postFX :: PostProcessing
   , matrixStack :: [ Mat44 GLfloat ]
 } deriving (Show, Eq)
 
-baseState :: Mat44 GLfloat -> Mat44 GLfloat -> IO EngineState
-baseState projection view = do
+baseState :: Mat44 GLfloat -> Mat44 GLfloat -> PostProcessing -> IO EngineState
+baseState projection view pprocess = do
   gbos <- createAllBuffers
   shd <- createShaders
   return EngineState {
@@ -35,6 +37,7 @@ baseState projection view = do
   , shaders = shd
   , viewMatrix = view
   , projectionMatrix = projection
+  , postFX = pprocess
   , matrixStack = [identity]
 }
 

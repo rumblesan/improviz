@@ -26,7 +26,10 @@ type GfxOutput = ()
 type GraphicsEngine v = StateT EngineState GfxAction v
 
 interpretGfx :: GfxAst -> GraphicsEngine GfxOutput
-interpretGfx = void . interpretBlock
+interpretGfx ast = do
+  s <- gets shaders
+  liftIO $ (currentProgram $= Just (shaderProgram s))
+  void $ interpretBlock ast
 
 interpretBlock :: Block -> GraphicsEngine [ GfxOutput ]
 interpretBlock = mapM interpretCommand

@@ -17,6 +17,8 @@ import qualified Language as L
 import qualified Language.LanguageAst as LA
 import AppServer
 import AppTypes
+import Gfx.PostProcessing
+import Gfx.GeometryBuffers (VBO(..))
 
 bool :: Bool -> a -> a -> a
 bool b falseRes trueRes = if b then trueRes else falseRes
@@ -55,6 +57,7 @@ main = do
       mw <- GLFW.createWindow width height "Improviz" Nothing Nothing
       maybe' mw (GLFW.terminate >> exitFailure) $ \window -> do
         GLFW.makeContextCurrent mw
+        (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
         cvma <- getWindowContextVersionMajor window
         cvmi <- getWindowContextVersionMinor window
         cvr <- getWindowContextVersionRevision window
@@ -62,7 +65,8 @@ main = do
         depthFunc $= Just Less
         let proj = GM.projectionMat 0.1 100 (pi/4) ratio
             view = GM.viewMat (GM.vec3 0 0 10) (GM.vec3 0 0 0) (GM.vec3 0 1 0)
-        gfxState <- baseState proj view >>= newMVar
+        post <- createPostProcessing (fromIntegral fbWidth) (fromIntegral fbHeight)
+        gfxState <- baseState proj view post >>= newMVar
         appState <- newMVar makeAppState
         GLFW.setWindowSizeCallback window $ Just (resize gfxState)
         _ <- forkIO $ runServer appState
@@ -88,9 +92,21 @@ display w gfxState appState = unless' (GLFW.windowShouldClose w) $ do
     Left msg -> putStrLn $ "Could not interpret program: " ++ msg
     Right scene ->
       do
+        let post = postFX gs
+        bindFramebuffer Framebuffer $= frameBuffer post
         clearColor $= sceneBackground scene
         clear [ ColorBuffer, DepthBuffer ]
         evalStateT (Gfx.interpretGfx $ Gfx.sceneGfx scene) gs
+
+        bindFramebuffer Framebuffer $= (defaultFrameBuffer post)
+        clear [ ColorBuffer, DepthBuffer ]
+        currentProgram $= Just (postShaders post)
+
+        let (VBO qbo qbai qbn) = renderQuadVBO post
+        bindVertexArrayObject $= Just qbo
+
+        drawArrays Triangles qbai qbn
+
         GLFW.swapBuffers w
         GLFW.pollEvents
         display w gfxState appState
