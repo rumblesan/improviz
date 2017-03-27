@@ -43,6 +43,7 @@ executable improviz
                      , Gfx.Matrices
                      , Gfx.PostProcessing
                      , Gfx.Shaders
+                     , Gfx.Windowing
                      , Language
                      , Language.LanguageAst
                      , Language.LanguageParser
@@ -84,6 +85,7 @@ test-suite improviz-test
                      , Gfx.Matrices
                      , Gfx.PostProcessing
                      , Gfx.Shaders
+                     , Gfx.Windowing
                      , Language
                      , Language.LanguageAst
                      , Language.LanguageParser
