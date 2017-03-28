@@ -23,7 +23,7 @@ updateProgram appState newProgram =
   in
     case ast of
       Right newAst -> do
-        modifyMVar_ appState (\as -> return as { validAst = newAst })
+        modifyMVar_ appState (\as -> return as { currentAst = newAst })
         return "{'status': 'OK', 'message': 'Parsed Succesfully'}"
       Left err -> return $ mconcat ["{'status': 'OK', 'message': '", err, "'}"]
 

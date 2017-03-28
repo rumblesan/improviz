@@ -62,22 +62,28 @@ display :: MVar EngineState -> MVar AppState -> Double -> IO ()
 display gfxState appState time = do
   as <- readMVar appState
   gs <- readMVar gfxState
-  case fst $ L.createGfx [("time", LA.Number (double2Float time))] (validAst as) of
+  let vars = [("time", LA.Number (double2Float time))]
+
+  case fst $ L.createGfx vars (currentAst as) of
     Left msg -> putStrLn $ "Could not interpret program: " ++ msg
-    Right scene ->
-      do
-        let post = postFX gs
-        bindFramebuffer Framebuffer $= frameBuffer post
-        clearColor $= sceneBackground scene
-        clear [ ColorBuffer, DepthBuffer ]
-        evalStateT (Gfx.interpretGfx $ Gfx.sceneGfx scene) gs
+    Right scene -> drawScene gs scene
 
-        bindFramebuffer Framebuffer $= (defaultFrameBuffer post)
-        clear [ ColorBuffer, DepthBuffer ]
-        currentProgram $= Just (postShaders post)
+drawScene :: EngineState -> Scene -> IO ()
+drawScene gs scene =
+  do
+    let post = postFX gs
+    bindFramebuffer Framebuffer $= frameBuffer post
+    clearColor $= sceneBackground scene
+    clear [ ColorBuffer, DepthBuffer ]
+    evalStateT (Gfx.interpretGfx $ Gfx.sceneGfx scene) gs
 
-        let (VBO qbo qbai qbn) = renderQuadVBO post
-        bindVertexArrayObject $= Just qbo
+    bindFramebuffer Framebuffer $= (defaultFrameBuffer post)
+    clear [ ColorBuffer, DepthBuffer ]
+    currentProgram $= Just (postShaders post)
 
-        drawArrays Triangles qbai qbn
+    let (VBO qbo qbai qbn) = renderQuadVBO post
+    bindVertexArrayObject $= Just qbo
+
+    drawArrays Triangles qbai qbn
+
 
