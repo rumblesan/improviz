@@ -23,6 +23,7 @@ executable improviz
                      , indents
                      , mtl
                      , scotty
+                     , stm
                      , bytestring
                      , text
                      , time

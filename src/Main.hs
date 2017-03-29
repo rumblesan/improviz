@@ -7,8 +7,10 @@ import Graphics.Rendering.OpenGL
 import System.Exit
 import System.IO
 
+import Control.Monad
 import Control.Monad.State.Strict (evalStateT)
 import Control.Concurrent
+import Control.Concurrent.STM
 import qualified Gfx.Matrices as GM
 
 import Gfx
@@ -27,46 +29,53 @@ errorCallback _ = hPutStrLn stderr
 
 main :: IO ()
 main = do
-  gfxEMVar <- newEmptyMVar
-  asMVar <- newEmptyMVar
+  gfxETMVar <- newEmptyTMVarIO
+  asTVar <- newTVarIO makeAppState
+  _ <- forkIO $ runServer asTVar
 
   let initialWidth = 640
   let initialHeight = 480
-  let initCB = initApp gfxEMVar asMVar
-  let resizeCB = resize gfxEMVar
-  let displayCB = display gfxEMVar asMVar
+  let initCB = initApp gfxETMVar
+  let resizeCB = resize gfxETMVar
+  let displayCB = display asTVar gfxETMVar
   setupWindow initialWidth initialHeight initCB resizeCB displayCB
   exitSuccess
 
-initApp :: MVar EngineState -> MVar AppState -> Int -> Int -> IO ()
-initApp gfxEngineMVar appStateMVar width height = do
+initApp :: TMVar EngineState -> Int -> Int -> IO ()
+initApp gfxEngineTMVar width height = do
   let ratio = fromIntegral width / fromIntegral height
       proj = GM.projectionMat 0.1 100 (pi/4) ratio
       view = GM.viewMat (GM.vec3 0 0 10) (GM.vec3 0 0 0) (GM.vec3 0 1 0)
+
   post <- createPostProcessing (fromIntegral width) (fromIntegral height)
-  _ <- forkIO $ runServer appStateMVar
+
   gfxEngineState <- baseState proj view post
-  putMVar gfxEngineMVar gfxEngineState
-  putMVar appStateMVar makeAppState
+  atomically$ putTMVar gfxEngineTMVar gfxEngineState
 
 
-resize :: MVar EngineState -> GLFW.WindowSizeCallback
-resize esMV _ newWidth newHeight = do
-  es <- readMVar esMV
+resize :: TMVar EngineState -> GLFW.WindowSizeCallback
+resize var _ newWidth newHeight = do
+  print "Resizing"
   let newRatio = fromIntegral newWidth / fromIntegral newHeight
       newProj = GM.projectionMat 0.1 100 (pi/4) newRatio
-  print "Resizing"
-  putMVar esMV es { projectionMatrix = newProj }
+  atomically $ do
+    es <- takeTMVar var
+    putTMVar var es { projectionMatrix = newProj }
 
-display :: MVar EngineState -> MVar AppState -> Double -> IO ()
-display gfxState appState time = do
-  as <- readMVar appState
-  gs <- readMVar gfxState
+display :: TVar AppState -> TMVar EngineState -> Double -> IO ()
+display appState gfxState time = do
+  as <- readTVarIO appState
+  gs <- atomically $ readTMVar gfxState
   let vars = [("time", LA.Number (double2Float time))]
 
   case fst $ L.createGfx vars (currentAst as) of
     Left msg -> putStrLn $ "Could not interpret program: " ++ msg
-    Right scene -> drawScene gs scene
+    Right scene ->
+      do
+        drawScene gs scene
+        unless (currentAst as == lastWorkingAst as) $ do
+          putStrLn "Saving current ast"
+          atomically $ modifyTVar appState (\as -> as { lastWorkingAst = currentAst as })
 
 drawScene :: EngineState -> Scene -> IO ()
 drawScene gs scene =
