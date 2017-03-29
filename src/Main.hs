@@ -69,7 +69,9 @@ display appState gfxState time = do
   let vars = [("time", LA.Number (double2Float time))]
 
   case fst $ L.createGfx vars (currentAst as) of
-    Left msg -> putStrLn $ "Could not interpret program: " ++ msg
+    Left msg -> do
+      putStrLn $ "Could not interpret program: " ++ msg
+      atomically $ modifyTVar appState (\as -> as { currentAst = lastWorkingAst as })
     Right scene ->
       do
         drawScene gs scene
