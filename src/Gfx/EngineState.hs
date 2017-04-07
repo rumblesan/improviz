@@ -23,7 +23,7 @@ data EngineState = EngineState {
   , projectionMatrix :: Mat44 GLfloat
   , postFX :: PostProcessing
   , matrixStack :: [ Mat44 GLfloat ]
-} deriving (Show, Eq)
+} deriving Show
 
 baseState :: Mat44 GLfloat -> Mat44 GLfloat -> PostProcessing -> IO EngineState
 baseState projection view pprocess = do

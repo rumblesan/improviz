@@ -20,8 +20,8 @@ createShaders :: IO Shaders
 createShaders =
   do
     program <- loadShaders [
-        ShaderInfo VertexShader (FileSource "shaders/triangles.vert"),
-        ShaderInfo FragmentShader (FileSource "shaders/triangles.frag")]
+        ShaderInfo VertexShader (FileSource "shaders/basic.vert"),
+        ShaderInfo FragmentShader (FileSource "shaders/basic.frag")]
     GL.currentProgram $= Just program
     mvpMatUniform <- GL.get $ uniformLocation program "MVPMat"
     colourU <- GL.get $ uniformLocation program "vertexColor"

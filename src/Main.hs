@@ -19,7 +19,6 @@ import qualified Language.LanguageAst as LA
 import AppServer
 import AppTypes
 import Gfx.PostProcessing
-import Gfx.GeometryBuffers (VBO(..))
 import Gfx.Windowing
 
 
@@ -83,18 +82,12 @@ drawScene :: EngineState -> Scene -> IO ()
 drawScene gs scene =
   do
     let post = postFX gs
-    bindFramebuffer Framebuffer $= frameBuffer post
+    usePostProcessing post
+
+    depthFunc $= Just Less
     clearColor $= sceneBackground scene
     clear [ ColorBuffer, DepthBuffer ]
     evalStateT (Gfx.interpretGfx $ Gfx.sceneGfx scene) gs
 
-    bindFramebuffer Framebuffer $= (defaultFrameBuffer post)
-    clear [ ColorBuffer, DepthBuffer ]
-    currentProgram $= Just (postShaders post)
-
-    let (VBO qbo qbai qbn) = renderQuadVBO post
-    bindVertexArrayObject $= Just qbo
-
-    drawArrays Triangles qbai qbn
-
+    renderPostProcessing post NormalStyle
 
