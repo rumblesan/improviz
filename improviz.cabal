@@ -18,20 +18,20 @@ executable improviz
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base >= 4.8 && < 5
+                     , bytestring
                      , containers
-                     , parsec
                      , indents
                      , mtl
+                     , parsec
                      , scotty
                      , stm
-                     , bytestring
                      , text
                      , time
-                     , Vec
-                     , GLURaw
                      , GLFW-b
+                     , GLURaw
                      , OpenGL
                      , OpenGLRaw
+                     , Vec
   other-modules:       AppServer
                      , AppTypes
                      , Gfx
@@ -66,15 +66,23 @@ test-suite improviz-test
                      , src
   main-is:             Spec.hs
   build-depends:       base >= 4.8 && < 5
+                     , bytestring
                      , containers
-                     , parsec
                      , indents
                      , mtl
-                     , HUnit
+                     , parsec
+                     , scotty
+                     , stm
                      , test-framework
                      , test-framework-hunit
+                     , text
+                     , time
                      , GLFW-b
+                     , GLURaw
+                     , HUnit
                      , OpenGL
+                     , OpenGLRaw
+                     , Vec
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   other-modules:       Gfx
                      , Gfx.Ast
