@@ -132,15 +132,24 @@ interpretApplication (Application name args block) = do
     _ -> return Null
 
 interpretLoop :: Loop -> InterpreterProcess Value
-interpretLoop (Loop num loopVar block) =
-  let
-    loopNums = fromIntegral <$> [0..(num-1)]
-  in
-    foldM_ looping Null loopNums >> return Null
+interpretLoop (Loop numExpr loopVar block) =
+  do
+    nums <- loopNums numExpr
+    foldM_ looping Null nums >> return Null
   where
+    looping :: Value -> Float -> InterpreterProcess Value
     looping _ n = do
       _ <- maybe (return Null) (\vn -> setVariable vn (Number n)) loopVar
       interpretBlock block
+
+loopNums :: Expression -> InterpreterProcess [Float]
+loopNums numExpr = do
+    loopV <- interpretExpression numExpr
+    case loopV of
+      Number v -> return [0..(v-1)]
+      Null -> throwError "Null given as loop number expression"
+      Lambda _ _ -> throwError "Function given as loop number expression"
+      BuiltIn _ -> throwError "Function given as loop number expression"
 
 interpretAssignment :: Assignment -> InterpreterProcess Value
 interpretAssignment (Assignment name expression) =

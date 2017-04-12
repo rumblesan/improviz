@@ -20,7 +20,7 @@ data Element = ElLoop Loop
 
 data Application = Application Identifier [Expression] (Maybe Block) deriving (Eq, Show)
 
-data Loop = Loop Integer (Maybe Identifier) Block deriving (Eq, Show)
+data Loop = Loop Expression (Maybe Identifier) Block deriving (Eq, Show)
 
 data Assignment = Assignment Identifier Expression deriving (Eq, Show)
 

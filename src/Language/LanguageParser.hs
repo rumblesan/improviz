@@ -60,7 +60,7 @@ application :: LangParser Application
 application = Application <$> m_identifier <*> m_parens (many expression) <*> optionMaybe (m_braces block) <?> "application"
 
 loop :: LangParser Loop
-loop = Loop <$> m_integer <* m_symbol "times" <*> optionMaybe (m_symbol "with" *> m_identifier) <*> m_braces block <?> "loop"
+loop = Loop <$> expression <* m_symbol "times" <*> optionMaybe (m_symbol "with" *> m_identifier) <*> m_braces block <?> "loop"
 
 assignment :: LangParser Assignment
 assignment = Assignment <$> m_identifier <* m_symbol "=" <*> expression <?> "assignment"
