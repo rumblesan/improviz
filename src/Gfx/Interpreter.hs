@@ -6,7 +6,7 @@ import Control.Monad.State.Strict
 
 import Data.Vec (Mat44, multmm)
 
-import Graphics.Rendering.OpenGL hiding (Fill, Line, get)
+import Graphics.Rendering.OpenGL hiding (Fill, Line, get, Cylinder)
 
 import Gfx.Ast
 import Gfx.EngineState as ES
@@ -28,7 +28,7 @@ type GraphicsEngine v = StateT EngineState GfxAction v
 interpretGfx :: GfxAst -> GraphicsEngine GfxOutput
 interpretGfx ast = do
   s <- gets shaders
-  liftIO $ (currentProgram $= Just (shaderProgram s))
+  liftIO (currentProgram $= Just (shaderProgram s))
   void $ interpretBlock ast
 
 interpretBlock :: Block -> GraphicsEngine [ GfxOutput ]
@@ -87,6 +87,12 @@ interpretShape (Line l) = do
   gbos <- gets geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat l 1 1))
   drawWireframe (lineBuffer gbos)
+  modify' popMatrix
+interpretShape (Cylinder x y z) = do
+  gbos <- gets geometryBuffers
+  modify' (\es -> pushMatrix es (scaleMat x y z))
+  drawShape (cylinderBuffer gbos)
+  drawWireframe (cylinderWireBuffer gbos)
   modify' popMatrix
 interpretShape _ = undefined
 
