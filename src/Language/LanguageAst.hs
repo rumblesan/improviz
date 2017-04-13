@@ -9,9 +9,9 @@ module Language.LanguageAst
     Variable(..),
     Value(..),
     Identifier
-  )where
+  ) where
 
-data Block = Block [Element] deriving (Eq, Show)
+newtype Block = Block [Element] deriving (Eq, Show)
 
 data Element = ElLoop Loop
              | ElAssign Assignment
@@ -31,7 +31,7 @@ data Expression = EApp Application
                 | EVal Value
                 deriving (Eq, Show)
 
-data Variable = Variable Identifier deriving (Eq, Show)
+newtype Variable = Variable Identifier deriving (Eq, Show)
 
 data Value = Number Float
            | Null
