@@ -6,7 +6,7 @@ import Control.Monad.State.Strict
 
 import Data.Vec (Mat44, multmm)
 
-import Graphics.Rendering.OpenGL hiding (Fill, Line, get, Cylinder)
+import Graphics.Rendering.OpenGL hiding (Fill, Line, get, Cylinder, Sphere)
 
 import Gfx.Ast
 import Gfx.EngineState as ES
@@ -94,7 +94,12 @@ interpretShape (Cylinder x y z) = do
   drawShape (cylinderBuffer gbos)
   drawWireframe (cylinderWireBuffer gbos)
   modify' popMatrix
-interpretShape _ = undefined
+interpretShape (Sphere x y z) = do
+  gbos <- gets geometryBuffers
+  modify' (\es -> pushMatrix es (scaleMat x y z))
+  drawShape (sphereBuffer gbos)
+  drawWireframe (sphereWireBuffer gbos)
+  modify' popMatrix
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
 interpretMatrix (Rotate x y z) = modify' (\es -> ES.multMatrix es $ rotMat x y z)

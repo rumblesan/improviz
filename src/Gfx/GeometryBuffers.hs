@@ -17,6 +17,8 @@ data GeometryBuffers = GeometryBuffers {
     rectWireBuffer :: VBO,
     cylinderBuffer :: VBO,
     cylinderWireBuffer :: VBO,
+    sphereBuffer :: VBO,
+    sphereWireBuffer :: VBO,
     lineBuffer :: VBO
   } deriving (Show, Eq)
 
@@ -47,8 +49,10 @@ createAllBuffers = let
     cwb = createBuffer $ lineVertexArray (cubeVertices 0.2) cubeWireframe
     rb = createBuffer $ triVertexArray (rectVertices 0.2) rectTriangles
     rwb = createBuffer $ lineVertexArray (rectVertices 0.2) rectWireframe
-    lwb = createBuffer $ lineVertexArray (lineVertices 0.2) lineWireframe
     cyb = createBuffer $ triVertexArray (cylinderVertices 0.2 0.2 8) $ cylinderTriangles 8
     cywb = createBuffer $ lineVertexArray (cylinderVertices 0.2 0.2 8) $ cylinderWireframe 8
+    sb = createBuffer $ triVertexArray (sphereVertices 0.1 12) $ sphereTriangles 12
+    swb = createBuffer $ lineVertexArray (sphereVertices 0.1 12) $ sphereWireframe 12
+    lwb = createBuffer $ lineVertexArray (lineVertices 0.2) lineWireframe
   in
-    GeometryBuffers <$> cb <*> cwb <*> rb <*> rwb <*> cyb <*> cywb <*> lwb
+    GeometryBuffers <$> cb <*> cwb <*> rb <*> rwb <*> cyb <*> cywb <*> sb <*> swb <*> lwb

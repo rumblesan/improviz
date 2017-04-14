@@ -106,12 +106,71 @@ cylinderWireframe segments =
   in
     bEdgeLines ++ bCentreLines ++ sideLines ++ tEdgeLines ++ tCentreLines
 
-sphereVertices :: GLfloat -> Integer -> [(GLfloat, GLfloat, GLfloat)]
-sphereVertices radius segments = undefined
+sphereVertices :: GLfloat -> Integer -> [Vertex3 GLfloat]
+sphereVertices radius segments =
+  let
+    angDelta = (2.0 * pi) / fromInteger segments
+    bottomCentre = Vertex3 0 0 (-radius) :: Vertex3 GLfloat
+    topCentre = Vertex3 0 0 radius :: Vertex3 GLfloat
+    rings = div (segments - 1) 2
+    allRings = do
+      ring <- [1..rings]
+      ringVerts radius angDelta (fromInteger ring) segments
+  in
+    topCentre : allRings ++ [bottomCentre]
+  where
+    ringVerts :: GLfloat -> GLfloat -> GLfloat -> Integer -> [Vertex3 GLfloat]
+    ringVerts radius angle heightRing segments =
+      let
+        width = sin (heightRing * angle) * radius
+        height = cos (heightRing * angle) * radius
+        points = fromInteger <$> [0..segments-1]
+      in fmap (\p -> Vertex3 (sin (p * angle) * width) (cos (p * angle) * width) height ) points
+
 
 sphereTriangles :: Integer -> [(Integer, Integer, Integer)]
-sphereTriangles segments = undefined
+sphereTriangles segments =
+  let
+    rings = div (segments-1) 2
+    topCentre = 0
+    bottomCentre = (segments * rings) + 1
 
-sphereWireframes :: Integer -> [(Integer, Integer)]
-sphereWireframes segments = undefined
+    topTriangles = do
+      s <- [1..segments]
+      return (s, mod s segments + 1, topCentre)
+
+    bottomTriangles = do
+      s <- [1..segments]
+      let offset = segments * (rings - 1)
+      return (s + offset, mod s segments + offset + 1, bottomCentre)
+
+    intraRingTriangles = do
+      r <- [1..(rings-1)]
+      s <- [1..segments]
+      let o = (r-1) * segments
+      let upper = (o + s, mod s segments + 1 + o, (mod s segments + 1) + (r * segments))
+      let lower = (o + s, (mod s segments + 1) + (r * segments), o + s + segments)
+      [upper, lower]
+  in
+    topTriangles ++ intraRingTriangles ++ bottomTriangles
+
+sphereWireframe :: Integer -> [(Integer, Integer)]
+sphereWireframe segments =
+  let
+    rings = div (segments-1) 2
+    topCentre = 0
+    bottomCentre = segments * rings + 1
+    topLines = fmap (\s -> (s, 0)) [1..segments]
+    ringLines = do
+      r <- [0..(rings-1)]
+      let offset = r * segments
+      s <- [1..segments]
+      return (s + offset, mod s segments + offset + 1)
+    intraRingLines = do
+      r <- [0..(rings-2)]
+      s <- [1..segments]
+      return (s + r * segments, s + (r + 1) * segments)
+    bottomLines = fmap (\s -> (s + ((rings - 1) * segments), bottomCentre)) [1..segments]
+  in
+    topLines ++ ringLines ++ intraRingLines ++ bottomLines
 
