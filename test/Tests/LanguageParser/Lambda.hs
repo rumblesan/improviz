@@ -28,23 +28,23 @@ parserLambdaTests =
 test_parse_expr_lambda :: Assertion
 test_parse_expr_lambda =
   let
-    program = "foo = (a b) => a + b;"
+    program = "foo = (a, b) => a + b"
     block = Block [ElExpression $ BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")]
     lambda = Lambda ["a", "b"] block
-    expected = Block [ElAssign $ Assignment "foo" $ EVal lambda]
-    result = either (const $ Block []) id (Language.parse program)
+    expected = Right $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
+    result = Language.parse program
   in
     assertEqual "" expected result
 
 test_parse_multiline_lambda :: Assertion
 test_parse_multiline_lambda =
   let
-    program = "foo = (a b) => {\nc = a + b;\nc * 2;\n};"
+    program = "foo = (a, b) =>\n\tc = a + b\n\tc * 2\n"
     blockE1 = ElAssign $ Assignment "c" $ BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
     blockE2 = ElExpression $ BinaryOp "*" (EVar $ Variable "c") (EVal $ Number 2)
     lambda = Lambda ["a", "b"] (Block [blockE1, blockE2])
-    expected = Block [ElAssign $ Assignment "foo" $ EVal lambda]
-    result = either (const $ Block []) id (Language.parse program)
+    expected = Right $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
+    result = Language.parse program
   in
     assertEqual "" expected result
 

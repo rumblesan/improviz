@@ -51,7 +51,7 @@ test_interpret_expression =
 test_basic_program :: Assertion
 test_basic_program =
   let
-    program = "a = 2;\nb = 3;\nfoo = (c d) => c * d;\nbox(b a foo(a b));\n"
+    program = "a = 2\nb = 3\nfoo = (c, d) => c * d\nbox(b, a, foo(a, b))\n"
     logs = ["Running BuiltIn: box", "Running lambda"]
     maybeGfx = do
       ast <- Language.parse program
