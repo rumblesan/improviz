@@ -25,7 +25,8 @@ languageTests =
     testCase "Interpreting works as expected" test_simple_interpreter,
     testCase "Interpreting expression works as expected" test_interpret_expression,
     testCase "Graphics Creation" test_create_gfx,
-    testCase "Basic program" test_basic_program
+    testCase "Basic program" test_basic_program,
+    testCase "Loop program" test_loop_program
   ]
 
 test_simple_interpreter :: Assertion
@@ -60,6 +61,26 @@ test_basic_program =
       return $ sceneGfx scene
     result = either (const []) id maybeGfx
     expected = [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
+  in
+    assertEqual "" expected result
+
+test_loop_program :: Assertion
+test_loop_program =
+  let
+    program = "rotate(0.1, 0.1, 0.1)\n3 times with i\n\trotate(0.2, 0.2, 0.2)\n\tbox(i)\n\n\n"
+    result = do
+      ast <- Language.parse program
+      scene <- fst $ Language.createGfx [] ast
+      return $ sceneGfx scene
+    expected = Right [
+      GA.MatrixCommand (GA.Rotate 0.1 0.1 0.1) Nothing,
+      GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing,
+      GA.ShapeCommand (GA.Cube 0 1 1) Nothing,
+      GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing,
+      GA.ShapeCommand (GA.Cube 1 1 1) Nothing,
+      GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing,
+      GA.ShapeCommand (GA.Cube 2 1 1) Nothing
+      ]
   in
     assertEqual "" expected result
 
