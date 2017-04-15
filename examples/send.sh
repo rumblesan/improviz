@@ -2,5 +2,5 @@
 
 FILENAME=$1
 
-curl --data "@${FILENAME}" http://localhost:3000/read
+curl --data-binary "@${FILENAME}" http://localhost:3000/read
 
