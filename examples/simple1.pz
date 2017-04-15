@@ -1,4 +1,6 @@
-fill(0.5, 0, 1)
 stroke(0, 0, 0)
-rotate(time, time, time)
-box(0.2, 0.5, 0.5)
+fill(1, 0, 0)
+100 times
+	rotate()
+	box(8, 8, 8)
+
