@@ -58,6 +58,7 @@ executable improviz
                      , Language.StdLib.MatrixOps
                      , Language.StdLib.ColourOps
                      , Language.StdLib.BlockHandling
+                     , Language.StdLib.PostEffects
   default-language:    Haskell2010
 
 test-suite improviz-test
@@ -108,6 +109,7 @@ test-suite improviz-test
                      , Language.StdLib.MatrixOps
                      , Language.StdLib.ColourOps
                      , Language.StdLib.BlockHandling
+                     , Language.StdLib.PostEffects
                      , Tests.GfxInterpreter
                      , Tests.Language
                      , Tests.LanguageParser

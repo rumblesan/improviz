@@ -13,6 +13,7 @@ import Control.Monad.Except
 
 import qualified Gfx.Ast as GA
 import Gfx (Scene(..))
+import Gfx.PostProcessing(AnimationStyle(..))
 
 import qualified Language
 import Language.LanguageAst
@@ -25,6 +26,7 @@ languageTests =
     testCase "Interpreting works as expected" test_simple_interpreter,
     testCase "Interpreting expression works as expected" test_interpret_expression,
     testCase "Graphics Creation" test_create_gfx,
+    testCase "Animation Style Setting" test_animation_style,
     testCase "Basic program" test_basic_program,
     testCase "Loop program" test_loop_program
   ]
@@ -53,7 +55,6 @@ test_basic_program :: Assertion
 test_basic_program =
   let
     program = "a = 2\nb = 3\nfoo = (c, d) => c * d\nbox(b, a, foo(a, b))\n"
-    logs = ["Running BuiltIn: box", "Running lambda"]
     maybeGfx = do
       ast <- Language.parse program
       let result = Language.createGfx [] ast
@@ -61,6 +62,20 @@ test_basic_program =
       return $ sceneGfx scene
     result = either (const []) id maybeGfx
     expected = [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
+  in
+    assertEqual "" expected result
+
+test_animation_style :: Assertion
+test_animation_style =
+  let
+    program = "motionBlur()"
+    maybePostFX = do
+      ast <- Language.parse program
+      let result = Language.createGfx [] ast
+      scene <- fst result
+      return $ scenePostProcessingFX scene
+    result = either (const NormalStyle) id maybePostFX
+    expected = MotionBlur
   in
     assertEqual "" expected result
 

@@ -38,7 +38,12 @@ createGfx initialVars block =
        _ <- interpretLanguage block
        gfxB <- gets currentGfx
        gfxBg <- gets gfxBackground
-       return Scene { sceneBackground = gfxBg, sceneGfx = gfxB }
+       gfxAnimStyle <- gets animationStyle
+       return Scene {
+         sceneBackground = gfxBg,
+         sceneGfx = gfxB,
+         scenePostProcessingFX = gfxAnimStyle
+       }
   in
     evalState (runWriterT (runExceptT run)) emptyState
 
@@ -58,6 +63,8 @@ addStdLib = do
   setBuiltIn "stroke" SL.stroke ["r", "g", "b", "a"]
   setBuiltIn "noStroke" SL.noStroke []
   setBuiltIn "background" SL.background ["r", "g", "b"]
+  setBuiltIn "paintOver" SL.paintOver []
+  setBuiltIn "motionBlur" SL.motionBlur []
 
 addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess()
 addInitialVariables vars = forM_ vars (uncurry setVariable)

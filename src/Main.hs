@@ -89,5 +89,5 @@ drawScene gs scene =
     clear [ ColorBuffer, DepthBuffer ]
     evalStateT (Gfx.interpretGfx $ Gfx.sceneGfx scene) gs
 
-    renderPostProcessing post NormalStyle
+    renderPostProcessing post $ scenePostProcessingFX scene
 

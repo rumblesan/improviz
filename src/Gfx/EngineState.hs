@@ -4,13 +4,14 @@ import Graphics.Rendering.OpenGL (Color4(..), GLfloat)
 import Data.Vec (Mat44, multmm, identity)
 
 import Gfx.Ast (Block)
-import Gfx.PostProcessing (PostProcessing)
+import Gfx.PostProcessing (PostProcessing, AnimationStyle)
 import Gfx.GeometryBuffers (GeometryBuffers, createAllBuffers)
 import Gfx.Shaders
 
 data Scene = Scene {
   sceneBackground :: Color4 Float,
-  sceneGfx :: Block
+  sceneGfx :: Block,
+  scenePostProcessingFX :: AnimationStyle
 }
 
 data EngineState = EngineState {

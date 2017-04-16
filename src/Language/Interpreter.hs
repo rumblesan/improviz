@@ -14,6 +14,7 @@ import Language.Interpreter.Operators
 import Language.LanguageAst
 import qualified Language.Interpreter.Scope as LS
 import qualified Gfx.Ast as GA
+import Gfx.PostProcessing (AnimationStyle(..))
 
 emptyState :: InterpreterState
 emptyState = InterpreterState {
@@ -22,6 +23,7 @@ emptyState = InterpreterState {
   blockStack = [],
   gfxBackground = Color4 1 1 1 0,
   currentGfx = GA.emptyGfx,
+  animationStyle = NormalStyle,
   gfxStack = []
   }
 
@@ -92,6 +94,10 @@ removeBlock = modify (\s -> s { blockStack = tail $ blockStack s })
 setGfxBackground :: (Float, Float, Float) -> InterpreterProcess Value
 setGfxBackground (r, g, b) =
     modify (\s -> s {gfxBackground = Color4 r g b 0}) >> return Null
+
+setAnimationStyle :: AnimationStyle -> InterpreterProcess Value
+setAnimationStyle style =
+    modify (\s -> s {animationStyle = style}) >> return Null
 
 
 interpretLanguage :: Block -> InterpreterProcess Value

@@ -11,6 +11,7 @@ import Language.LanguageAst
 import qualified Language.Interpreter.Scope as LS
 import qualified Data.Map.Strict as M
 import qualified Gfx.Ast as GA
+import Gfx.PostProcessing (AnimationStyle(..))
 
 type BuiltInFunction = Maybe Block -> InterpreterProcess Value
 
@@ -25,5 +26,6 @@ data InterpreterState = InterpreterState {
   blockStack :: [Block],
   gfxBackground :: Color4 Float,
   currentGfx :: GA.Block,
+  animationStyle :: AnimationStyle,
   gfxStack :: [GA.Block]
 }
