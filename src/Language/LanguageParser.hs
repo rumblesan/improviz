@@ -30,7 +30,7 @@ program = topLevel >> langBlock
 exprDef :: GenLanguageDef String st Indent
 exprDef = LanguageDef { commentStart   = ""
                       , commentEnd     = ""
-                      , commentLine    = ""
+                      , commentLine    = "#"
                       , nestedComments = True
                       , identStart     = letter <|> char '_'
                       , identLetter    = alphaNum <|> oneOf "_'"
