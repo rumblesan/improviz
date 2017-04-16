@@ -10,6 +10,7 @@ import Tests.LanguageParser.Assignment (parserAssignmentTests)
 import Tests.LanguageParser.Functions (parserFunctionTests)
 import Tests.LanguageParser.Lambda (parserLambdaTests)
 import Tests.LanguageParser.Loops (parserLoopTests)
+import Tests.LanguageParser.ErrorCatching (parserErrorCatchingTests)
 
 main :: IO ()
 main = defaultMainWithOpts
@@ -19,6 +20,7 @@ main = defaultMainWithOpts
     parserAssignmentTests,
     parserFunctionTests,
     parserLambdaTests,
+    parserErrorCatchingTests,
     parserLoopTests
   ]
   mempty
