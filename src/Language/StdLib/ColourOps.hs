@@ -11,14 +11,16 @@ import qualified Gfx.Ast as GA
 
 import Language.StdLib.BlockHandling (handleGfxBlock)
 
+dToC :: Float -> Float
+dToC c = max 0 (min c 255) / 255
 
 fill :: Maybe Block -> InterpreterProcess Value
 fill block = do
-    r <- getVariableWithDefault "r" (Number 1) >>= getNumberValue
-    g <- getVariableWithDefault "g" (Number 1) >>= getNumberValue
-    b <- getVariableWithDefault "b" (Number 1) >>= getNumberValue
-    a <- getVariableWithDefault "a" (Number 1) >>= getNumberValue
-    let partialCmd = GA.ColourCommand $ GA.Fill r g b a
+    r <- getVariableWithDefault "r" (Number 255) >>= getNumberValue
+    g <- getVariableWithDefault "g" (Number r) >>= getNumberValue
+    b <- getVariableWithDefault "b" (Number g) >>= getNumberValue
+    a <- getVariableWithDefault "a" (Number 255) >>= getNumberValue
+    let partialCmd = GA.ColourCommand $ GA.Fill (dToC r) (dToC g) (dToC b) (dToC a)
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
@@ -30,11 +32,11 @@ noFill block = do
 
 stroke :: Maybe Block -> InterpreterProcess Value
 stroke block = do
-    r <- getVariableWithDefault "r" (Number 1) >>= getNumberValue
-    g <- getVariableWithDefault "g" (Number 1) >>= getNumberValue
-    b <- getVariableWithDefault "b" (Number 1) >>= getNumberValue
-    a <- getVariableWithDefault "a" (Number 1) >>= getNumberValue
-    let partialCmd = GA.ColourCommand $ GA.Stroke r g b a
+    r <- getVariableWithDefault "r" (Number 255) >>= getNumberValue
+    g <- getVariableWithDefault "g" (Number r) >>= getNumberValue
+    b <- getVariableWithDefault "b" (Number g) >>= getNumberValue
+    a <- getVariableWithDefault "a" (Number 255) >>= getNumberValue
+    let partialCmd = GA.ColourCommand $ GA.Stroke (dToC r) (dToC g) (dToC b) (dToC a)
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
@@ -47,11 +49,8 @@ noStroke block = do
 background :: Maybe Block -> InterpreterProcess Value
 background block =
   do
-    r <- getVariableWithDefault "r" (Number 1) >>= getNumberValue
-    g <- getVariableWithDefault "g" (Number 1) >>= getNumberValue
-    b <- getVariableWithDefault "b" (Number 1) >>= getNumberValue
+    r <- getVariableWithDefault "r" (Number 255) >>= getNumberValue
+    g <- getVariableWithDefault "g" (Number r) >>= getNumberValue
+    b <- getVariableWithDefault "b" (Number g) >>= getNumberValue
     _ <- setGfxBackground (dToC r, dToC g, dToC b)
     maybe (return Null) interpretBlock block
-  where
-    dToC :: Float -> Float
-    dToC c = max 0 (min c 255) / 255
