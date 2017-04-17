@@ -53,13 +53,20 @@ initApp gfxEngineTMVar width height = do
 
 
 resize :: TMVar EngineState -> GLFW.WindowSizeCallback
-resize var _ newWidth newHeight = do
+resize esVar window newWidth newHeight = do
   print "Resizing"
-  let newRatio = fromIntegral newWidth / fromIntegral newHeight
+  (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
+  engineState <- atomically $ readTMVar esVar
+  deletePostProcessing $ postFX engineState
+  newPost <- createPostProcessing (fromIntegral fbWidth) (fromIntegral fbHeight)
+  let newRatio = fromIntegral fbWidth / fromIntegral fbHeight
       newProj = GM.projectionMat 0.1 100 (pi/4) newRatio
   atomically $ do
-    es <- takeTMVar var
-    putTMVar var es { projectionMatrix = newProj }
+    es <- takeTMVar esVar
+    putTMVar esVar es {
+        projectionMatrix = newProj,
+        postFX = newPost
+      }
 
 display :: TVar AppState -> TMVar EngineState -> Double -> IO ()
 display appState gfxState time = do
