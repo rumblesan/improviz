@@ -13,12 +13,15 @@ lineVertexArray verts points =
 
 
 cubeVertices :: GLfloat -> [Vertex3 GLfloat]
-cubeVertices s = [
-    Vertex3 (-s) (-s) (-s), Vertex3 (-s) (-s) s,
-    Vertex3 s (-s) s,       Vertex3 s (-s) (-s),
-    Vertex3 (-s) s (-s),    Vertex3 (-s) s s,
-    Vertex3 s s s,          Vertex3 s s (-s)
-  ]
+cubeVertices size =
+  let s = size / 2
+  in
+    [
+      Vertex3 (-s) (-s) (-s), Vertex3 (-s) (-s) s,
+      Vertex3 s (-s) s,       Vertex3 s (-s) (-s),
+      Vertex3 (-s) s (-s),    Vertex3 (-s) s s,
+      Vertex3 s s s,          Vertex3 s s (-s)
+    ]
 
 cubeTriangles :: [(Integer, Integer, Integer)]
 cubeTriangles = [
@@ -38,10 +41,13 @@ cubeWireframe = [
   ]
 
 rectVertices :: GLfloat -> [Vertex3 GLfloat]
-rectVertices s = [
-    Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0,
-    Vertex3 s s 0,       Vertex3 (-s) s 0
-  ]
+rectVertices size =
+  let s = size / 2
+  in
+    [
+      Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0,
+      Vertex3 s s 0,       Vertex3 (-s) s 0
+    ]
 
 rectTriangles :: [(Integer, Integer, Integer)]
 rectTriangles = [
@@ -54,9 +60,12 @@ rectWireframe = [
   ]
 
 lineVertices :: GLfloat -> [Vertex3 GLfloat]
-lineVertices s = [
-    Vertex3 0 (-s) 0, Vertex3 0 s 0
-  ]
+lineVertices size =
+  let s = size / 2
+  in
+    [
+      Vertex3 0 (-s) 0, Vertex3 0 s 0
+    ]
 
 lineWireframe :: [(Integer, Integer)]
 lineWireframe = [
@@ -70,12 +79,14 @@ cylinderVertices height radius segments =
     p = fromInteger <$> [0..segments-1]
     angDelta = (2.0 * pi) / fromInteger segments
     angles = fmap (angDelta *) p
-    bottomCentre = Vertex3 0 0 0
-    topCentre = Vertex3 0 0 height
+    bottomHeight = (-(height / 2))
+    topHeight = height / 2
+    bottomCentre = Vertex3 0 0 bottomHeight
+    topCentre = Vertex3 0 0 topHeight
     bottomVerts = do
       a <- angles
-      return (Vertex3 (radius * sin a) (radius * cos a) 0)
-    topVerts = [Vertex3 x y height | (Vertex3 x y _) <- bottomVerts]
+      return (Vertex3 (radius * sin a) (radius * cos a) bottomHeight)
+    topVerts = [Vertex3 x y topHeight | (Vertex3 x y _) <- bottomVerts]
   in
     (bottomCentre : bottomVerts) ++ (topCentre : topVerts)
 
