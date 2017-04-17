@@ -182,24 +182,18 @@ usePostProcessing post = do
 renderPostProcessing :: PostProcessing -> AnimationStyle -> IO ()
 renderPostProcessing post animStyle = do
   depthFunc $= Nothing
+  let outbuffer@(Savebuffer outFBO previousFrame _ _ _) = output post
+  bindFramebuffer Framebuffer $= outFBO
   case animStyle of
-    NormalStyle -> do
-      bindFramebuffer Framebuffer $= defaultFramebufferObject
-      renderSavebuffer $ input post
+    NormalStyle -> renderSavebuffer $ input post
     MotionBlur -> do
       let (Savebuffer _ sceneFrame sceneDepth _ _) = input post
-      let outbuffer@(Savebuffer outFBO previousFrame _ _ _) = output post
-      bindFramebuffer Framebuffer $= outFBO
       renderMotionBlurbuffer (motionBlur post) sceneFrame previousFrame 0.7
-      bindFramebuffer Framebuffer $= defaultFramebufferObject
-      renderSavebuffer outbuffer
     PaintOver -> do
       let (Savebuffer _ sceneFrame sceneDepth _ _) = input post
-      let outbuffer@(Savebuffer outFBO previousFrame _ _ _) = output post
-      bindFramebuffer Framebuffer $= outFBO
       renderPaintOverbuffer (paintOver post) sceneDepth sceneFrame previousFrame
-      bindFramebuffer Framebuffer $= defaultFramebufferObject
-      renderSavebuffer outbuffer
+  bindFramebuffer Framebuffer $= defaultFramebufferObject
+  renderSavebuffer outbuffer
 
 renderSavebuffer :: Savebuffer -> IO ()
 renderSavebuffer (Savebuffer _ text _ program quadVBO) = do
