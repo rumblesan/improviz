@@ -97,10 +97,10 @@ cylinderTriangles segments =
     bc = 0
     tc = segments + 1
     bp = [1..segments]
-    bTris = [(v, mod v segments + 1, bc) | v <- bp]
-    tTris = fmap (\(x, y, c) -> (x + tc, y + tc, c + tc)) bTris
-    sideLowerTris = [(v, v + tc, mod v segments + tc + 1) | v <- bp]
-    sideUpperTris = [(v, mod v segments + tc + 1, mod v segments + 1)| v <- bp]
+    bTris = [(bc, mod v segments + 1, v) | v <- bp]
+    tTris = [(tc, v + tc, mod v segments + 1 + tc) | v <- bp]
+    sideLowerTris = [(v, mod v segments + tc + 1, v + tc) | v <- bp]
+    sideUpperTris = [(v, mod v segments + 1, mod v segments + tc + 1)| v <- bp]
   in
     bTris ++ sideLowerTris ++ sideUpperTris ++ tTris
 
@@ -154,14 +154,14 @@ sphereTriangles segments =
     bottomTriangles = do
       s <- [1..segments]
       let offset = segments * (rings - 1)
-      return (s + offset, mod s segments + offset + 1, bottomCentre)
+      return (s + offset, bottomCentre, mod s segments + offset + 1)
 
     intraRingTriangles = do
       r <- [1..(rings-1)]
       s <- [1..segments]
       let o = (r-1) * segments
-      let upper = (o + s, mod s segments + 1 + o, (mod s segments + 1) + (r * segments))
-      let lower = (o + s, (mod s segments + 1) + (r * segments), o + s + segments)
+      let upper = (o + s, (mod s segments + 1) + (r * segments), mod s segments + 1 + o)
+      let lower = (o + s, o + s + segments, (mod s segments + 1) + (r * segments))
       [upper, lower]
   in
     topTriangles ++ intraRingTriangles ++ bottomTriangles
