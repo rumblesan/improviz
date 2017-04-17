@@ -38,8 +38,8 @@ quadVertices = [
      1, -1, 0, 1,  0
   ]
 
-quadVBO :: IO VBO
-quadVBO = do
+createQuadVBO :: IO VBO
+createQuadVBO = do
   vbo <- genObjectName
   bindVertexArrayObject $= Just vbo
   arrayBuffer <- genObjectName
@@ -61,6 +61,10 @@ quadVBO = do
   vertexAttribArray vTexCoord $= Enabled
   return $ VBO vbo firstPosIndex 6
 
+drawQuadVBO :: VBO -> IO ()
+drawQuadVBO (VBO qbo qbai qbn) = do
+  bindVertexArrayObject $= Just qbo
+  drawArrays Triangles qbai qbn
 
 create2DTexture :: GLint -> GLint -> IO TextureObject
 create2DTexture width height = do
@@ -102,7 +106,7 @@ createSavebuffer width height = do
 
   depth <- createDepthbuffer width height
 
-  qvbo <- quadVBO
+  qvbo <- createQuadVBO
   program <- loadShaders [
     ShaderInfo VertexShader (FileSource "shaders/savebuffer.vert"),
     ShaderInfo FragmentShader (FileSource "shaders/savebuffer.frag")]
@@ -119,7 +123,7 @@ createMotionBlurbuffer width height = do
 
   depth <- createDepthbuffer width height
 
-  qvbo <- quadVBO
+  qvbo <- createQuadVBO
   program <- loadShaders [
     ShaderInfo VertexShader (FileSource "shaders/motionBlur.vert"),
     ShaderInfo FragmentShader (FileSource "shaders/motionBlur.frag")]
@@ -137,7 +141,7 @@ createPaintOverbuffer width height = do
 
   depth <- createDepthbuffer width height
 
-  qvbo <- quadVBO
+  qvbo <- createQuadVBO
   program <- loadShaders [
     ShaderInfo VertexShader (FileSource "shaders/paintOver.vert"),
     ShaderInfo FragmentShader (FileSource "shaders/paintOver.frag")]
@@ -177,9 +181,7 @@ renderSavebuffer (Savebuffer _ text _ program quadVBO) = do
   currentProgram $= Just program
   activeTexture $= TextureUnit 0
   textureBinding Texture2D $= Just text
-  let (VBO qbo qbai qbn) = quadVBO
-  bindVertexArrayObject $= Just qbo
-  drawArrays Triangles qbai qbn
+  drawQuadVBO quadVBO
 
 renderMotionBlurbuffer :: Mixbuffer -> TextureObject -> TextureObject -> GLfloat -> IO ()
 renderMotionBlurbuffer (Mixbuffer _ _ _ program quadVBO) nextFrame lastFrame mix = do
@@ -199,9 +201,7 @@ renderMotionBlurbuffer (Mixbuffer _ _ _ program quadVBO) nextFrame lastFrame mix
   uniform lastFrameU $= TextureUnit 1
   uniform mixRatioU $= mix
 
-  let (VBO qbo qbai qbn) = quadVBO
-  bindVertexArrayObject $= Just qbo
-  drawArrays Triangles qbai qbn
+  drawQuadVBO quadVBO
 
 renderPaintOverbuffer :: Mixbuffer -> TextureObject -> TextureObject -> TextureObject -> IO ()
 renderPaintOverbuffer (Mixbuffer _ _ _ program quadVBO) depth nextFrame lastFrame = do
@@ -223,7 +223,5 @@ renderPaintOverbuffer (Mixbuffer _ _ _ program quadVBO) depth nextFrame lastFram
   uniform lastFrameU $= TextureUnit 1
   uniform depthU $= TextureUnit 2
 
-  let (VBO qbo qbai qbn) = quadVBO
-  bindVertexArrayObject $= Just qbo
-  drawArrays Triangles qbai qbn
+  drawQuadVBO quadVBO
 
