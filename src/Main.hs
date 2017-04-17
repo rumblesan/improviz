@@ -92,6 +92,9 @@ drawScene gs scene =
     usePostProcessing post
 
     depthFunc $= Just Less
+    blend $= Enabled
+    blendEquationSeparate $= (FuncAdd, FuncAdd)
+    blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
     clearColor $= sceneBackground scene
     clear [ ColorBuffer, DepthBuffer ]
     evalStateT (Gfx.interpretGfx $ Gfx.sceneGfx scene) gs
