@@ -74,14 +74,14 @@ interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
 interpretShape (Cube x y z) = do
   gbos <- gets geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y z))
-  drawShape (cubeBuffer gbos)
   drawWireframe (cubeWireBuffer gbos)
+  drawShape (cubeBuffer gbos)
   modify' popMatrix
 interpretShape (Rectangle x y) = do
   gbos <- gets geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y 1))
-  drawShape (rectBuffer gbos)
   drawWireframe (rectWireBuffer gbos)
+  drawShape (rectBuffer gbos)
   modify' popMatrix
 interpretShape (Line l) = do
   gbos <- gets geometryBuffers
@@ -91,14 +91,14 @@ interpretShape (Line l) = do
 interpretShape (Cylinder x y z) = do
   gbos <- gets geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y z))
-  drawShape (cylinderBuffer gbos)
   drawWireframe (cylinderWireBuffer gbos)
+  drawShape (cylinderBuffer gbos)
   modify' popMatrix
 interpretShape (Sphere x y z) = do
   gbos <- gets geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y z))
-  drawShape (sphereBuffer gbos)
   drawWireframe (sphereWireBuffer gbos)
+  drawShape (sphereBuffer gbos)
   modify' popMatrix
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
