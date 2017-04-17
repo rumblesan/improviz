@@ -95,6 +95,12 @@ createPostProcessing width height = do
   outputBuffer <- createSavebuffer width height
   return $ PostProcessing inputBuffer motionBlurBuffer paintOverBuffer outputBuffer
 
+deletePostProcessing :: PostProcessing -> IO ()
+deletePostProcessing post = do
+  deleteSavebuffer $ input post
+  deleteMixbuffer $ motionBlur post
+  deleteMixbuffer $ paintOver post
+  deleteSavebuffer $ output post
 
 createSavebuffer :: GLint -> GLint -> IO Savebuffer
 createSavebuffer width height = do
@@ -113,6 +119,16 @@ createSavebuffer width height = do
 
   return $ Savebuffer fbo text depth program qvbo
 
+deleteSavebuffer :: Savebuffer -> IO ()
+deleteSavebuffer (Savebuffer sbfbo sbtext sbdepth sbprogram (VBO sbvbo sbabo _ _)) =
+  do
+    deleteObjectName sbtext
+    deleteObjectName sbdepth
+    deleteObjectName sbprogram
+    deleteObjectName sbabo
+    deleteObjectName sbvbo
+    deleteObjectName sbfbo
+
 createMotionBlurbuffer :: GLint -> GLint -> IO Mixbuffer
 createMotionBlurbuffer width height = do
   fbo <- genObjectName
@@ -130,6 +146,15 @@ createMotionBlurbuffer width height = do
 
   return $ Mixbuffer fbo text depth program qvbo
 
+deleteMixbuffer :: Mixbuffer -> IO ()
+deleteMixbuffer (Mixbuffer mfbo mtext depth mprogram (VBO mvbo mabo _ _)) =
+  do
+    deleteObjectName mtext
+    deleteObjectName depth
+    deleteObjectName mprogram
+    deleteObjectName mabo
+    deleteObjectName mvbo
+    deleteObjectName mfbo
 
 createPaintOverbuffer :: GLint -> GLint -> IO Mixbuffer
 createPaintOverbuffer width height = do
