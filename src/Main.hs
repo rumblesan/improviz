@@ -91,6 +91,8 @@ drawScene gs scene =
     let post = postFX gs
     usePostProcessing post
 
+    frontFace $= CCW
+    cullFace $= Just Back
     depthFunc $= Just Less
     blend $= Enabled
     blendEquationSeparate $= (FuncAdd, FuncAdd)
