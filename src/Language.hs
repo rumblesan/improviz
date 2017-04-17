@@ -13,7 +13,7 @@ import Gfx (Scene(..))
 import Language.LanguageParser (parseProgram)
 import Language.Interpreter.Types (currentGfx, InterpreterProcess, InterpreterState(..))
 import Language.Interpreter (interpretLanguage, emptyState, setBuiltIn, setVariable)
-import Language.LanguageAst (Block, Value, Identifier)
+import Language.LanguageAst (Block, Value(..), Identifier)
 import qualified Language.StdLib as SL
 
 parse :: String -> Either String Block
@@ -65,6 +65,10 @@ addStdLib = do
   setBuiltIn "background" SL.background ["r", "g", "b"]
   setBuiltIn "paintOver" SL.paintOver []
   setBuiltIn "motionBlur" SL.motionBlur []
+  setBuiltIn "sin" SL.sinFunc ["rads"]
+  setBuiltIn "cos" SL.cosFunc ["rads"]
+  setVariable "pi" (Number pi)
+  return ()
 
 addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess()
 addInitialVariables vars = forM_ vars (uncurry setVariable)
