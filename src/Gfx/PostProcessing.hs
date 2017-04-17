@@ -59,10 +59,10 @@ createQuadVBO = do
   vertexAttribPointer vTexCoord $= (ToFloat, VertexArrayDescriptor 2 Float stride (bufferOffset firstTexIndex))
   vertexAttribArray vPosition $= Enabled
   vertexAttribArray vTexCoord $= Enabled
-  return $ VBO vbo firstPosIndex 6
+  return $ VBO vbo arrayBuffer firstPosIndex 6
 
 drawQuadVBO :: VBO -> IO ()
-drawQuadVBO (VBO qbo qbai qbn) = do
+drawQuadVBO (VBO qbo _ qbai qbn) = do
   bindVertexArrayObject $= Just qbo
   drawArrays Triangles qbai qbn
 

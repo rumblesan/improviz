@@ -51,7 +51,7 @@ getFullMatrix = do
   return $ multmm (multmm pMat vMat) mMat
 
 drawShape :: VBO -> GraphicsEngine GfxOutput
-drawShape (VBO bufferObject arrayIndex offset) = do
+drawShape (VBO bufferObject _ arrayIndex offset) = do
   fillC <- gets currentFillColour
   mvp <- getFullMatrix
   program <- gets shaders
@@ -61,7 +61,7 @@ drawShape (VBO bufferObject arrayIndex offset) = do
   lift $ drawArrays Triangles arrayIndex offset
 
 drawWireframe :: VBO -> GraphicsEngine GfxOutput
-drawWireframe (VBO bufferObject arrayIndex offset) = do
+drawWireframe (VBO bufferObject _ arrayIndex offset) = do
   strokeC <- gets currentStrokeColour
   mvp <- getFullMatrix
   program <- gets shaders

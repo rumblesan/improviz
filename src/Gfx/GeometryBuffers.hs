@@ -8,7 +8,7 @@ import Graphics.Rendering.OpenGL
 
 import Gfx.Geometries
 
-data VBO = VBO VertexArrayObject ArrayIndex NumArrayIndices deriving (Show, Eq)
+data VBO = VBO VertexArrayObject BufferObject ArrayIndex NumArrayIndices deriving (Show, Eq)
 
 data GeometryBuffers = GeometryBuffers {
     cubeBuffer :: VBO,
@@ -41,7 +41,7 @@ createBuffer verts = do
     bufferData ArrayBuffer $= (size, ptr, StaticDraw)
   vertexAttribPointer vPosition $= (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset firstIndex))
   vertexAttribArray vPosition $= Enabled
-  return $ VBO vbo firstIndex (fromIntegral numVertices)
+  return $ VBO vbo arrayBuffer firstIndex (fromIntegral numVertices)
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers = let
