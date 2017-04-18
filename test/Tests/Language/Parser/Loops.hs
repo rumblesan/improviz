@@ -1,4 +1,4 @@
-module Tests.LanguageParser.Loops (parserLoopTests) where
+module Tests.Language.Parser.Loops (parserLoopTests) where
 
 import Test.Framework (Test, testGroup)
 import Test.HUnit (Assertion, assertEqual)

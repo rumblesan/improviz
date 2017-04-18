@@ -112,15 +112,14 @@ test-suite improviz-test
                      , Language.StdLib.BlockHandling
                      , Language.StdLib.PostEffects
                      , Language.StdLib.Maths
-                     , Tests.GfxInterpreter
                      , Tests.Language
-                     , Tests.Interpreter.Operators
-                     , Tests.LanguageParser
-                     , Tests.LanguageParser.Assignment
-                     , Tests.LanguageParser.Functions
-                     , Tests.LanguageParser.Lambda
-                     , Tests.LanguageParser.Loops
-                     , Tests.LanguageParser.ErrorCatching
+                     , Tests.Language.Interpreter.Operators
+                     , Tests.Language.Parser
+                     , Tests.Language.Parser.Assignment
+                     , Tests.Language.Parser.Functions
+                     , Tests.Language.Parser.Lambda
+                     , Tests.Language.Parser.Loops
+                     , Tests.Language.Parser.ErrorCatching
   default-language:    Haskell2010
 
 source-repository head

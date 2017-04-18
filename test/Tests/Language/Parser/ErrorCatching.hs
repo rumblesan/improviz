@@ -1,4 +1,4 @@
-module Tests.LanguageParser.ErrorCatching (parserErrorCatchingTests) where
+module Tests.Language.Parser.ErrorCatching (parserErrorCatchingTests) where
 
 import Test.Framework (Test, testGroup)
 import Test.HUnit (Assertion, assertEqual)

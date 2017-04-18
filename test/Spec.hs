@@ -5,13 +5,13 @@ import Data.Monoid (mempty)
 import Test.Framework
 
 import Tests.Language (languageTests)
-import Tests.Interpreter.Operators (operatorTests)
-import Tests.LanguageParser (parserTests)
-import Tests.LanguageParser.Assignment (parserAssignmentTests)
-import Tests.LanguageParser.Functions (parserFunctionTests)
-import Tests.LanguageParser.Lambda (parserLambdaTests)
-import Tests.LanguageParser.Loops (parserLoopTests)
-import Tests.LanguageParser.ErrorCatching (parserErrorCatchingTests)
+import Tests.Language.Interpreter.Operators (operatorTests)
+import Tests.Language.Parser (parserTests)
+import Tests.Language.Parser.Assignment (parserAssignmentTests)
+import Tests.Language.Parser.Functions (parserFunctionTests)
+import Tests.Language.Parser.Lambda (parserLambdaTests)
+import Tests.Language.Parser.Loops (parserLoopTests)
+import Tests.Language.Parser.ErrorCatching (parserErrorCatchingTests)
 
 main :: IO ()
 main = defaultMainWithOpts

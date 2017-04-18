@@ -1,4 +1,4 @@
-module Tests.LanguageParser.Lambda (parserLambdaTests) where
+module Tests.Language.Parser.Lambda (parserLambdaTests) where
 
 import Test.Framework (Test, testGroup)
 import Test.HUnit (Assertion, assertEqual)

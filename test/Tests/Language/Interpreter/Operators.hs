@@ -1,4 +1,4 @@
-module Tests.Interpreter.Operators (operatorTests) where
+module Tests.Language.Interpreter.Operators (operatorTests) where
 
 import Test.Framework (Test, testGroup)
 import Test.HUnit (Assertion, assertEqual)
