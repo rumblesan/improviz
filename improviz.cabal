@@ -114,6 +114,7 @@ test-suite improviz-test
                      , Language.StdLib.Maths
                      , Tests.GfxInterpreter
                      , Tests.Language
+                     , Tests.Interpreter.Operators
                      , Tests.LanguageParser
                      , Tests.LanguageParser.Assignment
                      , Tests.LanguageParser.Functions

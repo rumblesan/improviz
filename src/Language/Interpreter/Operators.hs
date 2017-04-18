@@ -1,6 +1,7 @@
 module Language.Interpreter.Operators where
 
 import Control.Monad.Except
+import Data.Fixed (mod')
 
 import Language.LanguageAst
 import Language.Interpreter.Types
@@ -16,6 +17,7 @@ binaryOp op v1 v2 = do
     "/" -> return $ Number (n1 / n2)
     "+" -> return $ Number (n1 + n2)
     "-" -> return $ Number (n1 - n2)
+    "%" -> return $ Number (mod' n1 n2)
     _   -> throwError $ "Unknown operator: " ++ op
 
 unaryOp :: String -> Value -> InterpreterProcess Value

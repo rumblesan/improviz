@@ -53,7 +53,8 @@ TokenParser { parens = m_parens
 table = [ [Prefix (m_reservedOp "-" >> return (UnaryOp "-"))]
         , [Infix (m_reservedOp "^" >> return (BinaryOp "^")) AssocLeft,
            Infix (m_reservedOp "*" >> return (BinaryOp "*")) AssocLeft,
-           Infix (m_reservedOp "/" >> return (BinaryOp "/")) AssocLeft
+           Infix (m_reservedOp "/" >> return (BinaryOp "/")) AssocLeft,
+           Infix (m_reservedOp "%" >> return (BinaryOp "%")) AssocLeft
           ]
         ,
           [Infix (m_reservedOp "+" >> return (BinaryOp "+")) AssocLeft,
