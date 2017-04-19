@@ -42,14 +42,16 @@ getVariable name = do
 getVariableWithDefault :: Identifier -> Value -> InterpreterProcess Value
 getVariableWithDefault name defValue = do
   s <- get
-  return $ fromMaybe defValue (LS.getVariable (variables s) name)
+  return $ case fromMaybe Null (LS.getVariable (variables s) name) of
+    Null -> defValue
+    v -> v
 
 getVariableWithBackup :: Identifier -> Identifier -> InterpreterProcess Value
 getVariableWithBackup name bkp = do
   s <- get
-  case LS.getVariable (variables s) name of
-    Just v -> return v
-    Nothing -> getVariable bkp
+  case fromMaybe Null (LS.getVariable (variables s) name) of
+    Null -> getVariable bkp
+    v -> return v
 
 setBuiltIn :: Identifier -> BuiltInFunction -> [Identifier] -> InterpreterProcess ()
 setBuiltIn name func argNames = modify (\s -> s {
@@ -120,7 +122,7 @@ interpretApplication (Application name args block) = do
         do
           tell ["Running lambda"]
           argValues <- mapM interpretExpression args
-          zipWithM_ setVariable argNames argValues
+          zipWithM_ setVariable argNames (argValues ++ repeat Null)
           maybe (return ()) pushBlock block
           ret <- interpretBlock lBlock
           when (isJust block) removeBlock
@@ -131,7 +133,7 @@ interpretApplication (Application name args block) = do
         do
           tell ["Running BuiltIn: " ++ name]
           argValues <- mapM interpretExpression args
-          zipWithM_ setVariable argNames argValues
+          zipWithM_ setVariable argNames (argValues ++ repeat Null)
           b <- getBuiltIn name
           b block
       )
