@@ -6,6 +6,7 @@ import Test.Framework
 
 import Tests.Language (languageTests)
 import Tests.Language.Interpreter.Operators (operatorTests)
+import Tests.Language.Interpreter.Scoping (scopingTests)
 import Tests.Language.Parser (parserTests)
 import Tests.Language.Parser.Assignment (parserAssignmentTests)
 import Tests.Language.Parser.Functions (parserFunctionTests)
@@ -18,6 +19,7 @@ main = defaultMainWithOpts
   [
     languageTests,
     operatorTests,
+    scopingTests,
     parserTests,
     parserAssignmentTests,
     parserFunctionTests,
