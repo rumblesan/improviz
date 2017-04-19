@@ -23,45 +23,21 @@ import Language.Interpreter
 languageTests :: Test
 languageTests =
   testGroup "Language Tests" [
-    testCase "Interpreting works as expected" test_simple_interpreter,
-    testCase "Interpreting expression works as expected" test_interpret_expression,
     testCase "Graphics Creation" test_create_gfx,
     testCase "Animation Style Setting" test_animation_style,
     testCase "Basic program" test_basic_program,
     testCase "Loop program" test_loop_program
   ]
 
-test_simple_interpreter :: Assertion
-test_simple_interpreter =
-  let
-    block = Block [ElExpression $ EVal $ Number 3]
-    result = evalState (runWriterT $ runExceptT $ interpretLanguage block) emptyState
-    logs = []
-    expected = (Right $ Number 3, logs)
-  in
-    assertEqual "" expected result
-
-test_interpret_expression :: Assertion
-test_interpret_expression =
-  let
-    expr = EVal $ Number 3
-    result = evalState (runWriterT $ runExceptT $ interpretExpression expr) emptyState
-    logs = []
-    expected = (Right $ Number 3, logs)
-  in
-    assertEqual "" expected result
-
 test_basic_program :: Assertion
 test_basic_program =
   let
     program = "a = 2\nb = 3\nfoo = (c, d) => c * d\nbox(b, a, foo(a, b))\n"
-    maybeGfx = do
+    result = do
       ast <- Language.parse program
-      let result = Language.createGfx [] ast
-      scene <- fst result
+      scene <- fst $ Language.createGfx [] ast
       return $ sceneGfx scene
-    result = either (const []) id maybeGfx
-    expected = [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
+    expected = Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
   in
     assertEqual "" expected result
 
@@ -69,13 +45,11 @@ test_animation_style :: Assertion
 test_animation_style =
   let
     program = "motionBlur()"
-    maybePostFX = do
+    result = do
       ast <- Language.parse program
-      let result = Language.createGfx [] ast
-      scene <- fst result
+      scene <- fst $ Language.createGfx [] ast
       return $ scenePostProcessingFX scene
-    result = either (const NormalStyle) id maybePostFX
-    expected = MotionBlur
+    expected = Right MotionBlur
   in
     assertEqual "" expected result
 

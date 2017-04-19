@@ -113,6 +113,7 @@ test-suite improviz-test
                      , Language.StdLib.PostEffects
                      , Language.StdLib.Maths
                      , Tests.Language
+                     , Tests.Language.Interpreter.Expressions
                      , Tests.Language.Interpreter.Operators
                      , Tests.Language.Interpreter.Scoping
                      , Tests.Language.Parser
