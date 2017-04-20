@@ -56,19 +56,19 @@ test_animation_style =
 test_loop_program :: Assertion
 test_loop_program =
   let
-    program = "rotate(0.1, 0.1, 0.1)\n3 times with i\n\trotate(0.2, 0.2, 0.2)\n\tbox(i)\n\n\n"
+    program = "rotate(0.1, 0.2, 0.3)\n3 times with i\n\trotate(0.2, 0.2, 0.2)\n\tbox(i)\n\n\n"
     result = do
       ast <- Language.parse program
       scene <- fst $ Language.createGfx [] ast
       return $ sceneGfx scene
     expected = Right [
-      GA.MatrixCommand (GA.Rotate 0.1 0.1 0.1) Nothing,
+      GA.MatrixCommand (GA.Rotate 0.1 0.2 0.3) Nothing,
       GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing,
-      GA.ShapeCommand (GA.Cube 0 1 1) Nothing,
+      GA.ShapeCommand (GA.Cube 0 0 0) Nothing,
       GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing,
       GA.ShapeCommand (GA.Cube 1 1 1) Nothing,
       GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing,
-      GA.ShapeCommand (GA.Cube 2 1 1) Nothing
+      GA.ShapeCommand (GA.Cube 2 2 2) Nothing
       ]
   in
     assertEqual "" expected result

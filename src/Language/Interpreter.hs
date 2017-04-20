@@ -46,11 +46,23 @@ getVariableWithDefault name defValue = do
     Null -> defValue
     v -> v
 
+getVarOrNull :: Identifier -> InterpreterProcess Value
+getVarOrNull name = do
+  s <- get
+  return $ fromMaybe Null (LS.getVariable (variables s) name)
+
 getVariableWithBackup :: Identifier -> Identifier -> InterpreterProcess Value
 getVariableWithBackup name bkp = do
   s <- get
   case fromMaybe Null (LS.getVariable (variables s) name) of
     Null -> getVariable bkp
+    v -> return v
+
+getVariableWithExprDefault :: Identifier -> InterpreterProcess Value -> InterpreterProcess Value
+getVariableWithExprDefault name expr = do
+  s <- get
+  case fromMaybe Null (LS.getVariable (variables s) name) of
+    Null -> expr
     v -> return v
 
 setBuiltIn :: Identifier -> BuiltInFunction -> [Identifier] -> InterpreterProcess ()
