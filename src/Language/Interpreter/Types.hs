@@ -13,7 +13,7 @@ import qualified Data.Map.Strict as M
 import qualified Gfx.Ast as GA
 import Gfx.PostProcessing (AnimationStyle(..))
 
-type BuiltInFunction = Maybe Block -> InterpreterProcess Value
+type BuiltInFunction = InterpreterProcess Value
 
 type InterpreterProcessing = State InterpreterState
 type InterpreterLogging m = WriterT [String] m
@@ -23,7 +23,7 @@ type InterpreterProcess v = InterpreterErrors (InterpreterLogging InterpreterPro
 data InterpreterState = InterpreterState {
   variables :: LS.ScopeStack Identifier Value,
   builtins :: M.Map Identifier BuiltInFunction,
-  blockStack :: [Block],
+  blockStack :: [Maybe Block],
   gfxBackground :: Color4 Float,
   currentGfx :: GA.Block,
   animationStyle :: AnimationStyle,

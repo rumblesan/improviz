@@ -99,11 +99,18 @@ newScope childScope = do
      Left _ -> oldS
      Right popped -> popped
 
-pushBlock :: Block -> InterpreterProcess ()
+pushBlock :: Maybe Block -> InterpreterProcess ()
 pushBlock b = modify (\s -> s { blockStack = b : blockStack s })
 
-removeBlock :: InterpreterProcess ()
-removeBlock = modify (\s -> s { blockStack = tail $ blockStack s })
+getBlock :: InterpreterProcess (Maybe Block)
+getBlock = gets (head . blockStack)
+
+popBlock :: InterpreterProcess (Maybe Block)
+popBlock = do
+  b <- getBlock
+  modify (\s -> s { blockStack = tail $ blockStack s })
+  return b
+
 
 setGfxBackground :: (Float, Float, Float) -> InterpreterProcess Value
 setGfxBackground (r, g, b) =
@@ -135,9 +142,9 @@ interpretApplication (Application name args block) = do
           tell ["Running lambda"]
           argValues <- mapM interpretExpression args
           zipWithM_ setVariable argNames (argValues ++ repeat Null)
-          maybe (return ()) pushBlock block
+          pushBlock block
           ret <- interpretBlock lBlock
-          when (isJust block) removeBlock
+          popBlock
           return ret
       )
     (BuiltIn argNames) ->
@@ -147,7 +154,10 @@ interpretApplication (Application name args block) = do
           argValues <- mapM interpretExpression args
           zipWithM_ setVariable argNames (argValues ++ repeat Null)
           b <- getBuiltIn name
-          b block
+          pushBlock block
+          ret <- b
+          popBlock
+          return ret
       )
     _ -> return Null
 

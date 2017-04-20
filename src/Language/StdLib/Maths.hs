@@ -8,13 +8,13 @@ import Language.Interpreter (getVariable)
 import Language.Interpreter.Values
 import Language.LanguageAst
 
-sinFunc :: Maybe Block -> InterpreterProcess Value
-sinFunc _ = do
+sinFunc :: InterpreterProcess Value
+sinFunc = do
     rads <- getVariable "rads" >>= getNumberValue
     return $ Number $ sin rads
 
-cosFunc :: Maybe Block -> InterpreterProcess Value
-cosFunc _ = do
+cosFunc :: InterpreterProcess Value
+cosFunc = do
     rads <- getVariable "rads" >>= getNumberValue
     return $ Number $ cos rads
 

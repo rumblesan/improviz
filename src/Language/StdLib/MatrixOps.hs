@@ -7,7 +7,7 @@ import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
 import Language.Interpreter.Types
-import Language.Interpreter (addGfxCommand, getVariableWithDefault, getVarOrNull)
+import Language.Interpreter (addGfxCommand, getVariableWithDefault, getVarOrNull, getBlock)
 import Language.Interpreter.Values
 import Language.LanguageAst
 import qualified Gfx.Ast as GA
@@ -16,8 +16,8 @@ import Language.StdLib.BlockHandling (handleGfxBlock)
 
 
 
-rotate :: Maybe Block -> InterpreterProcess Value
-rotate block = do
+rotate :: InterpreterProcess Value
+rotate = do
     a <- getVarOrNull "a"
     b <- getVarOrNull "b"
     c <- getVarOrNull "c"
@@ -31,11 +31,12 @@ rotate block = do
       _ -> throwError "Error with functions to rotate"
 
     let partialCmd = GA.MatrixCommand $ GA.Rotate xRot yRot zRot
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-scale :: Maybe Block -> InterpreterProcess Value
-scale block = do
+scale :: InterpreterProcess Value
+scale = do
     a <- getVarOrNull "a"
     b <- getVarOrNull "b"
     c <- getVarOrNull "c"
@@ -49,11 +50,12 @@ scale block = do
       _ -> throwError "Error with functions to scale"
 
     let partialCmd = GA.MatrixCommand $ GA.Scale xScl yScl zScl
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-move :: Maybe Block -> InterpreterProcess Value
-move block = do
+move :: InterpreterProcess Value
+move = do
     a <- getVarOrNull "a"
     b <- getVarOrNull "b"
     c <- getVarOrNull "c"
@@ -67,6 +69,7 @@ move block = do
       _ -> throwError "Error with functions to move"
 
     let partialCmd = GA.MatrixCommand $ GA.Move xMov yMov zMov
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 

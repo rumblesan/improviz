@@ -10,4 +10,4 @@ import Language.Interpreter.Types (BuiltInFunction)
 import Language.LanguageAst ( Value(Null) )
 
 noop :: BuiltInFunction
-noop _ = return Null
+noop = return Null

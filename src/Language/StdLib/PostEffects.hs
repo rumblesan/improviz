@@ -9,9 +9,9 @@ import Language.Interpreter (setAnimationStyle)
 import Language.LanguageAst (Block, Value(Null))
 
 
-motionBlur :: Maybe Block -> InterpreterProcess Value
-motionBlur _ = setAnimationStyle MotionBlur
+motionBlur :: InterpreterProcess Value
+motionBlur = setAnimationStyle MotionBlur
 
-paintOver :: Maybe Block -> InterpreterProcess Value
-paintOver _ = setAnimationStyle PaintOver
+paintOver :: InterpreterProcess Value
+paintOver = setAnimationStyle PaintOver
 

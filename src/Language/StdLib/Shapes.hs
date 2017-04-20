@@ -7,7 +7,7 @@ import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
 import Language.Interpreter.Types
-import Language.Interpreter (addGfxCommand, getVarOrNull, getVariableWithDefault)
+import Language.Interpreter (addGfxCommand, getVarOrNull, getVariableWithDefault, getBlock)
 import Language.Interpreter.Values
 import Language.LanguageAst
 import qualified Gfx.Ast as GA
@@ -15,8 +15,8 @@ import qualified Gfx.Ast as GA
 import Language.StdLib.BlockHandling (handleGfxBlock)
 
 
-box :: Maybe Block -> InterpreterProcess Value
-box block = do
+box :: InterpreterProcess Value
+box = do
     a <- getVarOrNull "a"
     b <- getVarOrNull "b"
     c <- getVarOrNull "c"
@@ -27,11 +27,12 @@ box block = do
       (Number x, Number y, Number z) -> return (x, y, z)
       _ -> throwError "Error with functions to box"
     let partialCmd = GA.ShapeCommand $ GA.Cube xSize ySize zSize
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-sphere :: Maybe Block -> InterpreterProcess Value
-sphere block = do
+sphere :: InterpreterProcess Value
+sphere = do
     a <- getVarOrNull "a"
     b <- getVarOrNull "b"
     c <- getVarOrNull "c"
@@ -42,11 +43,12 @@ sphere block = do
       (Number x, Number y, Number z) -> return (x, y, z)
       _ -> throwError "Error with functions to sphere"
     let partialCmd = GA.ShapeCommand $ GA.Sphere xSize ySize zSize
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-cylinder :: Maybe Block -> InterpreterProcess Value
-cylinder block = do
+cylinder :: InterpreterProcess Value
+cylinder = do
     a <- getVarOrNull "a"
     b <- getVarOrNull "b"
     c <- getVarOrNull "c"
@@ -57,11 +59,12 @@ cylinder block = do
       (Number x, Number y, Number z) -> return (x, y, z)
       _ -> throwError "Error with functions to cylinder"
     let partialCmd = GA.ShapeCommand $ GA.Cylinder xSize ySize zSize
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-rectangle :: Maybe Block -> InterpreterProcess Value
-rectangle block = do
+rectangle :: InterpreterProcess Value
+rectangle = do
     a <- getVarOrNull "a"
     b <- getVarOrNull "b"
     (xSize, ySize) <- case (a, b) of
@@ -70,13 +73,15 @@ rectangle block = do
       (Number x, Number y) -> return (x, y)
       _ -> throwError "Error with functions to rectangle"
     let partialCmd = GA.ShapeCommand $ GA.Rectangle xSize ySize
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-line :: Maybe Block -> InterpreterProcess Value
-line block = do
+line :: InterpreterProcess Value
+line = do
     l <- getVariableWithDefault "l" (Number 1) >>= getNumberValue
     let partialCmd = GA.ShapeCommand $ GA.Line l
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 

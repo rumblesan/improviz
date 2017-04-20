@@ -6,7 +6,7 @@ module Language.StdLib.ColourOps (
 import Control.Monad.Except
 
 import Language.Interpreter.Types
-import Language.Interpreter (addGfxCommand, getVarOrNull, interpretBlock, setGfxBackground)
+import Language.Interpreter (addGfxCommand, getVarOrNull, interpretBlock, setGfxBackground, getBlock)
 import Language.Interpreter.Values
 import Language.LanguageAst
 import qualified Gfx.Ast as GA
@@ -16,8 +16,8 @@ import Language.StdLib.BlockHandling (handleGfxBlock)
 dToC :: Float -> Float
 dToC c = max 0 (min c 255) / 255
 
-fill :: Maybe Block -> InterpreterProcess Value
-fill block = do
+fill :: InterpreterProcess Value
+fill = do
     r <- getVarOrNull "r"
     g <- getVarOrNull "g"
     b <- getVarOrNull "b"
@@ -30,17 +30,19 @@ fill block = do
       (Number x, Number y, Number z, Number w) -> return (x, y, z, w)
       _ -> throwError "Error with functions to fill"
     let partialCmd = GA.ColourCommand $ GA.Fill (dToC rVal) (dToC gVal) (dToC bVal) (dToC aVal)
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-noFill :: Maybe Block -> InterpreterProcess Value
-noFill block = do
+noFill :: InterpreterProcess Value
+noFill = do
     let partialCmd = GA.ColourCommand GA.NoFill
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-stroke :: Maybe Block -> InterpreterProcess Value
-stroke block = do
+stroke :: InterpreterProcess Value
+stroke = do
     r <- getVarOrNull "r"
     g <- getVarOrNull "g"
     b <- getVarOrNull "b"
@@ -53,17 +55,19 @@ stroke block = do
       (Number x, Number y, Number z, Number w) -> return (x, y, z, w)
       _ -> throwError "Error with functions to stroke"
     let partialCmd = GA.ColourCommand $ GA.Stroke (dToC rVal) (dToC gVal) (dToC bVal) (dToC aVal)
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-noStroke :: Maybe Block -> InterpreterProcess Value
-noStroke block = do
+noStroke :: InterpreterProcess Value
+noStroke = do
     let partialCmd = GA.ColourCommand GA.NoStroke
+    block <- getBlock
     maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
     return Null
 
-background :: Maybe Block -> InterpreterProcess Value
-background block = do
+background :: InterpreterProcess Value
+background = do
     r <- getVarOrNull "r"
     g <- getVarOrNull "g"
     b <- getVarOrNull "b"
@@ -74,5 +78,6 @@ background block = do
       (Number x, Number y, Number z) -> return (x, y, z)
       _ -> throwError "Error with functions to background"
     _ <- setGfxBackground (dToC rVal, dToC gVal, dToC bVal)
+    block <- getBlock
     maybe (return Null) interpretBlock block
 
