@@ -46,8 +46,8 @@ executable improviz
                      , Gfx.Shaders
                      , Gfx.Windowing
                      , Language
-                     , Language.LanguageAst
-                     , Language.LanguageParser
+                     , Language.Ast
+                     , Language.Parser
                      , Language.Interpreter
                      , Language.Interpreter.Scope
                      , Language.Interpreter.Types
@@ -98,8 +98,8 @@ test-suite improviz-test
                      , Gfx.Shaders
                      , Gfx.Windowing
                      , Language
-                     , Language.LanguageAst
-                     , Language.LanguageParser
+                     , Language.Ast
+                     , Language.Parser
                      , Language.Interpreter
                      , Language.Interpreter.Scope
                      , Language.Interpreter.Types

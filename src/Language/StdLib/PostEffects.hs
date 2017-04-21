@@ -6,7 +6,7 @@ import Gfx.PostProcessing (AnimationStyle(..))
 
 import Language.Interpreter.Types (InterpreterProcess)
 import Language.Interpreter (setAnimationStyle)
-import Language.LanguageAst (Block, Value(Null))
+import Language.Ast (Block, Value(Null))
 
 
 motionBlur :: InterpreterProcess Value

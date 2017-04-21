@@ -8,7 +8,7 @@ import Data.Maybe (maybe, isJust, isNothing)
 
 import Language.Interpreter.Types
 import Language.Interpreter (newScope, newGfxScope, interpretBlock, addGfxCommand, getBlock, popBlock)
-import Language.LanguageAst
+import Language.Ast
 
 import qualified Gfx.Ast as GA
 

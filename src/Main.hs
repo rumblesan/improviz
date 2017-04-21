@@ -15,7 +15,7 @@ import qualified Gfx.Matrices as GM
 
 import Gfx
 import qualified Language as L
-import qualified Language.LanguageAst as LA
+import qualified Language.Ast as LA
 import AppServer
 import AppTypes
 import Gfx.PostProcessing

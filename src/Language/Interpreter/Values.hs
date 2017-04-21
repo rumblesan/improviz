@@ -2,7 +2,7 @@ module Language.Interpreter.Values where
 
 import Control.Monad.Except
 
-import Language.LanguageAst
+import Language.Ast
 import Language.Interpreter.Types
 
 getValueType :: Value -> String

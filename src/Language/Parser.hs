@@ -1,4 +1,4 @@
-module Language.LanguageParser where
+module Language.Parser where
 
 import Control.Monad (void)
 import Data.Functor.Identity
@@ -11,7 +11,7 @@ import Text.Parsec.Expr
 import Text.Parsec.Token
 import Text.Parsec.Language
 
-import Language.LanguageAst
+import Language.Ast
 
 type Indent = IndentT Identity
 type LangParser e = IndentParser String () e

@@ -9,7 +9,7 @@ import Control.Monad.Except
 import Language.Interpreter.Types
 import Language.Interpreter (addGfxCommand, getVarOrNull, getVariableWithDefault, getBlock)
 import Language.Interpreter.Values
-import Language.LanguageAst
+import Language.Ast
 import qualified Gfx.Ast as GA
 
 import Language.StdLib.BlockHandling (handleGfxBlock)

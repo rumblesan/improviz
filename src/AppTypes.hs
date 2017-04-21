@@ -1,6 +1,6 @@
 module AppTypes where
 
-import Language.LanguageAst ( Block(..) )
+import Language.Ast ( Block(..) )
 
 data AppState = AppState {
   currentAst :: Block,

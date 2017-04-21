@@ -8,7 +8,7 @@ import qualified Gfx.Ast as GA
 import Gfx (Scene(..))
 import qualified Language.StdLib as SL
 import qualified Language
-import Language.LanguageAst
+import Language.Ast
 import Language.Interpreter
 
 

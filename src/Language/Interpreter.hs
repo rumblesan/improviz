@@ -11,7 +11,7 @@ import Control.Monad.Except
 import Language.Interpreter.Types
 import Language.Interpreter.Operators
 
-import Language.LanguageAst
+import Language.Ast
 import qualified Language.Interpreter.Scope as LS
 import qualified Gfx.Ast as GA
 import Gfx.PostProcessing (AnimationStyle(..))

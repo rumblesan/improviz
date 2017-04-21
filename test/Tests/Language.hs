@@ -16,7 +16,7 @@ import Gfx (Scene(..))
 import Gfx.PostProcessing(AnimationStyle(..))
 
 import qualified Language
-import Language.LanguageAst
+import Language.Ast
 import Language.Interpreter
 
 

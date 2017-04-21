@@ -6,7 +6,7 @@ import Control.Monad.Except
 
 import Graphics.Rendering.OpenGL (Color4(..))
 
-import Language.LanguageAst
+import Language.Ast
 
 import qualified Language.Interpreter.Scope as LS
 import qualified Data.Map.Strict as M

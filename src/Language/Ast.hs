@@ -1,4 +1,4 @@
-module Language.LanguageAst
+module Language.Ast
   (
     Block(..),
     Element(..),

@@ -3,7 +3,7 @@ module Language.Interpreter.Operators where
 import Control.Monad.Except
 import Data.Fixed (mod')
 
-import Language.LanguageAst
+import Language.Ast
 import Language.Interpreter.Types
 import Language.Interpreter.Values
 

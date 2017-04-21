@@ -8,7 +8,7 @@ import Language.StdLib.Maths as Ops
 import Language.StdLib.BlockHandling as Ops
 
 import Language.Interpreter.Types (BuiltInFunction)
-import Language.LanguageAst ( Value(Null) )
+import Language.Ast ( Value(Null) )
 
 noop :: BuiltInFunction
 noop = return Null

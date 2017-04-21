@@ -2,7 +2,7 @@ module Language (
   parse,
   interpret,
   createGfx,
-  module Language.LanguageAst
+  module Language.Ast
   ) where
 
 import Control.Monad.State.Strict
@@ -10,10 +10,10 @@ import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
 import Gfx (Scene(..))
-import Language.LanguageParser (parseProgram)
+import Language.Parser (parseProgram)
 import Language.Interpreter.Types (currentGfx, InterpreterProcess, InterpreterState(..))
 import Language.Interpreter (interpretLanguage, emptyState, setBuiltIn, setVariable)
-import Language.LanguageAst (Block, Value(..), Identifier)
+import Language.Ast (Block, Value(..), Identifier)
 import qualified Language.StdLib as SL
 
 parse :: String -> Either String Block

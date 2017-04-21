@@ -12,7 +12,7 @@ import Control.Monad.Writer.Strict
 import Control.Monad.Except
 
 import qualified Language
-import Language.LanguageAst
+import Language.Ast
 import Language.Interpreter
 
 

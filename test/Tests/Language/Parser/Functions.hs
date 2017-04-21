@@ -5,9 +5,9 @@ import Test.HUnit (Assertion, assertEqual)
 import Test.Framework.Providers.HUnit (testCase)
 
 import qualified Language
-import Language.LanguageAst
+import Language.Ast
 import Language.Interpreter
-import qualified Language.LanguageParser as LP
+import qualified Language.Parser as LP
 
 parserFunctionTests :: Test
 parserFunctionTests =

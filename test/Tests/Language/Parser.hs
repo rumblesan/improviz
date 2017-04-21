@@ -13,7 +13,7 @@ import Control.Monad.Except
 import qualified Gfx.Ast as GA
 
 import qualified Language
-import Language.LanguageAst
+import Language.Ast
 import Language.Interpreter
 
 

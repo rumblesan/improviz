@@ -6,7 +6,7 @@ module Language.StdLib.Maths (
 import Language.Interpreter.Types
 import Language.Interpreter (getVariable)
 import Language.Interpreter.Values
-import Language.LanguageAst
+import Language.Ast
 
 sinFunc :: InterpreterProcess Value
 sinFunc = do
