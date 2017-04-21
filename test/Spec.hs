@@ -5,6 +5,7 @@ import Data.Monoid (mempty)
 import Test.Framework
 
 import Tests.Language (languageTests)
+import Tests.Language.Interpreter.Blocks (blockTests)
 import Tests.Language.Interpreter.Expressions (expressionTests)
 import Tests.Language.Interpreter.Operators (operatorTests)
 import Tests.Language.Interpreter.Scoping (scopingTests)
@@ -21,6 +22,7 @@ main = defaultMainWithOpts
     languageTests,
     operatorTests,
     expressionTests,
+    blockTests,
     scopingTests,
     parserTests,
     parserAssignmentTests,

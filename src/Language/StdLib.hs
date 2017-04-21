@@ -5,6 +5,7 @@ import Language.StdLib.MatrixOps as Ops
 import Language.StdLib.ColourOps as Ops
 import Language.StdLib.PostEffects as Ops
 import Language.StdLib.Maths as Ops
+import Language.StdLib.BlockHandling as Ops
 
 import Language.Interpreter.Types (BuiltInFunction)
 import Language.LanguageAst ( Value(Null) )

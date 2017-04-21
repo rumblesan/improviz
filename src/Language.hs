@@ -50,6 +50,7 @@ createGfx initialVars block =
 addStdLib :: InterpreterProcess ()
 addStdLib = do
   setBuiltIn "noop" SL.noop []
+  setBuiltIn "runBlock" SL.runBlock []
   setBuiltIn "box" SL.box ["a", "b", "c"]
   setBuiltIn "sphere" SL.sphere ["a", "b", "c"]
   setBuiltIn "cylinder" SL.cylinder ["a", "b", "c"]
