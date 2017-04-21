@@ -63,10 +63,10 @@ table = [ [Prefix (m_reservedOp "-" >> return (UnaryOp "-"))]
         ]
 
 atom :: LangParser Expression
-atom =              try (m_parens expression)
-       <|> EApp <$> try application
+atom =     EApp <$> try application
        <|> EVar <$> try variable
        <|> EVal <$> try value
+       <|> try (m_parens expression)
 
 langBlock :: LangParser Block
 langBlock = Block
