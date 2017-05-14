@@ -41,7 +41,8 @@ data TextRenderer = TextRenderer {
   , pMatrix :: Mat44 GLfloat
   , program :: Program
   , characterQuad :: CharQuad
-  , textColour :: Color3 GLfloat
+  , textColour :: Color4 GLfloat
+  , textBGcolour :: Color4 GLfloat
   , outbuffer :: Savebuffer
 } deriving Show
 
@@ -55,7 +56,7 @@ textCoordMatrix left right top bottom near far =
 
 -- TODO - better error handling
 getCharacter :: TextRenderer -> Char -> Character
-getCharacter (TextRenderer charMap _ _ _ _ _ _) c = charMap M.! c
+getCharacter tr c = characterMap tr M.! c
 
 charQuad :: IO CharQuad
 charQuad = do
@@ -87,8 +88,8 @@ drawCharQuad (CharQuad arrayObject _ firstIndex numTriangles) = do
   bindVertexArrayObject $= Just arrayObject
   drawArrays Triangles firstIndex numTriangles
 
-createTextRenderer :: Float -> Float -> Int -> Int -> String -> Int -> Color3 GLfloat -> IO TextRenderer
-createTextRenderer front back width height fontPath charSize textColour = do
+createTextRenderer :: Float -> Float -> Int -> Int -> String -> Int -> Color4 GLfloat -> Color4 GLfloat -> IO TextRenderer
+createTextRenderer front back width height fontPath charSize textColour bgColour = do
   cq <- charQuad
   program <- loadShaders [
     ShaderInfo VertexShader (FileSource "shaders/textrenderer.vert"),
@@ -96,7 +97,7 @@ createTextRenderer front back width height fontPath charSize textColour = do
   characters <- loadFontCharMap fontPath charSize
   let projectionMatrix = textCoordMatrix 0 (fromIntegral width) 0 (fromIntegral height) front back
   buffer <- createSavebuffer (fromIntegral width) (fromIntegral height)
-  return $ TextRenderer characters charSize projectionMatrix program cq textColour buffer
+  return $ TextRenderer characters charSize projectionMatrix program cq textColour bgColour buffer
 
 resizeTextRendererScreen :: Mat44 GLfloat -> TextRenderer -> TextRenderer
 resizeTextRendererScreen orthoMatrix trender =
@@ -104,7 +105,7 @@ resizeTextRendererScreen orthoMatrix trender =
     pMatrix = orthoMatrix
   }
 
-changeTextColour :: Color3 GLfloat -> TextRenderer -> TextRenderer
+changeTextColour :: Color4 GLfloat -> TextRenderer -> TextRenderer
 changeTextColour newColour trender =
   trender {
     textColour = newColour
