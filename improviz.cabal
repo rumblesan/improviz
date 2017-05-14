@@ -21,6 +21,7 @@ executable improviz
                      , bytestring
                      , containers
                      , indents
+                     , freetype2
                      , mtl
                      , parsec
                      , scotty
@@ -39,12 +40,14 @@ executable improviz
                      , Gfx.Ast
                      , Gfx.Interpreter
                      , Gfx.EngineState
+                     , Gfx.FreeType
                      , Gfx.Geometries
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
                      , Gfx.Matrices
                      , Gfx.PostProcessing
                      , Gfx.Shaders
+                     , Gfx.TextRendering
                      , Gfx.Windowing
                      , Language
                      , Language.Ast
@@ -72,6 +75,7 @@ test-suite improviz-test
                      , bytestring
                      , containers
                      , indents
+                     , freetype2
                      , mtl
                      , parsec
                      , scotty
@@ -92,9 +96,11 @@ test-suite improviz-test
                      , Gfx.Ast
                      , Gfx.Interpreter
                      , Gfx.EngineState
+                     , Gfx.FreeType
                      , Gfx.Geometries
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
+                     , Gfx.TextRendering
                      , Gfx.Matrices
                      , Gfx.PostProcessing
                      , Gfx.Shaders

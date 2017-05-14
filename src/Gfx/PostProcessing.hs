@@ -24,6 +24,8 @@ instance Show PostProcessing where
 
 -- Simple Framebuffer with a texture that can be rendered to and then drawn out to a quad
 data Savebuffer = Savebuffer FramebufferObject TextureObject TextureObject Program VBO
+instance Show Savebuffer where
+  show _ = "Savebuffer"
 data Mixbuffer = Mixbuffer FramebufferObject TextureObject TextureObject Program VBO
 
 -- 2D positions and texture coordinates
