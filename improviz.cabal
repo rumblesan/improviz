@@ -21,6 +21,7 @@ executable improviz
                      , bytestring
                      , containers
                      , indents
+                     , freetype2
                      , mtl
                      , parsec
                      , scotty
@@ -34,16 +35,19 @@ executable improviz
                      , Vec
   other-modules:       AppServer
                      , AppTypes
+                     , ErrorHandling
                      , Gfx
                      , Gfx.Ast
                      , Gfx.Interpreter
                      , Gfx.EngineState
+                     , Gfx.FreeType
                      , Gfx.Geometries
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
                      , Gfx.Matrices
                      , Gfx.PostProcessing
                      , Gfx.Shaders
+                     , Gfx.TextRendering
                      , Gfx.Windowing
                      , Language
                      , Language.Ast
@@ -71,6 +75,7 @@ test-suite improviz-test
                      , bytestring
                      , containers
                      , indents
+                     , freetype2
                      , mtl
                      , parsec
                      , scotty
@@ -86,13 +91,16 @@ test-suite improviz-test
                      , OpenGLRaw
                      , Vec
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  other-modules:       Gfx
+  other-modules:       ErrorHandling
+                     , Gfx
                      , Gfx.Ast
                      , Gfx.Interpreter
                      , Gfx.EngineState
+                     , Gfx.FreeType
                      , Gfx.Geometries
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
+                     , Gfx.TextRendering
                      , Gfx.Matrices
                      , Gfx.PostProcessing
                      , Gfx.Shaders

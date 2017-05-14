@@ -19,6 +19,7 @@ import qualified Language.Ast as LA
 import AppServer
 import AppTypes
 import Gfx.PostProcessing
+import Gfx.TextRendering
 import Gfx.Windowing
 
 
@@ -43,12 +44,18 @@ main = do
 initApp :: TMVar EngineState -> Int -> Int -> IO ()
 initApp gfxEngineTMVar width height = do
   let ratio = fromIntegral width / fromIntegral height
-      proj = GM.projectionMat 0.1 100 (pi/4) ratio
+      front = 0.1
+      back = 100
+      charSize = 36
+      proj = GM.projectionMat front back (pi/4) ratio
       view = GM.viewMat (GM.vec3 0 0 10) (GM.vec3 0 0 0) (GM.vec3 0 1 0)
 
   post <- createPostProcessing (fromIntegral width) (fromIntegral height)
 
-  gfxEngineState <- baseState proj view post
+  let textColour = Color3 0.0 0.0 0.0 :: Color3 GLfloat
+  textRenderer <- createTextRenderer front back width height "fonts/arial.ttf" charSize textColour
+
+  gfxEngineState <- baseState proj view post textRenderer
   atomically$ putTMVar gfxEngineTMVar gfxEngineState
 
 
@@ -81,9 +88,16 @@ display appState gfxState time = do
     Right scene ->
       do
         drawScene gs scene
+        drawText gs as
         unless (currentAst as == lastWorkingAst as) $ do
           putStrLn "Saving current ast"
           atomically $ modifyTVar appState (\as -> as { lastWorkingAst = currentAst as })
+
+drawText :: EngineState -> AppState -> IO ()
+drawText es appState =
+  do
+    renderText 0 0 (textRenderer es) (programText appState)
+    renderTextbuffer (textRenderer es)
 
 drawScene :: EngineState -> Scene -> IO ()
 drawScene gs scene =

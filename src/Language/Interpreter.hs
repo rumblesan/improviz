@@ -21,7 +21,7 @@ emptyState = InterpreterState {
   variables = LS.empty,
   builtins = M.fromList [],
   blockStack = [],
-  gfxBackground = Color4 1 1 1 0,
+  gfxBackground = Color4 1 1 1 1,
   currentGfx = GA.emptyGfx,
   animationStyle = NormalStyle,
   gfxStack = []
@@ -114,7 +114,7 @@ popBlock = do
 
 setGfxBackground :: (Float, Float, Float) -> InterpreterProcess Value
 setGfxBackground (r, g, b) =
-    modify (\s -> s {gfxBackground = Color4 r g b 0}) >> return Null
+    modify (\s -> s {gfxBackground = Color4 r g b 1}) >> return Null
 
 setAnimationStyle :: AnimationStyle -> InterpreterProcess Value
 setAnimationStyle style =

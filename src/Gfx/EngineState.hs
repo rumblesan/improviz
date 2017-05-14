@@ -7,6 +7,7 @@ import Gfx.Ast (Block)
 import Gfx.PostProcessing (PostProcessing, AnimationStyle)
 import Gfx.GeometryBuffers (GeometryBuffers, createAllBuffers)
 import Gfx.Shaders
+import Gfx.TextRendering (TextRenderer)
 
 data Scene = Scene {
   sceneBackground :: Color4 Float,
@@ -23,11 +24,12 @@ data EngineState = EngineState {
   , viewMatrix :: Mat44 GLfloat
   , projectionMatrix :: Mat44 GLfloat
   , postFX :: PostProcessing
+  , textRenderer :: TextRenderer
   , matrixStack :: [ Mat44 GLfloat ]
 } deriving Show
 
-baseState :: Mat44 GLfloat -> Mat44 GLfloat -> PostProcessing -> IO EngineState
-baseState projection view pprocess = do
+baseState :: Mat44 GLfloat -> Mat44 GLfloat -> PostProcessing -> TextRenderer -> IO EngineState
+baseState projection view pprocess trender = do
   gbos <- createAllBuffers
   shd <- createShaders
   return EngineState {
@@ -39,6 +41,7 @@ baseState projection view pprocess = do
   , viewMatrix = view
   , projectionMatrix = projection
   , postFX = pprocess
+  , textRenderer = trender
   , matrixStack = [identity]
 }
 
