@@ -71,8 +71,8 @@ create2DTexture width height = do
   text <- genObjectName
   textureBinding Texture2D $= Just text
   GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
-  let pd = PixelData RGB UnsignedByte nullPtr
-  texImage2D Texture2D NoProxy 0 RGB' (TextureSize2D width height) 0 pd
+  let pd = PixelData RGBA UnsignedByte nullPtr
+  texImage2D Texture2D NoProxy 0 RGBA' (TextureSize2D width height) 0 pd
   textureBinding Texture2D $= Nothing
   return text
 
