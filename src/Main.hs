@@ -53,7 +53,7 @@ initApp gfxEngineTMVar width height = do
   post <- createPostProcessing (fromIntegral width) (fromIntegral height)
 
   let textColour = Color3 0.0 0.0 0.0 :: Color3 GLfloat
-  textRenderer <- createTextRenderer front back width height "fonts/arial.ttf" charSize textColour
+  textRenderer <- createTextRenderer front back width height "fonts/VeraMono.ttf" charSize textColour
 
   gfxEngineState <- baseState proj view post textRenderer
   atomically$ putTMVar gfxEngineTMVar gfxEngineState
