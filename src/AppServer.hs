@@ -24,7 +24,10 @@ updateProgram appState newProgram =
   in
     case ast of
       Right newAst -> do
-        atomically $ modifyTVar appState (\as -> as { currentAst = newAst })
+        atomically $ modifyTVar appState (\as -> as {
+          currentAst = newAst,
+          programText = newProgram
+        })
         return "{'status': 'OK', 'message': 'Parsed Succesfully'}"
       Left err -> return $ mconcat ["{'status': 'OK', 'message': '", err, "'}"]
 
