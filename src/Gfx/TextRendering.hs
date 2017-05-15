@@ -25,7 +25,7 @@ import Gfx.LoadShaders
 import Gfx.FreeType (CharacterMap, Character(..), loadFontCharMap)
 import qualified Graphics.GL as GLRaw
 
-import Gfx.PostProcessing (Savebuffer(..), createSavebuffer, drawQuadVBO)
+import Gfx.PostProcessing (Savebuffer(..), createSavebuffer, deleteSavebuffer, drawQuadVBO)
 
 import Data.Vec (Mat44, multmm)
 import Gfx.Matrices
@@ -126,11 +126,18 @@ createTextRenderer front back width height fontPath charSize textColour bgColour
   buffer <- createSavebuffer (fromIntegral width) (fromIntegral height)
   return $ TextRenderer characters charSize projectionMatrix tprogram bgshaderprogram cq cbq textColour bgColour buffer
 
-resizeTextRendererScreen :: Mat44 GLfloat -> TextRenderer -> TextRenderer
-resizeTextRendererScreen orthoMatrix trender =
-  trender {
-    pMatrix = orthoMatrix
-  }
+resizeTextRendererScreen :: Float -> Float -> Int -> Int -> TextRenderer -> IO TextRenderer
+resizeTextRendererScreen front back width height trender =
+  let
+    projectionMatrix = textCoordMatrix 0 (fromIntegral width) 0 (fromIntegral height) front back
+  in
+    do
+      deleteSavebuffer $ outbuffer trender
+      nbuffer <- createSavebuffer (fromIntegral width) (fromIntegral height)
+      return trender {
+        pMatrix = projectionMatrix,
+        outbuffer = nbuffer
+      }
 
 changeTextColour :: Color4 GLfloat -> TextRenderer -> TextRenderer
 changeTextColour newColour trender =

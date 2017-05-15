@@ -67,13 +67,15 @@ resize esVar window newWidth newHeight = do
   engineState <- atomically $ readTMVar esVar
   deletePostProcessing $ postFX engineState
   newPost <- createPostProcessing (fromIntegral fbWidth) (fromIntegral fbHeight)
+  newTrender <- resizeTextRendererScreen 0.1 100 fbWidth fbHeight (textRenderer engineState)
   let newRatio = fromIntegral fbWidth / fromIntegral fbHeight
       newProj = GM.projectionMat 0.1 100 (pi/4) newRatio
   atomically $ do
     es <- takeTMVar esVar
     putTMVar esVar es {
         projectionMatrix = newProj,
-        postFX = newPost
+        postFX = newPost,
+        textRenderer = newTrender
       }
 
 display :: TVar AppState -> TMVar EngineState -> Double -> IO ()
