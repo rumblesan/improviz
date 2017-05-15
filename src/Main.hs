@@ -21,6 +21,7 @@ import AppTypes
 import Gfx.PostProcessing
 import Gfx.TextRendering
 import Gfx.Windowing
+import Configuration
 
 
 -- type ErrorCallback = Error -> String -> IO ()
@@ -28,17 +29,20 @@ errorCallback :: GLFW.ErrorCallback
 errorCallback _ = hPutStrLn stderr
 
 main :: IO ()
-main = do
+main = getCliArgs app
+
+app :: ImpConfig -> IO ()
+app cfg = do
   gfxETMVar <- newEmptyTMVarIO
   asTVar <- newTVarIO makeAppState
   _ <- forkIO $ runServer asTVar
 
-  let initialWidth = 640
-  let initialHeight = 480
+  let initialWidth = screenWidth cfg
+  let initialHeight = screenHeight cfg
   let initCB = initApp gfxETMVar
   let resizeCB = resize gfxETMVar
   let displayCB = display asTVar gfxETMVar
-  setupWindow initialWidth initialHeight initCB resizeCB displayCB
+  setupWindow initialWidth initialHeight (fullscreenDisplay cfg) initCB resizeCB displayCB
   exitSuccess
 
 initApp :: TMVar EngineState -> Int -> Int -> IO ()

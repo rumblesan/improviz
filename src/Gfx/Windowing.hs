@@ -27,8 +27,17 @@ errorCallback _ = hPutStrLn stderr
 type InitCallback = Int -> Int -> IO ()
 type DisplayCallback = Double -> IO ()
 
-setupWindow :: Int -> Int -> InitCallback -> WindowSizeCallback -> DisplayCallback -> IO ()
-setupWindow width height initCB resizeCB displayCB = do
+targetMonitor :: Maybe Int -> IO (Maybe Monitor)
+targetMonitor target =
+  do
+    monitors <- GLFW.getMonitors
+    return $ do
+      t <- target
+      m <- monitors
+      return $ m !! t
+
+setupWindow :: Int -> Int -> Maybe Int -> InitCallback -> WindowSizeCallback -> DisplayCallback -> IO ()
+setupWindow width height fullscreenMonitor initCB resizeCB displayCB = do
   GLFW.setErrorCallback (Just errorCallback)
   successfulInit <- GLFW.init
   bool successfulInit exitFailure $
@@ -39,12 +48,12 @@ setupWindow width height initCB resizeCB displayCB = do
       GLFW.windowHint $ WindowHint'OpenGLProfile OpenGLProfile'Core
       GLFW.windowHint $ WindowHint'DepthBits 16
       let ratio = fromIntegral width / fromIntegral height
-      mw <- GLFW.createWindow width height "Improviz" Nothing Nothing
+      monitor <- targetMonitor fullscreenMonitor
+      mw <- GLFW.createWindow width height "Improviz" monitor Nothing
       maybe' mw (GLFW.terminate >> exitFailure) $ \window -> do
         GLFW.makeContextCurrent mw
         (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
         depthFunc $= Just Less
-
         initCB fbWidth fbHeight
         GLFW.setWindowSizeCallback window $ Just resizeCB
         forever $ unless' (GLFW.windowShouldClose window) $ do
