@@ -20,6 +20,11 @@ maybe' m nothingRes f = case m of
     Nothing -> nothingRes
     Just x  -> f x
 
+maybeElem :: Int -> [a] -> Maybe a
+maybeElem _ [] = Nothing
+maybeElem 0 (x:xs) = Just x
+maybeElem i (_:xs) = maybeElem (i - 1) xs
+
 -- type ErrorCallback = Error -> String -> IO ()
 errorCallback :: GLFW.ErrorCallback
 errorCallback _ = hPutStrLn stderr
@@ -34,7 +39,7 @@ targetMonitor target =
     return $ do
       t <- target
       m <- monitors
-      return $ m !! t
+      maybeElem t m
 
 setupWindow :: Int -> Int -> Maybe Int -> InitCallback -> WindowSizeCallback -> DisplayCallback -> IO ()
 setupWindow width height fullscreenMonitor initCB resizeCB displayCB = do
