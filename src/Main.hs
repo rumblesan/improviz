@@ -95,7 +95,7 @@ display appState gfxState time = do
     Right scene ->
       do
         drawScene gs scene
-        drawText gs as
+        when (displayText as) $ drawText gs as
         unless (currentAst as == lastWorkingAst as) $ do
           putStrLn "Saving current ast"
           atomically $ modifyTVar appState (\as -> as { lastWorkingAst = currentAst as })

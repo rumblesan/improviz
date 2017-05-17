@@ -31,12 +31,24 @@ updateProgram appState newProgram =
         return "{'status': 'OK', 'message': 'Parsed Succesfully'}"
       Left err -> return $ mconcat ["{'status': 'OK', 'message': '", err, "'}"]
 
+toggleTextDisplay :: TVar AppState -> IO String
+toggleTextDisplay appState =
+  do
+    atomically $ modifyTVar appState (\as -> as {
+      displayText = not $ displayText as
+    })
+    return "{'status': 'OK', 'message': 'Toggled text display'}"
+
 runServer :: TVar AppState -> IO ()
 runServer appState = scotty 3000 $ do
   get "/" $ text "SERVING"
   post "/read" $ do
     b <- body
     resp <- liftIO $ updateProgram appState (unpack b)
+    liftIO $ print resp
+    json $ pack resp
+  post "/toggle/text" $ do
+    resp <- liftIO $ toggleTextDisplay appState
     liftIO $ print resp
     json $ pack resp
 
