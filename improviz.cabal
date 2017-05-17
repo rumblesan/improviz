@@ -75,7 +75,6 @@ test-suite improviz-test
   main-is:             Spec.hs
   build-depends:       base >= 4.8 && < 5
                      , bytestring
-                     , argparser
                      , containers
                      , indents
                      , freetype2
