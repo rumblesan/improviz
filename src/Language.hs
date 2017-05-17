@@ -68,6 +68,15 @@ addStdLib = do
   setBuiltIn "motionBlur" SL.motionBlur []
   setBuiltIn "sin" SL.sinFunc ["rads"]
   setBuiltIn "cos" SL.cosFunc ["rads"]
+  setBuiltIn "tan" SL.cosFunc ["rads"]
+  setBuiltIn "abs" SL.cosFunc ["val"]
+  setBuiltIn "ceil" SL.cosFunc ["val"]
+  setBuiltIn "floor" SL.cosFunc ["val"]
+  setBuiltIn "round" SL.cosFunc ["val"]
+  setBuiltIn "max" SL.cosFunc ["val"]
+  setBuiltIn "min" SL.cosFunc ["val"]
+  setBuiltIn "log" SL.cosFunc ["val"]
+  setBuiltIn "sqrt" SL.cosFunc ["val"]
   setVariable "pi" (Number pi)
   return ()
 
