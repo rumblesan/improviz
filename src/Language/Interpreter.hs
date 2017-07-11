@@ -172,6 +172,22 @@ interpretLoop (Loop numExpr loopVar block) =
       _ <- maybe (return Null) (\vn -> setVariable vn (Number n)) loopVar
       interpretBlock block
 
+interpretIf :: If -> InterpreterProcess Value
+interpretIf (If pred block1 block2) =
+  do
+    p <- isZero pred
+    if p then
+      interpretBlock block1
+     else
+      maybe (return Null) interpretBlock block2
+  where
+    isZero :: Expression -> InterpreterProcess Bool
+    isZero e = do
+      v <- interpretExpression e
+      return $ case v of
+        Number 0 -> False
+        _ -> True
+
 loopNums :: Expression -> InterpreterProcess [Float]
 loopNums numExpr = do
     loopV <- interpretExpression numExpr

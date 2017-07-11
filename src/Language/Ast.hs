@@ -8,6 +8,7 @@ module Language.Ast
     Expression(..),
     Variable(..),
     Value(..),
+    If(..),
     Identifier
   ) where
 
@@ -16,6 +17,7 @@ newtype Block = Block [Element] deriving (Eq, Show)
 data Element = ElLoop Loop
              | ElAssign Assignment
              | ElExpression Expression
+             | ElIf If
              deriving (Eq, Show)
 
 data Application = Application Identifier [Expression] (Maybe Block) deriving (Eq, Show)
@@ -23,6 +25,8 @@ data Application = Application Identifier [Expression] (Maybe Block) deriving (E
 data Loop = Loop Expression (Maybe Identifier) Block deriving (Eq, Show)
 
 data Assignment = Assignment Identifier Expression deriving (Eq, Show)
+
+data If = If Expression Block (Maybe Block) deriving (Eq, Show)
 
 data Expression = EApp Application
                 | BinaryOp String Expression Expression
