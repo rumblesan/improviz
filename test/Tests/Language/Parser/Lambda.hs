@@ -21,10 +21,22 @@ parserLambdaTests :: Test
 parserLambdaTests =
   testGroup "Parser Lambda Tests" [
     testCase "Parse single arg lambda" test_parse_single_arg_lambda,
+    testCase "Parse no arg lambda" test_parse_no_arg_lambda,
     testCase "Parse expression lambda" test_parse_expr_lambda,
     testCase "Parse multiline lambda" test_parse_multiline_lambda
   ]
 
+
+test_parse_no_arg_lambda :: Assertion
+test_parse_no_arg_lambda =
+  let
+    program = "foo = () => 3 + 1"
+    block = Block [ElExpression $ BinaryOp "+" (EVal $ Number 3) (EVal $ Number 1)]
+    lambda = Lambda [] block
+    expected = Right $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
+    result = Language.parse program
+  in
+    assertEqual "" expected result
 
 test_parse_single_arg_lambda :: Assertion
 test_parse_single_arg_lambda =
