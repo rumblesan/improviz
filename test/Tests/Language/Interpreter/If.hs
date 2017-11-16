@@ -50,7 +50,7 @@ test_false_if_statement =
 test_true_if_else_statement :: Assertion
 test_true_if_else_statement =
   let
-    program = "if (1)\n\tbox()\nelse\n\tball()"
+    program = "if (1)\n\tbox()\nelse\n\tline()"
     result = do
       ast <- Language.parse program
       scene <- fst $ Language.createGfx [] ast
@@ -64,13 +64,13 @@ test_true_if_else_statement =
 test_false_if_else_statement :: Assertion
 test_false_if_else_statement =
   let
-    program = "if (0)\n\tbox()\nelse\n\tball()"
+    program = "if (0)\n\tbox()\nelse\n\tline()"
     result = do
       ast <- Language.parse program
       scene <- fst $ Language.createGfx [] ast
       return $ sceneGfx scene
     expected = Right [
-        GA.ShapeCommand (GA.Sphere 1 1 1) Nothing
+        GA.ShapeCommand (GA.Line 1) Nothing
       ]
   in
     assertEqual "" expected result

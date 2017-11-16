@@ -37,7 +37,7 @@ exprDef = LanguageDef { commentStart   = ""
                       , opStart        = oneOf "^*/%+-^"
                       , opLetter       = oneOf "^*/%+-^"
                       , reservedOpNames= ["^", "*", "/", "%", "+", "-"]
-                      , reservedNames  = []
+                      , reservedNames  = ["if"]
                       , caseSensitive  = True
                       }
 
@@ -76,7 +76,8 @@ langBlock = Block
 element :: LangParser Element
 element =    ((ElLoop <$> try loop)
           <|> (ElAssign <$> try assignment)
-          <|> (ElExpression <$> try expression))
+          <|> (ElExpression <$> try expression)
+          <|> (ElIf <$> try ifElem))
           <* eol
           <?> "element"
 
@@ -104,6 +105,13 @@ assignment = Assignment
              <* m_symbol "="
              <*> expression
              <?> "assignment"
+
+ifElem :: LangParser If
+ifElem = If
+         <$> (m_symbol "if" *>  m_parens expression)
+         <*> langBlock
+         <*> optionMaybe (m_symbol "else" *> langBlock)
+         <?> "if"
 
 expression :: LangParser Expression
 expression = buildExpressionParser table atom <?> "expression"

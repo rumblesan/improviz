@@ -130,6 +130,7 @@ interpretBlock (Block elements) = last <$> mapM interpretElement elements
 interpretElement :: Element -> InterpreterProcess Value
 interpretElement (ElLoop loop) = interpretLoop loop
 interpretElement (ElAssign assignment) = interpretAssignment assignment
+interpretElement (ElIf ifElem) = interpretIf ifElem
 interpretElement (ElExpression expression) = interpretExpression expression
 
 interpretApplication :: Application -> InterpreterProcess Value
