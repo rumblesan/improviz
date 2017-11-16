@@ -130,6 +130,7 @@ interpretBlock (Block elements) = last <$> mapM interpretElement elements
 interpretElement :: Element -> InterpreterProcess Value
 interpretElement (ElLoop loop) = interpretLoop loop
 interpretElement (ElAssign assignment) = interpretAssignment assignment
+interpretElement (ElIf ifElem) = interpretIf ifElem
 interpretElement (ElExpression expression) = interpretExpression expression
 
 interpretApplication :: Application -> InterpreterProcess Value
@@ -171,6 +172,22 @@ interpretLoop (Loop numExpr loopVar block) =
     looping _ n = do
       _ <- maybe (return Null) (\vn -> setVariable vn (Number n)) loopVar
       interpretBlock block
+
+interpretIf :: If -> InterpreterProcess Value
+interpretIf (If pred block1 block2) =
+  do
+    p <- isZero pred
+    if p then
+      interpretBlock block1
+     else
+      maybe (return Null) interpretBlock block2
+  where
+    isZero :: Expression -> InterpreterProcess Bool
+    isZero e = do
+      v <- interpretExpression e
+      return $ case v of
+        Number 0 -> False
+        _ -> True
 
 loopNums :: Expression -> InterpreterProcess [Float]
 loopNums numExpr = do
