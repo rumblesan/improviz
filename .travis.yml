@@ -24,6 +24,8 @@ addons:
   apt:
     packages:
       - libgmp-dev
+      - libxrandr-dev
+
 
 before_install:
 # Download and unpack the stack executable
