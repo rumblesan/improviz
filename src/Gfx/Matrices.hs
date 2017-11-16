@@ -1,24 +1,36 @@
-{-# LANGUAGE RankNTypes #-}  
+{-# LANGUAGE RankNTypes    #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Gfx.Matrices where
 
-import Data.Vec
+import           Data.Vec
 
 vec3 :: forall a a1 a2. a -> a1 -> a2 -> a :. (a1 :. (a2 :. ()))
-vec3 x y z = x :. y :. z:. ()
+vec3 x y z = x :. y :. z :. ()
 
 projectionMat :: Floating f => f -> f -> f -> f -> Mat44 f
 projectionMat near far fov aspect = perspective near far fov aspect
 
 orthographicMat :: Floating f => f -> f -> f -> f -> f -> f -> Mat44 f
 orthographicMat left right top bottom near far =
-  matFromList [
-    2.0 / (right - left), 0, 0, 0,
-    0, 2.0 / (top - bottom), 0, 0,
-    0, 0, 2.0 / (far - near), (-(far + near))/(far - near),
-    0, 0, 0, 1
-  ]
+  matFromList
+    [ 2.0 / (right - left)
+    , 0
+    , 0
+    , 0
+    , 0
+    , 2.0 / (top - bottom)
+    , 0
+    , 0
+    , 0
+    , 0
+    , 2.0 / (far - near)
+    , (-(far + near)) / (far - near)
+    , 0
+    , 0
+    , 0
+    , 1
+    ]
 
 viewMat :: Floating f => Vec3 f -> Vec3 f -> Vec3 f -> Mat44 f
 viewMat = lookAt

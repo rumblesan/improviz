@@ -10,32 +10,53 @@ emptyGfx = []
 addGfx :: Block -> GfxCommand -> Block
 addGfx block cmd = block ++ [cmd]
 
-
 type GfxAst = Block
 
 data GfxCommand
-  = ShapeCommand ShapeGfx (Maybe Block)
-  | MatrixCommand MatrixGfx (Maybe Block)
-  | ColourCommand ColourGfx (Maybe Block)
+  = ShapeCommand ShapeGfx
+                 (Maybe Block)
+  | MatrixCommand MatrixGfx
+                  (Maybe Block)
+  | ColourCommand ColourGfx
+                  (Maybe Block)
   deriving (Show, Eq)
 
 data ShapeGfx
-  = Cube Float Float Float
-  | Sphere Float Float Float
-  | Cylinder Float Float Float
-  | Rectangle Float Float
+  = Cube Float
+         Float
+         Float
+  | Sphere Float
+           Float
+           Float
+  | Cylinder Float
+             Float
+             Float
+  | Rectangle Float
+              Float
   | Line Float
   deriving (Show, Eq)
 
 data MatrixGfx
-  = Rotate Float Float Float
-  | Scale Float Float Float
-  | Move Float Float Float
+  = Rotate Float
+           Float
+           Float
+  | Scale Float
+          Float
+          Float
+  | Move Float
+         Float
+         Float
   deriving (Show, Eq)
 
 data ColourGfx
-  = Fill Float Float Float Float
+  = Fill Float
+         Float
+         Float
+         Float
   | NoFill
-  | Stroke Float Float Float Float
+  | Stroke Float
+           Float
+           Float
+           Float
   | NoStroke
   deriving (Show, Eq)

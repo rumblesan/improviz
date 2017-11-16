@@ -1,18 +1,19 @@
 module Gfx.Interpreter where
 
-import Data.Maybe (maybe)
-import Control.Monad (mapM, when, void)
-import Control.Monad.State.Strict
+import           Control.Monad              (mapM, void, when)
+import           Control.Monad.State.Strict
+import           Data.Maybe                 (maybe)
 
-import Data.Vec (Mat44, multmm)
+import           Data.Vec                   (Mat44, multmm)
 
-import Graphics.Rendering.OpenGL hiding (Fill, Line, get, Cylinder, Sphere)
+import           Graphics.Rendering.OpenGL  hiding (Cylinder, Fill, Line,
+                                             Sphere, get)
 
-import Gfx.Ast
-import Gfx.EngineState as ES
-import Gfx.GeometryBuffers
-import Gfx.Shaders
-import Gfx.Matrices
+import           Gfx.Ast
+import           Gfx.EngineState            as ES
+import           Gfx.GeometryBuffers
+import           Gfx.Matrices
+import           Gfx.Shaders
 
 hasTransparency :: Color4 GLfloat -> Bool
 hasTransparency (Color4 _ _ _ a) = a < 1.0
@@ -21,6 +22,7 @@ fullyTransparent :: Color4 GLfloat -> Bool
 fullyTransparent (Color4 _ _ _ a) = a == 0
 
 type GfxAction = IO
+
 type GfxOutput = ()
 
 type GraphicsEngine v = StateT EngineState GfxAction v
@@ -31,17 +33,20 @@ interpretGfx ast = do
   liftIO (currentProgram $= Just (shaderProgram s))
   void $ interpretBlock ast
 
-interpretBlock :: Block -> GraphicsEngine [ GfxOutput ]
+interpretBlock :: Block -> GraphicsEngine [GfxOutput]
 interpretBlock = mapM interpretCommand
 
-interpretCommand' :: GraphicsEngine GfxOutput -> Maybe Block -> GraphicsEngine GfxOutput
+interpretCommand' ::
+     GraphicsEngine GfxOutput -> Maybe Block -> GraphicsEngine GfxOutput
 interpretCommand' commandOutput = maybe commandOutput (newScope commandOutput)
 
-
 interpretCommand :: GfxCommand -> GraphicsEngine GfxOutput
-interpretCommand (ShapeCommand shapeAst block) = interpretCommand' (interpretShape shapeAst) block
-interpretCommand (MatrixCommand matrixAst block) = interpretCommand' (interpretMatrix matrixAst) block
-interpretCommand (ColourCommand colourAst block) = interpretCommand' (interpretColour colourAst) block
+interpretCommand (ShapeCommand shapeAst block) =
+  interpretCommand' (interpretShape shapeAst) block
+interpretCommand (MatrixCommand matrixAst block) =
+  interpretCommand' (interpretMatrix matrixAst) block
+interpretCommand (ColourCommand colourAst block) =
+  interpretCommand' (interpretColour colourAst) block
 
 getFullMatrix :: GraphicsEngine (Mat44 GLfloat)
 getFullMatrix = do
@@ -102,16 +107,18 @@ interpretShape (Sphere x y z) = do
   modify' popMatrix
 
 interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
-interpretMatrix (Rotate x y z) = modify' (\es -> ES.multMatrix es $ rotMat x y z)
-interpretMatrix (Scale x y z) = modify' (\es -> ES.multMatrix es $ scaleMat x y z)
-interpretMatrix (Move x y z) = modify' (\es -> ES.multMatrix es $ translateMat x y z)
+interpretMatrix (Rotate x y z) =
+  modify' (\es -> ES.multMatrix es $ rotMat x y z)
+interpretMatrix (Scale x y z) =
+  modify' (\es -> ES.multMatrix es $ scaleMat x y z)
+interpretMatrix (Move x y z) =
+  modify' (\es -> ES.multMatrix es $ translateMat x y z)
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
-interpretColour (Fill r g b a) = modify' (pushFillColour $ Color4 r g b a)
-interpretColour NoFill = modify' (pushFillColour $ Color4 0 0 0 0)
-
+interpretColour (Fill r g b a)   = modify' (pushFillColour $ Color4 r g b a)
+interpretColour NoFill           = modify' (pushFillColour $ Color4 0 0 0 0)
 interpretColour (Stroke r g b a) = modify' (pushStrokeColour $ Color4 r g b a)
-interpretColour NoStroke = modify' (pushStrokeColour $ Color4 0 0 0 0)
+interpretColour NoStroke         = modify' (pushStrokeColour $ Color4 0 0 0 0)
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
 newScope gfx block = do

@@ -1,51 +1,50 @@
-module Language (
-  parse,
-  interpret,
-  createGfx,
-  module Language.Ast
+module Language
+  ( parse
+  , interpret
+  , createGfx
+  , module Language.Ast
   ) where
 
-import Control.Monad.State.Strict
-import Control.Monad.Writer.Strict
-import Control.Monad.Except
+import           Control.Monad.Except
+import           Control.Monad.State.Strict
+import           Control.Monad.Writer.Strict
 
-import Gfx (Scene(..))
-import Language.Parser (parseProgram)
-import Language.Interpreter.Types (currentGfx, InterpreterProcess, InterpreterState(..))
-import Language.Interpreter (interpretLanguage, emptyState, setBuiltIn, setVariable)
-import Language.Ast (Block, Value(..), Identifier)
-import qualified Language.StdLib as SL
+import           Gfx                         (Scene (..))
+import           Language.Ast                (Block, Identifier, Value (..))
+import           Language.Interpreter        (emptyState, interpretLanguage,
+                                              setBuiltIn, setVariable)
+import           Language.Interpreter.Types  (InterpreterProcess,
+                                              InterpreterState (..), currentGfx)
+import           Language.Parser             (parseProgram)
+import qualified Language.StdLib             as SL
 
 parse :: String -> Either String Block
 parse = parseProgram
 
 interpret :: [(Identifier, Value)] -> Block -> (Either String Value, [String])
 interpret initialVars block =
-  let
-     run = do
-       addStdLib
-       addInitialVariables initialVars
-       interpretLanguage block
-  in
-    evalState (runWriterT (runExceptT run)) emptyState
+  let run = do
+        addStdLib
+        addInitialVariables initialVars
+        interpretLanguage block
+  in evalState (runWriterT (runExceptT run)) emptyState
 
 createGfx :: [(Identifier, Value)] -> Block -> (Either String Scene, [String])
 createGfx initialVars block =
-  let
-     run = do
-       addStdLib
-       addInitialVariables initialVars
-       _ <- interpretLanguage block
-       gfxB <- gets currentGfx
-       gfxBg <- gets gfxBackground
-       gfxAnimStyle <- gets animationStyle
-       return Scene {
-         sceneBackground = gfxBg,
-         sceneGfx = gfxB,
-         scenePostProcessingFX = gfxAnimStyle
-       }
-  in
-    evalState (runWriterT (runExceptT run)) emptyState
+  let run = do
+        addStdLib
+        addInitialVariables initialVars
+        _ <- interpretLanguage block
+        gfxB <- gets currentGfx
+        gfxBg <- gets gfxBackground
+        gfxAnimStyle <- gets animationStyle
+        return
+          Scene
+          { sceneBackground = gfxBg
+          , sceneGfx = gfxB
+          , scenePostProcessingFX = gfxAnimStyle
+          }
+  in evalState (runWriterT (runExceptT run)) emptyState
 
 addStdLib :: InterpreterProcess ()
 addStdLib = do
@@ -80,5 +79,5 @@ addStdLib = do
   setVariable "pi" (Number pi)
   return ()
 
-addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess()
+addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess ()
 addInitialVariables vars = forM_ vars (uncurry setVariable)

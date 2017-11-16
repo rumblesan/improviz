@@ -1,11 +1,11 @@
 module Language.Interpreter.Operators where
 
-import Control.Monad.Except
-import Data.Fixed (mod')
+import           Control.Monad.Except
+import           Data.Fixed                  (mod')
 
-import Language.Ast
-import Language.Interpreter.Types
-import Language.Interpreter.Values
+import           Language.Ast
+import           Language.Interpreter.Types
+import           Language.Interpreter.Values
 
 binaryOp :: String -> Value -> Value -> InterpreterProcess Value
 binaryOp op v1 v2 = do
