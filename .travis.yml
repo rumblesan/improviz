@@ -25,6 +25,9 @@ addons:
     packages:
       - libgmp-dev
       - libxrandr-dev
+      - libxi-dev
+      - libxinerama-dev
+      - libxcursor-dev
 
 
 before_install:
