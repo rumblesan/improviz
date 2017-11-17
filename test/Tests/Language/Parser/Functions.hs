@@ -38,7 +38,7 @@ test_simple_application =
 
 test_application_list :: Assertion
 test_application_list =
-  let program = "(1, b, 3)"
+  let program = "1, b, 3"
       expected = Right [EVal $ Number 1, EVar $ Variable "b", EVal $ Number 3]
       result = LP.simpleParse (LP.argList LP.expression) program
   in assertEqual "" expected result

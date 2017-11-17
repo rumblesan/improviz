@@ -4,7 +4,9 @@ module Tests.Language.Parser.ErrorCatching
 
 import           Test.Framework                 (Test, testGroup)
 import           Test.Framework.Providers.HUnit (testCase)
-import           Test.HUnit                     (Assertion, assertEqual)
+import           Test.HUnit                     (Assertion, assertBool)
+
+import           Data.Either                    (isLeft)
 
 import qualified Language
 import           Language.Ast
@@ -19,6 +21,5 @@ parserErrorCatchingTests =
 test_open_function_parens_error :: Assertion
 test_open_function_parens_error =
   let program = "rotate\n(0.1 0.2\n)\nbox()"
-      expected = Left "Error"
       result = Language.parse program
-  in assertEqual "" expected result
+  in assertBool "" (isLeft result)

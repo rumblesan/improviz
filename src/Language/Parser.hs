@@ -68,7 +68,7 @@ table =
 
 atom :: LangParser Expression
 atom =
-  EApp <$> try application <|> EVar <$> try variable <|> EVal <$> try value <|>
+  EApp <$> application <|> EVar <$> try variable <|> EVal <$> try value <|>
   try (m_parens expression)
 
 langBlock :: LangParser Block
@@ -76,34 +76,35 @@ langBlock = Block <$> block element <?> "block"
 
 element :: LangParser Element
 element =
-  ((ElLoop <$> try loop) <|> (ElAssign <$> try assignment) <|>
-   (ElExpression <$> try expression) <|>
-   (ElIf <$> try ifElem)) <*
+  ((ElLoop <$> loop) <|> (ElAssign <$> assignment) <|> (ElIf <$> ifElem) <|>
+   (ElExpression <$> try expression)) <*
   eol <?> "element"
 
 argList :: LangParser e -> LangParser [e]
-argList lp = m_parens (sepBy lp sep)
+argList lp = sepBy lp sep
   where
     sep = skipMany space >> char ',' >> skipMany space
 
 application :: LangParser Application
 application =
-  Application <$> m_identifier <*> argList expression <*>
+  Application <$> try (m_identifier <* m_symbol "(") <*> argList expression <*
+  m_symbol ")" <*>
   optionMaybe (indented >> langBlock) <?> "application"
 
 loop :: LangParser Loop
 loop =
-  Loop <$> expression <* m_symbol "times" <*>
+  Loop <$> try (expression <* m_symbol "times") <*>
   optionMaybe (m_symbol "with" *> m_identifier) <*>
   (indented >> langBlock) <?> "loop"
 
 assignment :: LangParser Assignment
 assignment =
-  Assignment <$> m_identifier <* m_symbol "=" <*> expression <?> "assignment"
+  Assignment <$> try (m_identifier <* m_symbol "=") <*>
+  expression <?> "assignment"
 
 ifElem :: LangParser If
 ifElem =
-  If <$> (m_symbol "if" *> m_parens expression) <*> langBlock <*>
+  If <$> try (m_symbol "if" *> m_parens expression) <*> langBlock <*>
   optionMaybe (m_symbol "else" *> langBlock) <?> "if"
 
 expression :: LangParser Expression
@@ -119,7 +120,7 @@ value = number <|> lambda <|> v_null
 
 lambda :: LangParser Value
 lambda =
-  Lambda <$> argList m_identifier <* m_symbol "=>" <*>
+  Lambda <$> m_parens (argList m_identifier) <* m_symbol "=>" <*>
   (lbody <|> lexpr) <?> "lambda"
   where
     lexpr = (\e -> Block [ElExpression e]) <$> expression
