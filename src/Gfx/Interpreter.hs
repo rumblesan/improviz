@@ -55,19 +55,29 @@ getFullMatrix = do
   vMat <- gets viewMatrix
   return $ multmm (multmm pMat vMat) mMat
 
+setShapeStyle :: Shaders -> Mat44 GLfloat -> GraphicsEngine GfxOutput
+setShapeStyle program mvp = do
+  style <- gets currentFillStyle
+  case style of
+    GFXColour fillC -> do
+      lift $ setMVPMatrixUniform program mvp
+      lift $ setColourUniform program fillC
+    GFXTexture name -> do
+      let fillC = Color4 1 1 1 1
+      lift $ setMVPMatrixUniform program mvp
+      lift $ setColourUniform program fillC
+
 drawShape :: VBO -> GraphicsEngine GfxOutput
 drawShape (VBO bufferObject _ arrayIndex offset) = do
-  fillC <- gets currentFillColour
   mvp <- getFullMatrix
   program <- gets shaders
-  lift $ setMVPMatrixUniform program mvp
-  lift $ setColourUniform program fillC
+  setShapeStyle program mvp
   bindVertexArrayObject $= Just bufferObject
   lift $ drawArrays Triangles arrayIndex offset
 
 drawWireframe :: VBO -> GraphicsEngine GfxOutput
 drawWireframe (VBO bufferObject _ arrayIndex offset) = do
-  strokeC <- gets currentStrokeColour
+  strokeC <- gets currentStrokeStyle
   mvp <- getFullMatrix
   program <- gets shaders
   lift $ setMVPMatrixUniform program mvp
@@ -115,10 +125,13 @@ interpretMatrix (Move x y z) =
   modify' (\es -> ES.multMatrix es $ translateMat x y z)
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
-interpretColour (Fill r g b a)   = modify' (pushFillColour $ Color4 r g b a)
-interpretColour NoFill           = modify' (pushFillColour $ Color4 0 0 0 0)
-interpretColour (Stroke r g b a) = modify' (pushStrokeColour $ Color4 r g b a)
-interpretColour NoStroke         = modify' (pushStrokeColour $ Color4 0 0 0 0)
+interpretColour (Fill (TextureStyle name)) =
+  modify' (pushFillStyle $ ES.GFXTexture name)
+interpretColour (Fill (ColourStyle r g b a)) =
+  modify' (pushFillStyle $ ES.GFXColour $ Color4 r g b a)
+interpretColour NoFill = modify' (pushFillStyle $ ES.GFXColour $ Color4 0 0 0 0)
+interpretColour (Stroke r g b a) = modify' (pushStrokeStyle $ Color4 r g b a)
+interpretColour NoStroke = modify' (pushStrokeStyle $ Color4 0 0 0 0)
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
 newScope gfx block = do

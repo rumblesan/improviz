@@ -9,6 +9,11 @@ import           Gfx.PostProcessing        (AnimationStyle, PostProcessing)
 import           Gfx.Shaders
 import           Gfx.TextRendering         (TextRenderer)
 
+data GFXStyling
+  = GFXColour (Color4 GLfloat)
+  | GFXTexture String
+  deriving (Show)
+
 data Scene = Scene
   { sceneBackground       :: Color4 Float
   , sceneGfx              :: Block
@@ -16,8 +21,8 @@ data Scene = Scene
   }
 
 data EngineState = EngineState
-  { fillColours        :: [Color4 GLfloat]
-  , strokeColours      :: [Color4 GLfloat]
+  { fillStyles         :: [GFXStyling]
+  , strokeStyles       :: [Color4 GLfloat]
   , drawTransparencies :: Bool
   , geometryBuffers    :: GeometryBuffers
   , shaders            :: Shaders
@@ -39,8 +44,8 @@ baseState projection view pprocess trender = do
   shd <- createShaders
   return
     EngineState
-    { fillColours = [Color4 1 1 1 1]
-    , strokeColours = [Color4 0 0 0 1]
+    { fillStyles = [GFXColour $ Color4 1 1 1 1]
+    , strokeStyles = [Color4 0 0 0 1]
     , drawTransparencies = False
     , geometryBuffers = gbos
     , shaders = shd
@@ -51,23 +56,23 @@ baseState projection view pprocess trender = do
     , matrixStack = [identity]
     }
 
-pushFillColour :: Color4 GLfloat -> EngineState -> EngineState
-pushFillColour c es = es {fillColours = c : fillColours es}
+pushFillStyle :: GFXStyling -> EngineState -> EngineState
+pushFillStyle s es = es {fillStyles = s : fillStyles es}
 
-currentFillColour :: EngineState -> Color4 GLfloat
-currentFillColour = head . fillColours
+currentFillStyle :: EngineState -> GFXStyling
+currentFillStyle = head . fillStyles
 
-popFillColour :: EngineState -> EngineState
-popFillColour es = es {fillColours = tail $ fillColours es}
+popFillStyle :: EngineState -> EngineState
+popFillStyle es = es {fillStyles = tail $ fillStyles es}
 
-pushStrokeColour :: Color4 GLfloat -> EngineState -> EngineState
-pushStrokeColour c es = es {strokeColours = c : strokeColours es}
+pushStrokeStyle :: Color4 GLfloat -> EngineState -> EngineState
+pushStrokeStyle c es = es {strokeStyles = c : strokeStyles es}
 
-currentStrokeColour :: EngineState -> Color4 GLfloat
-currentStrokeColour = head . strokeColours
+currentStrokeStyle :: EngineState -> Color4 GLfloat
+currentStrokeStyle = head . strokeStyles
 
-popStrokeColour :: EngineState -> EngineState
-popStrokeColour es = es {strokeColours = tail $ strokeColours es}
+popStrokeStyles :: EngineState -> EngineState
+popStrokeStyles es = es {strokeStyles = tail $ strokeStyles es}
 
 pushMatrix :: EngineState -> Mat44 Float -> EngineState
 pushMatrix es mat =
