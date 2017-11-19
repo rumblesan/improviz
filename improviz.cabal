@@ -77,6 +77,7 @@ test-suite improviz-test
   main-is:             Spec.hs
   build-depends:       base >= 4.8 && < 5
                      , bytestring
+                     , bmp
                      , containers
                      , indents
                      , freetype2
@@ -107,6 +108,7 @@ test-suite improviz-test
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
                      , Gfx.TextRendering
+                     , Gfx.Textures
                      , Gfx.Matrices
                      , Gfx.PostProcessing
                      , Gfx.Shaders
