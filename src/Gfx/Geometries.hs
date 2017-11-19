@@ -1,10 +1,9 @@
 module Gfx.Geometries where
 
-import           Data.List                 (genericIndex)
-import           Graphics.Rendering.OpenGL (GLfloat, Vertex3 (..))
+import           Data.List                 (cycle, genericIndex)
+import           Graphics.Rendering.OpenGL (GLfloat, Vertex2 (..), Vertex3 (..))
 
-triVertexArray ::
-     [Vertex3 GLfloat] -> [(Integer, Integer, Integer)] -> [Vertex3 GLfloat]
+triVertexArray :: [v] -> [(Integer, Integer, Integer)] -> [v]
 triVertexArray verts points =
   reverse $
   foldl
@@ -14,8 +13,7 @@ triVertexArray verts points =
     []
     points
 
-lineVertexArray ::
-     [Vertex3 GLfloat] -> [(Integer, Integer)] -> [Vertex3 GLfloat]
+lineVertexArray :: [v] -> [(Integer, Integer)] -> [v]
 lineVertexArray verts points =
   reverse $
   foldl
@@ -35,6 +33,9 @@ cubeVertices size =
      , Vertex3 s s s
      , Vertex3 s s (-s)
      ]
+
+cubeTextCoords :: [Vertex2 GLfloat]
+cubeTextCoords = cycle rectTextCoords
 
 cubeTriangles :: [(Integer, Integer, Integer)]
 cubeTriangles =
@@ -73,6 +74,9 @@ rectVertices size =
   let s = size / 2
   in [Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0, Vertex3 s s 0, Vertex3 (-s) s 0]
 
+rectTextCoords :: [Vertex2 GLfloat]
+rectTextCoords = [Vertex2 0 0, Vertex2 1 0, Vertex2 1 1, Vertex2 0 1]
+
 rectTriangles :: [(Integer, Integer, Integer)]
 rectTriangles = [(0, 1, 2), (0, 2, 3), (0, 2, 1), (0, 3, 2)]
 
@@ -101,6 +105,9 @@ cylinderVertices height radius segments =
         return (Vertex3 (radius * sin a) (radius * cos a) bottomHeight)
       topVerts = [Vertex3 x y topHeight | (Vertex3 x y _) <- bottomVerts]
   in (bottomCentre : bottomVerts) ++ (topCentre : topVerts)
+
+cylinderTextCoords :: [Vertex2 GLfloat]
+cylinderTextCoords = cycle rectTextCoords
 
 cylinderTriangles :: Integer -> [(Integer, Integer, Integer)]
 cylinderTriangles segments =
@@ -146,6 +153,9 @@ sphereVertices radius segments =
            (\p ->
               Vertex3 (sin (p * angle) * width) (cos (p * angle) * width) height)
            points
+
+sphereTextCoords :: [Vertex2 GLfloat]
+sphereTextCoords = cycle rectTextCoords
 
 sphereTriangles :: Integer -> [(Integer, Integer, Integer)]
 sphereTriangles segments =

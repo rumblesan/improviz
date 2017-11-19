@@ -16,8 +16,8 @@ data Shaders = Shaders
   , colourUniform    :: GL.UniformLocation
   } deriving (Show, Eq)
 
-createShaders :: IO Shaders
-createShaders = do
+createColourShaders :: IO Shaders
+createColourShaders = do
   program <-
     loadShaders
       [ ShaderInfo VertexShader (FileSource "shaders/basic.vert")
@@ -27,6 +27,17 @@ createShaders = do
   mvpMatUniform <- GL.get $ uniformLocation program "MVPMat"
   colourU <- GL.get $ uniformLocation program "vertexColor"
   return $ Shaders program mvpMatUniform colourU
+
+createTextureShaders :: IO Shaders
+createTextureShaders = do
+  program <-
+    loadShaders
+      [ ShaderInfo VertexShader (FileSource "shaders/texture.vert")
+      , ShaderInfo FragmentShader (FileSource "shaders/texture.frag")
+      ]
+  GL.currentProgram $= Just program
+  mvpMatUniform <- GL.get $ uniformLocation program "MVPMat"
+  return $ Shaders program mvpMatUniform mvpMatUniform
 
 setMVPMatrixUniform :: Shaders -> Mat44 GLfloat -> IO ()
 setMVPMatrixUniform (Shaders _ (UniformLocation mvpMatUniform) _) mvpMat =

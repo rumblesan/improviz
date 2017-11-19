@@ -8,6 +8,7 @@ import           Gfx.GeometryBuffers       (GeometryBuffers, createAllBuffers)
 import           Gfx.PostProcessing        (AnimationStyle, PostProcessing)
 import           Gfx.Shaders
 import           Gfx.TextRendering         (TextRenderer)
+import           Gfx.Textures              (TextureLibrary, createTextureLib)
 
 data GFXStyling
   = GFXColour (Color4 GLfloat)
@@ -25,7 +26,9 @@ data EngineState = EngineState
   , strokeStyles       :: [Color4 GLfloat]
   , drawTransparencies :: Bool
   , geometryBuffers    :: GeometryBuffers
-  , shaders            :: Shaders
+  , textureLibrary     :: TextureLibrary
+  , colourShaders      :: Shaders
+  , textureShaders     :: Shaders
   , viewMatrix         :: Mat44 GLfloat
   , projectionMatrix   :: Mat44 GLfloat
   , postFX             :: PostProcessing
@@ -41,14 +44,18 @@ baseState ::
   -> IO EngineState
 baseState projection view pprocess trender = do
   gbos <- createAllBuffers
-  shd <- createShaders
+  cshd <- createColourShaders
+  tshd <- createTextureShaders
+  textLib <- createTextureLib
   return
     EngineState
     { fillStyles = [GFXColour $ Color4 1 1 1 1]
     , strokeStyles = [Color4 0 0 0 1]
     , drawTransparencies = False
     , geometryBuffers = gbos
-    , shaders = shd
+    , textureLibrary = textLib
+    , colourShaders = cshd
+    , textureShaders = tshd
     , viewMatrix = view
     , projectionMatrix = projection
     , postFX = pprocess

@@ -1,5 +1,6 @@
 module Language.StdLib.ColourOps
   ( fill
+  , texture
   , noFill
   , stroke
   , noStroke
@@ -47,7 +48,7 @@ texture = do
   _ <- getVariable "name"
   let partialCmd =
         GA.ColourCommand $
-          GA.Fill $ GA.TextureStyle "texture0"
+          GA.Fill $ GA.TextureStyle "crystal"
   block <- getBlock
   maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
   return Null
