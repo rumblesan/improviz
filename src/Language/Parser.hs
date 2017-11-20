@@ -114,9 +114,10 @@ variable :: LangParser Variable
 variable = Variable <$> m_identifier
 
 value :: LangParser Value
-value = number <|> lambda <|> v_null
+value = number <|> lambda <|> v_symbol <|> v_null
   where
     v_null = Null <$ m_symbol "null" <?> "null"
+    v_symbol = try (char ':') >> Symbol <$> m_identifier
 
 lambda :: LangParser Value
 lambda =

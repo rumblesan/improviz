@@ -139,6 +139,7 @@ test-suite improviz-test
                      , Tests.Language.Parser.Blocks
                      , Tests.Language.Parser.Functions
                      , Tests.Language.Parser.Lambda
+                     , Tests.Language.Parser.Symbols
                      , Tests.Language.Parser.Loops
                      , Tests.Language.Parser.If
                      , Tests.Language.Parser.ErrorCatching
