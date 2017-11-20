@@ -132,6 +132,7 @@ test-suite improviz-test
                      , Tests.Language.Interpreter.Scoping
                      , Tests.Language.Parser
                      , Tests.Language.Parser.Assignment
+                     , Tests.Language.Parser.Blocks
                      , Tests.Language.Parser.Functions
                      , Tests.Language.Parser.Lambda
                      , Tests.Language.Parser.Loops
