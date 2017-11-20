@@ -27,7 +27,7 @@ parseProgram prog =
     Left err  -> Left $ show err
 
 program :: LangParser Block
-program = topLevel >> langBlock
+program = topLevel >> skipMany space >> langBlock
 
 exprDef :: GenLanguageDef String st Indent
 exprDef =
