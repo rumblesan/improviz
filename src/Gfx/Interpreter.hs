@@ -74,17 +74,15 @@ drawShape (VBO bufferObject _ arrayIndex offset) = do
       program <- gets textureShaders
       liftIO (currentProgram $= Just (shaderProgram program))
       textureLib <- gets textureLibrary
-      liftIO printErrors
-      let texture = textureLib M.! name
-      lift $ activeTexture $= TextureUnit 0
-      lift $ textureBinding Texture2D $= Just texture
-      liftIO printErrors
-      lift $ setMVPMatrixUniform program mvp
-      liftIO printErrors
-      bindVertexArrayObject $= Just bufferObject
-      liftIO printErrors
-      lift $ drawArrays Triangles arrayIndex offset
-      liftIO printErrors
+      case M.lookup name textureLib of
+        Nothing -> return ()
+        Just texture -> do
+          lift $ activeTexture $= TextureUnit 0
+          lift $ textureBinding Texture2D $= Just texture
+          lift $ setMVPMatrixUniform program mvp
+          bindVertexArrayObject $= Just bufferObject
+          lift $ drawArrays Triangles arrayIndex offset
+          liftIO printErrors
 
 drawWireframe :: VBO -> GraphicsEngine GfxOutput
 drawWireframe (VBO bufferObject _ arrayIndex offset) = do
