@@ -1,15 +1,27 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Gfx.Textures where
 
 import qualified Data.Map.Strict           as M
 
 import qualified Data.ByteString           as B
 import qualified Data.ByteString.Unsafe    as BSU
+import qualified Data.Yaml as Y
+import Data.Yaml (FromJSON(..), (.:))
 
 import           Codec.BMP
 import           Foreign.Ptr
 import           Graphics.Rendering.OpenGL as GL
 
 type TextureLibrary = M.Map String TextureObject
+
+data TextureConfig = TextureConfig {
+  textureFiles :: [FilePath]
+                                   } deriving (Eq, Show)
+
+instance FromJSON TextureConfig where
+  parseJSON (Y.Object v) = TextureConfig <$> v .:   "textures"
+  parseJSON _ = fail "Expected Object for Config value"
 
 loadTexture :: String -> FilePath -> IO (String, TextureObject)
 loadTexture name path = do
@@ -29,5 +41,12 @@ loadTexture name path = do
 
 createTextureLib :: IO TextureLibrary
 createTextureLib = do
-  texture <- loadTexture "crystal" "textures/crystal.bmp"
-  return $ M.fromList [texture]
+  yaml <- B.readFile "./textures/config.yaml"
+  let config = Y.decode yaml :: Maybe TextureConfig
+  case config of
+    Nothing -> error "Could not read texture config"
+    Just cfg -> do
+      textures <- mapM tl (textureFiles cfg)
+      return $ M.fromList textures
+  where 
+    tl name = loadTexture name ("textures/" ++ name ++ ".bmp")

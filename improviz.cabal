@@ -35,6 +35,7 @@ executable improviz
                      , OpenGL
                      , OpenGLRaw
                      , Vec
+                     , yaml
   other-modules:       AppServer
                      , AppTypes
                      , Configuration
