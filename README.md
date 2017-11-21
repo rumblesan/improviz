@@ -73,7 +73,7 @@ In the *examples* folder there is a bash script called **send.sh** which can be 
 
 `./examples/send.sh ./examples/simple1.pz`
 
-There is also a very basic [vim plugin](https://github.com/rumblesan/improviz-client.vim).
+See the *editor* folder for more information.
 
 ## Contact
 
