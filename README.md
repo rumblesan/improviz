@@ -15,10 +15,7 @@ With that installed, it should just be a matter of cloning the repository, enter
 
 ```bash
 stack build
-stack exec improviz
 ```
-
-which will present you with a blank and quite uninteresting window. You may get a pop-up window asking if you want to accept incoming network connections. This is because Improviz runs a webserver to allow for communication between the server and an editor.
 
 Depending on your platform it may be necessary to install some or all of the following packages.
 
@@ -29,6 +26,36 @@ Depending on your platform it may be necessary to install some or all of the fol
 * libxcursor-dev
 
 More investigation needed on cross platform building currently.
+
+## Running
+
+Improviz must currently be run from the project folder which is simplest to do by using stack.
+
+```bash
+stack exec improviz
+```
+
+This will present you with a blank and quite uninteresting window. You may get a pop-up window asking if you want to accept incoming network connections. This is because Improviz runs a webserver to allow for communication between the server and an editor.
+
+### Screen size
+
+Command line arguments are used to specify the size of the screen with default being 640px wide by 480px high. This can be changed using the `-w` and `-h` command line flags.
+
+```bash
+stack exec improviz -- -w 1024 -h 768
+```
+
+The `--` in the above is to make it clear to the *stack* tool that these arguments are for the improviz executable.
+
+### Full Screen
+
+When making Improviz fullscreen, it's also necessary to pass in the number of the display it should be on.
+
+```bash
+stack exec improviz -- -f 0
+```
+
+Zero is the primary display. One would be the next attached display to the machine.
 
 ## Interacting
 
