@@ -11,8 +11,9 @@ import           Control.Monad.Except
 
 import qualified Gfx.Ast                       as GA
 import           Language.Ast
-import           Language.Interpreter          (addGfxCommand, getBlock, getVariable,
-                                                getVarOrNull, interpretBlock,
+import           Language.Interpreter          (addGfxCommand, getBlock,
+                                                getVarOrNull, getVariable,
+                                                interpretBlock,
                                                 setGfxBackground)
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
@@ -38,7 +39,7 @@ fill = do
       _ -> throwError "Error with functions to fill"
   let partialCmd =
         GA.ColourCommand $
-          GA.Fill $ GA.ColourStyle (dToC rVal) (dToC gVal) (dToC bVal) (dToC aVal)
+        GA.Fill $ GA.ColourStyle (dToC rVal) (dToC gVal) (dToC bVal) (dToC aVal)
   block <- getBlock
   maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
   return Null
@@ -48,11 +49,12 @@ texture = do
   textName <- getVariable "name"
   case textName of
     Symbol name -> do
-      let partialCmd =
-            GA.ColourCommand $
-              GA.Fill $ GA.TextureStyle name
+      let partialCmd = GA.ColourCommand $ GA.Fill $ GA.TextureStyle name
       block <- getBlock
-      maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
+      maybe
+        (addGfxCommand $ partialCmd Nothing)
+        (handleGfxBlock partialCmd)
+        block
       return Null
     _ -> return Null
 
@@ -78,7 +80,8 @@ stroke = do
       (Number x, Number y, Number z, Number w) -> return (x, y, z, w)
       _ -> throwError "Error with functions to stroke"
   let partialCmd =
-        GA.ColourCommand $ GA.Stroke (dToC rVal) (dToC gVal) (dToC bVal) (dToC aVal)
+        GA.ColourCommand $
+        GA.Stroke (dToC rVal) (dToC gVal) (dToC bVal) (dToC aVal)
   block <- getBlock
   maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
   return Null

@@ -6,8 +6,8 @@ import qualified Data.Map.Strict           as M
 
 import qualified Data.ByteString           as B
 import qualified Data.ByteString.Unsafe    as BSU
-import qualified Data.Yaml as Y
-import Data.Yaml (FromJSON(..), (.:))
+import           Data.Yaml                 (FromJSON (..), (.:))
+import qualified Data.Yaml                 as Y
 
 import           Codec.BMP
 import           Foreign.Ptr
@@ -15,13 +15,13 @@ import           Graphics.Rendering.OpenGL as GL
 
 type TextureLibrary = M.Map String TextureObject
 
-data TextureConfig = TextureConfig {
-  textureFiles :: [FilePath]
-                                   } deriving (Eq, Show)
+data TextureConfig = TextureConfig
+  { textureFiles :: [FilePath]
+  } deriving (Eq, Show)
 
 instance FromJSON TextureConfig where
-  parseJSON (Y.Object v) = TextureConfig <$> v .:   "textures"
-  parseJSON _ = fail "Expected Object for Config value"
+  parseJSON (Y.Object v) = TextureConfig <$> v .: "textures"
+  parseJSON _            = fail "Expected Object for Config value"
 
 loadTexture :: String -> FilePath -> IO (String, TextureObject)
 loadTexture name path = do
@@ -48,5 +48,5 @@ createTextureLib = do
     Just cfg -> do
       textures <- mapM tl (textureFiles cfg)
       return $ M.fromList textures
-  where 
+  where
     tl name = loadTexture name ("textures/" ++ name ++ ".bmp")
