@@ -16,7 +16,7 @@ import           Gfx.GeometryBuffers
 import           Gfx.Matrices
 import           Gfx.Shaders
 
-import           ErrorHandling             (printErrors)
+import           ErrorHandling              (printErrors)
 
 hasTransparency :: Color4 GLfloat -> Bool
 hasTransparency (Color4 _ _ _ a) = a < 1.0

@@ -1,0 +1,3 @@
+fontfile: "./fonts/arial.tff"
+textureDirectories:
+  - "./textures"
