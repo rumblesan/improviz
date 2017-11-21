@@ -11,6 +11,7 @@ import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Monad
 import           Control.Monad.State.Strict (evalStateT)
+import           Data.Maybe                 (fromMaybe)
 import qualified Gfx.Matrices               as GM
 
 import           AppServer
@@ -38,7 +39,7 @@ app cfg = do
   _ <- forkIO $ runServer asTVar
   let initialWidth = screenWidth cfg
   let initialHeight = screenHeight cfg
-  let initCB = initApp gfxETMVar
+  let initCB = initApp gfxETMVar cfg
   let resizeCB = resize gfxETMVar
   let displayCB = display asTVar gfxETMVar
   setupWindow
@@ -50,8 +51,8 @@ app cfg = do
     displayCB
   exitSuccess
 
-initApp :: TMVar EngineState -> Int -> Int -> IO ()
-initApp gfxEngineTMVar width height = do
+initApp :: TMVar EngineState -> ImpConfig -> Int -> Int -> IO ()
+initApp gfxEngineTMVar cfg width height = do
   let ratio = fromIntegral width / fromIntegral height
       front = 0.1
       back = 100
@@ -67,7 +68,7 @@ initApp gfxEngineTMVar width height = do
       back
       width
       height
-      "fonts/VeraMono.ttf"
+      (fromMaybe "fonts/VeraMono.ttf" $ fontFilePath cfg)
       charSize
       textColour
       textBGColour
