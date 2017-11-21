@@ -28,10 +28,11 @@ errorCallback :: GLFW.ErrorCallback
 errorCallback _ = hPutStrLn stderr
 
 main :: IO ()
-main = getCliArgs app
+main = getConfig app
 
 app :: ImpConfig -> IO ()
 app cfg = do
+  when (debug cfg) (print cfg)
   gfxETMVar <- newEmptyTMVarIO
   asTVar <- newTVarIO makeAppState
   _ <- forkIO $ runServer asTVar
