@@ -45,13 +45,16 @@ fill = do
 
 texture :: InterpreterProcess Value
 texture = do
-  _ <- getVariable "name"
-  let partialCmd =
-        GA.ColourCommand $
-          GA.Fill $ GA.TextureStyle "crystal"
-  block <- getBlock
-  maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
-  return Null
+  textName <- getVariable "name"
+  case textName of
+    Symbol name -> do
+      let partialCmd =
+            GA.ColourCommand $
+              GA.Fill $ GA.TextureStyle name
+      block <- getBlock
+      maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
+      return Null
+    _ -> return Null
 
 noFill :: InterpreterProcess Value
 noFill = do
