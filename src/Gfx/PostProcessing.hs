@@ -100,7 +100,7 @@ createQuadVBO = do
     (ToFloat, VertexArrayDescriptor 2 Float stride (bufferOffset firstTexIndex))
   vertexAttribArray vPosition $= Enabled
   vertexAttribArray vTexCoord $= Enabled
-  return $ VBO vbo arrayBuffer firstPosIndex 6
+  return $ VBO vbo [arrayBuffer] firstPosIndex 6
 
 drawQuadVBO :: VBO -> IO ()
 drawQuadVBO (VBO qbo _ qbai qbn) = do
@@ -167,11 +167,11 @@ createSavebuffer width height = do
   return $ Savebuffer fbo text depth program qvbo
 
 deleteSavebuffer :: Savebuffer -> IO ()
-deleteSavebuffer (Savebuffer sbfbo sbtext sbdepth sbprogram (VBO sbvbo sbabo _ _)) = do
+deleteSavebuffer (Savebuffer sbfbo sbtext sbdepth sbprogram (VBO sbvbo sbabos _ _)) = do
   deleteObjectName sbtext
   deleteObjectName sbdepth
   deleteObjectName sbprogram
-  deleteObjectName sbabo
+  mapM_ deleteObjectName sbabos
   deleteObjectName sbvbo
   deleteObjectName sbfbo
 
@@ -191,11 +191,11 @@ createMotionBlurbuffer width height = do
   return $ Mixbuffer fbo text depth program qvbo
 
 deleteMixbuffer :: Mixbuffer -> IO ()
-deleteMixbuffer (Mixbuffer mfbo mtext depth mprogram (VBO mvbo mabo _ _)) = do
+deleteMixbuffer (Mixbuffer mfbo mtext depth mprogram (VBO mvbo mabos _ _)) = do
   deleteObjectName mtext
   deleteObjectName depth
   deleteObjectName mprogram
-  deleteObjectName mabo
+  mapM_ deleteObjectName mabos
   deleteObjectName mvbo
   deleteObjectName mfbo
 

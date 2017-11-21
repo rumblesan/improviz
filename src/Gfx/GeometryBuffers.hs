@@ -10,7 +10,7 @@ import           Gfx.Geometries
 
 data VBO =
   VBO VertexArrayObject
-      BufferObject
+      [BufferObject]
       ArrayIndex
       NumArrayIndices
   deriving (Show, Eq)
@@ -45,13 +45,53 @@ createBuffer verts = do
   vertexAttribPointer vPosition $=
     (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset firstIndex))
   vertexAttribArray vPosition $= Enabled
-  return $ VBO vbo arrayBuffer firstIndex (fromIntegral numVertices)
+  return $ VBO vbo [arrayBuffer] firstIndex (fromIntegral numVertices)
+
+createBufferWithTexture :: [Vertex3 GLfloat] -> [Vertex2 GLfloat] -> IO VBO
+createBufferWithTexture verts textCoords = do
+  vbo <- genObjectName
+  bindVertexArrayObject $= Just vbo
+  vertArrayBuffer <- genObjectName
+  bindBuffer ArrayBuffer $= Just vertArrayBuffer
+  let firstVIndex = 0
+      vPosition = AttribLocation 0
+      numVVertices = length verts
+      vVertexSize = sizeOf (head verts)
+      vsize = fromIntegral (numVVertices * vVertexSize)
+  withArray verts $ \ptr -> bufferData ArrayBuffer $= (vsize, ptr, StaticDraw)
+  vertexAttribPointer vPosition $=
+    (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset firstVIndex))
+  vertexAttribArray vPosition $= Enabled
+  textArrayBuffer <- genObjectName
+  bindBuffer ArrayBuffer $= Just textArrayBuffer
+  let firstTIndex = 0
+      texcoord = AttribLocation 1
+      numTVertices = length textCoords
+      tVertexSize = sizeOf (head textCoords)
+      tsize = fromIntegral (numTVertices * tVertexSize)
+  withArray textCoords $ \ptr ->
+    bufferData ArrayBuffer $= (tsize, ptr, StaticDraw)
+  vertexAttribPointer texcoord $=
+    (ToFloat, VertexArrayDescriptor 2 Float 0 (bufferOffset firstTIndex))
+  vertexAttribArray texcoord $= Enabled
+  return $
+    VBO
+      vbo
+      [vertArrayBuffer, textArrayBuffer]
+      firstVIndex
+      (fromIntegral numVVertices)
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers =
-  let cb = createBuffer $ triVertexArray (cubeVertices 1) cubeTriangles
+  let cb =
+        createBufferWithTexture
+          (triVertexArray (cubeVertices 1) cubeTriangles)
+          (triVertexArray cubeTextCoords cubeTriangles)
       cwb = createBuffer $ lineVertexArray (cubeVertices 1) cubeWireframe
-      rb = createBuffer $ triVertexArray (rectVertices 1) rectTriangles
+      rb =
+        createBufferWithTexture
+          (triVertexArray (rectVertices 1) rectTriangles)
+          (triVertexArray rectTextCoords rectTriangles)
       rwb = createBuffer $ lineVertexArray (rectVertices 1) rectWireframe
       cyb =
         createBuffer $

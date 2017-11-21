@@ -59,6 +59,7 @@ addStdLib = do
   setBuiltIn "scale" SL.scale ["a", "b", "c"]
   setBuiltIn "move" SL.move ["a", "b", "c"]
   setBuiltIn "fill" SL.fill ["r", "g", "b", "a"]
+  setBuiltIn "texture" SL.texture ["name"]
   setBuiltIn "noFill" SL.noFill []
   setBuiltIn "stroke" SL.stroke ["r", "g", "b", "a"]
   setBuiltIn "noStroke" SL.noStroke []

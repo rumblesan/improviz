@@ -114,17 +114,28 @@ drawText es appState = do
   renderText 0 0 (textRenderer es) (programText appState)
   renderTextbuffer (textRenderer es)
 
-drawScene :: EngineState -> Scene -> IO ()
-drawScene gs scene = do
-  let post = postFX gs
-  usePostProcessing post
+beforeRender :: Scene -> IO ()
+beforeRender scene = do
+  let animStyle = scenePostProcessingFX scene
   frontFace $= CCW
   cullFace $= Just Back
   depthFunc $= Just Less
   blend $= Enabled
   blendEquationSeparate $= (FuncAdd, FuncAdd)
-  blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
+  case animStyle of
+    NormalStyle ->
+      blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, One))
+    MotionBlur -> do
+      blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
+    PaintOver -> do
+      blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
   clearColor $= sceneBackground scene
   clear [ColorBuffer, DepthBuffer]
+
+drawScene :: EngineState -> Scene -> IO ()
+drawScene gs scene = do
+  let post = postFX gs
+  usePostProcessing post
+  beforeRender scene
   evalStateT (Gfx.interpretGfx $ Gfx.sceneGfx scene) gs
   renderPostProcessing post $ scenePostProcessingFX scene

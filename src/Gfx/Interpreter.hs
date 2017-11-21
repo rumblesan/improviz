@@ -2,6 +2,7 @@ module Gfx.Interpreter where
 
 import           Control.Monad              (mapM, void, when)
 import           Control.Monad.State.Strict
+import qualified Data.Map.Strict            as M
 import           Data.Maybe                 (maybe)
 
 import           Data.Vec                   (Mat44, multmm)
@@ -14,6 +15,8 @@ import           Gfx.EngineState            as ES
 import           Gfx.GeometryBuffers
 import           Gfx.Matrices
 import           Gfx.Shaders
+
+import           ErrorHandling             (printErrors)
 
 hasTransparency :: Color4 GLfloat -> Bool
 hasTransparency (Color4 _ _ _ a) = a < 1.0
@@ -29,8 +32,8 @@ type GraphicsEngine v = StateT EngineState GfxAction v
 
 interpretGfx :: GfxAst -> GraphicsEngine GfxOutput
 interpretGfx ast = do
-  s <- gets shaders
-  liftIO (currentProgram $= Just (shaderProgram s))
+  program <- gets colourShaders
+  liftIO (currentProgram $= Just (shaderProgram program))
   void $ interpretBlock ast
 
 interpretBlock :: Block -> GraphicsEngine [GfxOutput]
@@ -57,19 +60,36 @@ getFullMatrix = do
 
 drawShape :: VBO -> GraphicsEngine GfxOutput
 drawShape (VBO bufferObject _ arrayIndex offset) = do
-  fillC <- gets currentFillColour
   mvp <- getFullMatrix
-  program <- gets shaders
-  lift $ setMVPMatrixUniform program mvp
-  lift $ setColourUniform program fillC
-  bindVertexArrayObject $= Just bufferObject
-  lift $ drawArrays Triangles arrayIndex offset
+  style <- gets currentFillStyle
+  case style of
+    ES.GFXColour fillC -> do
+      program <- gets colourShaders
+      liftIO (currentProgram $= Just (shaderProgram program))
+      lift $ setMVPMatrixUniform program mvp
+      lift $ setColourUniform program fillC
+      bindVertexArrayObject $= Just bufferObject
+      lift $ drawArrays Triangles arrayIndex offset
+    ES.GFXTexture name -> do
+      program <- gets textureShaders
+      liftIO (currentProgram $= Just (shaderProgram program))
+      textureLib <- gets textureLibrary
+      case M.lookup name textureLib of
+        Nothing -> return ()
+        Just texture -> do
+          lift $ activeTexture $= TextureUnit 0
+          lift $ textureBinding Texture2D $= Just texture
+          lift $ setMVPMatrixUniform program mvp
+          bindVertexArrayObject $= Just bufferObject
+          lift $ drawArrays Triangles arrayIndex offset
+          liftIO printErrors
 
 drawWireframe :: VBO -> GraphicsEngine GfxOutput
 drawWireframe (VBO bufferObject _ arrayIndex offset) = do
-  strokeC <- gets currentStrokeColour
+  strokeC <- gets currentStrokeStyle
   mvp <- getFullMatrix
-  program <- gets shaders
+  program <- gets colourShaders
+  liftIO (currentProgram $= Just (shaderProgram program))
   lift $ setMVPMatrixUniform program mvp
   lift $ setColourUniform program strokeC
   bindVertexArrayObject $= Just bufferObject
@@ -115,10 +135,13 @@ interpretMatrix (Move x y z) =
   modify' (\es -> ES.multMatrix es $ translateMat x y z)
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
-interpretColour (Fill r g b a)   = modify' (pushFillColour $ Color4 r g b a)
-interpretColour NoFill           = modify' (pushFillColour $ Color4 0 0 0 0)
-interpretColour (Stroke r g b a) = modify' (pushStrokeColour $ Color4 r g b a)
-interpretColour NoStroke         = modify' (pushStrokeColour $ Color4 0 0 0 0)
+interpretColour (Fill (TextureStyle name)) =
+  modify' (pushFillStyle $ ES.GFXTexture name)
+interpretColour (Fill (ColourStyle r g b a)) =
+  modify' (pushFillStyle $ ES.GFXColour $ Color4 r g b a)
+interpretColour NoFill = modify' (pushFillStyle $ ES.GFXColour $ Color4 0 0 0 0)
+interpretColour (Stroke r g b a) = modify' (pushStrokeStyle $ Color4 r g b a)
+interpretColour NoStroke = modify' (pushStrokeStyle $ Color4 0 0 0 0)
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
 newScope gfx block = do

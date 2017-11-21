@@ -69,6 +69,17 @@ fill(0, 255, 0)
 	sphere()
 ```
 
+## Symbols
+
+A symbol is really just a name. Currently it's only used for giving the name of textures to the texture function. They can be assigned to variables if desired.
+
+```
+texture(:crystal)
+  box()
+move()
+texture(:another)
+  ball()
+```
 
 ### Currently Available Functions
 
@@ -91,6 +102,7 @@ Create a line of the desired length. Default value is 1.
 
 #### Styling
 *fill* [r, g, b, a]
+*texture* [name]
 *noFill* []
 *stroke* [r, g, b, a]
 *noStroke* []

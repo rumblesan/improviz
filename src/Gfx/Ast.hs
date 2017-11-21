@@ -49,14 +49,19 @@ data MatrixGfx
   deriving (Show, Eq)
 
 data ColourGfx
-  = Fill Float
-         Float
-         Float
-         Float
+  = Fill StyleGfx
   | NoFill
   | Stroke Float
            Float
            Float
            Float
   | NoStroke
+  deriving (Show, Eq)
+
+data StyleGfx
+  = ColourStyle Float
+                Float
+                Float
+                Float
+  | TextureStyle String
   deriving (Show, Eq)

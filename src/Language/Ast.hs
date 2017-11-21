@@ -63,6 +63,7 @@ newtype Variable =
 data Value
   = Number Float
   | Null
+  | Symbol String
   | Lambda [Identifier]
            Block
   | BuiltIn [Identifier]
