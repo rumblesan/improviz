@@ -56,7 +56,6 @@ initApp gfxEngineTMVar cfg width height = do
   let ratio = fromIntegral width / fromIntegral height
       front = 0.1
       back = 100
-      charSize = 36
       proj = GM.projectionMat front back (pi / 4) ratio
       view = GM.viewMat (GM.vec3 0 0 10) (GM.vec3 0 0 0) (GM.vec3 0 1 0)
   post <- createPostProcessing (fromIntegral width) (fromIntegral height)
@@ -69,7 +68,7 @@ initApp gfxEngineTMVar cfg width height = do
       width
       height
       (fromMaybe "fonts/VeraMono.ttf" $ fontFilePath cfg)
-      charSize
+      (fontSize cfg)
       textColour
       textBGColour
   gfxEngineState <- baseState proj view post textRenderer

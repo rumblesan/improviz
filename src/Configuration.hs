@@ -28,6 +28,7 @@ data ImpYAMLConfig = ImpYAMLConfig
   , yamlFullscreenDisplay  :: Maybe Int
   , yamlDebug              :: Bool
   , yamlFontFilePath       :: Maybe FilePath
+  , yamlFontSize           :: Maybe Int
   , yamlTextureDirectories :: [FilePath]
   }
 
@@ -37,6 +38,7 @@ instance FromJSON ImpYAMLConfig where
     v .:? "fullscreen" <*>
     v .:? "debug" .!= False <*>
     v .:? "fontfile" <*>
+    v .:? "fontsize" <*>
     v .:? "textureDirectories" .!= []
   parseJSON _ = fail "Expected Object for Config value"
 
@@ -46,6 +48,7 @@ data ImpConfig = ImpConfig
   , fullscreenDisplay  :: Maybe Int
   , debug              :: Bool
   , fontFilePath       :: Maybe FilePath
+  , fontSize           :: Int
   , textureDirectories :: [FilePath]
   } deriving (Show)
 
@@ -57,6 +60,7 @@ defaultConfig =
   , fullscreenDisplay = Nothing
   , debug = False
   , fontFilePath = Nothing
+  , fontSize = defaultFontSize
   , textureDirectories = []
   }
 
@@ -68,6 +72,9 @@ defaultHeight = 480
 
 defaultConfigFile :: FilePath
 defaultConfigFile = "./improviz.yaml"
+
+defaultFontSize :: Int
+defaultFontSize = 36
 
 cliparser :: Parser ImpCLIConfig
 cliparser =
@@ -114,6 +121,7 @@ readConfigFile cliCfg = do
           (cliFullscreenDisplay cliCfg <|> yamlFullscreenDisplay yamlConfig)
       , debug = (cliDebug cliCfg || yamlDebug yamlConfig)
       , fontFilePath = yamlFontFilePath yamlConfig
+      , fontSize = fromMaybe defaultFontSize (yamlFontSize yamlConfig)
       , textureDirectories = yamlTextureDirectories yamlConfig
       }
 
