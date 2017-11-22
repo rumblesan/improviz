@@ -67,7 +67,7 @@ initApp gfxEngineTMVar cfg width height = do
       back
       width
       height
-      (fromMaybe "fonts/VeraMono.ttf" $ fontFilePath cfg)
+      (fromMaybe "fonts/arial.ttf" $ fontFilePath cfg)
       (fontSize cfg)
       textColour
       textBGColour

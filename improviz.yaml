@@ -1,3 +1,3 @@
-fontfile: "./fonts/arial.tff"
+fontfile: "./fonts/arial.ttf"
 textureDirectories:
   - "./textures"

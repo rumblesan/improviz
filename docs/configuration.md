@@ -39,7 +39,7 @@ fullscreen: 0
 
 ## Font File
 
-The font used by default is Vera Mono spaced. An alternative can be used by specifying a path to the true text file in the config file.
+The font used by default is arial. An alternative can be used by specifying a path to the true text file in the config file.
 
 ```yaml
 fontfile: /opt/fonts/ComicSans.ttf
