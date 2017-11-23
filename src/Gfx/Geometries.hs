@@ -1,6 +1,6 @@
 module Gfx.Geometries where
 
-import           Data.List                 (cycle, genericIndex)
+import           Data.List                 (cycle, genericIndex, repeat)
 import           Graphics.Rendering.OpenGL (GLfloat, Vertex2 (..), Vertex3 (..))
 
 tri1TextCoords :: [Vertex2 GLfloat]
@@ -14,8 +14,8 @@ triVertexArray verts points =
   reverse $
   foldl
     (\va (p1, p2, p3) ->
-       genericIndex verts p1 :
-       genericIndex verts p2 : genericIndex verts p3 : va)
+       genericIndex verts p3 :
+       genericIndex verts p2 : genericIndex verts p1 : va)
     []
     points
 
@@ -30,18 +30,18 @@ lineVertexArray verts points =
 cubeVertices :: GLfloat -> [Vertex3 GLfloat]
 cubeVertices size =
   let s = size / 2
-  in [ Vertex3 (-s) (-s) (-s)
-     , Vertex3 (-s) (-s) s
-     , Vertex3 s (-s) s
-     , Vertex3 s (-s) (-s)
+  in [ Vertex3 s s s
+     , Vertex3 s s (-s)
      , Vertex3 (-s) s (-s)
      , Vertex3 (-s) s s
-     , Vertex3 s s s
-     , Vertex3 s s (-s)
+     , Vertex3 s (-s) s
+     , Vertex3 s (-s) (-s)
+     , Vertex3 (-s) (-s) (-s)
+     , Vertex3 (-s) (-s) s
      ]
 
 cubeTextCoords :: [Vertex2 GLfloat]
-cubeTextCoords = cycle $ tri1TextCoords ++ tri2TextCoords
+cubeTextCoords = take 36 $ cycle $ tri1TextCoords ++ tri2TextCoords
 
 cubeTriangles :: [(Integer, Integer, Integer)]
 cubeTriangles =
@@ -81,10 +81,10 @@ rectVertices size =
   in [Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0, Vertex3 s s 0, Vertex3 (-s) s 0]
 
 rectTextCoords :: [Vertex2 GLfloat]
-rectTextCoords = cycle $ tri1TextCoords ++ tri2TextCoords
+rectTextCoords = tri1TextCoords ++ tri2TextCoords
 
 rectTriangles :: [(Integer, Integer, Integer)]
-rectTriangles = [(0, 1, 2), (0, 2, 3), (0, 2, 1), (0, 3, 2)]
+rectTriangles = [(0, 1, 2), (0, 2, 3)]
 
 rectWireframe :: [(Integer, Integer)]
 rectWireframe = [(0, 1), (1, 2), (2, 3), (3, 0)]

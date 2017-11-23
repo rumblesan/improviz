@@ -86,22 +86,24 @@ createAllBuffers =
   let cb =
         createBufferWithTexture
           (triVertexArray (cubeVertices 1) cubeTriangles)
-          (triVertexArray cubeTextCoords cubeTriangles)
+          cubeTextCoords
       cwb = createBuffer $ lineVertexArray (cubeVertices 1) cubeWireframe
       rb =
         createBufferWithTexture
           (triVertexArray (rectVertices 1) rectTriangles)
-          (triVertexArray rectTextCoords rectTriangles)
+          rectTextCoords
       rwb = createBuffer $ lineVertexArray (rectVertices 1) rectWireframe
       cyb =
-        createBuffer $
-        triVertexArray (cylinderVertices 1 0.5 8) $ cylinderTriangles 8
+        createBufferWithTexture
+          (triVertexArray (cylinderVertices 1 0.5 8) $ cylinderTriangles 8)
+          (triVertexArray cylinderTextCoords $ cylinderTriangles 8)
       cywb =
         createBuffer $
         lineVertexArray (cylinderVertices 1 0.5 8) $ cylinderWireframe 8
       sb =
-        createBuffer $
-        triVertexArray (sphereVertices 0.5 12) $ sphereTriangles 12
+        createBufferWithTexture
+          (triVertexArray (sphereVertices 0.5 12) $ sphereTriangles 12)
+          (triVertexArray sphereTextCoords $ sphereTriangles 8)
       swb =
         createBuffer $
         lineVertexArray (sphereVertices 0.5 12) $ sphereWireframe 12
