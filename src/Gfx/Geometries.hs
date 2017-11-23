@@ -3,6 +3,12 @@ module Gfx.Geometries where
 import           Data.List                 (cycle, genericIndex)
 import           Graphics.Rendering.OpenGL (GLfloat, Vertex2 (..), Vertex3 (..))
 
+tri1TextCoords :: [Vertex2 GLfloat]
+tri1TextCoords = [Vertex2 0 0, Vertex2 0 1, Vertex2 1 1]
+
+tri2TextCoords :: [Vertex2 GLfloat]
+tri2TextCoords = [Vertex2 0 0, Vertex2 1 1, Vertex2 1 0]
+
 triVertexArray :: [v] -> [(Integer, Integer, Integer)] -> [v]
 triVertexArray verts points =
   reverse $
@@ -35,7 +41,7 @@ cubeVertices size =
      ]
 
 cubeTextCoords :: [Vertex2 GLfloat]
-cubeTextCoords = cycle rectTextCoords
+cubeTextCoords = cycle $ tri1TextCoords ++ tri2TextCoords
 
 cubeTriangles :: [(Integer, Integer, Integer)]
 cubeTriangles =
@@ -75,7 +81,7 @@ rectVertices size =
   in [Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0, Vertex3 s s 0, Vertex3 (-s) s 0]
 
 rectTextCoords :: [Vertex2 GLfloat]
-rectTextCoords = [Vertex2 0 0, Vertex2 1 0, Vertex2 1 1, Vertex2 0 1]
+rectTextCoords = cycle $ tri1TextCoords ++ tri2TextCoords
 
 rectTriangles :: [(Integer, Integer, Integer)]
 rectTriangles = [(0, 1, 2), (0, 2, 3), (0, 2, 1), (0, 3, 2)]
@@ -107,7 +113,7 @@ cylinderVertices height radius segments =
   in (bottomCentre : bottomVerts) ++ (topCentre : topVerts)
 
 cylinderTextCoords :: [Vertex2 GLfloat]
-cylinderTextCoords = cycle rectTextCoords
+cylinderTextCoords = cycle $ tri1TextCoords ++ tri2TextCoords
 
 cylinderTriangles :: Integer -> [(Integer, Integer, Integer)]
 cylinderTriangles segments =
@@ -155,7 +161,7 @@ sphereVertices radius segments =
            points
 
 sphereTextCoords :: [Vertex2 GLfloat]
-sphereTextCoords = cycle rectTextCoords
+sphereTextCoords = cycle $ tri1TextCoords ++ tri2TextCoords
 
 sphereTriangles :: Integer -> [(Integer, Integer, Integer)]
 sphereTriangles segments =
