@@ -119,7 +119,7 @@ beforeRender :: Scene -> IO ()
 beforeRender scene = do
   let animStyle = scenePostProcessingFX scene
   frontFace $= CCW
-  cullFace $= Just Back
+  --cullFace $= Just Back
   depthFunc $= Just Less
   blend $= Enabled
   blendEquationSeparate $= (FuncAdd, FuncAdd)
