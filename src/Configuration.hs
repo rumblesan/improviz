@@ -22,29 +22,20 @@ data ImpConfig = ImpConfig
   , textureDirectories :: [FilePath]
   } deriving (Show)
 
-defaultConfig :: ImpConfig
-defaultConfig =
-  ImpConfig
-  { screenWidth = defaultWidth
-  , screenHeight = defaultHeight
-  , fullscreenDisplay = Nothing
-  , debug = False
-  , fontFilePath = Nothing
-  , fontSize = defaultFontSize
-  , textureDirectories = []
-  }
-
-defaultWidth :: Int
-defaultWidth = 640
-
-defaultHeight :: Int
-defaultHeight = 480
-
 defaultConfigFile :: FilePath
 defaultConfigFile = "./improviz.yaml"
 
-defaultFontSize :: Int
-defaultFontSize = 36
+defaultConfig :: ImpConfig
+defaultConfig =
+  ImpConfig
+  { screenWidth = 640
+  , screenHeight = 480
+  , fullscreenDisplay = Nothing
+  , debug = False
+  , fontFilePath = Nothing
+  , fontSize = 36
+  , textureDirectories = []
+  }
 
 getConfig :: IO ImpConfig
 getConfig = do
@@ -55,16 +46,19 @@ getConfig = do
     ImpConfig
     { screenWidth =
         fromMaybe
-          defaultWidth
+          (screenWidth defaultConfig)
           (cliScreenWidth cliCfg <|> (yamlCfgOpt >>= yamlScreenWidth))
     , screenHeight =
         fromMaybe
-          defaultHeight
+          (screenHeight defaultConfig)
           (cliScreenHeight cliCfg <|> (yamlCfgOpt >>= yamlScreenHeight))
     , fullscreenDisplay =
         (cliFullscreenDisplay cliCfg <|> (yamlCfgOpt >>= yamlFullscreenDisplay))
     , debug = (cliDebug cliCfg || (fromMaybe False $ yamlDebug <$> yamlCfgOpt))
     , fontFilePath = yamlCfgOpt >>= yamlFontFilePath
-    , fontSize = fromMaybe defaultFontSize (yamlCfgOpt >>= yamlFontSize)
-    , textureDirectories = fromMaybe [] $ yamlTextureDirectories <$> yamlCfgOpt
+    , fontSize =
+        fromMaybe (fontSize defaultConfig) (yamlCfgOpt >>= yamlFontSize)
+    , textureDirectories =
+        fromMaybe (textureDirectories defaultConfig) $
+        yamlTextureDirectories <$> yamlCfgOpt
     }
