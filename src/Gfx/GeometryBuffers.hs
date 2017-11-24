@@ -94,17 +94,19 @@ createAllBuffers =
           (triVertexArray (cubeVertices 1) cubeTriangles)
           cubeTextCoords
       cwb = createBuffer $ lineVertexArray (cubeVertices 1) cubeWireframe
+      ctris = cylinderTriangles 8
       cyb =
         createBufferWithTexture
-          (triVertexArray (cylinderVertices 1 0.5 8) $ cylinderTriangles 8)
-          (triVertexArray cylinderTextCoords $ cylinderTriangles 8)
+          (triVertexArray (cylinderVertices 1 0.5 8) ctris)
+          (take (length ctris * 3) cylinderTextCoords)
       cywb =
         createBuffer $
         lineVertexArray (cylinderVertices 1 0.5 8) $ cylinderWireframe 8
+      stris = sphereTriangles 12
       sb =
         createBufferWithTexture
-          (triVertexArray (sphereVertices 0.5 12) $ sphereTriangles 12)
-          (triVertexArray sphereTextCoords $ sphereTriangles 8)
+          (triVertexArray (sphereVertices 0.5 12) stris)
+          (take (length stris * 3) sphereTextCoords)
       swb =
         createBuffer $
         lineVertexArray (sphereVertices 0.5 12) $ sphereWireframe 12
