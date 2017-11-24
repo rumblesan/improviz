@@ -27,6 +27,28 @@ lineVertexArray verts points =
     []
     points
 
+lineVertices :: GLfloat -> [Vertex3 GLfloat]
+lineVertices size =
+  let s = size / 2
+  in [Vertex3 0 (-s) 0, Vertex3 0 s 0]
+
+lineWireframe :: [(Integer, Integer)]
+lineWireframe = [(0, 1)]
+
+rectVertices :: GLfloat -> [Vertex3 GLfloat]
+rectVertices size =
+  let s = size / 2
+  in [Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0, Vertex3 s s 0, Vertex3 (-s) s 0]
+
+rectTextCoords :: [Vertex2 GLfloat]
+rectTextCoords = tri1TextCoords ++ tri2TextCoords
+
+rectTriangles :: [(Integer, Integer, Integer)]
+rectTriangles = [(0, 1, 2), (0, 2, 3)]
+
+rectWireframe :: [(Integer, Integer)]
+rectWireframe = [(0, 1), (1, 2), (2, 3), (3, 0)]
+
 cubeVertices :: GLfloat -> [Vertex3 GLfloat]
 cubeVertices size =
   let s = size / 2
@@ -74,28 +96,6 @@ cubeWireframe =
   , (6, 7)
   , (7, 4)
   ]
-
-rectVertices :: GLfloat -> [Vertex3 GLfloat]
-rectVertices size =
-  let s = size / 2
-  in [Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0, Vertex3 s s 0, Vertex3 (-s) s 0]
-
-rectTextCoords :: [Vertex2 GLfloat]
-rectTextCoords = tri1TextCoords ++ tri2TextCoords
-
-rectTriangles :: [(Integer, Integer, Integer)]
-rectTriangles = [(0, 1, 2), (0, 2, 3)]
-
-rectWireframe :: [(Integer, Integer)]
-rectWireframe = [(0, 1), (1, 2), (2, 3), (3, 0)]
-
-lineVertices :: GLfloat -> [Vertex3 GLfloat]
-lineVertices size =
-  let s = size / 2
-  in [Vertex3 0 (-s) 0, Vertex3 0 s 0]
-
-lineWireframe :: [(Integer, Integer)]
-lineWireframe = [(0, 1)]
 
 cylinderVertices :: GLfloat -> GLfloat -> Integer -> [Vertex3 GLfloat]
 cylinderVertices height radius segments =

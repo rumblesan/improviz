@@ -16,15 +16,15 @@ data VBO =
   deriving (Show, Eq)
 
 data GeometryBuffers = GeometryBuffers
-  { cubeBuffer         :: VBO
-  , cubeWireBuffer     :: VBO
+  { lineBuffer         :: VBO
   , rectBuffer         :: VBO
   , rectWireBuffer     :: VBO
+  , cubeBuffer         :: VBO
+  , cubeWireBuffer     :: VBO
   , cylinderBuffer     :: VBO
   , cylinderWireBuffer :: VBO
   , sphereBuffer       :: VBO
   , sphereWireBuffer   :: VBO
-  , lineBuffer         :: VBO
   } deriving (Show, Eq)
 
 bufferOffset :: Integral a => a -> Ptr b
@@ -83,16 +83,17 @@ createBufferWithTexture verts textCoords = do
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers =
-  let cb =
-        createBufferWithTexture
-          (triVertexArray (cubeVertices 1) cubeTriangles)
-          cubeTextCoords
-      cwb = createBuffer $ lineVertexArray (cubeVertices 1) cubeWireframe
+  let lwb = createBuffer $ lineVertexArray (lineVertices 1) lineWireframe
       rb =
         createBufferWithTexture
           (triVertexArray (rectVertices 1) rectTriangles)
           rectTextCoords
       rwb = createBuffer $ lineVertexArray (rectVertices 1) rectWireframe
+      cb =
+        createBufferWithTexture
+          (triVertexArray (cubeVertices 1) cubeTriangles)
+          cubeTextCoords
+      cwb = createBuffer $ lineVertexArray (cubeVertices 1) cubeWireframe
       cyb =
         createBufferWithTexture
           (triVertexArray (cylinderVertices 1 0.5 8) $ cylinderTriangles 8)
@@ -107,7 +108,6 @@ createAllBuffers =
       swb =
         createBuffer $
         lineVertexArray (sphereVertices 0.5 12) $ sphereWireframe 12
-      lwb = createBuffer $ lineVertexArray (lineVertices 1) lineWireframe
-  in GeometryBuffers <$> cb <*> cwb <*> rb <*> rwb <*> cyb <*> cywb <*> sb <*>
-     swb <*>
-     lwb
+  in GeometryBuffers <$> lwb <*> rb <*> rwb <*> cb <*> cwb <*> cyb <*> cywb <*>
+     sb <*>
+     swb
