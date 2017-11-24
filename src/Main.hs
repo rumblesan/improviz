@@ -16,7 +16,8 @@ import qualified Gfx.Matrices               as GM
 
 import           AppServer
 import           AppTypes
-import           Configuration              (ImpConfig (..), getConfig)
+import           Configuration              (ImpConfig (..), ImpFontConfig (..),
+                                             getConfig)
 import           Gfx
 import           Gfx.PostProcessing
 import           Gfx.TextRendering
@@ -60,18 +61,16 @@ initApp gfxEngineTMVar cfg width height = do
       proj = GM.projectionMat front back (pi / 4) ratio
       view = GM.viewMat (GM.vec3 0 0 10) (GM.vec3 0 0 0) (GM.vec3 0 1 0)
   post <- createPostProcessing (fromIntegral width) (fromIntegral height)
-  let textColour = Color4 0.0 0.0 0.0 1.0 :: Color4 GLfloat
-  let textBGColour = Color4 1.0 0.8 0.0 1.0 :: Color4 GLfloat
   textRenderer <-
     createTextRenderer
       front
       back
       width
       height
-      (fromMaybe "fonts/arial.ttf" $ fontFilePath cfg)
-      (fontSize cfg)
-      textColour
-      textBGColour
+      (fontFilePath $ fontConfig cfg)
+      (fontSize $ fontConfig cfg)
+      (fontFGColour $ fontConfig cfg)
+      (fontBGColour $ fontConfig cfg)
   textureLib <- createTextureLib
   gfxEngineState <- baseState proj view post textRenderer textureLib
   atomically $ putTMVar gfxEngineTMVar gfxEngineState

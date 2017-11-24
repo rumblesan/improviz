@@ -1,3 +1,5 @@
-fontfile: "./fonts/arial.ttf"
+font:
+  filepath: "./fonts/arial.ttf"
+  size: 20
 textureDirectories:
   - "./textures"

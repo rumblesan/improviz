@@ -1,24 +1,34 @@
 module Configuration
   ( ImpConfig(..)
+  , ImpFontConfig(..)
   , getConfig
   ) where
 
-import           Control.Applicative
-import qualified Data.ByteString          as B
-import           Data.Maybe               (fromMaybe)
-import           Options.Applicative      (execParser)
+import           Control.Applicative       ((<|>))
+import           Data.Maybe                (fromMaybe)
+import           Options.Applicative       (execParser)
 
-import           Configuration.CLIConfig  (ImpCLIConfig (..), cliopts,
-                                           cliparser)
-import           Configuration.YamlConfig (ImpYAMLConfig (..), readConfigFile)
+import           Configuration.CLIConfig   (ImpCLIConfig (..), cliopts,
+                                            cliparser)
+import           Configuration.YamlConfig  (ImpYAMLConfig (..),
+                                            ImpYAMLFontConfig (..),
+                                            readConfigFile)
+
+import           Graphics.Rendering.OpenGL (Color4 (..), GLfloat)
+
+data ImpFontConfig = ImpFontConfig
+  { fontFilePath :: FilePath
+  , fontSize     :: Int
+  , fontFGColour :: Color4 GLfloat
+  , fontBGColour :: Color4 GLfloat
+  } deriving (Show)
 
 data ImpConfig = ImpConfig
   { screenWidth        :: Int
   , screenHeight       :: Int
   , fullscreenDisplay  :: Maybe Int
   , debug              :: Bool
-  , fontFilePath       :: Maybe FilePath
-  , fontSize           :: Int
+  , fontConfig         :: ImpFontConfig
   , textureDirectories :: [FilePath]
   } deriving (Show)
 
@@ -32,9 +42,27 @@ defaultConfig =
   , screenHeight = 480
   , fullscreenDisplay = Nothing
   , debug = False
-  , fontFilePath = Nothing
-  , fontSize = 36
-  , textureDirectories = []
+  , fontConfig =
+      ImpFontConfig
+      { fontFilePath = "./fonts/arial.ttf"
+      , fontSize = 36
+      , fontFGColour = Color4 0.0 0.0 0.0 1.0
+      , fontBGColour = Color4 1.0 0.8 0.0 1.0
+      }
+  , textureDirectories = ["./textures"]
+  }
+
+getFontConfig :: ImpFontConfig -> Maybe ImpYAMLFontConfig -> ImpFontConfig
+getFontConfig defaultFontCfg yamlFontCfg =
+  ImpFontConfig
+  { fontFilePath =
+      fromMaybe (fontFilePath defaultFontCfg) (yamlFontCfg >>= yamlFontFilePath)
+  , fontSize =
+      fromMaybe (fontSize defaultFontCfg) (yamlFontCfg >>= yamlFontSize)
+  , fontFGColour =
+      fromMaybe (fontFGColour defaultFontCfg) (yamlFontCfg >>= yamlFontFGColour)
+  , fontBGColour =
+      fromMaybe (fontBGColour defaultFontCfg) (yamlFontCfg >>= yamlFontBGColour)
   }
 
 getConfig :: IO ImpConfig
@@ -55,9 +83,8 @@ getConfig = do
     , fullscreenDisplay =
         (cliFullscreenDisplay cliCfg <|> (yamlCfgOpt >>= yamlFullscreenDisplay))
     , debug = (cliDebug cliCfg || (fromMaybe False $ yamlDebug <$> yamlCfgOpt))
-    , fontFilePath = yamlCfgOpt >>= yamlFontFilePath
-    , fontSize =
-        fromMaybe (fontSize defaultConfig) (yamlCfgOpt >>= yamlFontSize)
+    , fontConfig =
+        getFontConfig (fontConfig defaultConfig) (yamlFontCfg <$> yamlCfgOpt)
     , textureDirectories =
         fromMaybe (textureDirectories defaultConfig) $
         yamlTextureDirectories <$> yamlCfgOpt
