@@ -7,6 +7,7 @@ import           Foreign.Ptr
 import           Foreign.Storable
 
 import           Control.Monad
+import qualified Data.ByteString                                     as B
 import qualified Data.Char                                           as C
 import qualified Data.Map.Strict                                     as M
 
@@ -48,8 +49,17 @@ freeType =
     runFreeType $ ft_Init_FreeType p
     peek p
 
-fontFace :: FT_Library -> FilePath -> IO FT_Face
-fontFace ft fp =
+fontFaceFromMemory :: FT_Library -> FilePath -> IO FT_Face
+fontFaceFromMemory ft fp = do
+  fdata <- B.readFile fp
+  B.useAsCStringLen fdata $ \(cstr, len) -> do
+    let custr = castPtr cstr
+    alloca $ \ptr -> do
+      runFreeType $ ft_New_Memory_Face ft custr (fromIntegral len) 0 ptr
+      peek ptr
+
+fontFaceFromFile :: FT_Library -> FilePath -> IO FT_Face
+fontFaceFromFile ft fp =
   withCString fp $ \str ->
     alloca $ \ptr -> do
       runFreeType $ ft_New_Face ft str 0 ptr
@@ -62,7 +72,7 @@ loadFontCharMap :: String -> Int -> IO CharacterMap
 loadFontCharMap fontPath fontSize =
   let chars = C.chr <$> [0 .. 127]
   in do ft2 <- freeType
-        face <- fontFace ft2 fontPath
+        face <- fontFaceFromFile ft2 fontPath
         setFaceSize face fontSize
         GL.rowAlignment GL.Pack $= 1
         c <-
