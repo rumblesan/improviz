@@ -6,12 +6,15 @@ import qualified Data.Map.Strict           as M
 
 import qualified Data.ByteString           as B
 import qualified Data.ByteString.Unsafe    as BSU
+import           Data.Maybe                (catMaybes)
 import           Data.Yaml                 (FromJSON (..), (.:))
 import qualified Data.Yaml                 as Y
 
 import           Codec.BMP
 import           Foreign.Ptr
 import           Graphics.Rendering.OpenGL as GL
+
+import           System.FilePath.Posix     ((<.>), (</>))
 
 type TextureLibrary = M.Map String TextureObject
 
@@ -23,30 +26,35 @@ instance FromJSON TextureConfig where
   parseJSON (Y.Object v) = TextureConfig <$> v .: "textures"
   parseJSON _            = fail "Expected Object for Config value"
 
-loadTexture :: String -> FilePath -> IO (String, TextureObject)
+loadTexture :: String -> FilePath -> IO (Maybe (String, TextureObject))
 loadTexture name path = do
-  text <- genObjectName
-  textureBinding Texture2D $= Just text
-  GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
-  Right image <- readBMP path
-  let rgba = unpackBMPToRGBA32 image
-      dta = unpackBMPToRGBA32 image
-      (width, height) = bmpDimensions image
-  bPtr <- BSU.unsafeUseAsCString dta $ \cstr -> return (castPtr cstr)
-  let pd = PixelData RGBA UnsignedByte bPtr
-  let tSize = TextureSize2D (fromIntegral width) (fromIntegral height)
-  texImage2D Texture2D NoProxy 0 RGBA' tSize 0 pd
-  textureBinding Texture2D $= Nothing
-  return (name, text)
+  img <- readBMP path
+  case img of
+    Left err -> print ("could not load image: " ++ path) >> return Nothing
+    Right image -> do
+      text <- genObjectName
+      textureBinding Texture2D $= Just text
+      GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
+      let rgba = unpackBMPToRGBA32 image
+          dta = unpackBMPToRGBA32 image
+          (width, height) = bmpDimensions image
+      bPtr <- BSU.unsafeUseAsCString dta $ \cstr -> return (castPtr cstr)
+      let pd = PixelData RGBA UnsignedByte bPtr
+      let tSize = TextureSize2D (fromIntegral width) (fromIntegral height)
+      texImage2D Texture2D NoProxy 0 RGBA' tSize 0 pd
+      textureBinding Texture2D $= Nothing
+      return $ Just (name, text)
 
-createTextureLib :: IO TextureLibrary
-createTextureLib = do
-  yaml <- B.readFile "./textures/config.yaml"
-  let config = Y.decode yaml :: Maybe TextureConfig
-  case config of
-    Nothing -> error "Could not read texture config"
-    Just cfg -> do
-      textures <- mapM tl (textureFiles cfg)
-      return $ M.fromList textures
+loadTextureFolder :: FilePath -> IO [(String, TextureObject)]
+loadTextureFolder folderPath = do
+  let cfgPath = folderPath </> "config.yaml"
+  yaml <- B.readFile cfgPath
+  case Y.decode yaml of
+    Nothing -> print ("Could not read texture config: " ++ cfgPath) >> return []
+    Just cfg -> catMaybes <$> mapM tl (textureFiles cfg)
   where
-    tl name = loadTexture name ("textures/" ++ name ++ ".bmp")
+    tl name = loadTexture name (folderPath </> name <.> "bmp")
+
+createTextureLib :: [FilePath] -> IO TextureLibrary
+createTextureLib folders =
+  M.fromList <$> concat <$> mapM loadTextureFolder folders

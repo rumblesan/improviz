@@ -71,7 +71,7 @@ initApp gfxEngineTMVar cfg width height = do
       (fontSize $ fontConfig cfg)
       (fontFGColour $ fontConfig cfg)
       (fontBGColour $ fontConfig cfg)
-  textureLib <- createTextureLib
+  textureLib <- createTextureLib $ textureDirectories cfg
   gfxEngineState <- baseState proj view post textRenderer textureLib
   atomically $ putTMVar gfxEngineTMVar gfxEngineState
 
