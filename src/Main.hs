@@ -20,6 +20,7 @@ import           Configuration              (ImpConfig (..), getConfig)
 import           Gfx
 import           Gfx.PostProcessing
 import           Gfx.TextRendering
+import           Gfx.Textures               (createTextureLib)
 import           Gfx.Windowing
 import qualified Language                   as L
 import qualified Language.Ast               as LA
@@ -71,7 +72,8 @@ initApp gfxEngineTMVar cfg width height = do
       (fontSize cfg)
       textColour
       textBGColour
-  gfxEngineState <- baseState proj view post textRenderer
+  textureLib <- createTextureLib
+  gfxEngineState <- baseState proj view post textRenderer textureLib
   atomically $ putTMVar gfxEngineTMVar gfxEngineState
 
 resize :: TMVar EngineState -> GLFW.WindowSizeCallback

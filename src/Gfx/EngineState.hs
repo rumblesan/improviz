@@ -8,7 +8,7 @@ import           Gfx.GeometryBuffers       (GeometryBuffers, createAllBuffers)
 import           Gfx.PostProcessing        (AnimationStyle, PostProcessing)
 import           Gfx.Shaders
 import           Gfx.TextRendering         (TextRenderer)
-import           Gfx.Textures              (TextureLibrary, createTextureLib)
+import           Gfx.Textures              (TextureLibrary)
 
 data GFXStyling
   = GFXColour (Color4 GLfloat)
@@ -41,12 +41,12 @@ baseState ::
   -> Mat44 GLfloat
   -> PostProcessing
   -> TextRenderer
+  -> TextureLibrary
   -> IO EngineState
-baseState projection view pprocess trender = do
+baseState projection view pprocess trender textLib = do
   gbos <- createAllBuffers
   cshd <- createColourShaders
   tshd <- createTextureShaders
-  textLib <- createTextureLib
   return
     EngineState
     { fillStyles = [GFXColour $ Color4 1 1 1 1]
