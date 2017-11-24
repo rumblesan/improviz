@@ -43,7 +43,7 @@ instance Show Character where
   show (Character c _ _ _ _) = show c
 
 defaultFont :: B.ByteString
-defaultFont = $(embedFile "fonts/arial.ttf")
+defaultFont = $(embedFile "assets/fonts/arial.ttf")
 
 runFreeType :: IO FT_Error -> IO ()
 runFreeType m = do
