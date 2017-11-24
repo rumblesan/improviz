@@ -1,46 +1,16 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Configuration
   ( ImpConfig(..)
   , getConfig
   ) where
 
 import           Control.Applicative
-import qualified Data.ByteString     as B
-import           Data.Maybe          (fromMaybe)
-import           Data.Semigroup      ((<>))
-import           Options.Applicative
+import qualified Data.ByteString          as B
+import           Data.Maybe               (fromMaybe)
+import           Options.Applicative      (execParser)
 
-import           Data.Yaml           (FromJSON (..), (.!=), (.:), (.:?))
-import qualified Data.Yaml           as Y
-
-data ImpCLIConfig = ImpCLIConfig
-  { cliScreenWidth       :: Maybe Int
-  , cliScreenHeight      :: Maybe Int
-  , cliFullscreenDisplay :: Maybe Int
-  , cliDebug             :: Bool
-  , cliConfigFilePath    :: Maybe FilePath
-  }
-
-data ImpYAMLConfig = ImpYAMLConfig
-  { yamlScreenWidth        :: Maybe Int
-  , yamlScreenHeight       :: Maybe Int
-  , yamlFullscreenDisplay  :: Maybe Int
-  , yamlDebug              :: Bool
-  , yamlFontFilePath       :: Maybe FilePath
-  , yamlFontSize           :: Maybe Int
-  , yamlTextureDirectories :: [FilePath]
-  }
-
-instance FromJSON ImpYAMLConfig where
-  parseJSON (Y.Object v) =
-    ImpYAMLConfig <$> v .:? "screenwidth" <*> v .:? "screenheight" <*>
-    v .:? "fullscreen" <*>
-    v .:? "debug" .!= False <*>
-    v .:? "fontfile" <*>
-    v .:? "fontsize" <*>
-    v .:? "textureDirectories" .!= []
-  parseJSON _ = fail "Expected Object for Config value"
+import           Configuration.CLIConfig  (ImpCLIConfig (..), cliopts,
+                                           cliparser)
+import           Configuration.YamlConfig (ImpYAMLConfig (..), readConfigFile)
 
 data ImpConfig = ImpConfig
   { screenWidth        :: Int
@@ -76,60 +46,25 @@ defaultConfigFile = "./improviz.yaml"
 defaultFontSize :: Int
 defaultFontSize = 36
 
-cliparser :: Parser ImpCLIConfig
-cliparser =
-  ImpCLIConfig <$>
-  optional
-    (option
-       auto
-       (long "width" <> short 'w' <> help "Screen width" <> metavar "INT")) <*>
-  optional
-    (option
-       auto
-       (long "height" <> short 'h' <> help "Screen height" <> metavar "INT")) <*>
-  optional
-    (option
-       auto
-       (long "fullscreen" <> short 'f' <>
-        help "Which screen to fullscreen the app to" <>
-        metavar "INT")) <*>
-  switch (long "debug" <> short 'd' <> help "Put improviz in debug mode") <*>
-  optional
-    (option
-       auto
-       (long "config" <> short 'c' <> help "Path to a configuration YAML file" <>
-        metavar "FilePath"))
-
-readConfigFile :: ImpCLIConfig -> IO ImpConfig
-readConfigFile cliCfg = do
-  yaml <-
-    Y.decodeFileEither $ fromMaybe defaultConfigFile $ cliConfigFilePath cliCfg
-  case yaml of
-    Left err -> print err >> return defaultConfig
-    Right yamlConfig ->
-      return $
-      ImpConfig
-      { screenWidth =
-          fromMaybe
-            defaultWidth
-            (cliScreenWidth cliCfg <|> yamlScreenWidth yamlConfig)
-      , screenHeight =
-          fromMaybe
-            defaultHeight
-            (cliScreenHeight cliCfg <|> yamlScreenHeight yamlConfig)
-      , fullscreenDisplay =
-          (cliFullscreenDisplay cliCfg <|> yamlFullscreenDisplay yamlConfig)
-      , debug = (cliDebug cliCfg || yamlDebug yamlConfig)
-      , fontFilePath = yamlFontFilePath yamlConfig
-      , fontSize = fromMaybe defaultFontSize (yamlFontSize yamlConfig)
-      , textureDirectories = yamlTextureDirectories yamlConfig
-      }
-
-getConfig :: (ImpConfig -> IO ()) -> IO ()
-getConfig app = execParser opts >>= readConfigFile >>= app
-  where
-    opts =
-      info
-        (cliparser <**> helper)
-        (fullDesc <> progDesc "Visual live coding environment" <>
-         header "Improviz")
+getConfig :: IO ImpConfig
+getConfig = do
+  cliCfg <- execParser cliopts
+  yamlCfgOpt <-
+    readConfigFile $ fromMaybe defaultConfigFile $ cliConfigFilePath cliCfg
+  return
+    ImpConfig
+    { screenWidth =
+        fromMaybe
+          defaultWidth
+          (cliScreenWidth cliCfg <|> (yamlCfgOpt >>= yamlScreenWidth))
+    , screenHeight =
+        fromMaybe
+          defaultHeight
+          (cliScreenHeight cliCfg <|> (yamlCfgOpt >>= yamlScreenHeight))
+    , fullscreenDisplay =
+        (cliFullscreenDisplay cliCfg <|> (yamlCfgOpt >>= yamlFullscreenDisplay))
+    , debug = (cliDebug cliCfg || (fromMaybe False $ yamlDebug <$> yamlCfgOpt))
+    , fontFilePath = yamlCfgOpt >>= yamlFontFilePath
+    , fontSize = fromMaybe defaultFontSize (yamlCfgOpt >>= yamlFontSize)
+    , textureDirectories = fromMaybe [] $ yamlTextureDirectories <$> yamlCfgOpt
+    }

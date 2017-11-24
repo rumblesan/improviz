@@ -16,7 +16,7 @@ import qualified Gfx.Matrices               as GM
 
 import           AppServer
 import           AppTypes
-import           Configuration
+import           Configuration              (ImpConfig (..), getConfig)
 import           Gfx
 import           Gfx.PostProcessing
 import           Gfx.TextRendering
@@ -29,7 +29,7 @@ errorCallback :: GLFW.ErrorCallback
 errorCallback _ = hPutStrLn stderr
 
 main :: IO ()
-main = getConfig app
+main = getConfig >>= app
 
 app :: ImpConfig -> IO ()
 app cfg = do

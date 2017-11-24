@@ -39,6 +39,8 @@ executable improviz
   other-modules:       AppServer
                      , AppTypes
                      , Configuration
+                     , Configuration.CLIConfig
+                     , Configuration.YamlConfig
                      , ErrorHandling
                      , Gfx
                      , Gfx.Ast
