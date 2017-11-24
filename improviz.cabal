@@ -23,6 +23,7 @@ executable improviz
                      , containers
                      , indents
                      , filepath
+                     , file-embed
                      , freetype2
                      , mtl
                      , optparse-applicative
@@ -85,6 +86,7 @@ test-suite improviz-test
                      , containers
                      , indents
                      , filepath
+                     , file-embed
                      , freetype2
                      , mtl
                      , optparse-applicative

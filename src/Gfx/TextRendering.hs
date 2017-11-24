@@ -118,7 +118,7 @@ createTextRenderer ::
   -> Float
   -> Int
   -> Int
-  -> String
+  -> Maybe FilePath
   -> Int
   -> Color4 GLfloat
   -> Color4 GLfloat

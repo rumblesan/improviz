@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Gfx.FreeType where
 
 import           Foreign.C.String
@@ -9,7 +11,9 @@ import           Foreign.Storable
 import           Control.Monad
 import qualified Data.ByteString                                     as B
 import qualified Data.Char                                           as C
+import           Data.FileEmbed                                      (embedFile)
 import qualified Data.Map.Strict                                     as M
+import           Data.Maybe                                          (maybe)
 
 import           Graphics.Rendering.FreeType.Internal
 import           Graphics.Rendering.FreeType.Internal.Bitmap         as BM
@@ -38,6 +42,9 @@ type CharacterMap = M.Map Char Character
 instance Show Character where
   show (Character c _ _ _ _) = show c
 
+defaultFont :: B.ByteString
+defaultFont = $(embedFile "fonts/arial.ttf")
+
 runFreeType :: IO FT_Error -> IO ()
 runFreeType m = do
   r <- m
@@ -49,10 +56,9 @@ freeType =
     runFreeType $ ft_Init_FreeType p
     peek p
 
-fontFaceFromMemory :: FT_Library -> FilePath -> IO FT_Face
-fontFaceFromMemory ft fp = do
-  fdata <- B.readFile fp
-  B.useAsCStringLen fdata $ \(cstr, len) -> do
+fontFaceFromMemory :: FT_Library -> IO FT_Face
+fontFaceFromMemory ft = do
+  B.useAsCStringLen defaultFont $ \(cstr, len) -> do
     let custr = castPtr cstr
     alloca $ \ptr -> do
       runFreeType $ ft_New_Memory_Face ft custr (fromIntegral len) 0 ptr
@@ -68,11 +74,11 @@ fontFaceFromFile ft fp =
 setFaceSize :: FT_Face -> Int -> IO ()
 setFaceSize ff px = runFreeType $ ft_Set_Pixel_Sizes ff (fromIntegral px) 0
 
-loadFontCharMap :: String -> Int -> IO CharacterMap
+loadFontCharMap :: Maybe FilePath -> Int -> IO CharacterMap
 loadFontCharMap fontPath fontSize =
   let chars = C.chr <$> [0 .. 127]
   in do ft2 <- freeType
-        face <- fontFaceFromFile ft2 fontPath
+        face <- maybe (fontFaceFromMemory ft2) (fontFaceFromFile ft2) fontPath
         setFaceSize face fontSize
         GL.rowAlignment GL.Pack $= 1
         c <-

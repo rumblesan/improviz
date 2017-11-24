@@ -17,7 +17,7 @@ import           Configuration.YamlConfig  (ImpYAMLConfig (..),
 import           Graphics.Rendering.OpenGL (Color4 (..), GLfloat)
 
 data ImpFontConfig = ImpFontConfig
-  { fontFilePath :: FilePath
+  { fontFilePath :: Maybe FilePath
   , fontSize     :: Int
   , fontFGColour :: Color4 GLfloat
   , fontBGColour :: Color4 GLfloat
@@ -44,7 +44,7 @@ defaultConfig =
   , debug = False
   , fontConfig =
       ImpFontConfig
-      { fontFilePath = "./fonts/arial.ttf"
+      { fontFilePath = Nothing
       , fontSize = 36
       , fontFGColour = Color4 0.0 0.0 0.0 1.0
       , fontBGColour = Color4 1.0 0.8 0.0 1.0
@@ -56,7 +56,7 @@ getFontConfig :: ImpFontConfig -> Maybe ImpYAMLFontConfig -> ImpFontConfig
 getFontConfig defaultFontCfg yamlFontCfg =
   ImpFontConfig
   { fontFilePath =
-      fromMaybe (fontFilePath defaultFontCfg) (yamlFontCfg >>= yamlFontFilePath)
+      (yamlFontCfg >>= yamlFontFilePath) <|> (fontFilePath defaultFontCfg)
   , fontSize =
       fromMaybe (fontSize defaultFontCfg) (yamlFontCfg >>= yamlFontSize)
   , fontFGColour =
