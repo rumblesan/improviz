@@ -1,6 +1,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Gfx.FreeType where
+module Gfx.FreeType
+  ( loadFontCharMap
+  , Character(..)
+  , CharacterMap(..)
+  , getCharacter
+  ) where
 
 import           Foreign.C.String
 import           Foreign.Marshal.Alloc
@@ -20,6 +25,9 @@ import           Graphics.Rendering.FreeType.Internal.Bitmap         as BM
 import           Graphics.Rendering.FreeType.Internal.BitmapGlyph
 import           Graphics.Rendering.FreeType.Internal.BitmapSize
 import           Graphics.Rendering.FreeType.Internal.Face
+import           Graphics.Rendering.FreeType.Internal.GlyphMetrics   (horiAdvance,
+                                                                      horiBearingX,
+                                                                      horiBearingY)
 import           Graphics.Rendering.FreeType.Internal.GlyphSlot      as GS
 import           Graphics.Rendering.FreeType.Internal.Library
 import           Graphics.Rendering.FreeType.Internal.PrimitiveTypes
@@ -30,17 +38,28 @@ import           Graphics.Rendering.OpenGL                           as GL
 import           ErrorHandling                                       (printErrors)
 
 data Character =
-  Character Char
-            Int
-            Int
-            Int
-            GL.TextureObject
+  Character Char -- char
+            Int -- bpm width
+            Int -- bpm height
+            Int -- advance
+            Int -- xBearing
+            Int -- yBearing
+            GL.TextureObject -- texture
   deriving (Eq)
 
-type CharacterMap = M.Map Char Character
+data CharacterMap = CharacterMap
+  { charMap       :: M.Map Char Character
+  , fontHeight    :: Int
+  , fontAscender  :: Int
+  , fontDescender :: Int
+  } deriving (Show)
 
 instance Show Character where
-  show (Character c _ _ _ _) = show c
+  show (Character c _ _ _ _ _ _) = show c
+
+-- TODO - better error handling
+getCharacter :: CharacterMap -> Char -> Character
+getCharacter cm c = (charMap cm) M.! c
 
 defaultFont :: B.ByteString
 defaultFont = $(embedFile "assets/fonts/arial.ttf")
@@ -83,9 +102,17 @@ loadFontCharMap fontPath fontSize =
         GL.rowAlignment GL.Pack $= 1
         c <-
           sequence $ M.fromList $ fmap (\c -> (c, loadCharacter face c)) chars
+        fdsc <- peek $ descender face
+        fasc <- peek $ ascender face
         ft_Done_Face face
         ft_Done_FreeType ft2
-        return c
+        return $
+          CharacterMap
+          { charMap = c
+          , fontHeight = fontSize
+          , fontAscender = fromIntegral fasc
+          , fontDescender = fromIntegral fdsc
+          }
 
 loadCharacter :: FT_Face -> Char -> IO Character
 loadCharacter ff char = do
@@ -94,10 +121,12 @@ loadCharacter ff char = do
   slot <- peek $ glyph ff
   runFreeType $ ft_Render_Glyph slot ft_RENDER_MODE_NORMAL
   bmp <- peek $ GS.bitmap slot
-  (FT_Vector advx advy) <- peek $ GS.advance slot
+  glyphMetrics <- peek $ GS.metrics slot
   let bmpWidth = fromIntegral $ BM.width bmp
       bmpHeight = fromIntegral $ BM.rows bmp
-      advance = fromIntegral advx `div` 64
+      advance = fromIntegral (horiAdvance glyphMetrics) `div` 64
+      xBearing = fromIntegral $ (horiBearingX glyphMetrics) `div` 64
+      yBearing = fromIntegral $ (horiBearingY glyphMetrics) `div` 64
   rowAlignment Unpack $= 1
   text <- genObjectName
   textureBinding Texture2D $= Just text
@@ -110,4 +139,4 @@ loadCharacter ff char = do
   textureWrapMode Texture2D T $= (Repeated, ClampToEdge)
   textureBinding Texture2D $= Nothing
   printErrors
-  return $ Character char bmpWidth bmpHeight advance text
+  return $ Character char bmpWidth bmpHeight advance xBearing yBearing text

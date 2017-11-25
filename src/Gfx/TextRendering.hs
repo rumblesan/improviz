@@ -18,8 +18,8 @@ import           Foreign.Storable
 
 import qualified Data.Map.Strict           as M
 
-import           Gfx.FreeType              (Character (..), CharacterMap,
-                                            loadFontCharMap)
+import           Gfx.FreeType              (Character (..), CharacterMap (..),
+                                            getCharacter, loadFontCharMap)
 import           Gfx.GeometryBuffers       (bufferOffset)
 import           Gfx.LoadShaders
 import qualified Graphics.GL               as GLRaw
@@ -58,10 +58,6 @@ textCoordMatrix left right top bottom near far =
   let o = orthographicMat left right top bottom near far
       t = translateMat (-1) 1 0
   in multmm t o
-
--- TODO - better error handling
-getCharacter :: TextRenderer -> Char -> Character
-getCharacter tr c = characterMap tr M.! c
 
 charQuad :: IO CharQuad
 charQuad = do
@@ -201,20 +197,21 @@ renderCharacters xpos ypos renderer strings = do
   depthFunc $= Nothing
   clearColor $= Color4 0.0 0.0 0.0 0.0
   clear [ColorBuffer]
+  let charMap = characterMap renderer
   foldM_
     (\(xp, yp) c ->
        case c of
          '\n' -> return (xpos, yp + charSize renderer)
          _ -> do
-           let char@(Character _ _ _ adv _) = getCharacter renderer c
+           let char@(Character _ _ _ adv _ _ _) = getCharacter charMap c
            renderCharacterBackground renderer char xp yp
-           renderCharacter renderer char xp yp
+           renderCharacter renderer char xp yp (fontAscender charMap)
            return (xp + adv, yp))
     (xpos, ypos)
     strings
 
-renderCharacter :: TextRenderer -> Character -> Int -> Int -> IO ()
-renderCharacter renderer (Character c width height adv text) x y =
+renderCharacter :: TextRenderer -> Character -> Int -> Int -> Int -> IO ()
+renderCharacter renderer (Character c width height adv xBearing yBearing text) x y asc =
   let xPos = fromIntegral x
       yPos = fromIntegral y
       lbottom = yPos + fromIntegral (charSize renderer) :: GLfloat
@@ -274,7 +271,7 @@ renderCharacter renderer (Character c width height adv text) x y =
         printErrors
 
 renderCharacterBackground :: TextRenderer -> Character -> Int -> Int -> IO ()
-renderCharacterBackground renderer (Character c width height adv text) x y =
+renderCharacterBackground renderer (Character c width height adv xBearing yBearing text) x y =
   let xPos = fromIntegral x
       yPos = fromIntegral y
       w = fromIntegral adv
