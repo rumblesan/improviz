@@ -19,7 +19,7 @@ import           Foreign.Storable          (peek, sizeOf)
 import qualified Data.Map.Strict           as M
 
 import           Gfx.FontHandling          (Character (..), Font (..),
-                                            getCharacter, loadFontCharMap)
+                                            getCharacter, loadFont)
 import           Gfx.GeometryBuffers       (bufferOffset)
 import           Gfx.LoadShaders           (ShaderInfo (..), ShaderSource (..),
                                             loadShaders)
@@ -154,7 +154,7 @@ createTextRenderer front back width height fontPath charSize textColour bgColour
       [ ShaderInfo VertexShader (FileSource "shaders/textrenderer-bg.vert")
       , ShaderInfo FragmentShader (FileSource "shaders/textrenderer-bg.frag")
       ]
-  characters <- loadFontCharMap fontPath charSize
+  font <- loadFont fontPath charSize
   let projectionMatrix =
         textCoordMatrix
           0
@@ -166,7 +166,7 @@ createTextRenderer front back width height fontPath charSize textColour bgColour
   buffer <- createSavebuffer (fromIntegral width) (fromIntegral height)
   return $
     TextRenderer
-      characters
+      font
       charSize
       projectionMatrix
       tprogram

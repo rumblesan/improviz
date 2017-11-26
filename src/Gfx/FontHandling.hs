@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Gfx.FontHandling
-  ( loadFontCharMap
+  ( loadFont
   , Character(..)
   , Font(..)
   , getCharacter
@@ -108,8 +108,8 @@ fontFaceFromFile ft fp =
       runFreeType $ ft_New_Face ft str 0 ptr
       peek ptr
 
-loadFontCharMap :: Maybe FilePath -> Int -> IO Font
-loadFontCharMap fontPath fontSize =
+loadFont :: Maybe FilePath -> Int -> IO Font
+loadFont fontPath fontSize =
   let chars = C.chr <$> [0 .. 127]
   in do ft2 <- freeType
         face <- maybe (fontFaceFromMemory ft2) (fontFaceFromFile ft2) fontPath
