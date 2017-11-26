@@ -9,27 +9,49 @@ module Gfx.TextRendering
   , TextRenderer
   ) where
 
-import           Control.Monad
+import           Control.Monad             (foldM_)
 
-import           Foreign.Marshal.Array
-import           Foreign.Marshal.Utils
-import           Foreign.Ptr
-import           Foreign.Storable
+import           Foreign.Marshal.Array     (withArray)
+import           Foreign.Marshal.Utils     (fromBool, with)
+import           Foreign.Ptr               (castPtr, nullPtr)
+import           Foreign.Storable          (peek, sizeOf)
 
 import qualified Data.Map.Strict           as M
 
-import           Gfx.FreeType              (Character (..), CharacterMap (..),
+import           Gfx.FreeType              (Character (..), Font (..),
                                             getCharacter, loadFontCharMap)
 import           Gfx.GeometryBuffers       (bufferOffset)
-import           Gfx.LoadShaders
+import           Gfx.LoadShaders           (ShaderInfo (..), ShaderSource (..),
+                                            loadShaders)
 import qualified Graphics.GL               as GLRaw
-import           Graphics.Rendering.OpenGL as GL
+import           Graphics.Rendering.OpenGL (ArrayIndex, AttribLocation (..),
+                                            BlendEquation (FuncAdd),
+                                            BlendingFactor (One, OneMinusSrcAlpha, SrcAlpha, Zero),
+                                            BufferObject,
+                                            BufferTarget (ArrayBuffer),
+                                            BufferUsage (DynamicDraw),
+                                            Capability (Enabled),
+                                            ClearBuffer (ColorBuffer),
+                                            Color4 (..), Color4,
+                                            DataType (Float),
+                                            FramebufferTarget (Framebuffer),
+                                            GLfloat, IntegerHandling (ToFloat),
+                                            NumArrayIndices,
+                                            PrimitiveMode (Triangles), Program,
+                                            ShaderType (FragmentShader, VertexShader),
+                                            TextureTarget2D (Texture2D),
+                                            TextureUnit (..),
+                                            TransferDirection (WriteToBuffer),
+                                            UniformLocation (..),
+                                            VertexArrayDescriptor (..),
+                                            VertexArrayObject, ($=))
+import qualified Graphics.Rendering.OpenGL as GL
 
 import           Gfx.PostProcessing        (Savebuffer (..), createSavebuffer,
                                             deleteSavebuffer, drawQuadVBO)
 
 import           Data.Vec                  (Mat44, multmm)
-import           Gfx.Matrices
+import           Gfx.Matrices              (orthographicMat, translateMat)
 
 import           ErrorHandling             (printErrors)
 
@@ -41,7 +63,7 @@ data CharQuad =
   deriving (Show, Eq)
 
 data TextRenderer = TextRenderer
-  { characterMap    :: CharacterMap
+  { textFont        :: Font
   , charSize        :: Int
   , pMatrix         :: Mat44 GLfloat
   , textprogram     :: Program
@@ -61,10 +83,10 @@ textCoordMatrix left right top bottom near far =
 
 charQuad :: IO CharQuad
 charQuad = do
-  vao <- genObjectName
-  bindVertexArrayObject $= Just vao
-  arrayBuffer <- genObjectName
-  bindBuffer ArrayBuffer $= Just arrayBuffer
+  vao <- GL.genObjectName
+  GL.bindVertexArrayObject $= Just vao
+  arrayBuffer <- GL.genObjectName
+  GL.bindBuffer ArrayBuffer $= Just arrayBuffer
   let vertexSize = sizeOf (0 :: GLfloat)
       firstPosIndex = 0
       firstTexIndex = 2 * vertexSize
@@ -73,41 +95,41 @@ charQuad = do
       numVertices = 6 * 4
       size = fromIntegral (numVertices * vertexSize)
       stride = fromIntegral (4 * vertexSize)
-  bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
-  vertexAttribPointer vPosition $=
+  GL.bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
+  GL.vertexAttribPointer vPosition $=
     (ToFloat, VertexArrayDescriptor 2 Float stride (bufferOffset firstPosIndex))
-  vertexAttribPointer vTexCoord $=
+  GL.vertexAttribPointer vTexCoord $=
     (ToFloat, VertexArrayDescriptor 2 Float stride (bufferOffset firstTexIndex))
-  vertexAttribArray vPosition $= Enabled
-  vertexAttribArray vTexCoord $= Enabled
-  bindVertexArrayObject $= Nothing
-  bindBuffer ArrayBuffer $= Nothing
+  GL.vertexAttribArray vPosition $= Enabled
+  GL.vertexAttribArray vTexCoord $= Enabled
+  GL.bindVertexArrayObject $= Nothing
+  GL.bindBuffer ArrayBuffer $= Nothing
   return $ CharQuad vao arrayBuffer firstPosIndex 6
 
 charBGQuad :: IO CharQuad
 charBGQuad = do
-  vao <- genObjectName
-  bindVertexArrayObject $= Just vao
-  arrayBuffer <- genObjectName
-  bindBuffer ArrayBuffer $= Just arrayBuffer
+  vao <- GL.genObjectName
+  GL.bindVertexArrayObject $= Just vao
+  arrayBuffer <- GL.genObjectName
+  GL.bindBuffer ArrayBuffer $= Just arrayBuffer
   let vertexSize = sizeOf (0 :: GLfloat)
       firstPosIndex = 0
       vPosition = AttribLocation 0
       numVertices = 6 * 2
       size = fromIntegral (numVertices * vertexSize)
       stride = 0
-  bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
-  vertexAttribPointer vPosition $=
+  GL.bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
+  GL.vertexAttribPointer vPosition $=
     (ToFloat, VertexArrayDescriptor 2 Float stride (bufferOffset firstPosIndex))
-  vertexAttribArray vPosition $= Enabled
-  bindVertexArrayObject $= Nothing
-  bindBuffer ArrayBuffer $= Nothing
+  GL.vertexAttribArray vPosition $= Enabled
+  GL.bindVertexArrayObject $= Nothing
+  GL.bindBuffer ArrayBuffer $= Nothing
   return $ CharQuad vao arrayBuffer firstPosIndex 6
 
 drawCharQuad :: CharQuad -> IO ()
 drawCharQuad (CharQuad arrayObject _ firstIndex numTriangles) = do
-  bindVertexArrayObject $= Just arrayObject
-  drawArrays Triangles firstIndex numTriangles
+  GL.bindVertexArrayObject $= Just arrayObject
+  GL.drawArrays Triangles firstIndex numTriangles
 
 createTextRenderer ::
      Float
@@ -176,136 +198,128 @@ changeTextColour newColour trender = trender {textColour = newColour}
 renderText :: Int -> Int -> TextRenderer -> String -> IO ()
 renderText xpos ypos renderer strings = do
   let (Savebuffer fbo _ _ _ _) = outbuffer renderer
-  bindFramebuffer Framebuffer $= fbo
+  GL.bindFramebuffer Framebuffer $= fbo
   renderCharacters xpos ypos renderer strings
   printErrors
 
 renderTextbuffer :: TextRenderer -> IO ()
 renderTextbuffer renderer = do
-  bindFramebuffer Framebuffer $= defaultFramebufferObject
+  GL.bindFramebuffer Framebuffer $= GL.defaultFramebufferObject
   let (Savebuffer _ text _ program quadVBO) = outbuffer renderer
-  currentProgram $= Just program
-  activeTexture $= TextureUnit 0
-  textureBinding Texture2D $= Just text
+  GL.currentProgram $= Just program
+  GL.activeTexture $= TextureUnit 0
+  GL.textureBinding Texture2D $= Just text
   drawQuadVBO quadVBO
 
 renderCharacters :: Int -> Int -> TextRenderer -> String -> IO ()
 renderCharacters xpos ypos renderer strings = do
-  blend $= Enabled
-  blendEquationSeparate $= (FuncAdd, FuncAdd)
-  blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
-  depthFunc $= Nothing
-  clearColor $= Color4 0.0 0.0 0.0 0.0
-  clear [ColorBuffer]
-  let charMap = characterMap renderer
+  GL.blend $= Enabled
+  GL.blendEquationSeparate $= (FuncAdd, FuncAdd)
+  GL.blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
+  GL.depthFunc $= Nothing
+  GL.clearColor $= Color4 0.0 0.0 0.0 0.0
+  GL.clear [ColorBuffer]
+  let font = textFont renderer
   foldM_
     (\(xp, yp) c ->
        case c of
-         '\n' -> return (xpos, yp + charSize renderer)
-         _ -> do
-           let char@(Character _ _ _ adv _ _ _) = getCharacter charMap c
-           renderCharacterBackground renderer char xp yp
-           renderCharacter renderer char xp yp (fontAscender charMap)
-           return (xp + adv, yp))
+         '\n' -> return (xpos, yp + fontHeight font)
+         _ ->
+           maybe
+             (return (xp, yp + fontAdvance font))
+             (\c -> renderChar c xp yp font)
+             (getCharacter font c))
     (xpos, ypos)
     strings
+  where
+    renderChar char xp yp f = do
+      renderCharacterBackground renderer char xp yp f
+      renderCharacter renderer char xp yp f
 
-renderCharacter :: TextRenderer -> Character -> Int -> Int -> Int -> IO ()
-renderCharacter renderer (Character c width height adv xBearing yBearing text) x y asc =
-  let xPos = fromIntegral x
-      yPos = fromIntegral y
-      lbottom = yPos + fromIntegral (charSize renderer) :: GLfloat
-      ltop = lbottom - fromIntegral height :: GLfloat
-      w = fromIntegral width
-      h = fromIntegral height
-      top = yPos + fromIntegral (charSize renderer) - fromIntegral height
+renderCharacter ::
+     TextRenderer -> Character -> Int -> Int -> Font -> IO ((Int, Int))
+renderCharacter renderer (Character c width height adv xBearing yBearing text) x y font =
+  let baseline = fromIntegral (y + fontAscender font)
+      gX1 = fromIntegral (x + xBearing)
+      gX2 = gX1 + fromIntegral width
+      gY1 = baseline - fromIntegral yBearing
+      gY2 = gY1 + fromIntegral height
       charVerts =
-        [ xPos
-        , ltop
+        [ gX1
+        , gY1
         , 0.0
+        , 0.0 -- coord 1
+        , gX1
+        , gY2
         , 0.0
-        , xPos
-        , lbottom
+        , 1.0 -- coord 2
+        , gX2
+        , gY1
+        , 1.0
+        , 0.0 -- coord 3
+        , gX1
+        , gY2
         , 0.0
+        , 1.0 -- coord 4
+        , gX2
+        , gY2
         , 1.0
-        , xPos + w
-        , ltop
+        , 1.0 -- coord 5
+        , gX2
+        , gY1
         , 1.0
-        , 0.0
-        , xPos
-        , lbottom
-        , 0.0
-        , 1.0
-        , xPos + w
-        , lbottom
-        , 1.0
-        , 1.0
-        , xPos + w
-        , ltop
-        , 1.0
-        , 0.0
+        , 0.0 -- coord 6
         ] :: [GLfloat]
       vertSize = sizeOf (head charVerts)
       numVerts = length charVerts
       size = fromIntegral (numVerts * vertSize)
       (CharQuad arrayObject arrayBuffer firstIndex numTriangles) =
         characterQuad renderer
-  in do currentProgram $= Just (textprogram renderer)
-        activeTexture $= TextureUnit 0
-        textureBinding Texture2D $= Just text
-        bindVertexArrayObject $= Just arrayObject
-        bindBuffer ArrayBuffer $= Just arrayBuffer
+  in do GL.currentProgram $= Just (textprogram renderer)
+        GL.activeTexture $= TextureUnit 0
+        GL.textureBinding Texture2D $= Just text
+        GL.bindVertexArrayObject $= Just arrayObject
+        GL.bindBuffer ArrayBuffer $= Just arrayBuffer
         textColourU <-
-          GL.get $ uniformLocation (textprogram renderer) "textColor"
-        uniform textColourU $= textColour renderer
+          GL.get $ GL.uniformLocation (textprogram renderer) "textColor"
+        GL.uniform textColourU $= textColour renderer
         textBGColourU <-
-          GL.get $ uniformLocation (textprogram renderer) "textBGColor"
-        uniform textBGColourU $= textBGColour renderer
+          GL.get $ GL.uniformLocation (textprogram renderer) "textBGColor"
+        GL.uniform textBGColourU $= textBGColour renderer
         (UniformLocation projU) <-
-          GL.get $ uniformLocation (textprogram renderer) "projection"
+          GL.get $ GL.uniformLocation (textprogram renderer) "projection"
         with (pMatrix renderer) $
           GLRaw.glUniformMatrix4fv projU 1 (fromBool True) . castPtr
         withArray charVerts $ \ptr ->
-          bufferSubData ArrayBuffer WriteToBuffer 0 size ptr
-        drawArrays Triangles firstIndex numTriangles
+          GL.bufferSubData ArrayBuffer WriteToBuffer 0 size ptr
+        GL.drawArrays Triangles firstIndex numTriangles
         printErrors
+        return (x + adv, y)
 
-renderCharacterBackground :: TextRenderer -> Character -> Int -> Int -> IO ()
-renderCharacterBackground renderer (Character c width height adv xBearing yBearing text) x y =
-  let xPos = fromIntegral x
-      yPos = fromIntegral y
-      w = fromIntegral adv
-      h = fromIntegral $ charSize renderer
-      charVerts =
-        [ xPos
-        , yPos
-        , xPos
-        , yPos + h
-        , xPos + w
-        , yPos
-        , xPos
-        , yPos + h
-        , xPos + w
-        , yPos + h
-        , xPos + w
-        , yPos
-        ] :: [GLfloat]
+renderCharacterBackground ::
+     TextRenderer -> Character -> Int -> Int -> Font -> IO ()
+renderCharacterBackground renderer (Character _ _ _ adv _ _ _) x y font =
+  let x1 = fromIntegral x
+      x2 = fromIntegral $ x + adv
+      y1 = fromIntegral y
+      y2 = fromIntegral $ y + fontHeight font
+      charVerts = [x1, y1, x1, y2, x2, y1, x1, y2, x2, y2, x2, y1] :: [GLfloat]
       vertSize = sizeOf (head charVerts)
       numVerts = length charVerts
       size = fromIntegral (numVerts * vertSize)
       (CharQuad arrayObject arrayBuffer firstIndex numTriangles) =
         characterBGQuad renderer
-  in do currentProgram $= Just (bgprogram renderer)
-        bindVertexArrayObject $= Just arrayObject
-        bindBuffer ArrayBuffer $= Just arrayBuffer
+  in do GL.currentProgram $= Just (bgprogram renderer)
+        GL.bindVertexArrayObject $= Just arrayObject
+        GL.bindBuffer ArrayBuffer $= Just arrayBuffer
         textBGColourU <-
-          GL.get $ uniformLocation (bgprogram renderer) "textBGColor"
-        uniform textBGColourU $= textBGColour renderer
+          GL.get $ GL.uniformLocation (bgprogram renderer) "textBGColor"
+        GL.uniform textBGColourU $= textBGColour renderer
         (UniformLocation projU) <-
-          GL.get $ uniformLocation (bgprogram renderer) "projection"
+          GL.get $ GL.uniformLocation (bgprogram renderer) "projection"
         with (pMatrix renderer) $
           GLRaw.glUniformMatrix4fv projU 1 (fromBool True) . castPtr
         withArray charVerts $ \ptr ->
-          bufferSubData ArrayBuffer WriteToBuffer 0 size ptr
-        drawArrays Triangles firstIndex numTriangles
+          GL.bufferSubData ArrayBuffer WriteToBuffer 0 size ptr
+        GL.drawArrays Triangles firstIndex numTriangles
         printErrors
