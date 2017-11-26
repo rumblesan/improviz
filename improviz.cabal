@@ -48,7 +48,7 @@ executable improviz
                      , Gfx.Ast
                      , Gfx.Interpreter
                      , Gfx.EngineState
-                     , Gfx.FreeType
+                     , Gfx.FontHandling
                      , Gfx.Geometries
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
@@ -111,7 +111,7 @@ test-suite improviz-test
                      , Gfx.Ast
                      , Gfx.Interpreter
                      , Gfx.EngineState
-                     , Gfx.FreeType
+                     , Gfx.FontHandling
                      , Gfx.Geometries
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders

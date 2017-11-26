@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Gfx.FreeType
+module Gfx.FontHandling
   ( loadFontCharMap
   , Character(..)
   , Font(..)

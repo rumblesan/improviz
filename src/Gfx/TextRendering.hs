@@ -18,7 +18,7 @@ import           Foreign.Storable          (peek, sizeOf)
 
 import qualified Data.Map.Strict           as M
 
-import           Gfx.FreeType              (Character (..), Font (..),
+import           Gfx.FontHandling          (Character (..), Font (..),
                                             getCharacter, loadFontCharMap)
 import           Gfx.GeometryBuffers       (bufferOffset)
 import           Gfx.LoadShaders           (ShaderInfo (..), ShaderSource (..),
