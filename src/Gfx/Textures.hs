@@ -2,6 +2,7 @@
 
 module Gfx.Textures where
 
+import qualified Data.ByteString           as B
 import qualified Data.Map.Strict           as M
 import           Data.Maybe                (catMaybes)
 import           Data.Vector.Storable      (unsafeWith)
@@ -12,9 +13,11 @@ import           Data.Yaml                 (FromJSON (..), (.:))
 import qualified Data.Yaml                 as Y
 
 import           Codec.Picture             (readImage)
+import           Codec.Picture.Bitmap      (decodeBitmap)
+import           Codec.Picture.Gif         (decodeGif)
 import           Codec.Picture.Types       (DynamicImage (..), Image (..))
 import           Graphics.Rendering.OpenGL as GL
-import           System.FilePath.Posix     ((<.>), (</>))
+import           System.FilePath.Posix     (takeExtension, (<.>), (</>))
 
 type TextureLibrary = M.Map String TextureObject
 
@@ -37,10 +40,16 @@ instance FromJSON TextureFolderConfig where
 
 loadTexture :: String -> FilePath -> IO (Maybe (String, TextureObject))
 loadTexture name path = do
-  img <- readImage path
-  case img of
-    Left err    -> print ("could not load image: " ++ path) >> return Nothing
-    Right image -> handleImage name image
+  imgData <- B.readFile path
+  case takeExtension path of
+    ".bmp" -> do
+      either
+        (\err ->
+           print ("could not load image " ++ path ++ ": " ++ err) >>
+           return Nothing)
+        (handleImage name)
+        (decodeBitmap imgData)
+    ext -> print ("Unknown extension: " ++ ext) >> return Nothing
 
 handleImage :: String -> DynamicImage -> IO (Maybe (String, TextureObject))
 handleImage name (ImageRGBA8 (Image width height dat)) = do
@@ -58,7 +67,23 @@ handleImage name (ImageRGBA8 (Image width height dat)) = do
       (PixelData RGBA UnsignedByte ptr)
     textureBinding Texture2D $= Nothing
     return $ Just (name, text)
-handleImage name _ = print ("Could not load image: " ++ name) >> return Nothing
+handleImage name (ImageRGB8 (Image width height dat)) = do
+  text <- genObjectName
+  textureBinding Texture2D $= Just text
+  GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
+  unsafeWith dat $ \ptr -> do
+    texImage2D
+      Texture2D
+      NoProxy
+      0
+      RGB'
+      (TextureSize2D (fromIntegral width) (fromIntegral height))
+      0
+      (PixelData RGB UnsignedByte ptr)
+    textureBinding Texture2D $= Nothing
+    return $ Just (name, text)
+handleImage name _ =
+  print ("Could not load BMP image: " ++ name) >> return Nothing
 
 loadTextureFolder :: FilePath -> IO [(String, TextureObject)]
 loadTextureFolder folderPath = do
