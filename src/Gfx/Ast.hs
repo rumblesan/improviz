@@ -64,4 +64,5 @@ data StyleGfx
                 Float
                 Float
   | TextureStyle String
+                 Float
   deriving (Show, Eq)

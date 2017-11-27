@@ -102,7 +102,7 @@ Create a line of the desired length. Default value is 1.
 
 #### Styling
 *fill* [r, g, b, a]
-*texture* [name]
+*texture* [name, frame]
 *noFill* []
 *stroke* [r, g, b, a]
 *noStroke* []

@@ -13,6 +13,7 @@ import           Gfx.Textures              (TextureLibrary)
 data GFXStyling
   = GFXColour (Color4 GLfloat)
   | GFXTexture String
+               Int
   deriving (Show)
 
 data Scene = Scene
