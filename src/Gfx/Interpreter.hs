@@ -70,11 +70,11 @@ drawShape (VBO bufferObject _ arrayIndex offset) = do
       lift $ setColourUniform program fillC
       bindVertexArrayObject $= Just bufferObject
       lift $ drawArrays Triangles arrayIndex offset
-    ES.GFXTexture name -> do
+    ES.GFXTexture name frame -> do
       program <- gets textureShaders
       liftIO (currentProgram $= Just (shaderProgram program))
       textureLib <- gets textureLibrary
-      case M.lookup name textureLib of
+      case M.lookup (name, frame) textureLib of
         Nothing -> return ()
         Just texture -> do
           lift $ activeTexture $= TextureUnit 0
@@ -135,8 +135,8 @@ interpretMatrix (Move x y z) =
   modify' (\es -> ES.multMatrix es $ translateMat x y z)
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
-interpretColour (Fill (TextureStyle name)) =
-  modify' (pushFillStyle $ ES.GFXTexture name)
+interpretColour (Fill (TextureStyle name frame)) =
+  modify' (pushFillStyle $ ES.GFXTexture name (floor frame))
 interpretColour (Fill (ColourStyle r g b a)) =
   modify' (pushFillStyle $ ES.GFXColour $ Color4 r g b a)
 interpretColour NoFill = modify' (pushFillStyle $ ES.GFXColour $ Color4 0 0 0 0)

@@ -13,6 +13,7 @@ import qualified Gfx.Ast                       as GA
 import           Language.Ast
 import           Language.Interpreter          (addGfxCommand, getBlock,
                                                 getVarOrNull, getVariable,
+                                                getVariableWithDefault,
                                                 interpretBlock,
                                                 setGfxBackground)
 import           Language.Interpreter.Types
@@ -47,9 +48,10 @@ fill = do
 texture :: InterpreterProcess Value
 texture = do
   textName <- getVariable "name"
+  frame <- getVariableWithDefault "frame" (Number 0) >>= getNumberValue
   case textName of
     Symbol name -> do
-      let partialCmd = GA.ColourCommand $ GA.Fill $ GA.TextureStyle name
+      let partialCmd = GA.ColourCommand $ GA.Fill $ GA.TextureStyle name frame
       block <- getBlock
       maybe
         (addGfxCommand $ partialCmd Nothing)

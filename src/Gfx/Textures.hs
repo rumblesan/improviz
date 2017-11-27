@@ -3,6 +3,8 @@
 module Gfx.Textures where
 
 import qualified Data.ByteString           as B
+import           Data.Either               (rights)
+import           Data.List                 (concat)
 import qualified Data.Map.Strict           as M
 import           Data.Maybe                (catMaybes)
 import           Data.Vector.Storable      (unsafeWith)
@@ -14,7 +16,7 @@ import qualified Data.Yaml                 as Y
 
 import           Codec.Picture             (readImage)
 import           Codec.Picture.Bitmap      (decodeBitmap)
-import           Codec.Picture.Gif         (decodeGif)
+import           Codec.Picture.Gif         (decodeGifImages)
 import           Codec.Picture.Types       (DynamicImage (ImageRGB8, ImageRGBA8),
                                             Image (..))
 import           Graphics.Rendering.OpenGL (DataType (UnsignedByte),
@@ -27,7 +29,7 @@ import           Graphics.Rendering.OpenGL (DataType (UnsignedByte),
 import qualified Graphics.Rendering.OpenGL as GL
 import           System.FilePath.Posix     (takeExtension, (<.>), (</>))
 
-type TextureLibrary = M.Map String TextureObject
+type TextureLibrary = M.Map (String, Int) TextureObject
 
 data TextureConfig = TextureConfig
   { textureName :: String
@@ -46,7 +48,7 @@ instance FromJSON TextureFolderConfig where
   parseJSON (Y.Object v) = TextureFolderConfig <$> v .: "textures"
   parseJSON _            = fail "Expected Object for Config value"
 
-loadTexture :: String -> FilePath -> IO (Maybe (String, TextureObject))
+loadTexture :: String -> FilePath -> IO [((String, Int), TextureObject)]
 loadTexture name path = do
   imgData <- B.readFile path
   case takeExtension path of
@@ -54,11 +56,17 @@ loadTexture name path = do
       loaded <- either (return . Left) handleImage (decodeBitmap imgData)
       either
         (\err ->
-           print ("could not load image " ++ path ++ ": " ++ err) >>
-           return Nothing)
-        (\i -> return $ Just (name, i))
+           print ("could not load image " ++ path ++ ": " ++ err) >> return [])
+        (\i -> return [((name, 0), i)])
         loaded
-    ext -> print ("Unknown extension: " ++ ext) >> return Nothing
+    ".gif" ->
+      case decodeGifImages imgData of
+        Left err ->
+          print ("could not load image " ++ path ++ ": " ++ err) >> return []
+        Right images -> do
+          i <- rights <$> mapM handleImage images
+          return $ zipWith (\idx t -> ((name, idx), t)) [0 ..] i
+    ext -> print ("Unknown extension: " ++ ext) >> return []
 
 handleImage :: DynamicImage -> IO (Either String TextureObject)
 handleImage (ImageRGBA8 (Image width height dat)) = do
@@ -93,12 +101,12 @@ handleImage (ImageRGB8 (Image width height dat)) = do
     return $ Right text
 handleImage _ = return $ Left "Unsupported Format"
 
-loadTextureFolder :: FilePath -> IO [(String, TextureObject)]
+loadTextureFolder :: FilePath -> IO [((String, Int), TextureObject)]
 loadTextureFolder folderPath = do
   yaml <- Y.decodeFileEither $ folderPath </> "config.yaml"
   case yaml of
     Left err  -> print err >> return []
-    Right cfg -> catMaybes <$> mapM tl (textures cfg)
+    Right cfg -> concat <$> mapM tl (textures cfg)
   where
     tl texture =
       loadTexture (textureName texture) (folderPath </> (textureFile texture))
