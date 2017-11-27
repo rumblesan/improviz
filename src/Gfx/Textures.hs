@@ -19,11 +19,20 @@ import           System.FilePath.Posix     ((<.>), (</>))
 type TextureLibrary = M.Map String TextureObject
 
 data TextureConfig = TextureConfig
-  { textureFiles :: [FilePath]
+  { textureName :: String
+  , textureFile :: FilePath
   } deriving (Eq, Show)
 
 instance FromJSON TextureConfig where
-  parseJSON (Y.Object v) = TextureConfig <$> v .: "textures"
+  parseJSON (Y.Object v) = TextureConfig <$> v .: "name" <*> v .: "file"
+  parseJSON _            = fail "Expected Object for Config value"
+
+data TextureFolderConfig = TextureFolderConfig
+  { textures :: [TextureConfig]
+  } deriving (Eq, Show)
+
+instance FromJSON TextureFolderConfig where
+  parseJSON (Y.Object v) = TextureFolderConfig <$> v .: "textures"
   parseJSON _            = fail "Expected Object for Config value"
 
 loadTexture :: String -> FilePath -> IO (Maybe (String, TextureObject))
@@ -56,9 +65,10 @@ loadTextureFolder folderPath = do
   yaml <- Y.decodeFileEither $ folderPath </> "config.yaml"
   case yaml of
     Left err  -> print err >> return []
-    Right cfg -> catMaybes <$> mapM tl (textureFiles cfg)
+    Right cfg -> catMaybes <$> mapM tl (textures cfg)
   where
-    tl name = loadTexture name (folderPath </> name <.> "bmp")
+    tl texture =
+      loadTexture (textureName texture) (folderPath </> (textureFile texture))
 
 createTextureLib :: [FilePath] -> IO TextureLibrary
 createTextureLib folders =
