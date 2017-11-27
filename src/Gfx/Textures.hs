@@ -15,8 +15,16 @@ import qualified Data.Yaml                 as Y
 import           Codec.Picture             (readImage)
 import           Codec.Picture.Bitmap      (decodeBitmap)
 import           Codec.Picture.Gif         (decodeGif)
-import           Codec.Picture.Types       (DynamicImage (..), Image (..))
-import           Graphics.Rendering.OpenGL as GL
+import           Codec.Picture.Types       (DynamicImage (ImageRGB8, ImageRGBA8),
+                                            Image (..))
+import           Graphics.Rendering.OpenGL (DataType (UnsignedByte),
+                                            PixelData (..),
+                                            PixelFormat (RGB, RGBA),
+                                            PixelInternalFormat (RGB', RGBA'),
+                                            Proxy (NoProxy), TextureObject,
+                                            TextureSize2D (..),
+                                            TextureTarget2D (Texture2D), ($=))
+import qualified Graphics.Rendering.OpenGL as GL
 import           System.FilePath.Posix     (takeExtension, (<.>), (</>))
 
 type TextureLibrary = M.Map String TextureObject
@@ -43,21 +51,22 @@ loadTexture name path = do
   imgData <- B.readFile path
   case takeExtension path of
     ".bmp" -> do
+      loaded <- either (return . Left) handleImage (decodeBitmap imgData)
       either
         (\err ->
            print ("could not load image " ++ path ++ ": " ++ err) >>
            return Nothing)
-        (handleImage name)
-        (decodeBitmap imgData)
+        (\i -> return $ Just (name, i))
+        loaded
     ext -> print ("Unknown extension: " ++ ext) >> return Nothing
 
-handleImage :: String -> DynamicImage -> IO (Maybe (String, TextureObject))
-handleImage name (ImageRGBA8 (Image width height dat)) = do
-  text <- genObjectName
-  textureBinding Texture2D $= Just text
+handleImage :: DynamicImage -> IO (Either String TextureObject)
+handleImage (ImageRGBA8 (Image width height dat)) = do
+  text <- GL.genObjectName
+  GL.textureBinding Texture2D $= Just text
   GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
   unsafeWith dat $ \ptr -> do
-    texImage2D
+    GL.texImage2D
       Texture2D
       NoProxy
       0
@@ -65,14 +74,14 @@ handleImage name (ImageRGBA8 (Image width height dat)) = do
       (TextureSize2D (fromIntegral width) (fromIntegral height))
       0
       (PixelData RGBA UnsignedByte ptr)
-    textureBinding Texture2D $= Nothing
-    return $ Just (name, text)
-handleImage name (ImageRGB8 (Image width height dat)) = do
-  text <- genObjectName
-  textureBinding Texture2D $= Just text
+    GL.textureBinding Texture2D $= Nothing
+    return $ Right text
+handleImage (ImageRGB8 (Image width height dat)) = do
+  text <- GL.genObjectName
+  GL.textureBinding Texture2D $= Just text
   GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
   unsafeWith dat $ \ptr -> do
-    texImage2D
+    GL.texImage2D
       Texture2D
       NoProxy
       0
@@ -80,10 +89,9 @@ handleImage name (ImageRGB8 (Image width height dat)) = do
       (TextureSize2D (fromIntegral width) (fromIntegral height))
       0
       (PixelData RGB UnsignedByte ptr)
-    textureBinding Texture2D $= Nothing
-    return $ Just (name, text)
-handleImage name _ =
-  print ("Could not load BMP image: " ++ name) >> return Nothing
+    GL.textureBinding Texture2D $= Nothing
+    return $ Right text
+handleImage _ = return $ Left "Unsupported Format"
 
 loadTextureFolder :: FilePath -> IO [(String, TextureObject)]
 loadTextureFolder folderPath = do
