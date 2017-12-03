@@ -1,6 +1,6 @@
 # Textures
 
-Improviz supports textures on shapes. These can either be single bitmap images, or gifs with one or more frames.
+Improviz supports textures on shapes. These can either be single bitmap images, pngs, or gifs with one or more frames.
 
 ```
 texture(:another)

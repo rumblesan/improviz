@@ -17,6 +17,7 @@ import qualified Data.Yaml                 as Y
 import           Codec.Picture             (readImage)
 import           Codec.Picture.Bitmap      (decodeBitmap)
 import           Codec.Picture.Gif         (decodeGifImages)
+import           Codec.Picture.Png         (decodePng)
 import           Codec.Picture.Types       (DynamicImage (ImageRGB8, ImageRGBA8),
                                             Image (..))
 import           Graphics.Rendering.OpenGL (DataType (UnsignedByte),
@@ -54,6 +55,13 @@ loadTexture name path = do
   case takeExtension path of
     ".bmp" -> do
       loaded <- either (return . Left) handleImage (decodeBitmap imgData)
+      either
+        (\err ->
+           print ("could not load image " ++ path ++ ": " ++ err) >> return [])
+        (\i -> return [((name, 0), i)])
+        loaded
+    ".png" -> do
+      loaded <- either (return . Left) handleImage (decodePng imgData)
       either
         (\err ->
            print ("could not load image " ++ path ++ ": " ++ err) >> return [])
