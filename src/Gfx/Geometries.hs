@@ -4,10 +4,10 @@ import           Data.List                 (cycle, genericIndex, repeat)
 import           Graphics.Rendering.OpenGL (GLfloat, Vertex2 (..), Vertex3 (..))
 
 tri1TextCoords :: [Vertex2 GLfloat]
-tri1TextCoords = [Vertex2 0 0, Vertex2 0 1, Vertex2 1 1]
+tri1TextCoords = [Vertex2 1 1, Vertex2 0 1, Vertex2 0 0]
 
 tri2TextCoords :: [Vertex2 GLfloat]
-tri2TextCoords = [Vertex2 0 0, Vertex2 1 1, Vertex2 1 0]
+tri2TextCoords = [Vertex2 1 1, Vertex2 0 0, Vertex2 1 0]
 
 triVertexArray :: [v] -> [(Integer, Integer, Integer)] -> [v]
 triVertexArray verts points =
