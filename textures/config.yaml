@@ -3,3 +3,5 @@ textures:
     file: crystal.bmp
   - name: loop1
     file: loop1.gif
+  - name: algorave
+    file: algorave.png
