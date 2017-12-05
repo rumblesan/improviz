@@ -127,9 +127,9 @@ beforeRender scene = do
   case animStyle of
     NormalStyle ->
       blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, One))
-    MotionBlur -> do
+    MotionBlur ->
       blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
-    PaintOver -> do
+    PaintOver ->
       blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
   clearColor $= sceneBackground scene
   clear [ColorBuffer, DepthBuffer]
