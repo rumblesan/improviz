@@ -14,16 +14,12 @@ import           Foreign.Ptr               (castPtr)
 import           Data.Yaml                 (FromJSON (..), (.:))
 import qualified Data.Yaml                 as Y
 
-import           Codec.Picture             (readImage)
-import           Codec.Picture.Bitmap      (decodeBitmap)
+import           Codec.Picture             (Pixel, decodeImage)
 import           Codec.Picture.Gif         (decodeGifImages)
-import           Codec.Picture.Png         (decodePng)
-import           Codec.Picture.Types       (DynamicImage (ImageRGB8, ImageRGBA8),
-                                            Image (..))
+import           Codec.Picture.Types       (DynamicImage (..), Image (..))
 import           Graphics.Rendering.OpenGL (DataType (UnsignedByte),
-                                            PixelData (..),
-                                            PixelFormat (RGB, RGBA),
-                                            PixelInternalFormat (RGB', RGBA'),
+                                            PixelData (..), PixelFormat (..),
+                                            PixelInternalFormat (..),
                                             Proxy (NoProxy), TextureObject,
                                             TextureSize2D (..),
                                             TextureTarget2D (Texture2D), ($=))
@@ -53,20 +49,6 @@ loadTexture :: String -> FilePath -> IO [((String, Int), TextureObject)]
 loadTexture name path = do
   imgData <- B.readFile path
   case takeExtension path of
-    ".bmp" -> do
-      loaded <- either (return . Left) handleImage (decodeBitmap imgData)
-      either
-        (\err ->
-           print ("could not load image " ++ path ++ ": " ++ err) >> return [])
-        (\i -> return [((name, 0), i)])
-        loaded
-    ".png" -> do
-      loaded <- either (return . Left) handleImage (decodePng imgData)
-      either
-        (\err ->
-           print ("could not load image " ++ path ++ ": " ++ err) >> return [])
-        (\i -> return [((name, 0), i)])
-        loaded
     ".gif" ->
       case decodeGifImages imgData of
         Left err ->
@@ -74,40 +56,54 @@ loadTexture name path = do
         Right images -> do
           i <- rights <$> mapM handleImage images
           return $ zipWith (\idx t -> ((name, idx), t)) [0 ..] i
-    ext -> print ("Unknown extension: " ++ ext) >> return []
+    ext -> do
+      loaded <- either (return . Left) handleImage (decodeImage imgData)
+      either
+        (\err ->
+           print ("could not load image " ++ path ++ ": " ++ err) >> return [])
+        (\i -> return [((name, 0), i)])
+        loaded
 
 handleImage :: DynamicImage -> IO (Either String TextureObject)
-handleImage (ImageRGBA8 (Image width height dat)) = do
-  text <- GL.genObjectName
-  GL.textureBinding Texture2D $= Just text
-  GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
-  unsafeWith dat $ \ptr -> do
-    GL.texImage2D
-      Texture2D
-      NoProxy
-      0
-      RGBA'
-      (TextureSize2D (fromIntegral width) (fromIntegral height))
-      0
-      (PixelData RGBA UnsignedByte ptr)
-    GL.textureBinding Texture2D $= Nothing
-    return $ Right text
-handleImage (ImageRGB8 (Image width height dat)) = do
-  text <- GL.genObjectName
-  GL.textureBinding Texture2D $= Just text
-  GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
-  unsafeWith dat $ \ptr -> do
-    GL.texImage2D
-      Texture2D
-      NoProxy
-      0
-      RGB'
-      (TextureSize2D (fromIntegral width) (fromIntegral height))
-      0
-      (PixelData RGB UnsignedByte ptr)
-    GL.textureBinding Texture2D $= Nothing
-    return $ Right text
-handleImage _ = return $ Left "Unsupported Format"
+handleImage img =
+  case img of
+    ImageY8 _       -> return $ Left "ImageY8: Unsupported Format"
+    ImageY16 _      -> return $ Left "ImageY16: Unsupported Format"
+    ImageYF _       -> return $ Left "ImageYF: Unsupported Format"
+    ImageYA8 _      -> return $ Left "ImageYA8: Unsupported Format"
+    ImageYA16 _     -> return $ Left "ImageYA16: Unsupported Format"
+    ImageRGB8 img   -> imgToTexture img RGB RGB'
+    ImageRGB16 img  -> imgToTexture img RGB RGB'
+    ImageRGBF img   -> imgToTexture img RGB RGB32F
+    ImageRGBA8 img  -> imgToTexture img RGBA RGBA'
+    ImageRGBA16 img -> imgToTexture img RGBA RGBA'
+    ImageYCbCr8 img -> return $ Left "Image YCbCr8: Unsupported Format"
+    ImageCMYK8 _    -> return $ Left "ImageCMYK8: Unsupported Format"
+    ImageCMYK16 _   -> return $ Left "ImageCMYK16: Unsupported Format"
+  where
+    imgToTexture ::
+         (Pixel a)
+      => Image a
+      -> PixelFormat
+      -> PixelInternalFormat
+      -> IO (Either String TextureObject)
+    imgToTexture image format internalFormat = do
+      text <- GL.genObjectName
+      GL.textureBinding Texture2D $= Just text
+      GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
+      unsafeWith (imageData image) $ \ptr -> do
+        GL.texImage2D
+          Texture2D
+          NoProxy
+          0
+          internalFormat
+          (TextureSize2D
+             (fromIntegral $ imageWidth image)
+             (fromIntegral $ imageHeight image))
+          0
+          (PixelData format UnsignedByte ptr)
+        GL.textureBinding Texture2D $= Nothing
+        return $ Right text
 
 loadTextureFolder :: FilePath -> IO [((String, Int), TextureObject)]
 loadTextureFolder folderPath = do
