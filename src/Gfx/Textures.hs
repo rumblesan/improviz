@@ -37,7 +37,7 @@ instance FromJSON TextureConfig where
   parseJSON (Y.Object v) = TextureConfig <$> v .: "name" <*> v .: "file"
   parseJSON _            = fail "Expected Object for Config value"
 
-data TextureFolderConfig = TextureFolderConfig
+newtype TextureFolderConfig = TextureFolderConfig
   { textures :: [TextureConfig]
   } deriving (Eq, Show)
 
@@ -77,7 +77,7 @@ handleImage img =
     ImageRGBF img   -> imgToTexture img RGB RGB32F
     ImageRGBA8 img  -> imgToTexture img RGBA RGBA'
     ImageRGBA16 img -> imgToTexture img RGBA RGBA'
-    ImageYCbCr8 img -> return $ Left "Image YCbCr8: Unsupported Format"
+    ImageYCbCr8 img -> imgToTexture img YCBCR422 RGB'
     ImageCMYK8 _    -> return $ Left "ImageCMYK8: Unsupported Format"
     ImageCMYK16 _   -> return $ Left "ImageCMYK16: Unsupported Format"
   where
@@ -91,7 +91,7 @@ handleImage img =
       text <- GL.genObjectName
       GL.textureBinding Texture2D $= Just text
       GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
-      unsafeWith (imageData image) $ \ptr -> do
+      unsafeWith (imageData image) $ \ptr ->
         GL.texImage2D
           Texture2D
           NoProxy
@@ -102,8 +102,8 @@ handleImage img =
              (fromIntegral $ imageHeight image))
           0
           (PixelData format UnsignedByte ptr)
-        GL.textureBinding Texture2D $= Nothing
-        return $ Right text
+      GL.textureBinding Texture2D $= Nothing
+      return $ Right text
 
 loadTextureFolder :: FilePath -> IO [((String, Int), TextureObject)]
 loadTextureFolder folderPath = do
@@ -113,8 +113,8 @@ loadTextureFolder folderPath = do
     Right cfg -> concat <$> mapM tl (textures cfg)
   where
     tl texture =
-      loadTexture (textureName texture) (folderPath </> (textureFile texture))
+      loadTexture (textureName texture) (folderPath </> textureFile texture)
 
 createTextureLib :: [FilePath] -> IO TextureLibrary
 createTextureLib folders =
-  M.fromList <$> concat <$> mapM loadTextureFolder folders
+  M.fromList . concat <$> mapM loadTextureFolder folders
