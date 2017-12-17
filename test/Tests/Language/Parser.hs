@@ -33,7 +33,9 @@ test_parse_program =
         Assignment "c" $
         BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
       fooBox =
-        ElExpression $ EApp $ Application "box" [EVar $ Variable "c"] Nothing
+        ElExpression $
+        EApp $
+        Application "box" [ApplicationArg Nothing $ EVar $ Variable "c"] Nothing
       fooLambda = Lambda ["a", "b"] (Block [cAss, fooBox])
       fooLine = ElAssign $ Assignment "foo" $ EVal fooLambda
       nLine =
@@ -46,9 +48,19 @@ test_parse_program =
       loopBlock =
         Block
           [ ElExpression $
-            EApp $ Application "rotate" [EVal $ Number 0.5] Nothing
+            EApp $
+            Application
+              "rotate"
+              [ApplicationArg Nothing $ EVal $ Number 0.5]
+              Nothing
           , ElExpression $
-            EApp $ Application "foo" [EVal $ Number 1, EVal $ Number 2] Nothing
+            EApp $
+            Application
+              "foo"
+              [ ApplicationArg Nothing $ EVal $ Number 1
+              , ApplicationArg Nothing $ EVal $ Number 2
+              ]
+              Nothing
           ]
       loopLine = ElLoop $ Loop (EVar $ Variable "n") Nothing loopBlock
       expected = Right $ Block [fooLine, nLine, loopLine]

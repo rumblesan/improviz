@@ -5,6 +5,7 @@ import           Graphics.Rendering.OpenGL      (Color4 (..))
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
 import           Control.Monad.Writer.Strict
+import qualified Data.List                      as L
 import           Data.Map.Strict                as M
 import           Data.Maybe                     (fromMaybe, isJust)
 
@@ -145,8 +146,7 @@ interpretApplication (Application name args block) = do
     (Lambda argNames lBlock) ->
       newScope
         (do tell ["Running lambda"]
-            argValues <- mapM interpretExpression args
-            zipWithM_ setVariable argNames (argValues ++ repeat Null)
+            _ <- handleApplicationArgs argNames args
             pushBlock block
             ret <- interpretBlock lBlock
             popBlock
@@ -154,14 +154,32 @@ interpretApplication (Application name args block) = do
     (BuiltIn argNames) ->
       newScope
         (do tell ["Running BuiltIn: " ++ name]
-            argValues <- mapM interpretExpression args
-            zipWithM_ setVariable argNames (argValues ++ repeat Null)
+            _ <- handleApplicationArgs argNames args
             b <- getBuiltIn name
             pushBlock block
             ret <- b
             popBlock
             return ret)
     _ -> return Null
+
+handleApplicationArgs ::
+     [Identifier] -> [ApplicationArg] -> InterpreterProcess Value
+handleApplicationArgs argNames aargs =
+  let (named, non) = L.partition namedArg aargs
+  in do nonNamedArgValues <- mapM interpretExpression (getArgExpr <$> non)
+        zipWithM_ setVariable argNames (nonNamedArgValues ++ repeat Null)
+        mapM_ (assignNamedArg argNames) named
+        return Null
+  where
+    namedArg (ApplicationArg name _) = isJust name
+    getArgExpr (ApplicationArg _ expr) = expr
+
+assignNamedArg :: [Identifier] -> ApplicationArg -> InterpreterProcess Value
+assignNamedArg argnames (ApplicationArg Nothing expr) = return Null
+assignNamedArg argnames (ApplicationArg (Just name) expr) =
+  if name `L.elem` argnames
+    then interpretExpression expr >>= setVariable name
+    else return Null
 
 interpretLoop :: Loop -> InterpreterProcess Value
 interpretLoop (Loop numExpr loopVar block) = do

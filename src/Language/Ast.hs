@@ -2,6 +2,7 @@ module Language.Ast
   ( Block(..)
   , Element(..)
   , Application(..)
+  , ApplicationArg(..)
   , Loop(..)
   , Assignment(..)
   , Expression(..)
@@ -24,8 +25,13 @@ data Element
 
 data Application =
   Application Identifier
-              [Expression]
+              [ApplicationArg]
               (Maybe Block)
+  deriving (Eq, Show)
+
+data ApplicationArg =
+  ApplicationArg (Maybe Identifier)
+                 Expression
   deriving (Eq, Show)
 
 data Loop =

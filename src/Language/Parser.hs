@@ -87,9 +87,17 @@ argList lp = sepBy lp sep
 
 application :: LangParser Application
 application =
-  Application <$> try (m_identifier <* m_symbol "(") <*> argList expression <*
+  Application <$> try (m_identifier <* m_symbol "(") <*> argList applicationArg <*
   m_symbol ")" <*>
   optionMaybe (indented >> langBlock) <?> "application"
+
+applicationArg :: LangParser ApplicationArg
+applicationArg = namedArg <|> unnamedArg
+  where
+    namedArg =
+      try (ApplicationArg <$> (Just <$> m_identifier <* m_symbol "=")) <*>
+      expression
+    unnamedArg = ApplicationArg Nothing <$> expression
 
 loop :: LangParser Loop
 loop =

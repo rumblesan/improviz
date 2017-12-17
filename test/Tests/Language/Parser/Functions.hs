@@ -30,7 +30,10 @@ test_simple_application =
       cube =
         Application
           "cube"
-          [EVal $ Number 1, EVal $ Number 1, EVar $ Variable "i"]
+          [ ApplicationArg Nothing (EVal $ Number 1)
+          , ApplicationArg Nothing (EVal $ Number 1)
+          , ApplicationArg Nothing (EVar $ Variable "i")
+          ]
           Nothing
       expected = Right $ Block [ElExpression $ EApp cube]
       result = Language.parse program
@@ -52,7 +55,30 @@ test_application_with_var_arg =
         EApp $
         Application
           "cube"
-          [EVal $ Number 1, EVar $ Variable "a", EVal $ Number 3]
+          [ ApplicationArg Nothing (EVal $ Number 1)
+          , ApplicationArg Nothing (EVar $ Variable "a")
+          , ApplicationArg Nothing (EVal $ Number 3)
+          ]
+          Nothing
+      expected = Right $ Block [assign, cube]
+      result = Language.parse program
+  in assertEqual "" expected result
+
+test_application_with_named_args :: Assertion
+test_application_with_named_args =
+  let program = "foo = (a, b) => a - b\nfoo(b = 1, a = 2)"
+      block =
+        Block
+          [ElExpression $ BinaryOp "+" (EVar $ Variable "a") (EVal $ Number 1)]
+      assign = ElAssign $ Assignment "foo" $ EVal $ Lambda ["a"] block
+      cube =
+        ElExpression $
+        EApp $
+        Application
+          "foo"
+          [ ApplicationArg (Just "b") (EVal $ Number 1)
+          , ApplicationArg (Just "a") (EVal $ Number 3)
+          ]
           Nothing
       expected = Right $ Block [assign, cube]
       result = Language.parse program
@@ -77,14 +103,20 @@ test_parse_function_blocks =
         EApp $
         Application
           "box"
-          [EVar $ Variable "a", EVar $ Variable "b", EVal $ Number 1]
+          [ ApplicationArg Nothing (EVar $ Variable "a")
+          , ApplicationArg Nothing (EVar $ Variable "b")
+          , ApplicationArg Nothing (EVal $ Number 1)
+          ]
           Nothing
       box1 =
         ElExpression $
         EApp $
         Application
           "box"
-          [EVar $ Variable "a", EVar $ Variable "a", EVal $ Number 2] $
+          [ ApplicationArg Nothing (EVar $ Variable "a")
+          , ApplicationArg Nothing (EVar $ Variable "a")
+          , ApplicationArg Nothing (EVal $ Number 2)
+          ] $
         Just (Block [ass, box2])
       expected = Right $ Block [box1]
       result = Language.parse program
