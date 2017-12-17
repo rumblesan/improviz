@@ -1,6 +1,6 @@
 module Language.StdLib.BlockHandling
   ( handleGfxBlock
-  , runBlock
+  , addBlockHandlingStdLib
   ) where
 
 import           Control.Monad.State.Strict
@@ -10,10 +10,13 @@ import           Data.Maybe                  (isJust, isNothing, maybe)
 import           Language.Ast
 import           Language.Interpreter        (addGfxCommand, getBlock,
                                               interpretBlock, newGfxScope,
-                                              newScope, popBlock)
+                                              newScope, popBlock, setBuiltIn)
 import           Language.Interpreter.Types
 
 import qualified Gfx.Ast                     as GA
+
+addBlockHandlingStdLib :: InterpreterProcess ()
+addBlockHandlingStdLib = setBuiltIn "runBlock" runBlock []
 
 handleGfxBlock ::
      (Maybe GA.Block -> GA.GfxCommand) -> Block -> InterpreterProcess ()

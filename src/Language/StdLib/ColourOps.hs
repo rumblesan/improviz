@@ -1,10 +1,5 @@
 module Language.StdLib.ColourOps
-  ( fill
-  , texture
-  , noFill
-  , stroke
-  , noStroke
-  , background
+  ( addColourStdLib
   ) where
 
 import           Control.Monad.Except
@@ -14,12 +9,21 @@ import           Language.Ast
 import           Language.Interpreter          (addGfxCommand, getBlock,
                                                 getVarOrNull, getVariable,
                                                 getVariableWithDefault,
-                                                interpretBlock,
+                                                interpretBlock, setBuiltIn,
                                                 setGfxBackground)
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
 
 import           Language.StdLib.BlockHandling (handleGfxBlock)
+
+addColourStdLib :: InterpreterProcess ()
+addColourStdLib = do
+  setBuiltIn "fill" fill ["r", "g", "b", "a"]
+  setBuiltIn "texture" texture ["name", "frame"]
+  setBuiltIn "noFill" noFill []
+  setBuiltIn "stroke" stroke ["r", "g", "b", "a"]
+  setBuiltIn "noStroke" noStroke []
+  setBuiltIn "background" background ["r", "g", "b"]
 
 dToC :: Float -> Float
 dToC c = max 0 (min c 255) / 255

@@ -1,7 +1,5 @@
 module Language.StdLib.MatrixOps
-  ( rotate
-  , scale
-  , move
+  ( addMatrixStdLib
   ) where
 
 import           Control.Monad.Except
@@ -12,11 +10,18 @@ import qualified Gfx.Ast                       as GA
 import           Language.Ast
 import           Language.Interpreter          (addGfxCommand, getBlock,
                                                 getVarOrNull,
-                                                getVariableWithDefault)
+                                                getVariableWithDefault,
+                                                setBuiltIn)
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
 
 import           Language.StdLib.BlockHandling (handleGfxBlock)
+
+addMatrixStdLib :: InterpreterProcess ()
+addMatrixStdLib = do
+  setBuiltIn "rotate" rotate ["a", "b", "c"]
+  setBuiltIn "scale" scale ["a", "b", "c"]
+  setBuiltIn "move" move ["a", "b", "c"]
 
 rotate :: InterpreterProcess Value
 rotate = do

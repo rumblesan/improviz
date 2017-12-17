@@ -1,12 +1,27 @@
 module Language.StdLib.Maths
-  ( sinFunc
-  , cosFunc
+  ( addMathStdLib
   ) where
 
 import           Language.Ast
-import           Language.Interpreter        (getVariable)
+import           Language.Interpreter        (getVariable, setBuiltIn,
+                                              setVariable)
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
+
+addMathStdLib :: InterpreterProcess ()
+addMathStdLib = do
+  setVariable "pi" (Number pi)
+  setBuiltIn "sin" sinFunc ["rads"]
+  setBuiltIn "cos" cosFunc ["rads"]
+  setBuiltIn "tan" cosFunc ["rads"]
+  setBuiltIn "abs" cosFunc ["val"]
+  setBuiltIn "ceil" cosFunc ["val"]
+  setBuiltIn "floor" cosFunc ["val"]
+  setBuiltIn "round" cosFunc ["val"]
+  setBuiltIn "max" cosFunc ["val"]
+  setBuiltIn "min" cosFunc ["val"]
+  setBuiltIn "log" cosFunc ["val"]
+  setBuiltIn "sqrt" cosFunc ["val"]
 
 sinFunc :: InterpreterProcess Value
 sinFunc = do

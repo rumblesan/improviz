@@ -1,9 +1,5 @@
 module Language.StdLib.Shapes
-  ( box
-  , sphere
-  , cylinder
-  , rectangle
-  , line
+  ( addShapesStdLib
   ) where
 
 import           Control.Monad.Except
@@ -14,11 +10,20 @@ import qualified Gfx.Ast                       as GA
 import           Language.Ast
 import           Language.Interpreter          (addGfxCommand, getBlock,
                                                 getVarOrNull,
-                                                getVariableWithDefault)
+                                                getVariableWithDefault,
+                                                setBuiltIn)
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
 
 import           Language.StdLib.BlockHandling (handleGfxBlock)
+
+addShapesStdLib :: InterpreterProcess ()
+addShapesStdLib = do
+  setBuiltIn "box" box ["a", "b", "c"]
+  setBuiltIn "sphere" sphere ["a", "b", "c"]
+  setBuiltIn "cylinder" cylinder ["a", "b", "c"]
+  setBuiltIn "rectangle" rectangle ["a", "b"]
+  setBuiltIn "line" line ["a"]
 
 box :: InterpreterProcess Value
 box = do
