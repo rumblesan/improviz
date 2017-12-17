@@ -12,7 +12,7 @@ import           Control.Monad.Writer.Strict
 import           Gfx                         (Scene (..))
 import           Language.Ast                (Block, Identifier, Value (..))
 import           Language.Interpreter        (emptyState, interpretLanguage,
-                                              setBuiltIn, setVariable)
+                                              setVariable)
 import           Language.Interpreter.Types  (InterpreterProcess,
                                               InterpreterState (..), currentGfx)
 import           Language.Parser             (parseProgram)
