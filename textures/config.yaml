@@ -1,7 +1,7 @@
 textures:
   - name: crystal
     file: crystal.bmp
-  - name: loop1
-    file: loop1.gif
   - name: algorave
     file: algorave.png
+  - name: diagsquares
+    file: diagsquares.gif
