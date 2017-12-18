@@ -70,7 +70,9 @@ test_application_with_named_args =
       block =
         Block
           [ElExpression $ BinaryOp "+" (EVar $ Variable "a") (EVal $ Number 1)]
-      assign = ElAssign $ Assignment "foo" $ EVal $ Lambda ["a"] block
+      assign =
+        ElAssign $
+        Assignment "foo" $ EVal $ Lambda [FunctionArg "a" Nothing] block
       cube =
         ElExpression $
         EApp $

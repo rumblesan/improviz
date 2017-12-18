@@ -36,7 +36,10 @@ test_parse_program =
         ElExpression $
         EApp $
         Application "box" [ApplicationArg Nothing $ EVar $ Variable "c"] Nothing
-      fooLambda = Lambda ["a", "b"] (Block [cAss, fooBox])
+      fooLambda =
+        Lambda
+          [FunctionArg "a" Nothing, FunctionArg "b" Nothing]
+          (Block [cAss, fooBox])
       fooLine = ElAssign $ Assignment "foo" $ EVal fooLambda
       nLine =
         ElAssign $

@@ -8,6 +8,7 @@ module Language.Ast
   , Expression(..)
   , Variable(..)
   , Value(..)
+  , FunctionArg(..)
   , If(..)
   , Identifier
   ) where
@@ -70,9 +71,14 @@ data Value
   = Number Float
   | Null
   | Symbol String
-  | Lambda [Identifier]
+  | Lambda [FunctionArg]
            Block
   | BuiltIn [Identifier]
+  deriving (Eq, Show)
+
+data FunctionArg =
+  FunctionArg Identifier
+              (Maybe Value)
   deriving (Eq, Show)
 
 type Identifier = String

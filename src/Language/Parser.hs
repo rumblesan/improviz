@@ -129,11 +129,15 @@ value = number <|> lambda <|> v_symbol <|> v_null
 
 lambda :: LangParser Value
 lambda =
-  Lambda <$> m_parens (argList m_identifier) <* m_symbol "=>" <*>
+  Lambda <$> m_parens (argList functionArg) <* m_symbol "=>" <*>
   (lbody <|> lexpr) <?> "lambda"
   where
     lexpr = (\e -> Block [ElExpression e]) <$> expression
     lbody = indented >> langBlock
+
+functionArg :: LangParser FunctionArg
+functionArg =
+  FunctionArg <$> m_identifier <*> optionMaybe (m_symbol "=" *> value)
 
 number :: LangParser Value
 number =

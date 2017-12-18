@@ -44,7 +44,7 @@ test_parse_single_arg_lambda =
       block =
         Block
           [ElExpression $ BinaryOp "+" (EVar $ Variable "a") (EVal $ Number 1)]
-      lambda = Lambda ["a"] block
+      lambda = Lambda [FunctionArg "a" Nothing] block
       expected = Right $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
       result = Language.parse program
   in assertEqual "" expected result
@@ -57,7 +57,7 @@ test_parse_expr_lambda =
           [ ElExpression $
             BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
           ]
-      lambda = Lambda ["a", "b"] block
+      lambda = Lambda [FunctionArg "a" Nothing, FunctionArg "b" Nothing] block
       expected = Right $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
       result = Language.parse program
   in assertEqual "" expected result
@@ -71,7 +71,26 @@ test_parse_multiline_lambda =
         BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
       blockE2 =
         ElExpression $ BinaryOp "*" (EVar $ Variable "c") (EVal $ Number 2)
-      lambda = Lambda ["a", "b"] (Block [blockE1, blockE2])
+      lambda =
+        Lambda
+          [FunctionArg "a" Nothing, FunctionArg "b" Nothing]
+          (Block [blockE1, blockE2])
+      expected = Right $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
+      result = Language.parse program
+  in assertEqual "" expected result
+
+test_parse_lambda_with_defaults :: Assertion
+test_parse_lambda_with_defaults =
+  let program = "foo = (a = 1, b = 2) => a + b"
+      block =
+        Block
+          [ ElExpression $
+            BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
+          ]
+      lambda =
+        Lambda
+          [FunctionArg "a" $ Just (Number 1), FunctionArg "b" $ Just (Number 2)]
+          block
       expected = Right $ Block [ElAssign $ Assignment "foo" $ EVal lambda]
       result = Language.parse program
   in assertEqual "" expected result

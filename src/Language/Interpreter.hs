@@ -146,7 +146,7 @@ interpretApplication (Application name args block) = do
     (Lambda argNames lBlock) ->
       newScope
         (do tell ["Running lambda"]
-            _ <- handleApplicationArgs argNames args
+            _ <- handleLambdaArgs argNames args
             pushBlock block
             ret <- interpretBlock lBlock
             popBlock
@@ -154,7 +154,7 @@ interpretApplication (Application name args block) = do
     (BuiltIn argNames) ->
       newScope
         (do tell ["Running BuiltIn: " ++ name]
-            _ <- handleApplicationArgs argNames args
+            _ <- handleBuiltInArgs argNames args
             b <- getBuiltIn name
             pushBlock block
             ret <- b
@@ -162,9 +162,24 @@ interpretApplication (Application name args block) = do
             return ret)
     _ -> return Null
 
-handleApplicationArgs ::
+handleLambdaArgs ::
+     [FunctionArg] -> [ApplicationArg] -> InterpreterProcess Value
+handleLambdaArgs funcArgs aargs =
+  let (named, non) = L.partition namedArg aargs
+      argNames = (\(FunctionArg name _) -> name) <$> funcArgs
+  in do nonNamedArgValues <- mapM interpretExpression (getArgExpr <$> non)
+        zipWithM_ defaultArg funcArgs (nonNamedArgValues ++ repeat Null)
+        mapM_ (assignNamedArg argNames) named
+        return Null
+  where
+    namedArg (ApplicationArg name _) = isJust name
+    getArgExpr (ApplicationArg _ expr) = expr
+    defaultArg (FunctionArg name mayVal) argVal =
+      setVariable name $ fromMaybe argVal mayVal
+
+handleBuiltInArgs ::
      [Identifier] -> [ApplicationArg] -> InterpreterProcess Value
-handleApplicationArgs argNames aargs =
+handleBuiltInArgs argNames aargs =
   let (named, non) = L.partition namedArg aargs
   in do nonNamedArgValues <- mapM interpretExpression (getArgExpr <$> non)
         zipWithM_ setVariable argNames (nonNamedArgValues ++ repeat Null)
