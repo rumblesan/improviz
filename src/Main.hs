@@ -97,8 +97,12 @@ display :: TVar AppState -> TMVar EngineState -> Double -> IO ()
 display appState gfxState time = do
   as <- readTVarIO appState
   gs <- atomically $ readTMVar gfxState
-  let vars = [("time", LA.Number (double2Float time))]
-  case fst $ L.createGfx vars (currentAst as) of
+  let interpreterState =
+        L.updateStateVariable
+          "time"
+          (LA.Number (double2Float time))
+          (initialInterpreter as)
+  case fst $ L.createGfx interpreterState (currentAst as) of
     Left msg -> do
       putStrLn $ "Could not interpret program: " ++ msg
       atomically $
