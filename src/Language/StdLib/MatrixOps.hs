@@ -19,17 +19,17 @@ import           Language.StdLib.BlockHandling (handleGfxBlock)
 
 addMatrixStdLib :: InterpreterProcess ()
 addMatrixStdLib = do
-  setBuiltIn "rotate" rotate ["a", "b", "c"]
-  setBuiltIn "scale" scale ["a", "b", "c"]
-  setBuiltIn "move" move ["a", "b", "c"]
+  setBuiltIn "rotate" rotate ["x", "y", "z"]
+  setBuiltIn "scale" scale ["x", "y", "z"]
+  setBuiltIn "move" move ["x", "y", "z"]
 
 rotate :: InterpreterProcess Value
 rotate = do
-  a <- getVarOrNull "a"
-  b <- getVarOrNull "b"
-  c <- getVarOrNull "c"
+  xV <- getVarOrNull "x"
+  yV <- getVarOrNull "y"
+  zV <- getVarOrNull "z"
   (xRot, yRot, zRot) <-
-    case (a, b, c) of
+    case (xV, yV, zV) of
       (Null, Null, Null) -> do
         time <- getVariableWithDefault "time" (Number 0) >>= getNumberValue
         return (time / 4 * pi, time / 4 * pi, 0)
@@ -44,11 +44,11 @@ rotate = do
 
 scale :: InterpreterProcess Value
 scale = do
-  a <- getVarOrNull "a"
-  b <- getVarOrNull "b"
-  c <- getVarOrNull "c"
+  xV <- getVarOrNull "x"
+  yV <- getVarOrNull "y"
+  zV <- getVarOrNull "z"
   (xScl, yScl, zScl) <-
-    case (a, b, c) of
+    case (xV, yV, zV) of
       (Null, Null, Null) -> do
         time <- getVariableWithDefault "time" (Number 0) >>= getNumberValue
         return (cos time, cos time, cos time)
@@ -63,11 +63,11 @@ scale = do
 
 move :: InterpreterProcess Value
 move = do
-  a <- getVarOrNull "a"
-  b <- getVarOrNull "b"
-  c <- getVarOrNull "c"
+  xV <- getVarOrNull "x"
+  yV <- getVarOrNull "y"
+  zV <- getVarOrNull "z"
   (xMov, yMov, zMov) <-
-    case (a, b, c) of
+    case (xV, yV, zV) of
       (Null, Null, Null) -> do
         time <- getVariableWithDefault "time" (Number 0) >>= getNumberValue
         return (cos (2 * pi * time), sin (2 * pi * time), cos (2 * pi * time))
