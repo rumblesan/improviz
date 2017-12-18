@@ -34,6 +34,12 @@ toggleTextDisplay appState = do
     modifyTVar appState (\as -> as {displayText = not $ displayText as})
   return "{'status': 'OK', 'message': 'Toggled text display'}"
 
+nudgeTime :: TVar AppState -> Float -> IO String
+nudgeTime appState nudgeAmount = do
+  atomically $
+    modifyTVar appState (\as -> as {startTime = startTime as + nudgeAmount})
+  return $ "{'status': 'OK', 'message': 'Nudged by " ++ show nudgeAmount ++ "'}"
+
 runServer :: TVar AppState -> IO ()
 runServer appState =
   scotty 3000 $ do
@@ -45,5 +51,10 @@ runServer appState =
       json $ pack resp
     post "/toggle/text" $ do
       resp <- liftIO $ toggleTextDisplay appState
+      liftIO $ print resp
+      json $ pack resp
+    post "/nudge/:amount" $ do
+      amount <- param "amount"
+      resp <- liftIO $ nudgeTime appState amount
       liftIO $ print resp
       json $ pack resp
