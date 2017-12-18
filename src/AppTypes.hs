@@ -10,6 +10,7 @@ data AppState = AppState
   , currentAst         :: Block
   , lastWorkingAst     :: Block
   , initialInterpreter :: InterpreterState
+  , startTime          :: Float
   }
 
 makeAppState :: AppState
@@ -20,4 +21,5 @@ makeAppState =
   , currentAst = Block []
   , lastWorkingAst = Block []
   , initialInterpreter = initialState []
+  , startTime = 0.0
   }

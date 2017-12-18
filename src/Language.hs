@@ -3,7 +3,7 @@ module Language
   , parse
   , interpret
   , createGfx
-  , updateStateVariable
+  , updateStateVariables
   , module Language.Ast
   ) where
 
@@ -31,10 +31,13 @@ initialState initialVars =
         addInitialVariables initialVars
   in execState (runWriterT (runExceptT setup)) emptyState
 
-updateStateVariable ::
-     Identifier -> Value -> InterpreterState -> InterpreterState
-updateStateVariable name value oldState =
-  oldState {variables = LS.setVariable (variables oldState) name value}
+updateStateVariables ::
+     [(Identifier, Value)] -> InterpreterState -> InterpreterState
+updateStateVariables vars oldState =
+  let newVarMap = foldl setVar (variables oldState) vars
+  in oldState {variables = newVarMap}
+  where
+    setVar varMap (name, value) = LS.setVariable varMap name value
 
 interpret :: [(Identifier, Value)] -> Block -> (Either String Value, [String])
 interpret initialVars block =

@@ -37,7 +37,8 @@ app :: ImpConfig -> IO ()
 app cfg = do
   when (debug cfg) (print cfg)
   gfxETMVar <- newEmptyTMVarIO
-  asTVar <- newTVarIO makeAppState
+  tm <- double2Float . fromMaybe 0.0 <$> GLFW.getTime
+  asTVar <- newTVarIO (makeAppState {startTime = tm})
   _ <- forkIO $ runServer asTVar
   let initialWidth = screenWidth cfg
   let initialHeight = screenHeight cfg
@@ -97,10 +98,11 @@ display :: TVar AppState -> TMVar EngineState -> Double -> IO ()
 display appState gfxState time = do
   as <- readTVarIO appState
   gs <- atomically $ readTMVar gfxState
-  let interpreterState =
-        L.updateStateVariable
-          "time"
-          (LA.Number (double2Float time))
+  let t = double2Float time
+      beat = (t - startTime as) / 60.0
+      interpreterState =
+        L.updateStateVariables
+          [("time", LA.Number t), ("beat", LA.Number beat)]
           (initialInterpreter as)
   case fst $ L.createGfx interpreterState (currentAst as) of
     Left msg -> do
