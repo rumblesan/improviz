@@ -9,7 +9,7 @@ import           Control.Monad.Writer.Strict
 import qualified Gfx.Ast                       as GA
 import           Language.Ast
 import           Language.Interpreter          (addGfxCommand, getBlock,
-                                                getVarOrNull,
+                                                getNumberFromNull, getVarOrNull,
                                                 getVariableWithDefault,
                                                 setBuiltIn)
 import           Language.Interpreter.Types
@@ -33,10 +33,11 @@ rotate = do
       (Null, Null, Null) -> do
         time <- getVariableWithDefault "time" (Number 0) >>= getNumberValue
         return (time / 4 * pi, time / 4 * pi, 0)
-      (Number x, Null, Null) -> return (x, x, x)
-      (Number x, Number y, Null) -> return (x, y, 0)
-      (Number x, Number y, Number z) -> return (x, y, z)
-      _ -> throwError "Error with functions to rotate"
+      (v1, v2, v3) ->
+        return
+          ( getNumberFromNull v1 0
+          , getNumberFromNull v2 0
+          , getNumberFromNull v3 0)
   let partialCmd = GA.MatrixCommand $ GA.Rotate xRot yRot zRot
   block <- getBlock
   maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
@@ -52,10 +53,11 @@ scale = do
       (Null, Null, Null) -> do
         time <- getVariableWithDefault "time" (Number 0) >>= getNumberValue
         return (cos time, cos time, cos time)
-      (Number x, Null, Null) -> return (x, x, x)
-      (Number x, Number y, Null) -> return (x, y, 1)
-      (Number x, Number y, Number z) -> return (x, y, z)
-      _ -> throwError "Error with functions to scale"
+      (v1, v2, v3) ->
+        return
+          ( getNumberFromNull v1 0
+          , getNumberFromNull v2 0
+          , getNumberFromNull v3 0)
   let partialCmd = GA.MatrixCommand $ GA.Scale xScl yScl zScl
   block <- getBlock
   maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
@@ -71,10 +73,11 @@ move = do
       (Null, Null, Null) -> do
         time <- getVariableWithDefault "time" (Number 0) >>= getNumberValue
         return (cos (2 * pi * time), sin (2 * pi * time), cos (2 * pi * time))
-      (Number x, Null, Null) -> return (x, x, x)
-      (Number x, Number y, Null) -> return (x, y, 0)
-      (Number x, Number y, Number z) -> return (x, y, z)
-      _ -> throwError "Error with functions to move"
+      (v1, v2, v3) ->
+        return
+          ( getNumberFromNull v1 0
+          , getNumberFromNull v2 0
+          , getNumberFromNull v3 0)
   let partialCmd = GA.MatrixCommand $ GA.Move xMov yMov zMov
   block <- getBlock
   maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block

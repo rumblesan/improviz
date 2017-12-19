@@ -61,6 +61,11 @@ getVariableWithBackup name bkp = do
     Null -> getVariable bkp
     v    -> return v
 
+getNumberFromNull :: Value -> Float -> Float
+getNumberFromNull Null def       = def
+getNumberFromNull (Number val) _ = val
+getNumberFromNull _ def          = def
+
 getVariableWithExprDefault ::
      Identifier -> InterpreterProcess Value -> InterpreterProcess Value
 getVariableWithExprDefault name expr = do

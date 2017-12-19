@@ -30,7 +30,7 @@ test_basic_block_calling =
         return $ sceneGfx scene
       expected =
         Right
-          [ GA.MatrixCommand (GA.Scale 2 1 1) Nothing
+          [ GA.MatrixCommand (GA.Scale 2 1 0) Nothing
           , GA.ShapeCommand (GA.Cube 1 1 1) Nothing
           ]
   in assertEqual "" expected result
