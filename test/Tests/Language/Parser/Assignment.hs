@@ -18,6 +18,7 @@ parserAssignmentTests =
         "Parse negative number assignment"
         test_parse_assign_negative_number
     , testCase "Parse assignment of an expression" test_parse_expr_assignment
+    , testCase "Parse assignment of a list" test_parse_list_assignment
     , testCase "Parse multiple assignments" test_multiple_assignment
     ]
 
@@ -42,6 +43,14 @@ test_parse_expr_assignment =
   let program = "foo = a + b\n"
       bop = BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
       expected = Right $ Block [ElAssign $ Assignment "foo" bop]
+      result = Language.parse program
+  in assertEqual "" expected result
+
+test_parse_list_assignment :: Assertion
+test_parse_list_assignment =
+  let program = "foo = [1, 2]\n"
+      list = EVal $ VList [EVal $ Number 1, EVal $ Number 2]
+      expected = Right $ Block [ElAssign $ Assignment "foo" list]
       result = Language.parse program
   in assertEqual "" expected result
 

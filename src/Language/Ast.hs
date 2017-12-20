@@ -73,6 +73,7 @@ data Value
   | Symbol String
   | Lambda [FunctionArg]
            Block
+  | VList [Expression]
   | BuiltIn [Identifier]
   deriving (Eq, Show)
 

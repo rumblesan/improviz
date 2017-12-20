@@ -13,6 +13,7 @@ import           Tests.Language.Interpreter.Scoping     (scopingTests)
 import           Tests.Language.Parser                  (parserTests)
 import           Tests.Language.Parser.Assignment       (parserAssignmentTests)
 import           Tests.Language.Parser.Blocks           (parserBlocksTests)
+import           Tests.Language.Parser.Collections      (parserCollectionTests)
 import           Tests.Language.Parser.ErrorCatching    (parserErrorCatchingTests)
 import           Tests.Language.Parser.Functions        (parserFunctionTests)
 import           Tests.Language.Parser.If               (parserIfTests)
@@ -32,6 +33,7 @@ main =
     , parserTests
     , parserAssignmentTests
     , parserBlocksTests
+    , parserCollectionTests
     , parserIfTests
     , parserFunctionTests
     , parserLambdaTests

@@ -68,6 +68,7 @@ executable improviz
                      , Language.Interpreter.Values
                      , Language.Interpreter.Operators
                      , Language.StdLib
+                     , Language.StdLib.CollectionOps
                      , Language.StdLib.Shapes
                      , Language.StdLib.MatrixOps
                      , Language.StdLib.ColourOps
@@ -133,6 +134,7 @@ test-suite improviz-test
                      , Language.Interpreter.Operators
                      , Language.StdLib
                      , Language.StdLib.Shapes
+                     , Language.StdLib.CollectionOps
                      , Language.StdLib.MatrixOps
                      , Language.StdLib.ColourOps
                      , Language.StdLib.BlockHandling
@@ -147,6 +149,7 @@ test-suite improviz-test
                      , Tests.Language.Parser
                      , Tests.Language.Parser.Assignment
                      , Tests.Language.Parser.Blocks
+                     , Tests.Language.Parser.Collections
                      , Tests.Language.Parser.Functions
                      , Tests.Language.Parser.Lambda
                      , Tests.Language.Parser.Symbols

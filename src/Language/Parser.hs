@@ -46,6 +46,7 @@ exprDef =
   }
 
 TokenParser { parens = m_parens
+            , brackets = m_brackets
             , integer = m_integer
             , float = m_float
             , reservedOp = m_reservedOp
@@ -122,10 +123,11 @@ variable :: LangParser Variable
 variable = Variable <$> m_identifier
 
 value :: LangParser Value
-value = number <|> lambda <|> v_symbol <|> v_null
+value = number <|> lambda <|> v_list <|> v_symbol <|> v_null
   where
+    v_list = VList <$> m_brackets (argList expression) <?> "list"
+    v_symbol = try (char ':') >> Symbol <$> m_identifier <?> "symbol"
     v_null = Null <$ m_symbol "null" <?> "null"
-    v_symbol = try (char ':') >> Symbol <$> m_identifier
 
 lambda :: LangParser Value
 lambda =
