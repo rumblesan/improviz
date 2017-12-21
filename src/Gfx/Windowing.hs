@@ -53,7 +53,7 @@ screenSize videoMode =
 windowSizings :: Int -> Int -> Monitor -> IO (Int, Int, Int, Int)
 windowSizings defWidth defHeight mon = do
   videoMode <- GLFW.getVideoMode mon
-  let (w, h) = fromMaybe (defWidth, defHeight) $ screenSize <$> videoMode
+  let (w, h) = maybe (defWidth, defHeight) screenSize videoMode
   (x, y) <- getMonitorPos mon
   return (w, h, x, y)
 
@@ -78,8 +78,7 @@ setupWindow width height mon initCB resizeCB displayCB = do
     let ratio = fromIntegral width / fromIntegral height
     monitor <- targetMonitor mon
     (w, h, x, y) <-
-      fromMaybe (return (width, height, 0, 0)) $
-      windowSizings width height <$> monitor
+      maybe (return (width, height, 0, 0)) (windowSizings width height) monitor
     mw <- GLFW.createWindow w h "Improviz" Nothing Nothing
     maybe' mw (GLFW.terminate >> exitFailure) $ \window -> do
       GLFW.setWindowPos window x y
