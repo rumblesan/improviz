@@ -18,7 +18,32 @@ binaryOp op v1 v2 = do
     "+" -> return $ Number (n1 + n2)
     "-" -> return $ Number (n1 - n2)
     "%" -> return $ Number (mod' n1 n2)
-    _   -> throwError $ "Unknown operator: " ++ op
+    "<" ->
+      return $
+      if n1 < n2
+        then Number 1
+        else Number 0
+    ">" ->
+      return $
+      if n1 > n2
+        then Number 1
+        else Number 0
+    "<=" ->
+      return $
+      if n1 <= n2
+        then Number 1
+        else Number 0
+    ">=" ->
+      return $
+      if n1 >= n2
+        then Number 1
+        else Number 0
+    "==" ->
+      return $
+      if n1 == n2
+        then Number 1
+        else Number 0
+    _ -> throwError $ "Unknown operator: " ++ op
 
 unaryOp :: String -> Value -> InterpreterProcess Value
 unaryOp op v = do

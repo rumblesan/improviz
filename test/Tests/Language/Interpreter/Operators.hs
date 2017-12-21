@@ -20,6 +20,8 @@ operatorTests =
     , testCase "Division operator" test_division_operator
     , testCase "Exponent operator" test_exponent_operator
     , testCase "Modulo operator" test_modulo_operator
+    , testCase "Less Than operator" test_lessthan_operator
+    , testCase "Equal operator" test_equal_operator
     ]
 
 test_addition_operator :: Assertion
@@ -70,6 +72,24 @@ test_exponent_operator =
 test_modulo_operator :: Assertion
 test_modulo_operator =
   let program = "3 % 2"
+      result = do
+        ast <- Language.parse program
+        fst $ Language.interpret [] ast
+      expected = Right $ Number 1
+  in assertEqual "" expected result
+
+test_lessthan_operator :: Assertion
+test_lessthan_operator =
+  let program = "3 < 2"
+      result = do
+        ast <- Language.parse program
+        fst $ Language.interpret [] ast
+      expected = Right $ Number 0
+  in assertEqual "" expected result
+
+test_equal_operator :: Assertion
+test_equal_operator =
+  let program = "2 == 2"
       result = do
         ast <- Language.parse program
         fst $ Language.interpret [] ast
