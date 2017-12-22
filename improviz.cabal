@@ -154,6 +154,7 @@ test-suite improviz-test
                      , Tests.Language.Parser.Lambda
                      , Tests.Language.Parser.Symbols
                      , Tests.Language.Parser.Loops
+                     , Tests.Language.Parser.Operators
                      , Tests.Language.Parser.If
                      , Tests.Language.Parser.ErrorCatching
   default-language:    Haskell2010

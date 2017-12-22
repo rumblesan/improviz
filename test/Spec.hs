@@ -19,6 +19,7 @@ import           Tests.Language.Parser.Functions        (parserFunctionTests)
 import           Tests.Language.Parser.If               (parserIfTests)
 import           Tests.Language.Parser.Lambda           (parserLambdaTests)
 import           Tests.Language.Parser.Loops            (parserLoopTests)
+import           Tests.Language.Parser.Operators        (parserOperatorTests)
 import           Tests.Language.Parser.Symbols          (parserSymbolTests)
 
 main :: IO ()
@@ -39,6 +40,7 @@ main =
     , parserLambdaTests
     , parserErrorCatchingTests
     , parserLoopTests
+    , parserOperatorTests
     , parserSymbolTests
     ]
     mempty

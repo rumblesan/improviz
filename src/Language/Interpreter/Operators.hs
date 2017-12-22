@@ -43,6 +43,16 @@ binaryOp op v1 v2 = do
       if n1 == n2
         then Number 1
         else Number 0
+    "&&" ->
+      return $
+      if n1 /= 0 && n2 /= 0
+        then Number 1
+        else Number 0
+    "||" ->
+      return $
+      if n1 /= 0 || n2 /= 0
+        then Number 1
+        else Number 0
     _ -> throwError $ "Unknown operator: " ++ op
 
 unaryOp :: String -> Value -> InterpreterProcess Value

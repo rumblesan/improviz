@@ -22,6 +22,7 @@ operatorTests =
     , testCase "Modulo operator" test_modulo_operator
     , testCase "Less Than operator" test_lessthan_operator
     , testCase "Equal operator" test_equal_operator
+    , testCase "Logical And operator" test_logical_and_operator
     ]
 
 test_addition_operator :: Assertion
@@ -94,4 +95,13 @@ test_equal_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 1
+  in assertEqual "" expected result
+
+test_logical_and_operator :: Assertion
+test_logical_and_operator =
+  let program = "1 && 0"
+      result = do
+        ast <- Language.parse program
+        fst $ Language.interpret [] ast
+      expected = Right $ Number 0
   in assertEqual "" expected result

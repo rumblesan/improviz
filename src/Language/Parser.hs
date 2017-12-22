@@ -38,10 +38,24 @@ exprDef =
   , nestedComments = True
   , identStart = letter <|> char '_'
   , identLetter = alphaNum <|> oneOf "_'"
-  , opStart = oneOf "^*/%+-^<>=!"
-  , opLetter = oneOf "^*/%+-^<>=!"
+  , opStart = oneOf "^*/%+-^<>=!&|"
+  , opLetter = oneOf "^*/%+-^<>=!&|"
   , reservedOpNames =
-      ["^", "*", "/", "%", "+", "-", "<", ">", "==", "<=", ">=", "!="]
+      [ "^"
+      , "*"
+      , "/"
+      , "%"
+      , "+"
+      , "-"
+      , "<"
+      , ">"
+      , "=="
+      , "<="
+      , ">="
+      , "!="
+      , "&&"
+      , "||"
+      ]
   , reservedNames = ["if"]
   , caseSensitive = True
   }
@@ -71,7 +85,10 @@ table =
     , Infix (m_reservedOp "<=" >> return (BinaryOp "<=")) AssocLeft
     , Infix (m_reservedOp ">=" >> return (BinaryOp ">=")) AssocLeft
     , Infix (m_reservedOp "==" >> return (BinaryOp "==")) AssocLeft
-    , Infix (m_reservedOp "!=" >> return (BinaryOp "!=")) AssocLeft
+    , Infix (m_reservedOp "==" >> return (BinaryOp "==")) AssocLeft
+    ]
+  , [ Infix (m_reservedOp "&&" >> return (BinaryOp "&&")) AssocLeft
+    , Infix (m_reservedOp "||" >> return (BinaryOp "||")) AssocLeft
     ]
   ]
 
