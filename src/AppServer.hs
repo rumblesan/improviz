@@ -13,31 +13,26 @@ import           Data.Monoid                (mconcat)
 import           Data.ByteString.Lazy.Char8 (unpack)
 import           Data.Text.Lazy             (pack)
 
-import           AppTypes
+import           AppState                   (AppState)
+import qualified AppState                   as AS
 import qualified Language                   as L
 
 updateProgram :: TVar AppState -> String -> IO String
 updateProgram appState newProgram =
-  let ast = L.parse newProgram
-  in case ast of
-       Right newAst -> do
-         atomically $
-           modifyTVar
-             appState
-             (\as -> as {currentAst = newAst, programText = newProgram})
-         return "{'status': 'OK', 'message': 'Parsed Succesfully'}"
-       Left err -> return $ mconcat ["{'status': 'OK', 'message': '", err, "'}"]
+  case L.parse newProgram of
+    Right newAst -> do
+      atomically $ modifyTVar appState (AS.updateProgram newProgram newAst)
+      return "{'status': 'OK', 'message': 'Parsed Succesfully'}"
+    Left err -> return $ mconcat ["{'status': 'OK', 'message': '", err, "'}"]
 
 toggleTextDisplay :: TVar AppState -> IO String
 toggleTextDisplay appState = do
-  atomically $
-    modifyTVar appState (\as -> as {displayText = not $ displayText as})
+  atomically $ modifyTVar appState AS.toggleText
   return "{'status': 'OK', 'message': 'Toggled text display'}"
 
 nudgeTime :: TVar AppState -> Float -> IO String
 nudgeTime appState nudgeAmount = do
-  atomically $
-    modifyTVar appState (\as -> as {startTime = startTime as + nudgeAmount})
+  atomically $ modifyTVar appState (AS.nudgeBeat nudgeAmount)
   return $ "{'status': 'OK', 'message': 'Nudged by " ++ show nudgeAmount ++ "'}"
 
 runServer :: TVar AppState -> IO ()

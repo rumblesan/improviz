@@ -24,6 +24,7 @@ executable improviz
                      , filepath
                      , file-embed
                      , freetype2
+                     , lens-simple
                      , mtl
                      , optparse-applicative
                      , parsec
@@ -40,7 +41,7 @@ executable improviz
                      , Vec
                      , yaml
   other-modules:       AppServer
-                     , AppTypes
+                     , AppState
                      , Configuration
                      , Configuration.CLIConfig
                      , Configuration.YamlConfig
@@ -89,6 +90,7 @@ test-suite improviz-test
                      , filepath
                      , file-embed
                      , freetype2
+                     , lens-simple
                      , mtl
                      , optparse-applicative
                      , parsec

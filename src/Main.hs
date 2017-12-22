@@ -7,6 +7,8 @@ import qualified Graphics.UI.GLFW           as GLFW
 import           System.Exit
 import           System.IO
 
+import           Lens.Simple
+
 import           Control.Concurrent
 import           Control.Concurrent.STM
 import           Control.Monad
@@ -15,7 +17,8 @@ import           Data.Maybe                 (fromMaybe)
 import qualified Gfx.Matrices               as GM
 
 import           AppServer
-import           AppTypes
+import           AppState                   (AppState)
+import qualified AppState                   as AS
 import           Configuration              (ImpConfig (..), ImpFontConfig (..),
                                              getConfig)
 import           Gfx
@@ -38,7 +41,7 @@ app cfg = do
   when (debug cfg) (print cfg)
   gfxETMVar <- newEmptyTMVarIO
   tm <- double2Float . fromMaybe 0.0 <$> GLFW.getTime
-  asTVar <- newTVarIO (makeAppState {startTime = tm})
+  asTVar <- newTVarIO (AS.makeAppState tm)
   _ <- forkIO $ runServer asTVar
   let initialWidth = screenWidth cfg
   let initialHeight = screenHeight cfg
@@ -99,27 +102,25 @@ display appState gfxState time = do
   as <- readTVarIO appState
   gs <- atomically $ readTMVar gfxState
   let t = double2Float time
-      beat = (t - startTime as) / 60.0
+      beat = AS.getBeat t as
       interpreterState =
         L.updateStateVariables
           [("time", LA.Number t), ("beat", LA.Number beat)]
-          (initialInterpreter as)
-  case fst $ L.createGfx interpreterState (currentAst as) of
+          (view AS.initialInterpreter as)
+  case fst $ L.createGfx interpreterState (view AS.currentAst as) of
     Left msg -> do
       putStrLn $ "Could not interpret program: " ++ msg
-      atomically $
-        modifyTVar appState (\as -> as {currentAst = lastWorkingAst as})
+      atomically $ modifyTVar appState AS.resetProgram
     Right scene -> do
       drawScene gs scene
-      when (displayText as) $ drawText gs as
-      unless (currentAst as == lastWorkingAst as) $ do
+      when (view AS.displayText as) $ drawText gs as
+      unless (AS.programHasChanged as) $ do
         putStrLn "Saving current ast"
-        atomically $
-          modifyTVar appState (\as -> as {lastWorkingAst = currentAst as})
+        atomically $ modifyTVar appState AS.saveProgram
 
 drawText :: EngineState -> AppState -> IO ()
 drawText es appState = do
-  renderText 0 0 (textRenderer es) (programText appState)
+  renderText 0 0 (textRenderer es) (view AS.programText appState)
   renderTextbuffer (textRenderer es)
 
 beforeRender :: Scene -> IO ()
