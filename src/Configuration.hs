@@ -56,7 +56,7 @@ getFontConfig :: ImpFontConfig -> Maybe ImpYAMLFontConfig -> ImpFontConfig
 getFontConfig defaultFontCfg yamlFontCfg =
   ImpFontConfig
   { fontFilePath =
-      (yamlFontCfg >>= yamlFontFilePath) <|> (fontFilePath defaultFontCfg)
+      (yamlFontCfg >>= yamlFontFilePath) <|> fontFilePath defaultFontCfg
   , fontSize =
       fromMaybe (fontSize defaultFontCfg) (yamlFontCfg >>= yamlFontSize)
   , fontFGColour =
@@ -81,11 +81,13 @@ getConfig = do
           (screenHeight defaultConfig)
           (cliScreenHeight cliCfg <|> (yamlCfgOpt >>= yamlScreenHeight))
     , fullscreenDisplay =
-        (cliFullscreenDisplay cliCfg <|> (yamlCfgOpt >>= yamlFullscreenDisplay))
-    , debug = (cliDebug cliCfg || (fromMaybe False $ yamlDebug <$> yamlCfgOpt))
+        cliFullscreenDisplay cliCfg <|> (yamlCfgOpt >>= yamlFullscreenDisplay)
+    , debug = cliDebug cliCfg || maybe False yamlDebug yamlCfgOpt
     , fontConfig =
         getFontConfig (fontConfig defaultConfig) (yamlFontCfg <$> yamlCfgOpt)
     , textureDirectories =
-        fromMaybe (textureDirectories defaultConfig) $
-        yamlTextureDirectories <$> yamlCfgOpt
+        maybe
+          (textureDirectories defaultConfig)
+          yamlTextureDirectories
+          yamlCfgOpt
     }
