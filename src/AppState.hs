@@ -10,6 +10,7 @@ import           Lens.Simple
 data AppState = AppState
   { _displayText        :: Bool
   , _programText        :: String
+  , _lastProgramText    :: String
   , _currentAst         :: Block
   , _lastWorkingAst     :: Block
   , _initialInterpreter :: InterpreterState
@@ -23,6 +24,7 @@ makeAppState start =
   AppState
   { _displayText = True
   , _programText = ""
+  , _lastProgramText = ""
   , _currentAst = Block []
   , _lastWorkingAst = Block []
   , _initialInterpreter = initialState []
@@ -42,12 +44,14 @@ nudgeBeat amount = over startTime (+ amount)
 resetProgram :: AppState -> AppState
 resetProgram as =
   let oldAst = view lastWorkingAst as
-  in set currentAst oldAst as
+      oldText = view lastProgramText as
+  in set programText oldText $ set currentAst oldAst as
 
 saveProgram :: AppState -> AppState
 saveProgram as =
   let ast = view currentAst as
-  in set lastWorkingAst ast as
+      text = view programText as
+  in set lastWorkingAst ast $ set lastProgramText text as
 
 programHasChanged :: AppState -> Bool
 programHasChanged as = view currentAst as == view lastWorkingAst as
