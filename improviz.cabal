@@ -41,7 +41,8 @@ executable improviz
                      , Vec
                      , yaml
                      , aeson
-  other-modules:       AppServer
+  other-modules:       Server.Http
+                     , Server.Protocol
                      , AppState
                      , Configuration
                      , Configuration.CLIConfig

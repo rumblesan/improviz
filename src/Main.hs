@@ -12,7 +12,6 @@ import           Lens.Simple            ((^.))
 
 import qualified Graphics.UI.GLFW       as GLFW
 
-import           AppServer              (runServer)
 import           AppState               (AppState, ImprovizError (..))
 import qualified AppState               as AS
 import           Configuration          (ImpConfig (..), ImpFontConfig (..),
@@ -32,6 +31,7 @@ import           Gfx.Windowing          (setupWindow)
 import           Language               (createGfx, updateStateVariables)
 import           Language.Ast           (Value (Number))
 import           Logging                (logError, logInfo)
+import           Server.Http            (runServer)
 
 main :: IO ()
 main = getConfig >>= app
