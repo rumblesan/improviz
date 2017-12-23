@@ -26,7 +26,10 @@ updateProgram :: TVar AppState -> String -> IO (ImprovizResponse String)
 updateProgram appState newProgram =
   case L.parse newProgram of
     Right newAst -> do
-      atomically $ modifyTVar appState (AS.updateProgram newProgram newAst)
+      atomically $
+        modifyTVar
+          appState
+          (AS.clearErrors . AS.updateProgram newProgram newAst)
       let msg = "Parsed Successfully"
       logInfo msg
       return $ ImprovizOKResponse msg
@@ -52,6 +55,7 @@ getErrors :: TVar AppState -> IO (ImprovizResponse [AS.ImprovizError])
 getErrors appState = do
   as <- readTVarIO appState
   let errs = AS.getErrors as
+  logInfo $ "Have " <> show (length errs) <> " Errors"
   return $ ImprovizErrorResponse errs
 
 runServer :: TVar AppState -> Int -> IO ()

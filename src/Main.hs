@@ -110,7 +110,10 @@ display appState esVar time = do
   case createGfx interpreterState (as ^. AS.currentAst) of
     Left msg -> do
       logError $ "Could not interpret program: " ++ msg
-      atomically $ modifyTVar appState AS.resetProgram
+      atomically $
+        modifyTVar
+          appState
+          (AS.resetProgram . AS.addError (ImprovizError msg Nothing))
     Right scene -> do
       when (AS.programHasChanged as) $ do
         logInfo "Saving current ast"

@@ -12,7 +12,7 @@ import           Language.Interpreter.Types (InterpreterState)
 import           Lens.Simple
 
 data ImprovizError = ImprovizError
-  { message  :: String
+  { text     :: String
   , position :: Maybe (Int, Int)
   } deriving (Eq, Show, Generic)
 
@@ -78,3 +78,6 @@ addError e = over errors (\errs -> e : errs)
 
 getErrors :: AppState -> [ImprovizError]
 getErrors = view errors
+
+clearErrors :: AppState -> AppState
+clearErrors = set errors []
