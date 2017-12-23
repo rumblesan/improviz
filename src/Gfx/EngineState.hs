@@ -37,14 +37,14 @@ data EngineState = EngineState
   , matrixStack        :: [Mat44 GLfloat]
   } deriving (Show)
 
-baseState ::
+createGfxEngineState ::
      Mat44 GLfloat
   -> Mat44 GLfloat
   -> PostProcessing
   -> TextRenderer
   -> TextureLibrary
   -> IO EngineState
-baseState projection view pprocess trender textLib = do
+createGfxEngineState projection view pprocess trender textLib = do
   gbos <- createAllBuffers
   cshd <- createColourShaders
   tshd <- createTextureShaders

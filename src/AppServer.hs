@@ -4,10 +4,9 @@ module AppServer where
 
 import           Web.Scotty
 
-import           Control.Concurrent.STM
-import           Control.Monad
-import           Control.Monad.Trans
-import           Data.Maybe
+import           Control.Concurrent.STM     (TVar, atomically, modifyTVar,
+                                             readTVarIO)
+import           Control.Monad.Trans        (liftIO)
 import           Data.Monoid                ((<>))
 
 import           Data.ByteString.Lazy.Char8 (unpack)

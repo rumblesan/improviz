@@ -24,7 +24,7 @@ test_basic_default_scoping =
   let program = "rotate(3, 4, 5)\n\tbox()"
       result = do
         ast <- Language.parse program
-        scene <- fst $ Language.createGfx (Language.initialState []) ast
+        scene <- Language.createGfx (Language.initialState []) ast
         return $ sceneGfx scene
       boxBlock = [GA.ShapeCommand (GA.Cube 1 1 1) Nothing]
       expected = Right [GA.MatrixCommand (GA.Rotate 3 4 5) (Just boxBlock)]

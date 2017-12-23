@@ -68,7 +68,7 @@ saveProgram as =
   in set lastWorkingAst ast $ set lastProgramText text as
 
 programHasChanged :: AppState -> Bool
-programHasChanged as = view currentAst as == view lastWorkingAst as
+programHasChanged as = as ^. currentAst /= as ^. lastWorkingAst
 
 getBeat :: Float -> AppState -> Float
 getBeat t as = (t - view startTime as) / 60.0

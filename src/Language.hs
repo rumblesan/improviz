@@ -7,15 +7,15 @@ module Language
   , module Language.Ast
   ) where
 
-import           Control.Monad.Except
-import           Control.Monad.State.Strict
-import           Control.Monad.Writer.Strict
+import           Control.Monad               (forM_)
+import           Control.Monad.Except        (runExceptT)
+import           Control.Monad.State.Strict  (evalState, execState, gets)
+import           Control.Monad.Writer.Strict (runWriterT)
 
 import           Gfx                         (Scene (..))
 import           Language.Ast                (Block, Identifier, Value (..))
 import           Language.Interpreter        (emptyState, interpretLanguage,
                                               setVariable)
-import qualified Language.Interpreter.Scope  as LS
 import           Language.Interpreter.Types  (InterpreterProcess,
                                               InterpreterState (..), currentGfx)
 import           Language.Parser             (parseProgram)
@@ -34,10 +34,8 @@ initialState initialVars =
 updateStateVariables ::
      [(Identifier, Value)] -> InterpreterState -> InterpreterState
 updateStateVariables vars oldState =
-  let newVarMap = foldl setVar (variables oldState) vars
-  in oldState {variables = newVarMap}
-  where
-    setVar varMap (name, value) = LS.setVariable varMap name value
+  let setVars = addInitialVariables vars
+  in execState (runWriterT (runExceptT setVars)) oldState
 
 interpret :: [(Identifier, Value)] -> Block -> (Either String Value, [String])
 interpret initialVars block =
@@ -47,7 +45,7 @@ interpret initialVars block =
         interpretLanguage block
   in evalState (runWriterT (runExceptT run)) emptyState
 
-createGfx :: InterpreterState -> Block -> (Either String Scene, [String])
+createGfx :: InterpreterState -> Block -> Either String Scene
 createGfx initialState block =
   let run = do
         _ <- interpretLanguage block
@@ -60,7 +58,8 @@ createGfx initialState block =
           , sceneGfx = gfxB
           , scenePostProcessingFX = gfxAnimStyle
           }
-  in evalState (runWriterT (runExceptT run)) initialState
+      (result, logs) = evalState (runWriterT (runExceptT run)) initialState
+  in result
 
 addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess ()
 addInitialVariables vars = forM_ vars (uncurry setVariable)
