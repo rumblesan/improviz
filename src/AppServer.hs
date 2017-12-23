@@ -35,9 +35,9 @@ nudgeTime appState nudgeAmount = do
   atomically $ modifyTVar appState (AS.nudgeBeat nudgeAmount)
   return $ "{'status': 'OK', 'message': 'Nudged by " ++ show nudgeAmount ++ "'}"
 
-runServer :: TVar AppState -> IO ()
-runServer appState =
-  scotty 3000 $ do
+runServer :: TVar AppState -> Int -> IO ()
+runServer appState port =
+  scotty port $ do
     get "/" $ text "SERVING"
     post "/read" $ do
       b <- body

@@ -42,7 +42,7 @@ app cfg = do
   gfxETMVar <- newEmptyTMVarIO
   tm <- double2Float . fromMaybe 0.0 <$> GLFW.getTime
   asTVar <- newTVarIO (AS.makeAppState tm)
-  _ <- forkIO $ runServer asTVar
+  _ <- forkIO $ runServer asTVar (serverPort cfg)
   let initialWidth = screenWidth cfg
   let initialHeight = screenHeight cfg
   let initCB = initApp gfxETMVar cfg

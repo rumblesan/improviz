@@ -33,6 +33,7 @@ data ImpYAMLConfig = ImpYAMLConfig
   , yamlDebug              :: Bool
   , yamlFontCfg            :: ImpYAMLFontConfig
   , yamlTextureDirectories :: [FilePath]
+  , yamlServerPort         :: Maybe Int
   }
 
 instance FromJSON ImpYAMLConfig where
@@ -41,7 +42,8 @@ instance FromJSON ImpYAMLConfig where
     v .:? "fullscreen" <*>
     v .:? "debug" .!= False <*>
     v .:? "font" .!= ImpYAMLFontConfig Nothing Nothing Nothing Nothing <*>
-    v .:? "textureDirectories" .!= []
+    v .:? "textureDirectories" .!= [] <*>
+    v .:? "serverPort"
   parseJSON _ = fail "Expected Object for Config value"
 
 readConfigFile :: FilePath -> IO (Maybe ImpYAMLConfig)

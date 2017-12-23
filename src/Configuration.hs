@@ -30,6 +30,7 @@ data ImpConfig = ImpConfig
   , debug              :: Bool
   , fontConfig         :: ImpFontConfig
   , textureDirectories :: [FilePath]
+  , serverPort         :: Int
   } deriving (Show)
 
 defaultConfigFile :: FilePath
@@ -50,6 +51,7 @@ defaultConfig =
       , fontBGColour = Color4 1.0 0.8 0.0 1.0
       }
   , textureDirectories = ["./textures"]
+  , serverPort = 3000
   }
 
 getFontConfig :: ImpFontConfig -> Maybe ImpYAMLFontConfig -> ImpFontConfig
@@ -90,4 +92,6 @@ getConfig = do
           (textureDirectories defaultConfig)
           yamlTextureDirectories
           yamlCfgOpt
+    , serverPort =
+        fromMaybe (serverPort defaultConfig) (yamlCfgOpt >>= yamlServerPort)
     }
