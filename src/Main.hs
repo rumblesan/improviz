@@ -28,6 +28,7 @@ import           Gfx.Textures               (createTextureLib)
 import           Gfx.Windowing
 import qualified Language                   as L
 import qualified Language.Ast               as LA
+import           Logging                    (logError, logInfo)
 
 main :: IO ()
 main = getConfig >>= app
@@ -77,7 +78,7 @@ initApp gfxEngineTMVar cfg width height = do
 
 resize :: TMVar EngineState -> GLFW.WindowSizeCallback
 resize esVar window newWidth newHeight = do
-  print "Resizing"
+  logInfo "Resizing"
   (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
   engineState <- atomically $ readTMVar esVar
   deletePostProcessing $ postFX engineState
@@ -105,13 +106,13 @@ display appState gfxState time = do
           (view AS.initialInterpreter as)
   case fst $ L.createGfx interpreterState (view AS.currentAst as) of
     Left msg -> do
-      putStrLn $ "Could not interpret program: " ++ msg
+      logError $ "Could not interpret program: " ++ msg
       atomically $ modifyTVar appState AS.resetProgram
     Right scene -> do
       drawScene gs scene
       when (view AS.displayText as) $ drawText gs as
       unless (AS.programHasChanged as) $ do
-        putStrLn "Saving current ast"
+        logInfo "Saving current ast"
         atomically $ modifyTVar appState AS.saveProgram
 
 drawText :: EngineState -> AppState -> IO ()
