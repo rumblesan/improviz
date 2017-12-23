@@ -41,6 +41,11 @@ nudgeTime appState nudgeAmount = do
   logInfo $ "Nudged by " <> show nudgeAmount
   return $ "{'status': 'OK', 'message': 'Nudged by " <> show nudgeAmount <> "'}"
 
+getErrors :: TVar AppState -> IO [AS.ImprovizError]
+getErrors appState = do
+  as <- readTVarIO appState
+  return $ AS.getErrors as
+
 runServer :: TVar AppState -> Int -> IO ()
 runServer appState port =
   scotty port $ do
@@ -56,3 +61,6 @@ runServer appState port =
       amount <- param "amount"
       resp <- liftIO $ nudgeTime appState amount
       json $ pack resp
+    post "/errors" $ do
+      resp <- liftIO $ getErrors appState
+      json resp

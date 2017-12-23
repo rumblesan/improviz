@@ -1,11 +1,23 @@
+{-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module AppState where
 
+import           GHC.Generics
+
+import           Data.Aeson
 import           Language                   (initialState, parse)
 import           Language.Ast               (Block (..))
 import           Language.Interpreter.Types (InterpreterState)
 import           Lens.Simple
+
+data ImprovizError = ImprovizError
+  { message  :: String
+  , position :: Maybe (Int, Int)
+  } deriving (Eq, Show, Generic)
+
+instance ToJSON ImprovizError where
+  toEncoding = genericToEncoding defaultOptions
 
 data AppState = AppState
   { _displayText        :: Bool
@@ -15,6 +27,7 @@ data AppState = AppState
   , _lastWorkingAst     :: Block
   , _initialInterpreter :: InterpreterState
   , _startTime          :: Float
+  , _errors             :: [ImprovizError]
   }
 
 makeLenses ''AppState
@@ -29,6 +42,7 @@ makeAppState start =
   , _lastWorkingAst = Block []
   , _initialInterpreter = initialState []
   , _startTime = start
+  , _errors = []
   }
 
 updateProgram :: String -> Block -> AppState -> AppState
@@ -58,3 +72,9 @@ programHasChanged as = view currentAst as == view lastWorkingAst as
 
 getBeat :: Float -> AppState -> Float
 getBeat t as = (t - view startTime as) / 60.0
+
+addError :: ImprovizError -> AppState -> AppState
+addError e = over errors (\errs -> e : errs)
+
+getErrors :: AppState -> [ImprovizError]
+getErrors = view errors

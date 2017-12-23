@@ -17,7 +17,7 @@ import           Data.Maybe                 (fromMaybe)
 import qualified Gfx.Matrices               as GM
 
 import           AppServer
-import           AppState                   (AppState)
+import           AppState                   (AppState, ImprovizError (..))
 import qualified AppState                   as AS
 import           Configuration              (ImpConfig (..), ImpFontConfig (..),
                                              getConfig)
