@@ -29,10 +29,6 @@ import           Gfx.Windowing
 import qualified Language                   as L
 import qualified Language.Ast               as LA
 
--- type ErrorCallback = Error -> String -> IO ()
-errorCallback :: GLFW.ErrorCallback
-errorCallback _ = hPutStrLn stderr
-
 main :: IO ()
 main = getConfig >>= app
 

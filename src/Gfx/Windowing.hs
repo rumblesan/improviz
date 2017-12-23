@@ -2,6 +2,7 @@ module Gfx.Windowing where
 
 import           Control.Monad
 import           Data.Maybe                (fromMaybe)
+import           ErrorHandling             (glfwErrorCallback)
 import           Graphics.Rendering.OpenGL
 import           Graphics.UI.GLFW          as GLFW
 
@@ -29,10 +30,6 @@ maybeElem :: Int -> [a] -> Maybe a
 maybeElem _ []     = Nothing
 maybeElem 0 (x:xs) = Just x
 maybeElem i (_:xs) = maybeElem (i - 1) xs
-
--- type ErrorCallback = Error -> String -> IO ()
-errorCallback :: GLFW.ErrorCallback
-errorCallback _ = hPutStrLn stderr
 
 type InitCallback = Int -> Int -> IO ()
 
@@ -66,7 +63,7 @@ setupWindow ::
   -> DisplayCallback
   -> IO ()
 setupWindow width height mon initCB resizeCB displayCB = do
-  GLFW.setErrorCallback (Just errorCallback)
+  GLFW.setErrorCallback (Just glfwErrorCallback)
   successfulInit <- GLFW.init
   bool successfulInit exitFailure $ do
     GLFW.windowHint $ WindowHint'ContextVersionMajor 3
