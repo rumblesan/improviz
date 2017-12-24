@@ -3,6 +3,7 @@ module Language.Ast
   , Element(..)
   , Application(..)
   , ApplicationArg(..)
+  , Func(..)
   , Loop(..)
   , Assignment(..)
   , Expression(..)
@@ -22,6 +23,7 @@ data Element
   | ElAssign Assignment
   | ElExpression Expression
   | ElIf If
+  | ElFunc Func
   deriving (Eq, Show)
 
 data Application =
@@ -52,6 +54,17 @@ data If =
      (Maybe Block)
   deriving (Eq, Show)
 
+data Func =
+  Func Identifier
+       [FunctionArg]
+       Block
+  deriving (Eq, Show)
+
+data FunctionArg =
+  FunctionArg Identifier
+              (Maybe Value)
+  deriving (Eq, Show)
+
 data Expression
   = EApp Application
   | BinaryOp String
@@ -75,11 +88,6 @@ data Value
            Block
   | VList [Expression]
   | BuiltIn [Identifier]
-  deriving (Eq, Show)
-
-data FunctionArg =
-  FunctionArg Identifier
-              (Maybe Value)
   deriving (Eq, Show)
 
 type Identifier = String

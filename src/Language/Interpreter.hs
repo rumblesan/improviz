@@ -127,6 +127,7 @@ interpretElement :: Element -> InterpreterProcess Value
 interpretElement (ElLoop loop)             = interpretLoop loop
 interpretElement (ElAssign assignment)     = interpretAssignment assignment
 interpretElement (ElIf ifElem)             = interpretIf ifElem
+interpretElement (ElFunc funcElem)         = interpretFunc funcElem
 interpretElement (ElExpression expression) = interpretExpression expression
 
 interpretApplication :: Application -> InterpreterProcess Value
@@ -195,6 +196,10 @@ interpretLoop (Loop numExpr loopVar block) = do
     looping _ n = do
       _ <- maybe (return Null) (\vn -> setVariable vn (Number n)) loopVar
       interpretBlock block
+
+interpretFunc :: Func -> InterpreterProcess Value
+interpretFunc (Func name argNames lBlock) =
+  setVariable name (Lambda argNames lBlock)
 
 interpretIf :: If -> InterpreterProcess Value
 interpretIf (If pred block1 block2) = do

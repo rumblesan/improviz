@@ -56,7 +56,7 @@ exprDef =
       , "&&"
       , "||"
       ]
-  , reservedNames = ["if", "else", "times", "with", "null"]
+  , reservedNames = ["if", "else", "times", "with", "null", "func"]
   , caseSensitive = True
   }
 
@@ -104,7 +104,8 @@ langBlock = Block <$> block element <?> "block"
 
 element :: LangParser Element
 element =
-  ((ElLoop <$> loop) <|> (ElAssign <$> assignment) <|> (ElIf <$> ifElem) <|>
+  ((ElLoop <$> loop) <|> (ElAssign <$> assignment) <|> (ElFunc <$> function) <|>
+   (ElIf <$> ifElem) <|>
    (ElExpression <$> try expression)) <*
   eol <?> "element"
 
@@ -126,6 +127,20 @@ applicationArg = namedArg <|> unnamedArg
       try (ApplicationArg <$> (Just <$> m_identifier <* m_symbol "=")) <*>
       expression
     unnamedArg = ApplicationArg Nothing <$> expression
+
+function :: LangParser Func
+function =
+  Func <$> try (m_symbol "func" *> m_identifier) <*>
+  m_parens (argList functionArg) <*
+  m_symbol "=>" <*>
+  (lbody <|> lexpr) <?> "function"
+  where
+    lexpr = (\e -> Block [ElExpression e]) <$> expression
+    lbody = indented >> langBlock
+
+functionArg :: LangParser FunctionArg
+functionArg =
+  FunctionArg <$> m_identifier <*> optionMaybe (m_symbol "=" *> value)
 
 loop :: LangParser Loop
 loop =
@@ -163,10 +178,6 @@ lambda =
   where
     lexpr = (\e -> Block [ElExpression e]) <$> expression
     lbody = indented >> langBlock
-
-functionArg :: LangParser FunctionArg
-functionArg =
-  FunctionArg <$> m_identifier <*> optionMaybe (m_symbol "=" *> value)
 
 number :: LangParser Value
 number =

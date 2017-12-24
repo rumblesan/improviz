@@ -7,6 +7,7 @@ import           Test.Framework
 import           Tests.Language                         (languageTests)
 import           Tests.Language.Interpreter.Blocks      (blockTests)
 import           Tests.Language.Interpreter.Expressions (expressionTests)
+import           Tests.Language.Interpreter.Functions   (interpreterFunctionTests)
 import           Tests.Language.Interpreter.If          (interpreterIfTests)
 import           Tests.Language.Interpreter.Operators   (operatorTests)
 import           Tests.Language.Interpreter.Scoping     (scopingTests)
@@ -29,6 +30,7 @@ main =
     , operatorTests
     , expressionTests
     , interpreterIfTests
+    , interpreterFunctionTests
     , blockTests
     , scopingTests
     , parserTests

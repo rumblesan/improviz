@@ -151,6 +151,7 @@ test-suite improviz-test
                      , Tests.Language.Interpreter.Blocks
                      , Tests.Language.Interpreter.Expressions
                      , Tests.Language.Interpreter.If
+                     , Tests.Language.Interpreter.Functions
                      , Tests.Language.Interpreter.Operators
                      , Tests.Language.Interpreter.Scoping
                      , Tests.Language.Parser

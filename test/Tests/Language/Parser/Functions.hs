@@ -20,6 +20,9 @@ parserFunctionTests =
     , testCase
         "Parsing function call with variable arg"
         test_application_with_var_arg
+    , testCase
+        "Parse function def with named args"
+        test_application_with_named_args
     , testCase "Parsing no arguments function call" test_noargs_application
     , testCase "Parse function with block" test_parse_function_blocks
     ]
@@ -66,23 +69,24 @@ test_application_with_var_arg =
 
 test_application_with_named_args :: Assertion
 test_application_with_named_args =
-  let program = "foo = (a, b) => a - b\nfoo(b = 1, a = 2)"
-      block =
+  let program = "func foo (a, b = 2) => a - b\nfoo(b = 1, a = 2)"
+      func =
+        ElFunc $
+        Func "foo" [FunctionArg "a" Nothing, FunctionArg "b" (Just $ Number 2)] $
         Block
-          [ElExpression $ BinaryOp "+" (EVar $ Variable "a") (EVal $ Number 1)]
-      assign =
-        ElAssign $
-        Assignment "foo" $ EVal $ Lambda [FunctionArg "a" Nothing] block
-      cube =
+          [ ElExpression $
+            BinaryOp "-" (EVar $ Variable "a") (EVar $ Variable "b")
+          ]
+      foo =
         ElExpression $
         EApp $
         Application
           "foo"
           [ ApplicationArg (Just "b") (EVal $ Number 1)
-          , ApplicationArg (Just "a") (EVal $ Number 3)
+          , ApplicationArg (Just "a") (EVal $ Number 2)
           ]
           Nothing
-      expected = Right $ Block [assign, cube]
+      expected = Right $ Block [func, foo]
       result = Language.parse program
   in assertEqual "" expected result
 
