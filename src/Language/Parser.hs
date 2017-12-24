@@ -56,7 +56,7 @@ exprDef =
       , "&&"
       , "||"
       ]
-  , reservedNames = ["if"]
+  , reservedNames = ["if", "else", "times", "with", "null"]
   , caseSensitive = True
   }
 
@@ -64,6 +64,8 @@ TokenParser { parens = m_parens
             , brackets = m_brackets
             , integer = m_integer
             , float = m_float
+            , comma = m_comma
+            , colon = m_colon
             , reservedOp = m_reservedOp
             , whiteSpace = m_whiteSpace
             , identifier = m_identifier
@@ -109,7 +111,7 @@ element =
 argList :: LangParser e -> LangParser [e]
 argList lp = sepBy lp sep
   where
-    sep = skipMany space >> char ',' >> skipMany space
+    sep = skipMany space >> m_comma >> skipMany space
 
 application :: LangParser Application
 application =
@@ -151,7 +153,7 @@ value :: LangParser Value
 value = number <|> lambda <|> v_list <|> v_symbol <|> v_null
   where
     v_list = VList <$> m_brackets (argList expression) <?> "list"
-    v_symbol = try (char ':') >> Symbol <$> m_identifier <?> "symbol"
+    v_symbol = try m_colon >> Symbol <$> m_identifier <?> "symbol"
     v_null = Null <$ m_symbol "null" <?> "null"
 
 lambda :: LangParser Value
