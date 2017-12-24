@@ -3,6 +3,7 @@ module Gfx.GeometryBuffers where
 import           Foreign.Marshal.Array
 import           Foreign.Ptr
 import           Foreign.Storable
+import           GHC.Int                   (Int32)
 
 import           Graphics.Rendering.OpenGL
 
@@ -30,6 +31,13 @@ data GeometryBuffers = GeometryBuffers
 bufferOffset :: Integral a => a -> Ptr b
 bufferOffset = plusPtr nullPtr . fromIntegral
 
+setAttribPointer :: AttribLocation -> Int32 -> Int32 -> Int32 -> IO ()
+setAttribPointer location numComponents stride idx = do
+  vertexAttribPointer location $=
+    ( ToFloat
+    , VertexArrayDescriptor numComponents Float stride (bufferOffset idx))
+  vertexAttribArray location $= Enabled
+
 createBuffer :: [Vertex3 GLfloat] -> IO VBO
 createBuffer verts = do
   vbo <- genObjectName
@@ -42,9 +50,7 @@ createBuffer verts = do
       vertexSize = sizeOf (head verts)
       size = fromIntegral (numVertices * vertexSize)
   withArray verts $ \ptr -> bufferData ArrayBuffer $= (size, ptr, StaticDraw)
-  vertexAttribPointer vPosition $=
-    (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset firstIndex))
-  vertexAttribArray vPosition $= Enabled
+  setAttribPointer vPosition 3 0 firstIndex
   return $ VBO vbo [arrayBuffer] firstIndex (fromIntegral numVertices)
 
 createBufferWithTexture :: [Vertex3 GLfloat] -> [Vertex2 GLfloat] -> IO VBO
