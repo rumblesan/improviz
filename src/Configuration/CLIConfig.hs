@@ -38,6 +38,6 @@ cliparser =
   switch (long "debug" <> short 'd' <> help "Put improviz in debug mode") <*>
   optional
     (option
-       auto
+       str
        (long "config" <> short 'c' <> help "Path to a configuration YAML file" <>
         metavar "FilePath"))
