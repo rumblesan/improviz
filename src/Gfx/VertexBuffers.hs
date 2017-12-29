@@ -9,6 +9,7 @@ import           GHC.Int                   (Int32)
 data VBO =
   VBO VertexArrayObject
       [BufferObject]
+      PrimitiveMode
       ArrayIndex
       NumArrayIndices
   deriving (Show, Eq)
@@ -23,8 +24,8 @@ setAttribPointer location numComponents stride idx = do
     , VertexArrayDescriptor numComponents Float stride (bufferOffset idx))
   vertexAttribArray location $= Enabled
 
-createVBO :: [IO ()] -> ArrayIndex -> NumArrayIndices -> IO VBO
-createVBO arrayConfigFuncs arrIdx numVertices = do
+createVBO :: [IO ()] -> PrimitiveMode -> ArrayIndex -> NumArrayIndices -> IO VBO
+createVBO arrayConfigFuncs primMode arrIdx numVertices = do
   vao <- GL.genObjectName
   GL.bindVertexArrayObject $= Just vao
   arrayBuffers <-
@@ -37,14 +38,14 @@ createVBO arrayConfigFuncs arrIdx numVertices = do
          GL.bindBuffer ArrayBuffer $= Nothing
          return arrayBuffer)
   GL.bindVertexArrayObject $= Nothing
-  return $ VBO vao arrayBuffers arrIdx numVertices
+  return $ VBO vao arrayBuffers primMode arrIdx numVertices
 
 drawVBO :: VBO -> IO ()
-drawVBO (VBO bufferObject arrayBuffers arrayIndex numVertices) = do
+drawVBO (VBO bufferObject arrayBuffers primMode arrayIndex numVertices) = do
   GL.bindVertexArrayObject $= Just bufferObject
-  GL.drawArrays Triangles arrayIndex numVertices
+  GL.drawArrays primMode arrayIndex numVertices
 
 deleteVBO :: VBO -> IO ()
-deleteVBO (VBO bufferObject arrayBuffers _ _) = do
+deleteVBO (VBO bufferObject arrayBuffers _ _ _) = do
   forM_ arrayBuffers GL.deleteObjectName
   GL.deleteObjectName bufferObject

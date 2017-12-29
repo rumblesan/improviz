@@ -93,7 +93,7 @@ createCharacterTextQuad =
         GL.bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
         setAttribPointer vPosition posVSize stride firstPosIndex
         setAttribPointer vTexCoord texVSize stride firstTexIndex
-  in createVBO [quadConfig] firstPosIndex numVertices
+  in createVBO [quadConfig] Triangles firstPosIndex numVertices
 
 createCharacterBGQuad :: IO VBO
 createCharacterBGQuad =
@@ -108,7 +108,7 @@ createCharacterBGQuad =
       quadConfig = do
         GL.bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
         setAttribPointer vPosition posVSize stride firstPosIndex
-  in createVBO [quadConfig] firstPosIndex numVertices
+  in createVBO [quadConfig] Triangles firstPosIndex numVertices
 
 createTextRenderer ::
      Float
@@ -231,14 +231,15 @@ sendVertices verts =
 renderCharacterQuad ::
      Program -> Mat44 GLfloat -> VBO -> IO () -> [GLfloat] -> IO ()
 renderCharacterQuad program pMatrix character charDrawFunc charVerts =
-  let (VBO arrayObject arrayBuffers firstIndex numTriangles) = character
+  let (VBO arrayObject arrayBuffers primMode firstIndex numTriangles) =
+        character
   in do GL.currentProgram $= Just program
         GL.bindVertexArrayObject $= Just arrayObject
         GL.bindBuffer ArrayBuffer $= listToMaybe arrayBuffers
         charDrawFunc
         sendProjectionMatrix program pMatrix
         sendVertices charVerts
-        GL.drawArrays Triangles firstIndex numTriangles
+        GL.drawArrays primMode firstIndex numTriangles
         printErrors
 
 renderCharacterTextQuad ::

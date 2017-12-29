@@ -15,7 +15,7 @@ import           Gfx.EngineState            as ES
 import           Gfx.GeometryBuffers
 import           Gfx.Matrices
 import           Gfx.Shaders
-import           Gfx.VertexBuffers          (VBO (..), drawVBO)
+import           Gfx.VertexBuffers          (VBO, drawVBO)
 
 import           ErrorHandling              (printErrors)
 
@@ -84,15 +84,14 @@ drawShape vbo = do
   liftIO printErrors
 
 drawWireframe :: VBO -> GraphicsEngine GfxOutput
-drawWireframe (VBO bufferObject _ arrayIndex offset) = do
+drawWireframe vbo = do
   strokeC <- gets currentStrokeStyle
   mvp <- getFullMatrix
   program <- gets colourShaders
   liftIO (currentProgram $= Just (shaderProgram program))
   lift $ setMVPMatrixUniform program mvp
   lift $ setColourUniform program strokeC
-  bindVertexArrayObject $= Just bufferObject
-  lift $ drawArrays Lines arrayIndex offset
+  lift $ drawVBO vbo
 
 interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
 interpretShape (Cube x y z) = do

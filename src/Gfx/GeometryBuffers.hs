@@ -35,7 +35,7 @@ createBuffer verts =
         withArray verts $ \ptr ->
           bufferData ArrayBuffer $= (size, ptr, StaticDraw)
         setAttribPointer vPosition posVSize stride firstIndex
-  in createVBO [quadConfig] firstIndex numVertices
+  in createVBO [quadConfig] Lines firstIndex numVertices
 
 createBufferWithTexture :: [Vertex3 GLfloat] -> [Vertex2 GLfloat] -> IO VBO
 createBufferWithTexture verts textCoords =
@@ -60,7 +60,7 @@ createBufferWithTexture verts textCoords =
         withArray textCoords $ \ptr ->
           bufferData ArrayBuffer $= (tsize, ptr, StaticDraw)
         setAttribPointer texcoord texVSize stride firstTIndex
-  in createVBO [vArrayConfig, tArrayConfig] firstVIndex numVVertices
+  in createVBO [vArrayConfig, tArrayConfig] Triangles firstVIndex numVVertices
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers =
