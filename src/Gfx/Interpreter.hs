@@ -15,6 +15,7 @@ import           Gfx.EngineState            as ES
 import           Gfx.GeometryBuffers
 import           Gfx.Matrices
 import           Gfx.Shaders
+import           Gfx.VertexBuffers          (VBO (..), drawVBO)
 
 import           ErrorHandling              (printErrors)
 
@@ -59,7 +60,7 @@ getFullMatrix = do
   return $ multmm (multmm pMat vMat) mMat
 
 drawShape :: VBO -> GraphicsEngine GfxOutput
-drawShape (VBO bufferObject _ arrayIndex offset) = do
+drawShape vbo = do
   mvp <- getFullMatrix
   style <- gets currentFillStyle
   case style of
@@ -68,8 +69,7 @@ drawShape (VBO bufferObject _ arrayIndex offset) = do
       liftIO (currentProgram $= Just (shaderProgram program))
       lift $ setMVPMatrixUniform program mvp
       lift $ setColourUniform program fillC
-      bindVertexArrayObject $= Just bufferObject
-      lift $ drawArrays Triangles arrayIndex offset
+      lift $ drawVBO vbo
     ES.GFXTexture name frame -> do
       program <- gets textureShaders
       liftIO (currentProgram $= Just (shaderProgram program))
@@ -80,9 +80,8 @@ drawShape (VBO bufferObject _ arrayIndex offset) = do
           lift $ activeTexture $= TextureUnit 0
           lift $ textureBinding Texture2D $= Just texture
           lift $ setMVPMatrixUniform program mvp
-          bindVertexArrayObject $= Just bufferObject
-          lift $ drawArrays Triangles arrayIndex offset
-          liftIO printErrors
+          lift $ drawVBO vbo
+  liftIO printErrors
 
 drawWireframe :: VBO -> GraphicsEngine GfxOutput
 drawWireframe (VBO bufferObject _ arrayIndex offset) = do

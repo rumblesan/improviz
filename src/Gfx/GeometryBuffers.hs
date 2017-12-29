@@ -1,20 +1,14 @@
 module Gfx.GeometryBuffers where
 
-import           Foreign.Marshal.Array
-import           Foreign.Ptr
-import           Foreign.Storable
+import           Foreign.Marshal.Array     (withArray)
+import           Foreign.Storable          (sizeOf)
 import           GHC.Int                   (Int32)
 
-import           Graphics.Rendering.OpenGL
+import           Graphics.Rendering.OpenGL as GL
 
 import           Gfx.Geometries
 
-data VBO =
-  VBO VertexArrayObject
-      [BufferObject]
-      ArrayIndex
-      NumArrayIndices
-  deriving (Show, Eq)
+import           Gfx.VertexBuffers         (VBO, createVBO, setAttribPointer)
 
 data GeometryBuffers = GeometryBuffers
   { lineBuffer         :: VBO
@@ -28,64 +22,45 @@ data GeometryBuffers = GeometryBuffers
   , sphereWireBuffer   :: VBO
   } deriving (Show, Eq)
 
-bufferOffset :: Integral a => a -> Ptr b
-bufferOffset = plusPtr nullPtr . fromIntegral
-
-setAttribPointer :: AttribLocation -> Int32 -> Int32 -> Int32 -> IO ()
-setAttribPointer location numComponents stride idx = do
-  vertexAttribPointer location $=
-    ( ToFloat
-    , VertexArrayDescriptor numComponents Float stride (bufferOffset idx))
-  vertexAttribArray location $= Enabled
-
 createBuffer :: [Vertex3 GLfloat] -> IO VBO
-createBuffer verts = do
-  vbo <- genObjectName
-  bindVertexArrayObject $= Just vbo
-  arrayBuffer <- genObjectName
-  bindBuffer ArrayBuffer $= Just arrayBuffer
+createBuffer verts =
   let firstIndex = 0
+      posVSize = 3
       vPosition = AttribLocation 0
-      numVertices = length verts
-      vertexSize = sizeOf (head verts)
+      stride = 0
+      numVertices = fromIntegral $ length verts
+      vertexSize = fromIntegral $ sizeOf (head verts)
       size = fromIntegral (numVertices * vertexSize)
-  withArray verts $ \ptr -> bufferData ArrayBuffer $= (size, ptr, StaticDraw)
-  setAttribPointer vPosition 3 0 firstIndex
-  return $ VBO vbo [arrayBuffer] firstIndex (fromIntegral numVertices)
+      quadConfig = do
+        withArray verts $ \ptr ->
+          bufferData ArrayBuffer $= (size, ptr, StaticDraw)
+        setAttribPointer vPosition posVSize stride firstIndex
+  in createVBO [quadConfig] firstIndex numVertices
 
 createBufferWithTexture :: [Vertex3 GLfloat] -> [Vertex2 GLfloat] -> IO VBO
-createBufferWithTexture verts textCoords = do
-  vbo <- genObjectName
-  bindVertexArrayObject $= Just vbo
-  vertArrayBuffer <- genObjectName
-  bindBuffer ArrayBuffer $= Just vertArrayBuffer
+createBufferWithTexture verts textCoords =
   let firstVIndex = 0
+      posVSize = 3
+      texVSize = 2
+      firstTIndex = 0
       vPosition = AttribLocation 0
-      numVVertices = length verts
-      vVertexSize = sizeOf (head verts)
-      vsize = fromIntegral (numVVertices * vVertexSize)
-  withArray verts $ \ptr -> bufferData ArrayBuffer $= (vsize, ptr, StaticDraw)
-  vertexAttribPointer vPosition $=
-    (ToFloat, VertexArrayDescriptor 3 Float 0 (bufferOffset firstVIndex))
-  vertexAttribArray vPosition $= Enabled
-  textArrayBuffer <- genObjectName
-  bindBuffer ArrayBuffer $= Just textArrayBuffer
-  let firstTIndex = 0
       texcoord = AttribLocation 1
-      numTVertices = length textCoords
-      tVertexSize = sizeOf (head textCoords)
+      numVVertices = fromIntegral $ length verts
+      numTVertices = fromIntegral $ length textCoords
+      vVertexSize = fromIntegral $ sizeOf (head verts)
+      tVertexSize = fromIntegral $ sizeOf (head textCoords)
+      vsize = fromIntegral (numVVertices * vVertexSize)
       tsize = fromIntegral (numTVertices * tVertexSize)
-  withArray textCoords $ \ptr ->
-    bufferData ArrayBuffer $= (tsize, ptr, StaticDraw)
-  vertexAttribPointer texcoord $=
-    (ToFloat, VertexArrayDescriptor 2 Float 0 (bufferOffset firstTIndex))
-  vertexAttribArray texcoord $= Enabled
-  return $
-    VBO
-      vbo
-      [vertArrayBuffer, textArrayBuffer]
-      firstVIndex
-      (fromIntegral numVVertices)
+      stride = 0
+      vArrayConfig = do
+        withArray verts $ \ptr ->
+          bufferData ArrayBuffer $= (vsize, ptr, StaticDraw)
+        setAttribPointer vPosition posVSize stride firstVIndex
+      tArrayConfig = do
+        withArray textCoords $ \ptr ->
+          bufferData ArrayBuffer $= (tsize, ptr, StaticDraw)
+        setAttribPointer texcoord texVSize stride firstTIndex
+  in createVBO [vArrayConfig, tArrayConfig] firstVIndex numVVertices
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers =

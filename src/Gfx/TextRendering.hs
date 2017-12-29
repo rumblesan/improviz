@@ -9,6 +9,7 @@ module Gfx.TextRendering
   ) where
 
 import           Control.Monad             (foldM_)
+import           Data.Maybe                (listToMaybe)
 import           GHC.Int                   (Int32)
 
 import           Foreign.Marshal.Array     (withArray)
@@ -20,9 +21,10 @@ import qualified Data.Map.Strict           as M
 
 import           Gfx.FontHandling          (Character (..), Font (..),
                                             getCharacter, loadFont)
-import           Gfx.GeometryBuffers       (bufferOffset, setAttribPointer)
 import           Gfx.LoadShaders           (ShaderInfo (..), ShaderSource (..),
                                             loadShaders)
+import           Gfx.VertexBuffers         (VBO (..), createVBO, drawVBO,
+                                            setAttribPointer)
 import qualified Graphics.GL               as GLRaw
 import           Graphics.Rendering.OpenGL (ArrayIndex, AttribLocation (..),
                                             BlendEquation (FuncAdd),
@@ -48,19 +50,12 @@ import           Graphics.Rendering.OpenGL (ArrayIndex, AttribLocation (..),
 import qualified Graphics.Rendering.OpenGL as GL
 
 import           Gfx.PostProcessing        (Savebuffer (..), createSavebuffer,
-                                            deleteSavebuffer, drawQuadVBO)
+                                            deleteSavebuffer)
 
 import           Data.Vec                  (Mat44, multmm)
 import           Gfx.Matrices              (orthographicMat, translateMat)
 
 import           ErrorHandling             (printErrors)
-
-data CharQuad =
-  CharQuad VertexArrayObject
-           BufferObject
-           ArrayIndex
-           NumArrayIndices
-  deriving (Show, Eq)
 
 data TextRenderer = TextRenderer
   { textFont        :: Font
@@ -68,8 +63,8 @@ data TextRenderer = TextRenderer
   , pMatrix         :: Mat44 GLfloat
   , textprogram     :: Program
   , bgprogram       :: Program
-  , characterQuad   :: CharQuad
-  , characterBGQuad :: CharQuad
+  , characterQuad   :: VBO
+  , characterBGQuad :: VBO
   , textColour      :: Color4 GLfloat
   , textBGColour    :: Color4 GLfloat
   , outbuffer       :: Savebuffer
@@ -81,45 +76,39 @@ textCoordMatrix left right top bottom near far =
       t = translateMat (-1) 1 0
   in multmm t o
 
-createCharacterQuad :: IO () -> IO CharQuad
-createCharacterQuad quadConfig = do
-  vao <- GL.genObjectName
-  GL.bindVertexArrayObject $= Just vao
-  arrayBuffer <- GL.genObjectName
-  GL.bindBuffer ArrayBuffer $= Just arrayBuffer
-  quadConfig
-  GL.bindVertexArrayObject $= Nothing
-  GL.bindBuffer ArrayBuffer $= Nothing
-  return $ CharQuad vao arrayBuffer 0 6
-
-createCharacterTextQuad :: IO CharQuad
+createCharacterTextQuad :: IO VBO
 createCharacterTextQuad =
   let vertexSize = fromIntegral $ sizeOf (0 :: GLfloat)
+      posVSize = 2
+      texVSize = 2
+      numVertices = 6
       firstPosIndex = 0
-      firstTexIndex = 2 * vertexSize
+      firstTexIndex = posVSize * vertexSize
       vPosition = AttribLocation 0
       vTexCoord = AttribLocation 1
-      numVertices = 6 * 4
-      size = fromIntegral (numVertices * vertexSize)
-      stride = fromIntegral (4 * vertexSize)
+      numElements = numVertices * (posVSize + texVSize)
+      size = fromIntegral (numElements * vertexSize)
+      stride = fromIntegral ((posVSize + texVSize) * vertexSize)
       quadConfig = do
         GL.bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
-        setAttribPointer vPosition 2 stride firstPosIndex
-        setAttribPointer vTexCoord 2 stride firstTexIndex
-  in createCharacterQuad quadConfig
+        setAttribPointer vPosition posVSize stride firstPosIndex
+        setAttribPointer vTexCoord texVSize stride firstTexIndex
+  in createVBO [quadConfig] firstPosIndex numVertices
 
-createCharacterBGQuad :: IO CharQuad
+createCharacterBGQuad :: IO VBO
 createCharacterBGQuad =
-  let vertexSize = sizeOf (0 :: GLfloat)
+  let vertexSize = fromIntegral $ sizeOf (0 :: GLfloat)
+      posVSize = 2
+      numVertices = 6
       firstPosIndex = 0
       vPosition = AttribLocation 0
-      numVertices = 6 * 2
-      size = fromIntegral (numVertices * vertexSize)
+      numElements = numVertices * posVSize
+      size = fromIntegral (numElements * vertexSize)
       stride = 0
       quadConfig = do
         GL.bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
-        setAttribPointer vPosition 2 stride firstPosIndex
-  in createCharacterQuad quadConfig
+        setAttribPointer vPosition posVSize stride firstPosIndex
+  in createVBO [quadConfig] firstPosIndex numVertices
 
 createTextRenderer ::
      Float
@@ -199,7 +188,7 @@ renderTextbuffer renderer = do
   GL.currentProgram $= Just program
   GL.activeTexture $= TextureUnit 0
   GL.textureBinding Texture2D $= Just text
-  drawQuadVBO quadVBO
+  drawVBO quadVBO
 
 renderCharacters :: Int -> Int -> TextRenderer -> String -> IO ()
 renderCharacters xpos ypos renderer strings = do
@@ -240,12 +229,12 @@ sendVertices verts =
        GL.bufferSubData ArrayBuffer WriteToBuffer 0 size ptr
 
 renderCharacterQuad ::
-     Program -> Mat44 GLfloat -> CharQuad -> IO () -> [GLfloat] -> IO ()
+     Program -> Mat44 GLfloat -> VBO -> IO () -> [GLfloat] -> IO ()
 renderCharacterQuad program pMatrix character charDrawFunc charVerts =
-  let (CharQuad arrayObject arrayBuffer firstIndex numTriangles) = character
+  let (VBO arrayObject arrayBuffers firstIndex numTriangles) = character
   in do GL.currentProgram $= Just program
         GL.bindVertexArrayObject $= Just arrayObject
-        GL.bindBuffer ArrayBuffer $= Just arrayBuffer
+        GL.bindBuffer ArrayBuffer $= listToMaybe arrayBuffers
         charDrawFunc
         sendProjectionMatrix program pMatrix
         sendVertices charVerts

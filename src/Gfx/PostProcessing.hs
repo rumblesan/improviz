@@ -2,12 +2,14 @@ module Gfx.PostProcessing where
 
 import           Graphics.Rendering.OpenGL as GL
 
-import           Foreign.Marshal.Array
-import           Foreign.Ptr
-import           Foreign.Storable
+import           Foreign.Marshal.Array     (withArray)
+import           Foreign.Ptr               (nullPtr)
+import           Foreign.Storable          (sizeOf)
 
-import           Gfx.GeometryBuffers
-import           Gfx.LoadShaders
+import           Gfx.LoadShaders           (ShaderInfo (..), ShaderSource (..),
+                                            loadShaders)
+import           Gfx.VertexBuffers         (VBO, createVBO, deleteVBO, drawVBO,
+                                            setAttribPointer)
 
 data AnimationStyle
   = NormalStyle
@@ -49,81 +51,66 @@ quadVertices =
   [ -1
   , 1
   , 0
-  , 0
-  , 1
+  , 1 -- v1
   , -1
   , -1
   , 0
-  , 0
-  , 0
-  , 1
-  , 1
-  , 0
+  , 0 -- v2
   , 1
   , 1
   , 1
+  , 1 -- v3
   , 1
-  , 0
   , 1
   , 1
+  , 1 -- v4
   , -1
   , -1
   , 0
-  , 0
-  , 0
+  , 0 -- v5
   , 1
   , -1
-  , 0
   , 1
-  , 0
+  , 0 -- v6
   ]
 
 createQuadVBO :: IO VBO
-createQuadVBO = do
-  vbo <- genObjectName
-  bindVertexArrayObject $= Just vbo
-  arrayBuffer <- genObjectName
-  bindBuffer ArrayBuffer $= Just arrayBuffer
-  let vertexSize = sizeOf (head quadVertices)
+createQuadVBO =
+  let vertexSize = fromIntegral $ sizeOf (head quadVertices)
+      posVSize = 2
+      texVSize = 2
       firstPosIndex = 0
-      firstTexIndex = 3 * vertexSize
+      firstTexIndex = posVSize * vertexSize
       vPosition = AttribLocation 0
       vTexCoord = AttribLocation 1
-      numVertices = length quadVertices
+      numVertices = fromIntegral $ length quadVertices
       size = fromIntegral (numVertices * vertexSize)
-      stride = fromIntegral (5 * vertexSize)
-  withArray quadVertices $ \ptr ->
-    bufferData ArrayBuffer $= (size, ptr, StaticDraw)
-  vertexAttribPointer vPosition $=
-    (ToFloat, VertexArrayDescriptor 3 Float stride (bufferOffset firstPosIndex))
-  vertexAttribPointer vTexCoord $=
-    (ToFloat, VertexArrayDescriptor 2 Float stride (bufferOffset firstTexIndex))
-  vertexAttribArray vPosition $= Enabled
-  vertexAttribArray vTexCoord $= Enabled
-  return $ VBO vbo [arrayBuffer] firstPosIndex 6
-
-drawQuadVBO :: VBO -> IO ()
-drawQuadVBO (VBO qbo _ qbai qbn) = do
-  bindVertexArrayObject $= Just qbo
-  drawArrays Triangles qbai qbn
+      stride = fromIntegral ((posVSize + texVSize) * vertexSize)
+      numArrIdx = 6
+      quadConfig = do
+        withArray quadVertices $ \ptr ->
+          GL.bufferData ArrayBuffer $= (size, ptr, StaticDraw)
+        setAttribPointer vPosition posVSize stride firstPosIndex
+        setAttribPointer vTexCoord texVSize stride firstTexIndex
+  in createVBO [quadConfig] firstPosIndex numArrIdx
 
 create2DTexture :: GLint -> GLint -> IO TextureObject
 create2DTexture width height = do
   text <- genObjectName
-  textureBinding Texture2D $= Just text
+  GL.textureBinding GL.Texture2D $= Just text
   GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
   let pd = PixelData RGBA UnsignedByte nullPtr
-  texImage2D Texture2D NoProxy 0 RGBA' (TextureSize2D width height) 0 pd
-  textureBinding Texture2D $= Nothing
+  GL.texImage2D Texture2D NoProxy 0 RGBA' (TextureSize2D width height) 0 pd
+  GL.textureBinding Texture2D $= Nothing
   return text
 
 createDepthbuffer :: GLint -> GLint -> IO TextureObject
 createDepthbuffer width height = do
   depth <- genObjectName
-  textureBinding Texture2D $= Just depth
+  GL.textureBinding Texture2D $= Just depth
   GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
   let pd = PixelData DepthComponent UnsignedByte nullPtr
-  texImage2D
+  GL.texImage2D
     Texture2D
     NoProxy
     0
@@ -131,8 +118,8 @@ createDepthbuffer width height = do
     (TextureSize2D width height)
     0
     pd
-  framebufferTexture2D Framebuffer DepthAttachment Texture2D depth 0
-  textureBinding Texture2D $= Nothing
+  GL.framebufferTexture2D Framebuffer DepthAttachment Texture2D depth 0
+  GL.textureBinding Texture2D $= Nothing
   return depth
 
 createPostProcessing :: GLint -> GLint -> IO PostProcessing
@@ -154,9 +141,9 @@ deletePostProcessing post = do
 createSavebuffer :: GLint -> GLint -> IO Savebuffer
 createSavebuffer width height = do
   fbo <- genObjectName
-  bindFramebuffer Framebuffer $= fbo
+  GL.bindFramebuffer Framebuffer $= fbo
   text <- create2DTexture width height
-  framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
+  GL.framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
   depth <- createDepthbuffer width height
   qvbo <- createQuadVBO
   program <-
@@ -167,12 +154,11 @@ createSavebuffer width height = do
   return $ Savebuffer fbo text depth program qvbo
 
 deleteSavebuffer :: Savebuffer -> IO ()
-deleteSavebuffer (Savebuffer sbfbo sbtext sbdepth sbprogram (VBO sbvbo sbabos _ _)) = do
+deleteSavebuffer (Savebuffer sbfbo sbtext sbdepth sbprogram sbvbo) = do
   deleteObjectName sbtext
   deleteObjectName sbdepth
   deleteObjectName sbprogram
-  mapM_ deleteObjectName sbabos
-  deleteObjectName sbvbo
+  deleteVBO sbvbo
   deleteObjectName sbfbo
 
 createMotionBlurbuffer :: GLint -> GLint -> IO Mixbuffer
@@ -191,12 +177,11 @@ createMotionBlurbuffer width height = do
   return $ Mixbuffer fbo text depth program qvbo
 
 deleteMixbuffer :: Mixbuffer -> IO ()
-deleteMixbuffer (Mixbuffer mfbo mtext depth mprogram (VBO mvbo mabos _ _)) = do
+deleteMixbuffer (Mixbuffer mfbo mtext depth mprogram mbvbo) = do
   deleteObjectName mtext
   deleteObjectName depth
   deleteObjectName mprogram
-  mapM_ deleteObjectName mabos
-  deleteObjectName mvbo
+  deleteVBO mbvbo
   deleteObjectName mfbo
 
 createPaintOverbuffer :: GLint -> GLint -> IO Mixbuffer
@@ -240,7 +225,7 @@ renderSavebuffer (Savebuffer _ text _ program quadVBO) = do
   currentProgram $= Just program
   activeTexture $= TextureUnit 0
   textureBinding Texture2D $= Just text
-  drawQuadVBO quadVBO
+  drawVBO quadVBO
 
 renderMotionBlurbuffer ::
      Mixbuffer -> TextureObject -> TextureObject -> GLfloat -> IO ()
@@ -256,7 +241,7 @@ renderMotionBlurbuffer (Mixbuffer _ _ _ program quadVBO) nextFrame lastFrame mix
   uniform texFramebufferU $= TextureUnit 0
   uniform lastFrameU $= TextureUnit 1
   uniform mixRatioU $= mix
-  drawQuadVBO quadVBO
+  drawVBO quadVBO
 
 renderPaintOverbuffer ::
      Mixbuffer -> TextureObject -> TextureObject -> TextureObject -> IO ()
@@ -274,4 +259,4 @@ renderPaintOverbuffer (Mixbuffer _ _ _ program quadVBO) depth nextFrame lastFram
   uniform texFramebufferU $= TextureUnit 0
   uniform lastFrameU $= TextureUnit 1
   uniform depthU $= TextureUnit 2
-  drawQuadVBO quadVBO
+  drawVBO quadVBO
