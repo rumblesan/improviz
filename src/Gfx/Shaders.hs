@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Gfx.Shaders where
 
 import qualified Graphics.GL               as GLRaw
@@ -7,6 +9,8 @@ import           Foreign.Marshal.Utils
 import           Foreign.Ptr
 
 import           Data.Vec
+
+import           Data.FileEmbed            (embedFile)
 
 import           Gfx.LoadShaders
 
@@ -20,8 +24,12 @@ createColourShaders :: IO Shaders
 createColourShaders = do
   program <-
     loadShaders
-      [ ShaderInfo VertexShader (FileSource "shaders/basic.vert")
-      , ShaderInfo FragmentShader (FileSource "shaders/basic.frag")
+      [ ShaderInfo
+          VertexShader
+          (ByteStringSource $(embedFile "assets/shaders/basic.vert"))
+      , ShaderInfo
+          FragmentShader
+          (ByteStringSource $(embedFile "assets/shaders/basic.frag"))
       ]
   GL.currentProgram $= Just program
   mvpMatUniform <- GL.get $ uniformLocation program "MVPMat"
@@ -32,8 +40,12 @@ createTextureShaders :: IO Shaders
 createTextureShaders = do
   program <-
     loadShaders
-      [ ShaderInfo VertexShader (FileSource "shaders/texture.vert")
-      , ShaderInfo FragmentShader (FileSource "shaders/texture.frag")
+      [ ShaderInfo
+          VertexShader
+          (ByteStringSource $(embedFile "assets/shaders/texture.vert"))
+      , ShaderInfo
+          FragmentShader
+          (ByteStringSource $(embedFile "assets/shaders/texture.frag"))
       ]
   GL.currentProgram $= Just program
   mvpMatUniform <- GL.get $ uniformLocation program "MVPMat"

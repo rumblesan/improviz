@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Gfx.PostProcessing where
 
 import           Graphics.Rendering.OpenGL as GL
@@ -6,6 +8,7 @@ import           Foreign.Marshal.Array     (withArray)
 import           Foreign.Ptr               (nullPtr)
 import           Foreign.Storable          (sizeOf)
 
+import           Data.FileEmbed            (embedFile)
 import           Gfx.LoadShaders           (ShaderInfo (..), ShaderSource (..),
                                             loadShaders)
 import           Gfx.VertexBuffers         (VBO, createVBO, deleteVBO, drawVBO,
@@ -148,8 +151,12 @@ createSavebuffer width height = do
   qvbo <- createQuadVBO
   program <-
     loadShaders
-      [ ShaderInfo VertexShader (FileSource "shaders/savebuffer.vert")
-      , ShaderInfo FragmentShader (FileSource "shaders/savebuffer.frag")
+      [ ShaderInfo
+          VertexShader
+          (ByteStringSource $(embedFile "assets/shaders/savebuffer.vert"))
+      , ShaderInfo
+          FragmentShader
+          (ByteStringSource $(embedFile "assets/shaders/savebuffer.frag"))
       ]
   return $ Savebuffer fbo text depth program qvbo
 
@@ -171,8 +178,12 @@ createMotionBlurbuffer width height = do
   qvbo <- createQuadVBO
   program <-
     loadShaders
-      [ ShaderInfo VertexShader (FileSource "shaders/motionBlur.vert")
-      , ShaderInfo FragmentShader (FileSource "shaders/motionBlur.frag")
+      [ ShaderInfo
+          VertexShader
+          (ByteStringSource $(embedFile "assets/shaders/motionBlur.vert"))
+      , ShaderInfo
+          FragmentShader
+          (ByteStringSource $(embedFile "assets/shaders/motionBlur.frag"))
       ]
   return $ Mixbuffer fbo text depth program qvbo
 
@@ -194,8 +205,12 @@ createPaintOverbuffer width height = do
   qvbo <- createQuadVBO
   program <-
     loadShaders
-      [ ShaderInfo VertexShader (FileSource "shaders/paintOver.vert")
-      , ShaderInfo FragmentShader (FileSource "shaders/paintOver.frag")
+      [ ShaderInfo
+          VertexShader
+          (ByteStringSource $(embedFile "assets/shaders/paintOver.vert"))
+      , ShaderInfo
+          FragmentShader
+          (ByteStringSource $(embedFile "assets/shaders/paintOver.frag"))
       ]
   return $ Mixbuffer fbo text depth program qvbo
 

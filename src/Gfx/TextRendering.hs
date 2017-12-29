@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Gfx.TextRendering
   ( createTextRenderer
   , renderText
@@ -19,6 +21,7 @@ import           Foreign.Storable          (peek, sizeOf)
 
 import qualified Data.Map.Strict           as M
 
+import           Data.FileEmbed            (embedFile)
 import           Gfx.FontHandling          (Character (..), Font (..),
                                             getCharacter, loadFont)
 import           Gfx.LoadShaders           (ShaderInfo (..), ShaderSource (..),
@@ -125,13 +128,21 @@ createTextRenderer front back width height fontPath charSize textColour bgColour
   cbq <- createCharacterBGQuad
   tprogram <-
     loadShaders
-      [ ShaderInfo VertexShader (FileSource "shaders/textrenderer.vert")
-      , ShaderInfo FragmentShader (FileSource "shaders/textrenderer.frag")
+      [ ShaderInfo
+          VertexShader
+          (ByteStringSource $(embedFile "assets/shaders/textrenderer.vert"))
+      , ShaderInfo
+          FragmentShader
+          (ByteStringSource $(embedFile "assets/shaders/textrenderer.frag"))
       ]
   bgshaderprogram <-
     loadShaders
-      [ ShaderInfo VertexShader (FileSource "shaders/textrenderer-bg.vert")
-      , ShaderInfo FragmentShader (FileSource "shaders/textrenderer-bg.frag")
+      [ ShaderInfo
+          VertexShader
+          (ByteStringSource $(embedFile "assets/shaders/textrenderer-bg.vert"))
+      , ShaderInfo
+          FragmentShader
+          (ByteStringSource $(embedFile "assets/shaders/textrenderer-bg.frag"))
       ]
   font <- loadFont fontPath charSize
   let projectionMatrix =
