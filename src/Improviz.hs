@@ -13,16 +13,14 @@ import           Configuration          (ImprovizConfig, getConfig)
 import           Gfx.EngineState        (EngineState)
 
 data ImprovizEnv = ImprovizEnv
-  { _starttime :: TVar Float
-  , _appstate  :: TVar AppState
-  , _gfxstate  :: TMVar EngineState
-  , _config    :: ImprovizConfig
+  { _appstate :: TVar AppState
+  , _gfxstate :: TMVar EngineState
+  , _config   :: ImprovizConfig
   }
 
 makeLenses ''ImprovizEnv
 
-createEnv :: IO ImprovizEnv
-createEnv =
-  ImprovizEnv <$> newTVarIO 0.0 <*> newTVarIO (makeAppState 0.0) <*>
-  newEmptyTMVarIO <*>
+createEnv :: Float -> IO ImprovizEnv
+createEnv startTime =
+  ImprovizEnv <$> newTVarIO (makeAppState startTime) <*> newEmptyTMVarIO <*>
   getConfig

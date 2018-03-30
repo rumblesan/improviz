@@ -4,7 +4,9 @@ import           GHC.Float              (double2Float)
 import           System.Exit            (exitSuccess)
 
 import           Control.Concurrent     (forkIO)
-import           Control.Concurrent.STM
+import           Control.Concurrent.STM (atomically, modifyTVar, putTMVar,
+                                         readTMVar, readTVarIO, takeTMVar,
+                                         writeTVar)
 import           Control.Monad          (unless, when)
 import           Data.Maybe             (fromMaybe)
 
@@ -12,16 +14,15 @@ import           Lens.Simple            ((^.))
 
 import qualified Graphics.UI.GLFW       as GLFW
 
-import           AppState               (AppState, ImprovizError (..),
-                                         makeAppState)
+import           AppState               (ImprovizError (..))
 import qualified AppState               as AS
 import qualified Configuration          as C
 import qualified Configuration.Font     as CF
-import           Improviz               (ImprovizEnv, appstate, config,
-                                         createEnv, gfxstate, starttime)
+import           Improviz               (ImprovizEnv)
+import qualified Improviz               as I
 
-import           Gfx                    (EngineState (..), Scene (..),
-                                         createGfxEngineState, renderGfx)
+import           Gfx                    (EngineState (..), createGfxEngineState,
+                                         renderGfx)
 import           Gfx.Matrices           (projectionMat, vec3, viewMat)
 import           Gfx.PostProcessing     (createPostProcessing,
                                          deletePostProcessing,
@@ -38,19 +39,17 @@ import           Logging                (logError, logInfo)
 import           Server.Http            (runServer)
 
 main :: IO ()
-main = createEnv >>= app
+main = do
+  starttime <- double2Float . fromMaybe 0.0 <$> GLFW.getTime
+  I.createEnv starttime >>= app
 
 app :: ImprovizEnv -> IO ()
 app env = do
-  time <- double2Float . fromMaybe 0.0 <$> GLFW.getTime
-  atomically $ do
-    writeTVar (env ^. starttime) time
-    writeTVar (env ^. appstate) (makeAppState time)
-  _ <- forkIO $ runServer (env ^. appstate) (env ^. config . C.serverPort)
+  _ <- forkIO $ runServer (env ^. I.appstate) (env ^. I.config . C.serverPort)
   setupWindow
-    (env ^. config . C.screenWidth)
-    (env ^. config . C.screenHeight)
-    (env ^. config . C.fullscreenDisplay)
+    (env ^. I.config . C.screenWidth)
+    (env ^. I.config . C.screenHeight)
+    (env ^. I.config . C.fullscreenDisplay)
     (initApp env)
     (resize env)
     (display env)
@@ -70,20 +69,20 @@ initApp env width height =
             back
             width
             height
-            (env ^. config . C.fontConfig . CF.filepath)
-            (env ^. config . C.fontConfig . CF.size)
-            (env ^. config . C.fontConfig . CF.fgColour)
-            (env ^. config . C.fontConfig . CF.bgColour)
-        textureLib <- createTextureLib (env ^. config . C.textureDirectories)
+            (env ^. I.config . C.fontConfig . CF.filepath)
+            (env ^. I.config . C.fontConfig . CF.size)
+            (env ^. I.config . C.fontConfig . CF.fgColour)
+            (env ^. I.config . C.fontConfig . CF.bgColour)
+        textureLib <- createTextureLib (env ^. I.config . C.textureDirectories)
         gfxEngineState <-
           createGfxEngineState proj view post textRenderer textureLib
-        atomically $ putTMVar (env ^. gfxstate) gfxEngineState
+        atomically $ putTMVar (env ^. I.gfxstate) gfxEngineState
 
 resize :: ImprovizEnv -> GLFW.WindowSizeCallback
 resize env window newWidth newHeight = do
   logInfo "Resizing"
   (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
-  engineState <- atomically $ readTMVar (env ^. gfxstate)
+  engineState <- atomically $ readTMVar (env ^. I.gfxstate)
   deletePostProcessing $ postFX engineState
   newPost <- createPostProcessing (fromIntegral fbWidth) (fromIntegral fbHeight)
   newTrender <-
@@ -91,15 +90,15 @@ resize env window newWidth newHeight = do
   let newRatio = fromIntegral fbWidth / fromIntegral fbHeight
       newProj = projectionMat 0.1 100 (pi / 4) newRatio
   atomically $ do
-    es <- takeTMVar (env ^. gfxstate)
+    es <- takeTMVar (env ^. I.gfxstate)
     putTMVar
-      (env ^. gfxstate)
+      (env ^. I.gfxstate)
       es
       {projectionMatrix = newProj, postFX = newPost, textRenderer = newTrender}
 
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
-  as <- readTVarIO (env ^. appstate)
+  as <- readTVarIO (env ^. I.appstate)
   let t = double2Float time
       beat = AS.getBeat t as
       interpreterState =
@@ -111,13 +110,13 @@ display env time = do
       logError $ "Could not interpret program: " ++ msg
       atomically $
         modifyTVar
-          (env ^. appstate)
+          (env ^. I.appstate)
           (AS.resetProgram . AS.addError (ImprovizError msg Nothing))
     Right scene -> do
       when (AS.programHasChanged as) $ do
         logInfo "Saving current ast"
-        atomically $ modifyTVar (env ^. appstate) AS.saveProgram
-      gs <- atomically $ readTMVar (env ^. gfxstate)
+        atomically $ modifyTVar (env ^. I.appstate) AS.saveProgram
+      gs <- atomically $ readTMVar (env ^. I.gfxstate)
       renderGfx gs scene
       when (as ^. AS.displayText) $ do
         renderText 0 0 (textRenderer gs) (as ^. AS.programText)
