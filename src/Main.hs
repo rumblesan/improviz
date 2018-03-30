@@ -7,7 +7,7 @@ import           Control.Concurrent     (forkIO)
 import           Control.Concurrent.STM (atomically, modifyTVar, putTMVar,
                                          readTMVar, readTVarIO, takeTMVar,
                                          writeTVar)
-import           Control.Monad          (unless, when)
+import           Control.Monad          (when)
 import           Data.Maybe             (fromMaybe)
 
 import           Lens.Simple            ((^.))
