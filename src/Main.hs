@@ -16,6 +16,7 @@ import           AppState               (AppState, ImprovizError (..),
                                          makeAppState)
 import qualified AppState               as AS
 import qualified Configuration          as C
+import qualified Configuration.Font     as CF
 import           Improviz               (ImprovizEnv, appstate, config,
                                          createEnv, gfxstate, starttime)
 
@@ -69,10 +70,10 @@ initApp env width height =
             back
             width
             height
-            (env ^. config . C.fontConfig . C.fontFilePath)
-            (env ^. config . C.fontConfig . C.fontSize)
-            (env ^. config . C.fontConfig . C.fontFGColour)
-            (env ^. config . C.fontConfig . C.fontBGColour)
+            (env ^. config . C.fontConfig . CF.filepath)
+            (env ^. config . C.fontConfig . CF.size)
+            (env ^. config . C.fontConfig . CF.fgColour)
+            (env ^. config . C.fontConfig . CF.bgColour)
         textureLib <- createTextureLib (env ^. config . C.textureDirectories)
         gfxEngineState <-
           createGfxEngineState proj view post textRenderer textureLib

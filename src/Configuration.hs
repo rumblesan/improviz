@@ -1,4 +1,5 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Configuration
   ( ImprovizConfig
@@ -9,36 +10,20 @@ module Configuration
   , fontConfig
   , textureDirectories
   , serverPort
-  , fontFilePath
-  , fontSize
-  , fontFGColour
-  , fontBGColour
-  , ImprovizFontConfig
   , getConfig
   ) where
 
-import           Control.Applicative       ((<|>))
-import           Data.Maybe                (fromMaybe)
-import           Options.Applicative       (execParser)
-
-import           Configuration.CLIConfig   (ImprovizCLIConfig (..), cliopts,
-                                            cliparser)
-import           Configuration.YamlConfig  (ImprovizYAMLConfig (..),
-                                            ImprovizYAMLFontConfig (..),
-                                            readConfigFile)
-
-import           Graphics.Rendering.OpenGL (Color4 (..), GLfloat)
+import           Control.Applicative ((<|>))
+import           Data.Maybe          (fromMaybe)
+import           Options.Applicative (execParser)
 
 import           Lens.Simple
 
-data ImprovizFontConfig = ImprovizFontConfig
-  { _fontFilePath :: Maybe FilePath
-  , _fontSize     :: Int
-  , _fontFGColour :: Color4 GLfloat
-  , _fontBGColour :: Color4 GLfloat
-  } deriving (Show)
-
-makeLenses ''ImprovizFontConfig
+import           Configuration.CLI   (ImprovizCLIConfig)
+import qualified Configuration.CLI   as CLI
+import           Configuration.Font  (ImprovizFontConfig, defaultFontConfig)
+import           Data.Yaml           (FromJSON (..), (.!=), (.:), (.:?))
+import qualified Data.Yaml           as Y
 
 data ImprovizConfig = ImprovizConfig
   { _screenWidth        :: Int
@@ -62,60 +47,43 @@ defaultConfig =
   , _screenHeight = 480
   , _fullscreenDisplay = Nothing
   , _debug = False
-  , _fontConfig =
-      ImprovizFontConfig
-      { _fontFilePath = Nothing
-      , _fontSize = 36
-      , _fontFGColour = Color4 0.0 0.0 0.0 1.0
-      , _fontBGColour = Color4 1.0 0.8 0.0 1.0
-      }
+  , _fontConfig = defaultFontConfig
   , _textureDirectories = ["./textures"]
   , _serverPort = 3000
   }
 
-getFontConfig ::
-     ImprovizFontConfig -> Maybe ImprovizYAMLFontConfig -> ImprovizFontConfig
-getFontConfig defaultFontCfg yamlFontCfg =
-  ImprovizFontConfig
-  { _fontFilePath =
-      (yamlFontCfg >>= yamlFontFilePath) <|> _fontFilePath defaultFontCfg
-  , _fontSize =
-      fromMaybe (_fontSize defaultFontCfg) (yamlFontCfg >>= yamlFontSize)
-  , _fontFGColour =
-      fromMaybe
-        (_fontFGColour defaultFontCfg)
-        (yamlFontCfg >>= yamlFontFGColour)
-  , _fontBGColour =
-      fromMaybe
-        (_fontBGColour defaultFontCfg)
-        (yamlFontCfg >>= yamlFontBGColour)
-  }
+instance FromJSON ImprovizConfig where
+  parseJSON (Y.Object v) =
+    ImprovizConfig <$> v .:? "screenwidth" .!= (defaultConfig ^. screenWidth) <*>
+    v .:? "screenheight" .!= (defaultConfig ^. screenHeight) <*>
+    v .:? "fullscreen" <*>
+    v .:? "debug" .!= False <*>
+    v .:? "font" .!= defaultFontConfig <*>
+    v .:? "textureDirectories" .!= (defaultConfig ^. textureDirectories) <*>
+    v .:? "serverPort" .!= (defaultConfig ^. serverPort)
+  parseJSON _ = fail "Expected Object for Config value"
 
 getConfig :: IO ImprovizConfig
 getConfig = do
-  cliCfg <- execParser cliopts
-  yamlCfgOpt <-
-    readConfigFile $ fromMaybe defaultConfigFile $ cliConfigFilePath cliCfg
-  return
-    ImprovizConfig
-    { _screenWidth =
-        fromMaybe
-          (_screenWidth defaultConfig)
-          (cliScreenWidth cliCfg <|> (yamlCfgOpt >>= yamlScreenWidth))
-    , _screenHeight =
-        fromMaybe
-          (_screenHeight defaultConfig)
-          (cliScreenHeight cliCfg <|> (yamlCfgOpt >>= yamlScreenHeight))
-    , _fullscreenDisplay =
-        cliFullscreenDisplay cliCfg <|> (yamlCfgOpt >>= yamlFullscreenDisplay)
-    , _debug = cliDebug cliCfg || maybe False yamlDebug yamlCfgOpt
-    , _fontConfig =
-        getFontConfig (_fontConfig defaultConfig) (yamlFontCfg <$> yamlCfgOpt)
-    , _textureDirectories =
-        maybe
-          (_textureDirectories defaultConfig)
-          yamlTextureDirectories
-          yamlCfgOpt
-    , _serverPort =
-        fromMaybe (_serverPort defaultConfig) (yamlCfgOpt >>= yamlServerPort)
-    }
+  cliCfg <- execParser CLI.opts
+  fileCfg <-
+    readConfigFile $ fromMaybe defaultConfigFile (cliCfg ^. CLI.configFilePath)
+  let cfg = fromMaybe defaultConfig fileCfg
+  return $ mergeConfigs cfg cliCfg
+
+readConfigFile :: FilePath -> IO (Maybe ImprovizConfig)
+readConfigFile cfgFilePath = do
+  yaml <- Y.decodeFileEither cfgFilePath
+  case yaml of
+    Left err     -> print err >> return Nothing
+    Right config -> return (Just config)
+
+mergeConfigs :: ImprovizConfig -> ImprovizCLIConfig -> ImprovizConfig
+mergeConfigs cfg cliCfg =
+  cfg
+  { _screenWidth = fromMaybe (cfg ^. screenWidth) (cliCfg ^. CLI.screenWidth)
+  , _screenHeight = fromMaybe (cfg ^. screenHeight) (cliCfg ^. CLI.screenHeight)
+  , _fullscreenDisplay =
+      (cfg ^. fullscreenDisplay) <|> (cliCfg ^. CLI.fullscreenDisplay)
+  , _debug = (cfg ^. debug) || (cliCfg ^. CLI.debug)
+  }

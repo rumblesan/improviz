@@ -45,8 +45,8 @@ executable improviz
                      , Server.Protocol
                      , AppState
                      , Configuration
-                     , Configuration.CLIConfig
-                     , Configuration.YamlConfig
+                     , Configuration.CLI
+                     , Configuration.Font
                      , ErrorHandling
                      , Logging
                      , Improviz
@@ -117,7 +117,10 @@ test-suite improviz-test
                      , aeson
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   other-modules:       ErrorHandling
+                     , AppState
                      , Configuration
+                     , Configuration.CLI
+                     , Configuration.Font
                      , Logging
                      , Improviz
                      , Gfx

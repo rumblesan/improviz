@@ -1,25 +1,39 @@
-module Configuration.CLIConfig where
+{-# LANGUAGE TemplateHaskell #-}
 
-import           Options.Applicative
+module Configuration.CLI
+  ( screenWidth
+  , screenHeight
+  , fullscreenDisplay
+  , debug
+  , configFilePath
+  , ImprovizCLIConfig
+  , opts
+  , parser
+  ) where
 
 import           Data.Semigroup      ((<>))
+import           Options.Applicative
+
+import           Lens.Simple         (makeLenses, (^.))
 
 data ImprovizCLIConfig = ImprovizCLIConfig
-  { cliScreenWidth       :: Maybe Int
-  , cliScreenHeight      :: Maybe Int
-  , cliFullscreenDisplay :: Maybe Int
-  , cliDebug             :: Bool
-  , cliConfigFilePath    :: Maybe FilePath
-  }
+  { _screenWidth       :: Maybe Int
+  , _screenHeight      :: Maybe Int
+  , _fullscreenDisplay :: Maybe Int
+  , _debug             :: Bool
+  , _configFilePath    :: Maybe FilePath
+  } deriving (Show)
 
-cliopts :: ParserInfo ImprovizCLIConfig
-cliopts =
+makeLenses ''ImprovizCLIConfig
+
+opts :: ParserInfo ImprovizCLIConfig
+opts =
   info
-    (cliparser <**> helper)
+    (parser <**> helper)
     (fullDesc <> progDesc "Visual live coding environment" <> header "Improviz")
 
-cliparser :: Parser ImprovizCLIConfig
-cliparser =
+parser :: Parser ImprovizCLIConfig
+parser =
   ImprovizCLIConfig <$>
   optional
     (option
