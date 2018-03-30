@@ -1,14 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module Configuration.Font
-  ( filepath
-  , size
-  , fgColour
-  , bgColour
-  , ImprovizFontConfig
-  , defaultFontConfig
-  ) where
+module Configuration.Font where
 
 import           Graphics.Rendering.OpenGL (Color4 (..), GLfloat)
 

@@ -1,38 +1,32 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module Configuration
-  ( ImprovizConfig
-  , screenWidth
-  , screenHeight
-  , fullscreenDisplay
-  , debug
-  , fontConfig
-  , textureDirectories
-  , serverPort
-  , getConfig
-  ) where
+module Configuration where
 
-import           Control.Applicative ((<|>))
-import           Data.Maybe          (fromMaybe)
-import           Options.Applicative (execParser)
+import           Control.Applicative  ((<|>))
+import           Data.Maybe           (fromMaybe)
+import           Options.Applicative  (execParser)
 
 import           Lens.Simple
 
-import           Configuration.CLI   (ImprovizCLIConfig)
-import qualified Configuration.CLI   as CLI
-import           Configuration.Font  (ImprovizFontConfig, defaultFontConfig)
-import           Data.Yaml           (FromJSON (..), (.!=), (.:), (.:?))
-import qualified Data.Yaml           as Y
+import           Configuration.CLI    (ImprovizCLIConfig)
+import qualified Configuration.CLI    as CLI
+import           Configuration.Font   (ImprovizFontConfig, defaultFontConfig)
+import           Configuration.Screen (ImprovizScreenConfig,
+                                       defaultScreenConfig)
+import           Data.Yaml            (FromJSON (..), (.!=), (.:), (.:?))
+import qualified Data.Yaml            as Y
 
 data ImprovizConfig = ImprovizConfig
   { _screenWidth        :: Int
   , _screenHeight       :: Int
   , _fullscreenDisplay  :: Maybe Int
   , _debug              :: Bool
+  , _screen             :: ImprovizScreenConfig
   , _fontConfig         :: ImprovizFontConfig
   , _textureDirectories :: [FilePath]
   , _serverPort         :: Int
+  , _apptitle           :: String
   } deriving (Show)
 
 makeLenses ''ImprovizConfig
@@ -47,9 +41,11 @@ defaultConfig =
   , _screenHeight = 480
   , _fullscreenDisplay = Nothing
   , _debug = False
+  , _screen = defaultScreenConfig
   , _fontConfig = defaultFontConfig
   , _textureDirectories = ["./textures"]
   , _serverPort = 3000
+  , _apptitle = "Improviz"
   }
 
 instance FromJSON ImprovizConfig where
@@ -57,10 +53,12 @@ instance FromJSON ImprovizConfig where
     ImprovizConfig <$> v .:? "screenwidth" .!= (defaultConfig ^. screenWidth) <*>
     v .:? "screenheight" .!= (defaultConfig ^. screenHeight) <*>
     v .:? "fullscreen" <*>
-    v .:? "debug" .!= False <*>
-    v .:? "font" .!= defaultFontConfig <*>
+    v .:? "debug" .!= (defaultConfig ^. debug) <*>
+    v .:? "screen" .!= (defaultConfig ^. screen) <*>
+    v .:? "font" .!= (defaultConfig ^. fontConfig) <*>
     v .:? "textureDirectories" .!= (defaultConfig ^. textureDirectories) <*>
-    v .:? "serverPort" .!= (defaultConfig ^. serverPort)
+    v .:? "serverPort" .!= (defaultConfig ^. serverPort) <*>
+    v .:? "apptitle" .!= (defaultConfig ^. apptitle)
   parseJSON _ = fail "Expected Object for Config value"
 
 getConfig :: IO ImprovizConfig

@@ -70,38 +70,41 @@ setupWindow ::
   -> ImprovizApp (m ())
 setupWindow initCB resizeCB displayCB = do
   env <- ask
-  let width = env ^. I.config . C.screenWidth
-  let height = env ^. I.config . C.screenHeight
-  let mon = env ^. I.config . C.fullscreenDisplay
+  let cfg = env ^. I.config
+  let width = cfg ^. C.screenWidth
+  let height = cfg ^. C.screenHeight
+  let mon = cfg ^. C.fullscreenDisplay
   let ratio = fromIntegral width / fromIntegral height
-  return $ liftIO $ do
-    GLFW.setErrorCallback (Just glfwErrorCallback)
-    successfulInit <- GLFW.init
-    bool successfulInit exitFailure $ do
-      GLFW.windowHint $ WindowHint'ContextVersionMajor 3
-      GLFW.windowHint $ WindowHint'ContextVersionMinor 2
-      GLFW.windowHint $ WindowHint'OpenGLForwardCompat True
-      GLFW.windowHint $ WindowHint'OpenGLProfile OpenGLProfile'Core
-      GLFW.windowHint $ WindowHint'DepthBits 16
-      GLFW.windowHint $ WindowHint'Decorated False
-      monitor <- targetMonitor mon
-      (w, h, x, y) <-
-        maybe
-          (return (width, height, 0, 0))
-          (windowSizings width height)
-          monitor
-      mw <- GLFW.createWindow w h "Improviz" Nothing Nothing
-      maybe' mw (GLFW.terminate >> exitFailure) $ \window -> do
-        GLFW.setWindowPos window x y
-        GLFW.makeContextCurrent mw
-        (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
-        depthFunc $= Just Less
-        initCB fbWidth fbHeight
-        GLFW.setWindowSizeCallback window $ Just resizeCB
-        forever $ unless' (GLFW.windowShouldClose window) $ do
-          Just t <- GLFW.getTime
-          displayCB t
-          GLFW.swapBuffers window
-          GLFW.pollEvents
-        GLFW.destroyWindow window
-        GLFW.terminate
+  return $
+    liftIO $ do
+      GLFW.setErrorCallback (Just glfwErrorCallback)
+      successfulInit <- GLFW.init
+      bool successfulInit exitFailure $ do
+        GLFW.windowHint $ WindowHint'ContextVersionMajor 3
+        GLFW.windowHint $ WindowHint'ContextVersionMinor 2
+        GLFW.windowHint $ WindowHint'OpenGLForwardCompat True
+        GLFW.windowHint $ WindowHint'OpenGLProfile OpenGLProfile'Core
+        GLFW.windowHint $ WindowHint'DepthBits 16
+        GLFW.windowHint $ WindowHint'Decorated False
+        monitor <- targetMonitor mon
+        (w, h, x, y) <-
+          maybe
+            (return (width, height, 0, 0))
+            (windowSizings width height)
+            monitor
+        mw <- GLFW.createWindow w h (cfg ^. C.apptitle) Nothing Nothing
+        maybe' mw (GLFW.terminate >> exitFailure) $ \window -> do
+          GLFW.setWindowPos window x y
+          GLFW.makeContextCurrent mw
+          (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
+          depthFunc $= Just Less
+          initCB fbWidth fbHeight
+          GLFW.setWindowSizeCallback window $ Just resizeCB
+          forever $
+            unless' (GLFW.windowShouldClose window) $ do
+              Just t <- GLFW.getTime
+              displayCB t
+              GLFW.swapBuffers window
+              GLFW.pollEvents
+          GLFW.destroyWindow window
+          GLFW.terminate

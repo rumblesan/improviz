@@ -19,6 +19,7 @@ import           AppState               (ImprovizError (..))
 import qualified AppState               as AS
 import qualified Configuration          as C
 import qualified Configuration.Font     as CF
+import qualified Configuration.Screen   as CS
 import           Improviz               (ImprovizApp, ImprovizEnv)
 import qualified Improviz               as I
 
@@ -62,8 +63,8 @@ initApp = do
   return
     (\width height -> do
        let ratio = fromIntegral width / fromIntegral height
-       let front = 0.1
-       let back = 100
+       let front = env ^. I.config . C.screen . CS.front
+       let back = env ^. I.config . C.screen . CS.back
        let proj = projectionMat front back (pi / 4) ratio
        let view = viewMat (vec3 0 0 10) (vec3 0 0 0) (vec3 0 1 0)
        post <- createPostProcessing (fromIntegral width) (fromIntegral height)
@@ -77,6 +78,8 @@ initApp = do
 resize :: ImprovizApp GLFW.WindowSizeCallback
 resize = do
   env <- ask
+  let front = env ^. I.config . C.screen . CS.front
+  let back = env ^. I.config . C.screen . CS.back
   return $ \window newWidth newHeight -> do
     logInfo "Resizing"
     (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
@@ -86,13 +89,13 @@ resize = do
       createPostProcessing (fromIntegral fbWidth) (fromIntegral fbHeight)
     newTrender <-
       resizeTextRendererScreen
-        0.1
-        100
+        front
+        back
         fbWidth
         fbHeight
         (textRenderer engineState)
     let newRatio = fromIntegral fbWidth / fromIntegral fbHeight
-        newProj = projectionMat 0.1 100 (pi / 4) newRatio
+        newProj = projectionMat front back (pi / 4) newRatio
     atomically $ do
       es <- takeTMVar (env ^. I.gfxstate)
       putTMVar

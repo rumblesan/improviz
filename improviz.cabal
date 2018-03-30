@@ -47,6 +47,7 @@ executable improviz
                      , Configuration
                      , Configuration.CLI
                      , Configuration.Font
+                     , Configuration.Screen
                      , ErrorHandling
                      , Logging
                      , Improviz
@@ -121,6 +122,7 @@ test-suite improviz-test
                      , Configuration
                      , Configuration.CLI
                      , Configuration.Font
+                     , Configuration.Screen
                      , Logging
                      , Improviz
                      , Gfx
