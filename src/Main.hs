@@ -12,10 +12,13 @@ import           Lens.Simple            ((^.))
 
 import qualified Graphics.UI.GLFW       as GLFW
 
-import           AppState               (AppState, ImprovizError (..))
+import           AppState               (AppState, ImprovizError (..),
+                                         makeAppState)
 import qualified AppState               as AS
-import           Configuration          (ImpConfig (..), ImpFontConfig (..),
-                                         getConfig)
+import qualified Configuration          as C
+import           Improviz               (ImprovizEnv, appstate, config,
+                                         createEnv, gfxstate, starttime)
+
 import           Gfx                    (EngineState (..), Scene (..),
                                          createGfxEngineState, renderGfx)
 import           Gfx.Matrices           (projectionMat, vec3, viewMat)
@@ -34,36 +37,31 @@ import           Logging                (logError, logInfo)
 import           Server.Http            (runServer)
 
 main :: IO ()
-main = getConfig >>= app
+main = createEnv >>= app
 
-app :: ImpConfig -> IO ()
-app cfg = do
-  esVar <- newEmptyTMVarIO
-  startTime <- double2Float . fromMaybe 0.0 <$> GLFW.getTime
-  asTVar <- newTVarIO (AS.makeAppState startTime)
-  _ <- forkIO $ runServer asTVar (serverPort cfg)
-  let initialWidth = screenWidth cfg
-  let initialHeight = screenHeight cfg
-  let initCB = initApp esVar cfg
-  let resizeCB = resize esVar
-  let displayCB = display asTVar esVar
+app :: ImprovizEnv -> IO ()
+app env = do
+  time <- double2Float . fromMaybe 0.0 <$> GLFW.getTime
+  atomically $ do
+    writeTVar (env ^. starttime) time
+    writeTVar (env ^. appstate) (makeAppState time)
+  _ <- forkIO $ runServer (env ^. appstate) (env ^. config . C.serverPort)
   setupWindow
-    initialWidth
-    initialHeight
-    (fullscreenDisplay cfg)
-    initCB
-    resizeCB
-    displayCB
+    (env ^. config . C.screenWidth)
+    (env ^. config . C.screenHeight)
+    (env ^. config . C.fullscreenDisplay)
+    (initApp env)
+    (resize env)
+    (display env)
   exitSuccess
 
-initApp :: TMVar EngineState -> ImpConfig -> Int -> Int -> IO ()
-initApp esVar cfg width height =
+initApp :: ImprovizEnv -> Int -> Int -> IO ()
+initApp env width height =
   let ratio = fromIntegral width / fromIntegral height
       front = 0.1
       back = 100
       proj = projectionMat front back (pi / 4) ratio
       view = viewMat (vec3 0 0 10) (vec3 0 0 0) (vec3 0 1 0)
-      fontCfg = fontConfig cfg
   in do post <- createPostProcessing (fromIntegral width) (fromIntegral height)
         textRenderer <-
           createTextRenderer
@@ -71,20 +69,20 @@ initApp esVar cfg width height =
             back
             width
             height
-            (fontFilePath fontCfg)
-            (fontSize fontCfg)
-            (fontFGColour fontCfg)
-            (fontBGColour fontCfg)
-        textureLib <- createTextureLib $ textureDirectories cfg
+            (env ^. config . C.fontConfig . C.fontFilePath)
+            (env ^. config . C.fontConfig . C.fontSize)
+            (env ^. config . C.fontConfig . C.fontFGColour)
+            (env ^. config . C.fontConfig . C.fontBGColour)
+        textureLib <- createTextureLib (env ^. config . C.textureDirectories)
         gfxEngineState <-
           createGfxEngineState proj view post textRenderer textureLib
-        atomically $ putTMVar esVar gfxEngineState
+        atomically $ putTMVar (env ^. gfxstate) gfxEngineState
 
-resize :: TMVar EngineState -> GLFW.WindowSizeCallback
-resize esVar window newWidth newHeight = do
+resize :: ImprovizEnv -> GLFW.WindowSizeCallback
+resize env window newWidth newHeight = do
   logInfo "Resizing"
   (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
-  engineState <- atomically $ readTMVar esVar
+  engineState <- atomically $ readTMVar (env ^. gfxstate)
   deletePostProcessing $ postFX engineState
   newPost <- createPostProcessing (fromIntegral fbWidth) (fromIntegral fbHeight)
   newTrender <-
@@ -92,15 +90,15 @@ resize esVar window newWidth newHeight = do
   let newRatio = fromIntegral fbWidth / fromIntegral fbHeight
       newProj = projectionMat 0.1 100 (pi / 4) newRatio
   atomically $ do
-    es <- takeTMVar esVar
+    es <- takeTMVar (env ^. gfxstate)
     putTMVar
-      esVar
+      (env ^. gfxstate)
       es
       {projectionMatrix = newProj, postFX = newPost, textRenderer = newTrender}
 
-display :: TVar AppState -> TMVar EngineState -> Double -> IO ()
-display appState esVar time = do
-  as <- readTVarIO appState
+display :: ImprovizEnv -> Double -> IO ()
+display env time = do
+  as <- readTVarIO (env ^. appstate)
   let t = double2Float time
       beat = AS.getBeat t as
       interpreterState =
@@ -112,13 +110,13 @@ display appState esVar time = do
       logError $ "Could not interpret program: " ++ msg
       atomically $
         modifyTVar
-          appState
+          (env ^. appstate)
           (AS.resetProgram . AS.addError (ImprovizError msg Nothing))
     Right scene -> do
       when (AS.programHasChanged as) $ do
         logInfo "Saving current ast"
-        atomically $ modifyTVar appState AS.saveProgram
-      gs <- atomically $ readTMVar esVar
+        atomically $ modifyTVar (env ^. appstate) AS.saveProgram
+      gs <- atomically $ readTMVar (env ^. gfxstate)
       renderGfx gs scene
       when (as ^. AS.displayText) $ do
         renderText 0 0 (textRenderer gs) (as ^. AS.programText)

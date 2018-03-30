@@ -49,6 +49,7 @@ executable improviz
                      , Configuration.YamlConfig
                      , ErrorHandling
                      , Logging
+                     , Improviz
                      , Gfx
                      , Gfx.Ast
                      , Gfx.Interpreter
@@ -118,6 +119,7 @@ test-suite improviz-test
   other-modules:       ErrorHandling
                      , Configuration
                      , Logging
+                     , Improviz
                      , Gfx
                      , Gfx.Ast
                      , Gfx.Interpreter

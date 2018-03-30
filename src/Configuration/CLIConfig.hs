@@ -4,7 +4,7 @@ import           Options.Applicative
 
 import           Data.Semigroup      ((<>))
 
-data ImpCLIConfig = ImpCLIConfig
+data ImprovizCLIConfig = ImprovizCLIConfig
   { cliScreenWidth       :: Maybe Int
   , cliScreenHeight      :: Maybe Int
   , cliFullscreenDisplay :: Maybe Int
@@ -12,15 +12,15 @@ data ImpCLIConfig = ImpCLIConfig
   , cliConfigFilePath    :: Maybe FilePath
   }
 
-cliopts :: ParserInfo ImpCLIConfig
+cliopts :: ParserInfo ImprovizCLIConfig
 cliopts =
   info
     (cliparser <**> helper)
     (fullDesc <> progDesc "Visual live coding environment" <> header "Improviz")
 
-cliparser :: Parser ImpCLIConfig
+cliparser :: Parser ImprovizCLIConfig
 cliparser =
-  ImpCLIConfig <$>
+  ImprovizCLIConfig <$>
   optional
     (option
        auto
