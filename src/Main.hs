@@ -68,15 +68,7 @@ initApp = do
        let view = viewMat (vec3 0 0 10) (vec3 0 0 0) (vec3 0 1 0)
        post <- createPostProcessing (fromIntegral width) (fromIntegral height)
        textRenderer <-
-         createTextRenderer
-           front
-           back
-           width
-           height
-           (env ^. I.config . C.fontConfig . CF.filepath)
-           (env ^. I.config . C.fontConfig . CF.size)
-           (env ^. I.config . C.fontConfig . CF.fgColour)
-           (env ^. I.config . C.fontConfig . CF.bgColour)
+         createTextRenderer (env ^. I.config) front back width height
        textureLib <- createTextureLib (env ^. I.config . C.textureDirectories)
        gfxEngineState <-
          createGfxEngineState proj view post textRenderer textureLib

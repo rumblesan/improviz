@@ -58,7 +58,11 @@ import           Gfx.PostProcessing        (Savebuffer (..), createSavebuffer,
 import           Data.Vec                  (Mat44, multmm)
 import           Gfx.Matrices              (orthographicMat, translateMat)
 
+import           Configuration             (ImprovizConfig)
+import qualified Configuration             as C
+import qualified Configuration.Font        as FC
 import           ErrorHandling             (printErrors)
+import           Lens.Simple               ((^.))
 
 data TextRenderer = TextRenderer
   { textFont        :: Font
@@ -114,16 +118,8 @@ createCharacterBGQuad =
   in createVBO [quadConfig] Triangles firstPosIndex numVertices
 
 createTextRenderer ::
-     Float
-  -> Float
-  -> Int
-  -> Int
-  -> Maybe FilePath
-  -> Int
-  -> Color4 GLfloat
-  -> Color4 GLfloat
-  -> IO TextRenderer
-createTextRenderer front back width height fontPath charSize textColour bgColour = do
+     ImprovizConfig -> Float -> Float -> Int -> Int -> IO TextRenderer
+createTextRenderer config front back width height = do
   cq <- createCharacterTextQuad
   cbq <- createCharacterBGQuad
   tprogram <-
@@ -144,7 +140,10 @@ createTextRenderer front back width height fontPath charSize textColour bgColour
           FragmentShader
           (ByteStringSource $(embedFile "assets/shaders/textrenderer-bg.frag"))
       ]
-  font <- loadFont fontPath charSize
+  font <-
+    loadFont
+      (config ^. C.fontConfig . FC.filepath)
+      (config ^. C.fontConfig . FC.size)
   let projectionMatrix =
         textCoordMatrix
           0
@@ -157,14 +156,14 @@ createTextRenderer front back width height fontPath charSize textColour bgColour
   return $
     TextRenderer
       font
-      charSize
+      (config ^. C.fontConfig . FC.size)
       projectionMatrix
       tprogram
       bgshaderprogram
       cq
       cbq
-      textColour
-      bgColour
+      (config ^. C.fontConfig . FC.fgColour)
+      (config ^. C.fontConfig . FC.bgColour)
       buffer
 
 resizeTextRendererScreen ::
