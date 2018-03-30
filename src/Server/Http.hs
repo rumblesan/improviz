@@ -1,14 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Server.Http
-  ( runServer
+  ( createServer
   ) where
 
 import           Web.Scotty
 
+import           Control.Concurrent         (ThreadId, forkIO)
 import           Control.Concurrent.STM     (TVar, atomically, modifyTVar,
                                              readTVarIO)
-import           Control.Monad.Trans        (liftIO)
+import           Control.Monad.Reader
+import           Control.Monad.Trans
 import           Data.Aeson                 hiding (json)
 import           Data.Monoid                ((<>))
 
@@ -21,6 +23,12 @@ import qualified AppState                   as AS
 import qualified Language                   as L
 
 import           Server.Protocol
+
+import qualified Configuration              as C
+import           Improviz                   (ImprovizApp, ImprovizEnv)
+import qualified Improviz                   as I
+
+import           Lens.Simple                ((^.))
 
 updateProgram :: TVar AppState -> String -> IO (ImprovizResponse String)
 updateProgram appState newProgram =
@@ -58,21 +66,22 @@ getErrors appState = do
   logInfo $ "Have " <> show (length errs) <> " Errors"
   return $ ImprovizErrorResponse errs
 
-runServer :: TVar AppState -> Int -> IO ()
-runServer appState port =
-  scotty port $ do
+createServer :: (MonadIO m) => ImprovizApp (m ThreadId)
+createServer = do
+  env <- ask
+  return $ liftIO $ forkIO $ scotty (env ^. I.config . C.serverPort) $ do
     get "/" $ text "SERVING"
     post "/read" $ do
       b <- body
-      resp <- liftIO $ updateProgram appState (unpack b)
+      resp <- liftIO $ updateProgram (env ^. I.appstate) (unpack b)
       json resp
     post "/toggle/text" $ do
-      resp <- liftIO $ toggleTextDisplay appState
+      resp <- liftIO $ toggleTextDisplay (env ^. I.appstate)
       json resp
     post "/nudge/:amount" $ do
       amount <- param "amount"
-      resp <- liftIO $ nudgeTime appState amount
+      resp <- liftIO $ nudgeTime (env ^. I.appstate) amount
       json resp
     post "/errors" $ do
-      resp <- liftIO $ getErrors appState
+      resp <- liftIO $ getErrors (env ^. I.appstate)
       json resp
