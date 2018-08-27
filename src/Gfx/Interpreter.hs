@@ -74,7 +74,7 @@ drawShape vbo = do
       program <- gets textureShaders
       liftIO (currentProgram $= Just (shaderProgram program))
       textureLib <- gets textureLibrary
-      case M.lookup (name, frame) textureLib of
+      case M.lookup name textureLib >>= M.lookup frame of
         Nothing -> return ()
         Just texture -> do
           lift $ activeTexture $= TextureUnit 0

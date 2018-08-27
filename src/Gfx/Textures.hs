@@ -26,7 +26,7 @@ import           Graphics.Rendering.OpenGL (DataType (UnsignedByte),
 import qualified Graphics.Rendering.OpenGL as GL
 import           System.FilePath.Posix     (takeExtension, (<.>), (</>))
 
-type TextureLibrary = M.Map (String, Int) TextureObject
+type TextureLibrary = M.Map String (M.Map Int TextureObject)
 
 data TextureConfig = TextureConfig
   { textureName :: String
@@ -45,23 +45,23 @@ instance FromJSON TextureFolderConfig where
   parseJSON (Y.Object v) = TextureFolderConfig <$> v .: "textures"
   parseJSON _            = fail "Expected Object for Config value"
 
-loadTexture :: String -> FilePath -> IO [((String, Int), TextureObject)]
+loadTexture :: String -> FilePath -> IO (String, M.Map Int TextureObject)
 loadTexture name path = do
   imgData <- B.readFile path
   case takeExtension path of
     ".gif" ->
       case decodeGifImages imgData of
         Left err ->
-          print ("could not load image " ++ path ++ ": " ++ err) >> return []
+          print ("could not load image " ++ path ++ ": " ++ err) >> return (name, M.empty)
         Right images -> do
           i <- rights <$> mapM handleImage images
-          return $ zipWith (\idx t -> ((name, idx), t)) [0 ..] i
+          return (name, M.fromList $ zipWith (\idx t -> (idx, t)) [0 ..] i)
     ext -> do
       loaded <- either (return . Left) handleImage (decodeImage imgData)
       either
         (\err ->
-           print ("could not load image " ++ path ++ ": " ++ err) >> return [])
-        (\i -> return [((name, 0), i)])
+           print ("could not load image " ++ path ++ ": " ++ err) >> return (name, M.empty))
+        (\i -> return (name, M.singleton 0 i))
         loaded
 
 handleImage :: DynamicImage -> IO (Either String TextureObject)
@@ -105,16 +105,15 @@ handleImage img =
       GL.textureBinding Texture2D $= Nothing
       return $ Right text
 
-loadTextureFolder :: FilePath -> IO [((String, Int), TextureObject)]
+loadTextureFolder :: FilePath -> IO [(String, M.Map Int TextureObject)]
 loadTextureFolder folderPath = do
   yaml <- Y.decodeFileEither $ folderPath </> "config.yaml"
   case yaml of
     Left err  -> print err >> return []
-    Right cfg -> concat <$> mapM tl (textures cfg)
+    Right cfg -> mapM tl (textures cfg)
   where
     tl texture =
       loadTexture (textureName texture) (folderPath </> textureFile texture)
 
 createTextureLib :: [FilePath] -> IO TextureLibrary
-createTextureLib folders =
-  M.fromList . concat <$> mapM loadTextureFolder folders
+createTextureLib folders = M.fromList . concat <$> mapM loadTextureFolder folders
