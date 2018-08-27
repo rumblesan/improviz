@@ -4,6 +4,7 @@ module Language
   , interpret
   , createGfx
   , updateStateVariables
+  , updateEngineInfo
   , module Language.Ast
   ) where
 
@@ -13,6 +14,7 @@ import           Control.Monad.State.Strict  (evalState, execState, gets)
 import           Control.Monad.Writer.Strict (runWriterT)
 
 import           Gfx                         (Scene (..))
+import qualified Gfx.EngineState             as GE
 import           Language.Ast                (Block, Identifier, Value (..))
 import           Language.Interpreter        (emptyState, interpretLanguage,
                                               setVariable)
@@ -29,13 +31,16 @@ initialState initialVars =
   let setup = do
         addStdLib
         addInitialVariables initialVars
-  in execState (runWriterT (runExceptT setup)) emptyState
+   in execState (runWriterT (runExceptT setup)) emptyState
 
 updateStateVariables ::
      [(Identifier, Value)] -> InterpreterState -> InterpreterState
 updateStateVariables vars oldState =
   let setVars = addInitialVariables vars
-  in execState (runWriterT (runExceptT setVars)) oldState
+   in execState (runWriterT (runExceptT setVars)) oldState
+
+updateEngineInfo :: GE.EngineState -> InterpreterState -> InterpreterState
+updateEngineInfo es oldState = oldState {engineInfo = GE.createEngineInfo es}
 
 interpret :: [(Identifier, Value)] -> Block -> (Either String Value, [String])
 interpret initialVars block =
@@ -43,7 +48,7 @@ interpret initialVars block =
         addStdLib
         addInitialVariables initialVars
         interpretLanguage block
-  in evalState (runWriterT (runExceptT run)) emptyState
+   in evalState (runWriterT (runExceptT run)) emptyState
 
 createGfx :: InterpreterState -> Block -> Either String Scene
 createGfx initialState block =
@@ -54,12 +59,12 @@ createGfx initialState block =
         gfxAnimStyle <- gets animationStyle
         return
           Scene
-          { sceneBackground = gfxBg
-          , sceneGfx = gfxB
-          , scenePostProcessingFX = gfxAnimStyle
-          }
+            { sceneBackground = gfxBg
+            , sceneGfx = gfxB
+            , scenePostProcessingFX = gfxAnimStyle
+            }
       (result, logs) = evalState (runWriterT (runExceptT run)) initialState
-  in result
+   in result
 
 addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess ()
 addInitialVariables vars = forM_ vars (uncurry setVariable)

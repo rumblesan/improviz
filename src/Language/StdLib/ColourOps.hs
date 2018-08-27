@@ -3,11 +3,14 @@ module Language.StdLib.ColourOps
   ) where
 
 import           Control.Monad.Except
+import           Data.Map.Strict               as M
 
 import qualified Gfx.Ast                       as GA
+import qualified Gfx.EngineState               as GE
 import           Language.Ast
 import           Language.Interpreter          (addGfxCommand, getBlock,
-                                                getVarOrNull, getVariable,
+                                                getEngineInfo, getVarOrNull,
+                                                getVariable,
                                                 getVariableWithDefault,
                                                 interpretBlock, setBuiltIn,
                                                 setGfxBackground)
@@ -20,6 +23,7 @@ addColourStdLib :: InterpreterProcess ()
 addColourStdLib = do
   setBuiltIn "fill" fill ["r", "g", "b", "a"]
   setBuiltIn "texture" texture ["name", "frame"]
+  setBuiltIn "frames" frames ["name"]
   setBuiltIn "noFill" noFill []
   setBuiltIn "stroke" stroke ["r", "g", "b", "a"]
   setBuiltIn "noStroke" noStroke []
@@ -63,6 +67,18 @@ texture = do
         block
       return Null
     _ -> return Null
+
+frames :: InterpreterProcess Value
+frames = do
+  ei <- getEngineInfo
+  textName <- getVariable "name"
+  return $
+    case textName of
+      Symbol name ->
+        case M.lookup name (GE.textureFrames ei) of
+          Nothing -> Null
+          Just v  -> Number (fromIntegral v)
+      _ -> Null
 
 noFill :: InterpreterProcess Value
 noFill = do

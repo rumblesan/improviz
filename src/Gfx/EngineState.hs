@@ -1,5 +1,6 @@
 module Gfx.EngineState where
 
+import qualified Data.Map.Strict           as M
 import           Data.Vec                  (Mat44, identity, multmm)
 import           Graphics.Rendering.OpenGL (Color4 (..), GLfloat)
 
@@ -37,6 +38,10 @@ data EngineState = EngineState
   , matrixStack        :: [Mat44 GLfloat]
   } deriving (Show)
 
+data EngineInfo = EngineInfo
+  { textureFrames :: M.Map String Int
+  } deriving (Show)
+
 createGfxEngineState ::
      Mat44 GLfloat
   -> Mat44 GLfloat
@@ -50,19 +55,22 @@ createGfxEngineState projection view pprocess trender textLib = do
   tshd <- createTextureShaders
   return
     EngineState
-    { fillStyles = [GFXColour $ Color4 1 1 1 1]
-    , strokeStyles = [Color4 0 0 0 1]
-    , drawTransparencies = False
-    , geometryBuffers = gbos
-    , textureLibrary = textLib
-    , colourShaders = cshd
-    , textureShaders = tshd
-    , viewMatrix = view
-    , projectionMatrix = projection
-    , postFX = pprocess
-    , textRenderer = trender
-    , matrixStack = [identity]
-    }
+      { fillStyles = [GFXColour $ Color4 1 1 1 1]
+      , strokeStyles = [Color4 0 0 0 1]
+      , drawTransparencies = False
+      , geometryBuffers = gbos
+      , textureLibrary = textLib
+      , colourShaders = cshd
+      , textureShaders = tshd
+      , viewMatrix = view
+      , projectionMatrix = projection
+      , postFX = pprocess
+      , textRenderer = trender
+      , matrixStack = [identity]
+      }
+
+createEngineInfo :: EngineState -> EngineInfo
+createEngineInfo es = EngineInfo $ M.size <$> textureLibrary es
 
 pushFillStyle :: GFXStyling -> EngineState -> EngineState
 pushFillStyle s es = es {fillStyles = s : fillStyles es}
@@ -86,7 +94,7 @@ pushMatrix :: EngineState -> Mat44 Float -> EngineState
 pushMatrix es mat =
   let stack = matrixStack es
       comp = multmm (head stack) mat
-  in es {matrixStack = comp : stack}
+   in es {matrixStack = comp : stack}
 
 popMatrix :: EngineState -> EngineState
 popMatrix es = es {matrixStack = tail $ matrixStack es}
@@ -98,7 +106,7 @@ multMatrix :: EngineState -> Mat44 Float -> EngineState
 multMatrix es mat =
   let stack = matrixStack es
       newhead = multmm (head stack) mat
-  in es {matrixStack = newhead : tail stack}
+   in es {matrixStack = newhead : tail stack}
 
 dupeHeadMatrix :: EngineState -> EngineState
 dupeHeadMatrix es = es {matrixStack = head (matrixStack es) : matrixStack es}

@@ -35,15 +35,15 @@ makeLenses ''AppState
 makeAppState :: Float -> AppState
 makeAppState start =
   AppState
-  { _displayText = True
-  , _programText = ""
-  , _lastProgramText = ""
-  , _currentAst = Block []
-  , _lastWorkingAst = Block []
-  , _initialInterpreter = initialState []
-  , _startTime = start
-  , _errors = []
-  }
+    { _displayText = True
+    , _programText = ""
+    , _lastProgramText = ""
+    , _currentAst = Block []
+    , _lastWorkingAst = Block []
+    , _initialInterpreter = initialState []
+    , _startTime = start
+    , _errors = []
+    }
 
 updateProgram :: String -> Block -> AppState -> AppState
 updateProgram newProgram newAst =
@@ -59,13 +59,13 @@ resetProgram :: AppState -> AppState
 resetProgram as =
   let oldAst = view lastWorkingAst as
       oldText = view lastProgramText as
-  in set programText oldText $ set currentAst oldAst as
+   in set programText oldText $ set currentAst oldAst as
 
 saveProgram :: AppState -> AppState
 saveProgram as =
   let ast = view currentAst as
       text = view programText as
-  in set lastWorkingAst ast $ set lastProgramText text as
+   in set lastWorkingAst ast $ set lastProgramText text as
 
 programHasChanged :: AppState -> Bool
 programHasChanged as = as ^. currentAst /= as ^. lastWorkingAst
@@ -81,3 +81,7 @@ getErrors = view errors
 
 clearErrors :: AppState -> AppState
 clearErrors = set errors []
+
+updateInterpreterState ::
+     (InterpreterState -> InterpreterState) -> AppState -> AppState
+updateInterpreterState = over initialInterpreter

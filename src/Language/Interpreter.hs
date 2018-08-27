@@ -13,6 +13,7 @@ import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
 
 import qualified Gfx.Ast                        as GA
+import qualified Gfx.EngineState                as GE
 import           Gfx.PostProcessing             (AnimationStyle (..))
 import           Language.Ast
 import qualified Language.Interpreter.Scope     as LS
@@ -20,14 +21,18 @@ import qualified Language.Interpreter.Scope     as LS
 emptyState :: InterpreterState
 emptyState =
   InterpreterState
-  { variables = LS.empty
-  , builtins = M.fromList []
-  , blockStack = []
-  , gfxBackground = Color4 1 1 1 1
-  , currentGfx = GA.emptyGfx
-  , animationStyle = NormalStyle
-  , gfxStack = []
-  }
+    { variables = LS.empty
+    , builtins = M.fromList []
+    , blockStack = []
+    , gfxBackground = Color4 1 1 1 1
+    , currentGfx = GA.emptyGfx
+    , animationStyle = NormalStyle
+    , gfxStack = []
+    , engineInfo = GE.EngineInfo M.empty
+    }
+
+getEngineInfo :: InterpreterProcess GE.EngineInfo
+getEngineInfo = gets engineInfo
 
 setVariable :: Identifier -> Value -> InterpreterProcess Value
 setVariable name val =
@@ -65,9 +70,9 @@ setBuiltIn name func argNames =
   modify
     (\s ->
        s
-       { variables = LS.setVariable (variables s) name (BuiltIn argNames)
-       , builtins = M.insert name func (builtins s)
-       })
+         { variables = LS.setVariable (variables s) name (BuiltIn argNames)
+         , builtins = M.insert name func (builtins s)
+         })
 
 getBuiltIn :: Identifier -> InterpreterProcess BuiltInFunction
 getBuiltIn name = do
@@ -158,10 +163,10 @@ handleLambdaArgs ::
 handleLambdaArgs funcArgs aargs =
   let (named, non) = L.partition namedArg aargs
       argNames = (\(FunctionArg name _) -> name) <$> funcArgs
-  in do nonNamedArgValues <- mapM interpretExpression (getArgExpr <$> non)
-        zipWithM_ defaultArg funcArgs (nonNamedArgValues ++ repeat Null)
-        mapM_ (assignNamedArg argNames) named
-        return Null
+   in do nonNamedArgValues <- mapM interpretExpression (getArgExpr <$> non)
+         zipWithM_ defaultArg funcArgs (nonNamedArgValues ++ repeat Null)
+         mapM_ (assignNamedArg argNames) named
+         return Null
   where
     namedArg (ApplicationArg name _) = isJust name
     getArgExpr (ApplicationArg _ expr) = expr
@@ -172,10 +177,10 @@ handleBuiltInArgs ::
      [Identifier] -> [ApplicationArg] -> InterpreterProcess Value
 handleBuiltInArgs argNames aargs =
   let (named, non) = L.partition namedArg aargs
-  in do nonNamedArgValues <- mapM interpretExpression (getArgExpr <$> non)
-        zipWithM_ setVariable argNames (nonNamedArgValues ++ repeat Null)
-        mapM_ (assignNamedArg argNames) named
-        return Null
+   in do nonNamedArgValues <- mapM interpretExpression (getArgExpr <$> non)
+         zipWithM_ setVariable argNames (nonNamedArgValues ++ repeat Null)
+         mapM_ (assignNamedArg argNames) named
+         return Null
   where
     namedArg (ApplicationArg name _) = isJust name
     getArgExpr (ApplicationArg _ expr) = expr

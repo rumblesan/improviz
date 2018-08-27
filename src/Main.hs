@@ -35,7 +35,8 @@ import           Gfx.TextRendering      (TextRenderer, createTextRenderer,
                                          resizeTextRendererScreen)
 import           Gfx.Textures           (createTextureLib)
 import           Gfx.Windowing          (setupWindow)
-import           Language               (createGfx, updateStateVariables)
+import           Language               (createGfx, updateEngineInfo,
+                                         updateStateVariables)
 import           Language.Ast           (Value (Number))
 import           Logging                (logError, logInfo)
 import           Server.Http            (createServer)
@@ -73,7 +74,11 @@ initApp = do
        textureLib <- createTextureLib (env ^. I.config . C.textureDirectories)
        gfxEngineState <-
          createGfxEngineState proj view post textRenderer textureLib
-       atomically $ putTMVar (env ^. I.gfxstate) gfxEngineState)
+       atomically $ putTMVar (env ^. I.gfxstate) gfxEngineState
+       atomically $
+         modifyTVar
+           (env ^. I.appstate)
+           (AS.updateInterpreterState (updateEngineInfo gfxEngineState)))
 
 resize :: ImprovizApp GLFW.WindowSizeCallback
 resize = do
@@ -101,10 +106,10 @@ resize = do
       putTMVar
         (env ^. I.gfxstate)
         es
-        { projectionMatrix = newProj
-        , postFX = newPost
-        , textRenderer = newTrender
-        }
+          { projectionMatrix = newProj
+          , postFX = newPost
+          , textRenderer = newTrender
+          }
 
 display :: ImprovizApp (Double -> IO ())
 display = do

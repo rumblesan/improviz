@@ -10,6 +10,7 @@ import           Language.Ast
 
 import qualified Data.Map.Strict             as M
 import qualified Gfx.Ast                     as GA
+import qualified Gfx.EngineState             as GE
 import           Gfx.PostProcessing          (AnimationStyle (..))
 import qualified Language.Interpreter.Scope  as LS
 
@@ -32,4 +33,5 @@ data InterpreterState = InterpreterState
   , currentGfx     :: GA.Block
   , animationStyle :: AnimationStyle
   , gfxStack       :: [GA.Block]
+  , engineInfo     :: GE.EngineInfo
   }
