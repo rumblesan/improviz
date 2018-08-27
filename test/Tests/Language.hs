@@ -35,13 +35,14 @@ languageTests =
 test_basic_program :: Assertion
 test_basic_program =
   let program = "a = 2\nb = 3\nfoo = (c, d) => c * d\nbox(b, a, foo(a, b))\n"
-      interpreterState = Language.initialState []
+      interpreterState = Language.initialState 1 []
       result = do
         ast <- Language.parse program
-        scene <- Language.createGfx interpreterState ast
+        let ((result, _), _) = Language.createGfx interpreterState ast
+        scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_named_function_args :: Assertion
 test_named_function_args =
@@ -49,27 +50,29 @@ test_named_function_args =
       (Right ast) = Language.parse program
       result = Language.interpret [] ast
       expected = (Right (Number (-2)), ["Running lambda"])
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_animation_style :: Assertion
 test_animation_style =
   let program = "motionBlur()"
-      interpreterState = Language.initialState []
+      interpreterState = Language.initialState 1 []
       result = do
         ast <- Language.parse program
-        scene <- Language.createGfx interpreterState ast
+        let ((result, _), _) = Language.createGfx interpreterState ast
+        scene <- result
         return $ scenePostProcessingFX scene
       expected = Right MotionBlur
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_loop_program :: Assertion
 test_loop_program =
   let program =
         "rotate(0.1, 0.2, 0.3)\n3 times with i\n\trotate(0.2, 0.2, 0.2)\n\tbox(i)\n\n\n"
-      interpreterState = Language.initialState []
+      interpreterState = Language.initialState 1 []
       result = do
         ast <- Language.parse program
-        scene <- Language.createGfx interpreterState ast
+        let ((result, _), _) = Language.createGfx interpreterState ast
+        scene <- result
         return $ sceneGfx scene
       expected =
         Right
@@ -81,7 +84,7 @@ test_loop_program =
           , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing
           , GA.ShapeCommand (GA.Cube 2 2 2) Nothing
           ]
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_create_gfx :: Assertion
 test_create_gfx =
@@ -95,8 +98,8 @@ test_create_gfx =
           ]
           Nothing
       block = Block [ElExpression box]
-      interpreterState = Language.initialState []
-      scene = Language.createGfx interpreterState block :: Either String Scene
-      result = either (const []) sceneGfx scene
+      interpreterState = Language.initialState 1 []
+      ((result, _), _) = Language.createGfx interpreterState block
+      scene = either (const []) sceneGfx result
       expected = [GA.ShapeCommand (GA.Cube 1 2 1) Nothing]
-  in assertEqual "" expected result
+   in assertEqual "" expected scene

@@ -40,7 +40,7 @@ makeAppState start =
     , _lastProgramText = ""
     , _currentAst = Block []
     , _lastWorkingAst = Block []
-    , _initialInterpreter = initialState []
+    , _initialInterpreter = initialState (round start) []
     , _startTime = start
     , _errors = []
     }

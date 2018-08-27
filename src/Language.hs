@@ -5,19 +5,22 @@ module Language
   , createGfx
   , updateStateVariables
   , updateEngineInfo
+  , copyRNG
   , module Language.Ast
   ) where
 
 import           Control.Monad               (forM_)
 import           Control.Monad.Except        (runExceptT)
-import           Control.Monad.State.Strict  (evalState, execState, gets)
+import           Control.Monad.State.Strict  (evalState, execState, gets,
+                                              runState)
 import           Control.Monad.Writer.Strict (runWriterT)
+import           System.Random
 
 import           Gfx                         (Scene (..))
 import qualified Gfx.EngineState             as GE
 import           Language.Ast                (Block, Identifier, Value (..))
 import           Language.Interpreter        (emptyState, interpretLanguage,
-                                              setVariable)
+                                              seedRNG, setVariable)
 import           Language.Interpreter.Types  (InterpreterProcess,
                                               InterpreterState (..), currentGfx)
 import           Language.Parser             (parseProgram)
@@ -26,11 +29,12 @@ import           Language.StdLib             (addStdLib)
 parse :: String -> Either String Block
 parse = parseProgram
 
-initialState :: [(Identifier, Value)] -> InterpreterState
-initialState initialVars =
+initialState :: Int -> [(Identifier, Value)] -> InterpreterState
+initialState seed initialVars =
   let setup = do
         addStdLib
         addInitialVariables initialVars
+        seedRNG seed
    in execState (runWriterT (runExceptT setup)) emptyState
 
 updateStateVariables ::
@@ -42,6 +46,9 @@ updateStateVariables vars oldState =
 updateEngineInfo :: GE.EngineState -> InterpreterState -> InterpreterState
 updateEngineInfo es oldState = oldState {engineInfo = GE.createEngineInfo es}
 
+copyRNG :: InterpreterState -> InterpreterState -> InterpreterState
+copyRNG oldState newState = newState {rng = rng oldState}
+
 interpret :: [(Identifier, Value)] -> Block -> (Either String Value, [String])
 interpret initialVars block =
   let run = do
@@ -50,7 +57,10 @@ interpret initialVars block =
         interpretLanguage block
    in evalState (runWriterT (runExceptT run)) emptyState
 
-createGfx :: InterpreterState -> Block -> Either String Scene
+createGfx ::
+     InterpreterState
+  -> Block
+  -> ((Either String Scene, [String]), InterpreterState)
 createGfx initialState block =
   let run = do
         _ <- interpretLanguage block
@@ -63,8 +73,7 @@ createGfx initialState block =
             , sceneGfx = gfxB
             , scenePostProcessingFX = gfxAnimStyle
             }
-      (result, logs) = evalState (runWriterT (runExceptT run)) initialState
-   in result
+   in runState (runWriterT (runExceptT run)) initialState
 
 addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess ()
 addInitialVariables vars = forM_ vars (uncurry setVariable)

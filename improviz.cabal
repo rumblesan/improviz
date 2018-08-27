@@ -28,6 +28,7 @@ executable improviz
                      , mtl
                      , optparse-applicative
                      , parsec
+                     , random
                      , scotty
                      , stm
                      , text
@@ -100,6 +101,7 @@ test-suite improviz-test
                      , mtl
                      , optparse-applicative
                      , parsec
+                     , random
                      , scotty
                      , stm
                      , test-framework

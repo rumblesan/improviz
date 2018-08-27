@@ -28,37 +28,45 @@ test_true_if_statement =
   let program = "if (1)\n\tbox()"
       result = do
         ast <- Language.parse program
-        scene <- Language.createGfx (Language.initialState []) ast
+        let ((result, _), _) =
+              Language.createGfx (Language.initialState 1 []) ast
+        scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Cube 1 1 1) Nothing]
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_false_if_statement :: Assertion
 test_false_if_statement =
   let program = "if (0)\n\tbox()"
       result = do
         ast <- Language.parse program
-        scene <- Language.createGfx (Language.initialState []) ast
+        let ((result, _), _) =
+              Language.createGfx (Language.initialState 1 []) ast
+        scene <- result
         return $ sceneGfx scene
       expected = Right []
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_true_if_else_statement :: Assertion
 test_true_if_else_statement =
   let program = "if (1)\n\tbox()\nelse\n\tline()"
       result = do
         ast <- Language.parse program
-        scene <- Language.createGfx (Language.initialState []) ast
+        let ((result, _), _) =
+              Language.createGfx (Language.initialState 1 []) ast
+        scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Cube 1 1 1) Nothing]
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_false_if_else_statement :: Assertion
 test_false_if_else_statement =
   let program = "if (0)\n\tbox()\nelse\n\tline()"
       result = do
         ast <- Language.parse program
-        scene <- Language.createGfx (Language.initialState []) ast
+        let ((result, _), _) =
+              Language.createGfx (Language.initialState 1 []) ast
+        scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Line 1) Nothing]
-  in assertEqual "" expected result
+   in assertEqual "" expected result

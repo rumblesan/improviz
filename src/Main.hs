@@ -35,9 +35,10 @@ import           Gfx.TextRendering      (TextRenderer, createTextRenderer,
                                          resizeTextRendererScreen)
 import           Gfx.Textures           (createTextureLib)
 import           Gfx.Windowing          (setupWindow)
-import           Language               (createGfx, updateEngineInfo,
-                                         updateStateVariables)
+import           Language               (copyRNG, copyRNG, createGfx,
+                                         updateEngineInfo, updateStateVariables)
 import           Language.Ast           (Value (Number))
+import           Language.Interpreter   (setRNG)
 import           Logging                (logError, logInfo)
 import           Server.Http            (createServer)
 
@@ -123,7 +124,9 @@ display = do
              updateStateVariables
                [("time", Number t), ("beat", Number beat)]
                (as ^. AS.initialInterpreter)
-       case createGfx interpreterState (as ^. AS.currentAst) of
+           ((result, logs), nextState) =
+             createGfx interpreterState (as ^. AS.currentAst)
+       case result of
          Left msg -> do
            logError $ "Could not interpret program: " ++ msg
            atomically $
@@ -138,4 +141,8 @@ display = do
            renderGfx gs scene
            when (as ^. AS.displayText) $ do
              renderText 0 0 (textRenderer gs) (as ^. AS.programText)
-             renderTextbuffer (textRenderer gs))
+             renderTextbuffer (textRenderer gs)
+       atomically $
+         modifyTVar
+           (env ^. I.appstate)
+           (AS.updateInterpreterState (copyRNG nextState)))

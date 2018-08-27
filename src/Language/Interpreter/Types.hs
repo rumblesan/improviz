@@ -1,5 +1,7 @@
 module Language.Interpreter.Types where
 
+import           System.Random
+
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
 import           Control.Monad.Writer.Strict
@@ -34,4 +36,5 @@ data InterpreterState = InterpreterState
   , animationStyle :: AnimationStyle
   , gfxStack       :: [GA.Block]
   , engineInfo     :: GE.EngineInfo
+  , rng            :: StdGen
   }
