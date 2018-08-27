@@ -87,7 +87,8 @@ data Value
   | Lambda [FunctionArg]
            Block
   | VList [Expression]
-  | BuiltIn [Identifier]
+  | BuiltIn Identifier
+            [Identifier]
   deriving (Eq, Show)
 
 type Identifier = String

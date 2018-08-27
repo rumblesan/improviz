@@ -70,7 +70,7 @@ setBuiltIn name func argNames =
   modify
     (\s ->
        s
-         { variables = LS.setVariable (variables s) name (BuiltIn argNames)
+         { variables = LS.setVariable (variables s) name (BuiltIn name argNames)
          , builtins = M.insert name func (builtins s)
          })
 
@@ -147,11 +147,11 @@ interpretApplication (Application name args block) = do
             ret <- interpretBlock lBlock
             popBlock
             return ret)
-    (BuiltIn argNames) ->
+    (BuiltIn funcName argNames) ->
       newScope
-        (do tell ["Running BuiltIn: " ++ name]
+        (do tell ["Running BuiltIn: " ++ funcName]
             _ <- handleBuiltInArgs argNames args
-            b <- getBuiltIn name
+            b <- getBuiltIn funcName
             pushBlock block
             ret <- b
             popBlock
@@ -225,10 +225,10 @@ loopNums :: Expression -> InterpreterProcess [Float]
 loopNums numExpr = do
   loopV <- interpretExpression numExpr
   case loopV of
-    Number v   -> return [0 .. (v - 1)]
-    Null       -> throwError "Null given as loop number expression"
-    Lambda _ _ -> throwError "Function given as loop number expression"
-    BuiltIn _  -> throwError "Function given as loop number expression"
+    Number v    -> return [0 .. (v - 1)]
+    Null        -> throwError "Null given as loop number expression"
+    Lambda _ _  -> throwError "Function given as loop number expression"
+    BuiltIn _ _ -> throwError "Function given as loop number expression"
 
 interpretAssignment :: Assignment -> InterpreterProcess Value
 interpretAssignment (Assignment name expression) =
