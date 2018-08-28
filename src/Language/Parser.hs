@@ -27,7 +27,7 @@ parseProgram prog =
     Left err  -> Left $ show err
 
 program :: LangParser Block
-program = topLevel >> skipMany space >> (langBlock <|> empty)
+program = topLevel >> skipMany space >> (empty <|> (langBlock <* eof))
 
 empty :: LangParser Block
 empty = const (Block []) <$> eof
