@@ -85,7 +85,7 @@ setupWindow initCB resizeCB displayCB = do
         GLFW.windowHint $ WindowHint'OpenGLForwardCompat True
         GLFW.windowHint $ WindowHint'OpenGLProfile OpenGLProfile'Core
         GLFW.windowHint $ WindowHint'DepthBits 16
-        GLFW.windowHint $ WindowHint'Decorated False
+        GLFW.windowHint $ WindowHint'Decorated (cfg ^. C.decorated)
         monitor <- targetMonitor mon
         (w, h, x, y) <-
           maybe

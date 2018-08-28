@@ -27,6 +27,7 @@ data ImprovizConfig = ImprovizConfig
   , _textureDirectories :: [FilePath]
   , _serverPort         :: Int
   , _apptitle           :: String
+  , _decorated          :: Bool
   } deriving (Show)
 
 makeLenses ''ImprovizConfig
@@ -37,16 +38,17 @@ defaultConfigFile = "./improviz.yaml"
 defaultConfig :: ImprovizConfig
 defaultConfig =
   ImprovizConfig
-  { _screenWidth = 640
-  , _screenHeight = 480
-  , _fullscreenDisplay = Nothing
-  , _debug = False
-  , _screen = defaultScreenConfig
-  , _fontConfig = defaultFontConfig
-  , _textureDirectories = ["./textures"]
-  , _serverPort = 3000
-  , _apptitle = "Improviz"
-  }
+    { _screenWidth = 640
+    , _screenHeight = 480
+    , _fullscreenDisplay = Nothing
+    , _debug = False
+    , _screen = defaultScreenConfig
+    , _fontConfig = defaultFontConfig
+    , _textureDirectories = ["./textures"]
+    , _serverPort = 3000
+    , _apptitle = "Improviz"
+    , _decorated = False
+    }
 
 instance FromJSON ImprovizConfig where
   parseJSON (Y.Object v) =
@@ -58,7 +60,8 @@ instance FromJSON ImprovizConfig where
     v .:? "font" .!= (defaultConfig ^. fontConfig) <*>
     v .:? "textureDirectories" .!= (defaultConfig ^. textureDirectories) <*>
     v .:? "serverPort" .!= (defaultConfig ^. serverPort) <*>
-    v .:? "apptitle" .!= (defaultConfig ^. apptitle)
+    v .:? "apptitle" .!= (defaultConfig ^. apptitle) <*>
+    v .:? "decorated" .!= (defaultConfig ^. decorated)
   parseJSON _ = fail "Expected Object for Config value"
 
 getConfig :: IO ImprovizConfig
@@ -79,9 +82,10 @@ readConfigFile cfgFilePath = do
 mergeConfigs :: ImprovizConfig -> ImprovizCLIConfig -> ImprovizConfig
 mergeConfigs cfg cliCfg =
   cfg
-  { _screenWidth = fromMaybe (cfg ^. screenWidth) (cliCfg ^. CLI.screenWidth)
-  , _screenHeight = fromMaybe (cfg ^. screenHeight) (cliCfg ^. CLI.screenHeight)
-  , _fullscreenDisplay =
-      (cfg ^. fullscreenDisplay) <|> (cliCfg ^. CLI.fullscreenDisplay)
-  , _debug = (cfg ^. debug) || (cliCfg ^. CLI.debug)
-  }
+    { _screenWidth = fromMaybe (cfg ^. screenWidth) (cliCfg ^. CLI.screenWidth)
+    , _screenHeight =
+        fromMaybe (cfg ^. screenHeight) (cliCfg ^. CLI.screenHeight)
+    , _fullscreenDisplay =
+        (cfg ^. fullscreenDisplay) <|> (cliCfg ^. CLI.fullscreenDisplay)
+    , _debug = (cfg ^. debug) || (cliCfg ^. CLI.debug)
+    }
