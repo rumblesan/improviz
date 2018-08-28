@@ -27,38 +27,41 @@ parseProgram prog =
     Left err  -> Left $ show err
 
 program :: LangParser Block
-program = topLevel >> skipMany space >> langBlock
+program = topLevel >> skipMany space >> (langBlock <|> empty)
+
+empty :: LangParser Block
+empty = const (Block []) <$> eof
 
 exprDef :: GenLanguageDef String st Indent
 exprDef =
   LanguageDef
-  { commentStart = ""
-  , commentEnd = ""
-  , commentLine = "#"
-  , nestedComments = True
-  , identStart = letter <|> char '_'
-  , identLetter = alphaNum <|> oneOf "_'"
-  , opStart = oneOf "^*/%+-^<>=!&|"
-  , opLetter = oneOf "^*/%+-^<>=!&|"
-  , reservedOpNames =
-      [ "^"
-      , "*"
-      , "/"
-      , "%"
-      , "+"
-      , "-"
-      , "<"
-      , ">"
-      , "=="
-      , "<="
-      , ">="
-      , "!="
-      , "&&"
-      , "||"
-      ]
-  , reservedNames = ["if", "else", "times", "with", "null", "func"]
-  , caseSensitive = True
-  }
+    { commentStart = ""
+    , commentEnd = ""
+    , commentLine = "#"
+    , nestedComments = True
+    , identStart = letter <|> char '_'
+    , identLetter = alphaNum <|> oneOf "_'"
+    , opStart = oneOf "^*/%+-^<>=!&|"
+    , opLetter = oneOf "^*/%+-^<>=!&|"
+    , reservedOpNames =
+        [ "^"
+        , "*"
+        , "/"
+        , "%"
+        , "+"
+        , "-"
+        , "<"
+        , ">"
+        , "=="
+        , "<="
+        , ">="
+        , "!="
+        , "&&"
+        , "||"
+        ]
+    , reservedNames = ["if", "else", "times", "with", "null", "func"]
+    , caseSensitive = True
+    }
 
 TokenParser { parens = m_parens
             , brackets = m_brackets

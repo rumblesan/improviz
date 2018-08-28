@@ -20,7 +20,12 @@ import           Language.Interpreter
 
 parserTests :: Test
 parserTests =
-  testGroup "Parser Tests" [testCase "Parse basic program" test_parse_program]
+  testGroup
+    "Parser Tests"
+    [ testCase "Parse basic program" test_parse_program
+    , testCase "Parse blank program" test_parse_blank_program
+    , testCase "Parse empty program" test_parse_empty_program
+    ]
 
 test_parse_program :: Assertion
 test_parse_program =
@@ -68,4 +73,18 @@ test_parse_program =
       loopLine = ElLoop $ Loop (EVar $ Variable "n") Nothing loopBlock
       expected = Right $ Block [fooLine, nLine, loopLine]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result
+
+test_parse_blank_program :: Assertion
+test_parse_blank_program =
+  let program = ""
+      expected = Right $ Block []
+      result = Language.parse program
+   in assertEqual "" expected result
+
+test_parse_empty_program :: Assertion
+test_parse_empty_program =
+  let program = "   \n    \n    "
+      expected = Right $ Block []
+      result = Language.parse program
+   in assertEqual "" expected result
