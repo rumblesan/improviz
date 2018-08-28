@@ -64,13 +64,13 @@ drawShape vbo = do
   mvp <- getFullMatrix
   style <- gets currentFillStyle
   case style of
-    ES.GFXColour fillC -> do
+    ES.GFXFillColour fillC -> do
       program <- gets colourShaders
       liftIO (currentProgram $= Just (shaderProgram program))
       lift $ setMVPMatrixUniform program mvp
       lift $ setColourUniform program fillC
       lift $ drawVBO vbo
-    ES.GFXTexture name frame -> do
+    ES.GFXFillTexture name frame -> do
       program <- gets textureShaders
       liftIO (currentProgram $= Just (shaderProgram program))
       textureLib <- gets textureLibrary
@@ -81,17 +81,22 @@ drawShape vbo = do
           lift $ textureBinding Texture2D $= Just texture
           lift $ setMVPMatrixUniform program mvp
           lift $ drawVBO vbo
+    ES.GFXNoFill -> return ()
   liftIO printErrors
 
 drawWireframe :: VBO -> GraphicsEngine GfxOutput
 drawWireframe vbo = do
-  strokeC <- gets currentStrokeStyle
-  mvp <- getFullMatrix
-  program <- gets colourShaders
-  liftIO (currentProgram $= Just (shaderProgram program))
-  lift $ setMVPMatrixUniform program mvp
-  lift $ setColourUniform program strokeC
-  lift $ drawVBO vbo
+  style <- gets currentStrokeStyle
+  case style of
+    ES.GFXStrokeColour strokeC -> do
+      mvp <- getFullMatrix
+      program <- gets colourShaders
+      liftIO (currentProgram $= Just (shaderProgram program))
+      lift $ setMVPMatrixUniform program mvp
+      lift $ setColourUniform program strokeC
+      lift $ drawVBO vbo
+    ES.GFXNoStroke -> return ()
+  liftIO printErrors
 
 interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
 interpretShape (Cube x y z) = do
@@ -134,12 +139,13 @@ interpretMatrix (Move x y z) =
 
 interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
 interpretColour (Fill (TextureStyle name frame)) =
-  modify' (pushFillStyle $ ES.GFXTexture name (floor frame))
+  modify' (pushFillStyle $ ES.GFXFillTexture name (floor frame))
 interpretColour (Fill (ColourStyle r g b a)) =
-  modify' (pushFillStyle $ ES.GFXColour $ Color4 r g b a)
-interpretColour NoFill = modify' (pushFillStyle $ ES.GFXColour $ Color4 0 0 0 0)
-interpretColour (Stroke r g b a) = modify' (pushStrokeStyle $ Color4 r g b a)
-interpretColour NoStroke = modify' (pushStrokeStyle $ Color4 0 0 0 0)
+  modify' (pushFillStyle $ ES.GFXFillColour $ Color4 r g b a)
+interpretColour NoFill = modify' (pushFillStyle ES.GFXNoFill)
+interpretColour (Stroke r g b a) =
+  modify' (pushStrokeStyle $ ES.GFXStrokeColour $ Color4 r g b a)
+interpretColour NoStroke = modify' (pushStrokeStyle ES.GFXNoStroke)
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
 newScope gfx block = do
