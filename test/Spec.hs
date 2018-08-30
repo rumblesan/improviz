@@ -22,6 +22,7 @@ import           Tests.Language.Parser.Lambda           (parserLambdaTests)
 import           Tests.Language.Parser.Loops            (parserLoopTests)
 import           Tests.Language.Parser.Operators        (parserOperatorTests)
 import           Tests.Language.Parser.Symbols          (parserSymbolTests)
+import           Tests.Language.StdLib.CollectionFuncs  (collectionFuncTests)
 
 main :: IO ()
 main =
@@ -44,5 +45,6 @@ main =
     , parserLoopTests
     , parserOperatorTests
     , parserSymbolTests
+    , collectionFuncTests
     ]
     mempty

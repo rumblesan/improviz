@@ -11,7 +11,9 @@ import           Language.Interpreter.Types (BuiltInFunction,
                                              InterpreterProcess)
 
 addCollectionStdLib :: InterpreterProcess ()
-addCollectionStdLib = setBuiltIn "elem" listElem ["list", "index"]
+addCollectionStdLib = do
+  setBuiltIn "elem" listElem ["list", "index"]
+  setBuiltIn "count" listCount ["list"]
 
 listElem :: BuiltInFunction
 listElem = do
@@ -19,8 +21,15 @@ listElem = do
   index <- getVarOrNull "index"
   case (list, index) of
     (VList elems, Number idx) -> do
-      let i = round idx
+      let i = floor idx
       if length elems < i || i < 0
         then throwError "Index out of range"
         else interpretExpression $ elems !! i
     _ -> throwError "elem needs a list and a number"
+
+listCount :: BuiltInFunction
+listCount = do
+  list <- getVarOrNull "list"
+  case list of
+    (VList elems) -> return $ Number $ fromIntegral $ length elems
+    _             -> throwError "count needs a list"
