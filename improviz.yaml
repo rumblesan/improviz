@@ -1,4 +1,6 @@
 font:
   size: 36
+osc:
+  enabled: true
 textureDirectories:
   - "./textures"

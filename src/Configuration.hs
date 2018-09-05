@@ -12,6 +12,7 @@ import           Lens.Simple
 import           Configuration.CLI    (ImprovizCLIConfig)
 import qualified Configuration.CLI    as CLI
 import           Configuration.Font   (ImprovizFontConfig, defaultFontConfig)
+import           Configuration.OSC    (ImprovizOSCConfig, defaultOSCConfig)
 import           Configuration.Screen (ImprovizScreenConfig,
                                        defaultScreenConfig)
 import           Data.Yaml            (FromJSON (..), (.!=), (.:), (.:?))
@@ -26,6 +27,7 @@ data ImprovizConfig = ImprovizConfig
   , _fontConfig         :: ImprovizFontConfig
   , _textureDirectories :: [FilePath]
   , _serverPort         :: Int
+  , _osc                :: ImprovizOSCConfig
   , _apptitle           :: String
   , _decorated          :: Bool
   } deriving (Show)
@@ -46,6 +48,7 @@ defaultConfig =
     , _fontConfig = defaultFontConfig
     , _textureDirectories = ["./textures"]
     , _serverPort = 3000
+    , _osc = defaultOSCConfig
     , _apptitle = "Improviz"
     , _decorated = False
     }
@@ -60,6 +63,7 @@ instance FromJSON ImprovizConfig where
     v .:? "font" .!= (defaultConfig ^. fontConfig) <*>
     v .:? "textureDirectories" .!= (defaultConfig ^. textureDirectories) <*>
     v .:? "serverPort" .!= (defaultConfig ^. serverPort) <*>
+    v .:? "osc" .!= (defaultConfig ^. osc) <*>
     v .:? "apptitle" .!= (defaultConfig ^. apptitle) <*>
     v .:? "decorated" .!= (defaultConfig ^. decorated)
   parseJSON _ = fail "Expected Object for Config value"

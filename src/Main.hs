@@ -6,7 +6,8 @@ import           System.Exit            (exitSuccess)
 import           Control.Concurrent.STM (atomically, modifyTVar, putTMVar,
                                          readTMVar, readTVarIO, takeTMVar,
                                          writeTVar)
-import           Control.Monad          (when)
+import           Control.Monad          (void, when)
+import qualified Data.Map.Strict        as M
 import           Data.Maybe             (fromMaybe)
 
 import           Lens.Simple            ((^.))
@@ -15,6 +16,7 @@ import qualified Graphics.UI.GLFW       as GLFW
 
 import qualified Configuration          as C
 import qualified Configuration.Font     as CF
+import qualified Configuration.OSC      as CO
 import qualified Configuration.Screen   as CS
 import           Improviz               (ImprovizEnv, ImprovizError (..))
 import qualified Improviz               as I
@@ -39,6 +41,7 @@ import           Language.Ast           (Value (Number))
 import           Language.Interpreter   (setRNG)
 import           Logging                (logError, logInfo)
 import           Server.Http            (createServer)
+import           Server.OSC             (createOSCServer)
 
 main :: IO ()
 main = I.createEnv >>= app
@@ -48,7 +51,9 @@ app env =
   let initCallback = initApp env
       resizeCallback = resize env
       displayCallback = display env
-   in do createServer env
+   in do when (env ^. I.config . C.osc . CO.enabled) $ void $
+           createOSCServer env
+         createServer env
          setupWindow env initCallback resizeCallback displayCallback
 
 initApp :: ImprovizEnv -> Int -> Int -> IO ()
@@ -102,9 +107,11 @@ resize env window newWidth newHeight =
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
   as <- readTVarIO (env ^. I.language)
+  vars <- readTVarIO (env ^. I.externalVars)
   let t = double2Float time
+      newVars = ("time", Number t) : M.toList vars
       interpreterState =
-        updateStateVariables [("time", Number t)] (as ^. IL.initialInterpreter)
+        updateStateVariables newVars (as ^. IL.initialInterpreter)
       ((result, logs), nextState) =
         createGfx interpreterState (as ^. IL.currentAst)
   case result of

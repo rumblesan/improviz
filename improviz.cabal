@@ -24,6 +24,7 @@ executable improviz
                      , filepath
                      , file-embed
                      , freetype2
+                     , hosc
                      , lens-simple
                      , mtl
                      , optparse-applicative
@@ -31,6 +32,7 @@ executable improviz
                      , random
                      , scotty
                      , stm
+                     , split
                      , text
                      , time
                      , vector
@@ -44,9 +46,11 @@ executable improviz
                      , aeson
   other-modules:       Server.Http
                      , Server.Protocol
+                     , Server.OSC
                      , Configuration
                      , Configuration.CLI
                      , Configuration.Font
+                     , Configuration.OSC
                      , Configuration.Screen
                      , ErrorHandling
                      , Logging
@@ -98,6 +102,7 @@ test-suite improviz-test
                      , filepath
                      , file-embed
                      , freetype2
+                     , hosc
                      , lens-simple
                      , mtl
                      , optparse-applicative
@@ -105,6 +110,7 @@ test-suite improviz-test
                      , random
                      , scotty
                      , stm
+                     , split
                      , test-framework
                      , test-framework-hunit
                      , text
@@ -124,6 +130,7 @@ test-suite improviz-test
                      , Configuration
                      , Configuration.CLI
                      , Configuration.Font
+                     , Configuration.OSC
                      , Configuration.Screen
                      , Logging
                      , Improviz

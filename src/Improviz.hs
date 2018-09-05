@@ -7,6 +7,7 @@ import           GHC.Generics
 
 import           Control.Concurrent.STM (TMVar, TVar, newEmptyTMVarIO,
                                          newTVarIO)
+import qualified Data.Map.Strict        as M
 import           Data.Time.Clock.POSIX  (POSIXTime, getPOSIXTime)
 
 import           Lens.Simple
@@ -18,6 +19,7 @@ import           Gfx.EngineState        (EngineState)
 
 import           Improviz.Language      (ImprovizLanguage, makeLanguageState)
 import           Improviz.UI            (ImprovizUI, defaultUI)
+import qualified Language.Ast           as LA
 
 data ImprovizError = ImprovizError
   { text     :: String
@@ -28,12 +30,13 @@ instance ToJSON ImprovizError where
   toEncoding = genericToEncoding defaultOptions
 
 data ImprovizEnv = ImprovizEnv
-  { _language  :: TVar ImprovizLanguage
-  , _ui        :: TVar ImprovizUI
-  , _graphics  :: TMVar EngineState
-  , _config    :: ImprovizConfig
-  , _startTime :: POSIXTime
-  , _errors    :: TVar [ImprovizError]
+  { _language     :: TVar ImprovizLanguage
+  , _ui           :: TVar ImprovizUI
+  , _graphics     :: TMVar EngineState
+  , _config       :: ImprovizConfig
+  , _startTime    :: POSIXTime
+  , _externalVars :: TVar (M.Map String LA.Value)
+  , _errors       :: TVar [ImprovizError]
   }
 
 makeLenses ''ImprovizEnv
@@ -45,5 +48,15 @@ createEnv = do
   uiState <- newTVarIO defaultUI
   gfxState <- newEmptyTMVarIO
   config <- getConfig
+  externalVars <- newTVarIO M.empty
+  uiState <- newTVarIO defaultUI
   errors <- newTVarIO []
-  return $ ImprovizEnv languageState uiState gfxState config startTime errors
+  return $
+    ImprovizEnv
+      languageState
+      uiState
+      gfxState
+      config
+      startTime
+      externalVars
+      errors
