@@ -7,10 +7,8 @@ module Server.Http
 import           Web.Scotty
 
 import           Control.Concurrent         (ThreadId, forkIO)
-import           Control.Concurrent.STM     (TVar, atomically, modifyTVar,
-                                             readTVarIO)
-import           Control.Monad.Reader
-import           Control.Monad.Trans
+import           Control.Concurrent.STM     (TVar, atomically, modifyTVar)
+import           Control.Monad.Trans        (liftIO)
 import           Data.Aeson                 hiding (json)
 import           Data.Monoid                ((<>))
 
@@ -18,26 +16,27 @@ import           Data.ByteString.Lazy.Char8 (unpack)
 import           Data.Text.Lazy             (pack)
 import           Logging                    (logError, logInfo)
 
-import           AppState                   (AppState)
-import qualified AppState                   as AS
 import qualified Language                   as L
 
 import           Server.Protocol
 
 import qualified Configuration              as C
-import           Improviz                   (ImprovizApp, ImprovizEnv)
+import           Improviz                   (ImprovizEnv)
 import qualified Improviz                   as I
+import           Improviz.Language          (ImprovizLanguage)
+import qualified Improviz.Language          as IL
+import           Improviz.UI                (ImprovizUI)
+import qualified Improviz.UI                as IUI
 
-import           Lens.Simple                ((^.))
+import           Lens.Simple                (set, (^.))
 
-updateProgram :: TVar AppState -> String -> IO (ImprovizResponse String)
-updateProgram appState newProgram =
+updateProgram :: ImprovizEnv -> String -> IO (ImprovizResponse String)
+updateProgram env newProgram =
   case L.parse newProgram of
     Right newAst -> do
-      atomically $
-        modifyTVar
-          appState
-          (AS.clearErrors . AS.updateProgram newProgram newAst)
+      atomically $ do
+        modifyTVar (env ^. I.language) (IL.updateProgram newProgram newAst)
+        modifyTVar (env ^. I.ui) (set IUI.currentText newProgram)
       let msg = "Parsed Successfully"
       logInfo msg
       return $ ImprovizOKResponse msg
@@ -45,43 +44,21 @@ updateProgram appState newProgram =
       logError err
       return $ ImprovizErrorResponse err
 
-toggleTextDisplay :: TVar AppState -> IO (ImprovizResponse String)
-toggleTextDisplay appState = do
-  atomically $ modifyTVar appState AS.toggleText
+toggleTextDisplay :: TVar ImprovizUI -> IO (ImprovizResponse String)
+toggleTextDisplay ui = do
+  atomically $ modifyTVar ui IUI.toggleTextDisplay
   let msg = "Text display toggled"
   logInfo msg
   return $ ImprovizOKResponse msg
 
-nudgeTime :: TVar AppState -> Float -> IO (ImprovizResponse String)
-nudgeTime appState nudgeAmount = do
-  atomically $ modifyTVar appState (AS.nudgeBeat nudgeAmount)
-  let msg = "Nudged by " <> show nudgeAmount
-  logInfo msg
-  return $ ImprovizOKResponse msg
-
-getErrors :: TVar AppState -> IO (ImprovizResponse [AS.ImprovizError])
-getErrors appState = do
-  as <- readTVarIO appState
-  let errs = AS.getErrors as
-  logInfo $ "Have " <> show (length errs) <> " Errors"
-  return $ ImprovizErrorResponse errs
-
-createServer :: (MonadIO m) => ImprovizApp (m ThreadId)
-createServer = do
-  env <- ask
-  return $ liftIO $ forkIO $ scotty (env ^. I.config . C.serverPort) $ do
+createServer :: ImprovizEnv -> IO ThreadId
+createServer env =
+  forkIO $ scotty (env ^. I.config . C.serverPort) $ do
     get "/" $ text "SERVING"
     post "/read" $ do
       b <- body
-      resp <- liftIO $ updateProgram (env ^. I.appstate) (unpack b)
+      resp <- liftIO $ updateProgram env (unpack b)
       json resp
     post "/toggle/text" $ do
-      resp <- liftIO $ toggleTextDisplay (env ^. I.appstate)
-      json resp
-    post "/nudge/:amount" $ do
-      amount <- param "amount"
-      resp <- liftIO $ nudgeTime (env ^. I.appstate) amount
-      json resp
-    post "/errors" $ do
-      resp <- liftIO $ getErrors (env ^. I.appstate)
+      resp <- liftIO $ toggleTextDisplay (env ^. I.ui)
       json resp
