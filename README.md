@@ -67,6 +67,13 @@ In the *examples* folder there is a bash script called **send.sh** which can be 
 
 See the *editor* folder for more information.
 
+### OSC
+
+Improviz can accept OSC messages to set and change the value of variables within the system. The format for this is very simple.
+
+`"/vars/<name>" <int|float>`
+
+The OSC server must be enabled by setting the flag in the configuration. The default port is *5510* but can also be changed in the config.
 
 ## Contact
 
