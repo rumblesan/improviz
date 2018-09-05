@@ -41,8 +41,8 @@ exprDef =
     , nestedComments = True
     , identStart = letter <|> char '_'
     , identLetter = alphaNum <|> oneOf "_'"
-    , opStart = oneOf "^*/%+-^<>=!&|"
-    , opLetter = oneOf "^*/%+-^<>=!&|"
+    , opStart = oneOf "^*/%+-^<>=!&|:"
+    , opLetter = oneOf "^*/%+-^<>=!&|:"
     , reservedOpNames =
         [ "^"
         , "*"
@@ -152,9 +152,14 @@ loop =
   (indented >> langBlock) <?> "loop"
 
 assignment :: LangParser Assignment
-assignment =
-  Assignment <$> try (m_identifier <* m_symbol "=") <*>
-  expression <?> "assignment"
+assignment = absAssignment <|> condAssignment
+  where
+    absAssignment =
+      AbsoluteAssignment <$> try (m_identifier <* m_symbol "=") <*>
+      expression <?> "absolute assignment"
+    condAssignment =
+      ConditionalAssignment <$> try (m_identifier <* m_symbol ":=") <*>
+      expression <?> "conditional assignment"
 
 ifElem :: LangParser If
 ifElem =

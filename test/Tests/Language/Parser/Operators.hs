@@ -24,7 +24,7 @@ test_parse_complex_operator =
           (BinaryOp "%" (EVar $ Variable "a") (EVal $ Number 2))
           (EVal $ Number 1)
       ltExpr = BinaryOp "<" (EVar $ Variable "t") (EVal $ Number 4)
-      assignment = Assignment "b" $ BinaryOp "&&" modExpr ltExpr
+      assignment = AbsoluteAssignment "b" $ BinaryOp "&&" modExpr ltExpr
       expected = Right $ Block [ElAssign assignment]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result

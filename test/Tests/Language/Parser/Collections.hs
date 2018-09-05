@@ -30,19 +30,19 @@ test_parse_simple_list :: Assertion
 test_parse_simple_list =
   let program = "a = [1, 2, 3]\n"
       list = EVal $ VList [EVal $ Number 1, EVal $ Number 2, EVal $ Number 3]
-      aAssign = ElAssign $ Assignment "a" list
+      aAssign = ElAssign $ AbsoluteAssignment "a" list
       expected = Right $ Block [aAssign]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_parse_list :: Assertion
 test_parse_list =
   let program = "a = [1, 2, 3]\nb = elem(a, 2)"
       list = EVal $ VList [EVal $ Number 1, EVal $ Number 2, EVal $ Number 3]
-      aAssign = ElAssign $ Assignment "a" list
+      aAssign = ElAssign $ AbsoluteAssignment "a" list
       bAssign =
         ElAssign $
-        Assignment "b" $
+        AbsoluteAssignment "b" $
         EApp $
         Application
           "elem"
@@ -52,4 +52,4 @@ test_parse_list =
           Nothing
       expected = Right $ Block [aAssign, bAssign]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result

@@ -31,12 +31,12 @@ test_parse_simple_symbol_usage =
           Nothing
       expected = Right $ Block [ElExpression $ EApp texture]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_parse_symbol_variable_assignment :: Assertion
 test_parse_symbol_variable_assignment =
   let program = "a = :symbol"
-      assignment = Assignment "a" (EVal $ Symbol "symbol")
+      assignment = AbsoluteAssignment "a" (EVal $ Symbol "symbol")
       expected = Right $ Block [ElAssign assignment]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result

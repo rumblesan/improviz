@@ -30,12 +30,12 @@ parserTests =
 test_parse_program :: Assertion
 test_parse_program =
   let fooDef = "foo = (a, b) =>\n\tc = a + b\n\tbox(c)\n"
-      loopNum = "n = (3 * 4) + 1\n"
+      loopNum = "n := (3 * 4) + 1\n"
       loop = "n times\n\trotate(0.5)\n\tfoo(1, 2)\n"
       program = fooDef ++ loopNum ++ loop
       cAss =
         ElAssign $
-        Assignment "c" $
+        AbsoluteAssignment "c" $
         BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
       fooBox =
         ElExpression $
@@ -45,10 +45,10 @@ test_parse_program =
         Lambda
           [FunctionArg "a" Nothing, FunctionArg "b" Nothing]
           (Block [cAss, fooBox])
-      fooLine = ElAssign $ Assignment "foo" $ EVal fooLambda
+      fooLine = ElAssign $ AbsoluteAssignment "foo" $ EVal fooLambda
       nLine =
         ElAssign $
-        Assignment "n" $
+        ConditionalAssignment "n" $
         BinaryOp
           "+"
           (BinaryOp "*" (EVal $ Number 3) (EVal $ Number 4))

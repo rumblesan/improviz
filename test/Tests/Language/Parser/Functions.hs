@@ -40,19 +40,19 @@ test_simple_application =
           Nothing
       expected = Right $ Block [ElExpression $ EApp cube]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_application_list :: Assertion
 test_application_list =
   let program = "1, b, 3"
       expected = Right [EVal $ Number 1, EVar $ Variable "b", EVal $ Number 3]
       result = LP.simpleParse (LP.argList LP.expression) program
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_application_with_var_arg :: Assertion
 test_application_with_var_arg =
   let program = "a = 2\ncube(1, a, 3)\n\n"
-      assign = ElAssign $ Assignment "a" $ EVal $ Number 2
+      assign = ElAssign $ AbsoluteAssignment "a" $ EVal $ Number 2
       cube =
         ElExpression $
         EApp $
@@ -65,7 +65,7 @@ test_application_with_var_arg =
           Nothing
       expected = Right $ Block [assign, cube]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_application_with_named_args :: Assertion
 test_application_with_named_args =
@@ -88,7 +88,7 @@ test_application_with_named_args =
           Nothing
       expected = Right $ Block [func, foo]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_noargs_application :: Assertion
 test_noargs_application =
@@ -96,14 +96,15 @@ test_noargs_application =
       cube = Application "foo" [] Nothing
       expected = Right $ Block [ElExpression $ EApp cube]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_parse_function_blocks :: Assertion
 test_parse_function_blocks =
   let program = "box(a, a, 2)\n\tb = 2 * 0.5\n\tbox(a, b, 1)\n"
       ass =
         ElAssign $
-        Assignment "b" $ BinaryOp "*" (EVal $ Number 2) (EVal $ Number 0.5)
+        AbsoluteAssignment "b" $
+        BinaryOp "*" (EVal $ Number 2) (EVal $ Number 0.5)
       box2 =
         ElExpression $
         EApp $
@@ -126,4 +127,4 @@ test_parse_function_blocks =
         Just (Block [ass, box2])
       expected = Right $ Block [box1]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result

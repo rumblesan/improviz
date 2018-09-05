@@ -249,8 +249,13 @@ loopNums numExpr = do
     BuiltIn _ _ -> throwError "Function given as loop number expression"
 
 interpretAssignment :: Assignment -> InterpreterProcess Value
-interpretAssignment (Assignment name expression) =
+interpretAssignment (AbsoluteAssignment name expression) =
   interpretExpression expression >>= setVariable name
+interpretAssignment (ConditionalAssignment name expression) = do
+  var <- getVarOrNull name
+  case var of
+    Null -> interpretExpression expression >>= setVariable name
+    _    -> return var
 
 interpretExpression :: Expression -> InterpreterProcess Value
 interpretExpression (EApp application) = interpretApplication application

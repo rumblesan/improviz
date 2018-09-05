@@ -43,9 +43,11 @@ data Loop =
        Block
   deriving (Eq, Show)
 
-data Assignment =
-  Assignment Identifier
-             Expression
+data Assignment
+  = AbsoluteAssignment Identifier
+                       Expression
+  | ConditionalAssignment Identifier
+                          Expression
   deriving (Eq, Show)
 
 data If =
