@@ -32,7 +32,6 @@ executable improviz
                      , random
                      , scotty
                      , stm
-                     , split
                      , text
                      , time
                      , vector
