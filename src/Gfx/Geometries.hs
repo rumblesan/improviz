@@ -38,7 +38,7 @@ lineWireframe = [(0, 1)]
 rectVertices :: GLfloat -> [Vertex3 GLfloat]
 rectVertices size =
   let s = size / 2
-   in [Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0, Vertex3 s s 0, Vertex3 (-s) s 0]
+   in [Vertex3 s (-s) 0, Vertex3 (-s) (-s) 0, Vertex3 (-s) s 0, Vertex3 s s 0]
 
 rectTextCoords :: [Vertex2 GLfloat]
 rectTextCoords = tri1TextCoords ++ tri2TextCoords
