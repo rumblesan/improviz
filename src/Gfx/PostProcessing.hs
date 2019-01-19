@@ -95,7 +95,7 @@ createQuadVBO =
           GL.bufferData ArrayBuffer $= (size, ptr, StaticDraw)
         setAttribPointer vPosition posVSize stride firstPosIndex
         setAttribPointer vTexCoord texVSize stride firstTexIndex
-  in createVBO [quadConfig] Triangles firstPosIndex numArrIdx
+   in createVBO [quadConfig] Triangles firstPosIndex numArrIdx
 
 create2DTexture :: GLint -> GLint -> IO TextureObject
 create2DTexture width height = do

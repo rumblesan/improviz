@@ -35,7 +35,7 @@ createBuffer verts =
         withArray verts $ \ptr ->
           bufferData ArrayBuffer $= (size, ptr, StaticDraw)
         setAttribPointer vPosition posVSize stride firstIndex
-  in createVBO [quadConfig] Lines firstIndex numVertices
+   in createVBO [quadConfig] Lines firstIndex numVertices
 
 createBufferWithTexture :: [Vertex3 GLfloat] -> [Vertex2 GLfloat] -> IO VBO
 createBufferWithTexture verts textCoords =
@@ -60,7 +60,7 @@ createBufferWithTexture verts textCoords =
         withArray textCoords $ \ptr ->
           bufferData ArrayBuffer $= (tsize, ptr, StaticDraw)
         setAttribPointer texcoord texVSize stride firstTIndex
-  in createVBO [vArrayConfig, tArrayConfig] Triangles firstVIndex numVVertices
+   in createVBO [vArrayConfig, tArrayConfig] Triangles firstVIndex numVVertices
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers =
@@ -91,6 +91,6 @@ createAllBuffers =
       swb =
         createBuffer $
         lineVertexArray (sphereVertices 0.5 12) $ sphereWireframe 12
-  in GeometryBuffers <$> lwb <*> rb <*> rwb <*> cb <*> cwb <*> cyb <*> cywb <*>
-     sb <*>
-     swb
+   in GeometryBuffers <$> lwb <*> rb <*> rwb <*> cb <*> cwb <*> cyb <*> cywb <*>
+      sb <*>
+      swb

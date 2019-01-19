@@ -111,23 +111,23 @@ fontFaceFromFile ft fp =
 loadFont :: Maybe FilePath -> Int -> IO Font
 loadFont fontPath fontSize =
   let chars = C.chr <$> [0 .. 127]
-  in do ft2 <- freeType
-        face <- maybe (fontFaceFromMemory ft2) (fontFaceFromFile ft2) fontPath
-        runFreeType $ ft_Set_Pixel_Sizes face (fromIntegral fontSize) 0
-        fsize <- peek $ F.size face
-        fmetrics <- peek $ FS.metrics fsize
-        GL.rowAlignment Pack $= 1
-        c <-
-          sequence $ M.fromList $ fmap (\c -> (c, loadCharacter face c)) chars
-        ft_Done_Face face
-        ft_Done_FreeType ft2
-        return $
-          Font
-          { fontCharacters = c
-          , fontHeight = fromIntegral $ (FSM.height fmetrics `div` 64)
-          , fontAscender = fromIntegral $ (FSM.ascender fmetrics `div` 64)
-          , fontAdvance = fromIntegral $ (FSM.max_advance fmetrics `div` 64)
-          }
+   in do ft2 <- freeType
+         face <- maybe (fontFaceFromMemory ft2) (fontFaceFromFile ft2) fontPath
+         runFreeType $ ft_Set_Pixel_Sizes face (fromIntegral fontSize) 0
+         fsize <- peek $ F.size face
+         fmetrics <- peek $ FS.metrics fsize
+         GL.rowAlignment Pack $= 1
+         c <-
+           sequence $ M.fromList $ fmap (\c -> (c, loadCharacter face c)) chars
+         ft_Done_Face face
+         ft_Done_FreeType ft2
+         return $
+           Font
+             { fontCharacters = c
+             , fontHeight = fromIntegral $ (FSM.height fmetrics `div` 64)
+             , fontAscender = fromIntegral $ (FSM.ascender fmetrics `div` 64)
+             , fontAdvance = fromIntegral $ (FSM.max_advance fmetrics `div` 64)
+             }
 
 loadCharacter :: FT_Face -> Char -> IO Character
 loadCharacter ff char = do

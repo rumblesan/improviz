@@ -30,7 +30,7 @@ lineVertexArray verts points =
 lineVertices :: GLfloat -> [Vertex3 GLfloat]
 lineVertices size =
   let s = size / 2
-  in [Vertex3 0 (-s) 0, Vertex3 0 s 0]
+   in [Vertex3 0 (-s) 0, Vertex3 0 s 0]
 
 lineWireframe :: [(Integer, Integer)]
 lineWireframe = [(0, 1)]
@@ -38,7 +38,7 @@ lineWireframe = [(0, 1)]
 rectVertices :: GLfloat -> [Vertex3 GLfloat]
 rectVertices size =
   let s = size / 2
-  in [Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0, Vertex3 s s 0, Vertex3 (-s) s 0]
+   in [Vertex3 (-s) (-s) 0, Vertex3 s (-s) 0, Vertex3 s s 0, Vertex3 (-s) s 0]
 
 rectTextCoords :: [Vertex2 GLfloat]
 rectTextCoords = tri1TextCoords ++ tri2TextCoords
@@ -52,15 +52,15 @@ rectWireframe = [(0, 1), (1, 2), (2, 3), (3, 0)]
 cubeVertices :: GLfloat -> [Vertex3 GLfloat]
 cubeVertices size =
   let s = size / 2
-  in [ Vertex3 s s s
-     , Vertex3 s s (-s)
-     , Vertex3 (-s) s (-s)
-     , Vertex3 (-s) s s
-     , Vertex3 s (-s) s
-     , Vertex3 s (-s) (-s)
-     , Vertex3 (-s) (-s) (-s)
-     , Vertex3 (-s) (-s) s
-     ]
+   in [ Vertex3 s s s
+      , Vertex3 s s (-s)
+      , Vertex3 (-s) s (-s)
+      , Vertex3 (-s) s s
+      , Vertex3 s (-s) s
+      , Vertex3 s (-s) (-s)
+      , Vertex3 (-s) (-s) (-s)
+      , Vertex3 (-s) (-s) s
+      ]
 
 cubeTextCoords :: [Vertex2 GLfloat]
 cubeTextCoords = take 36 $ cycle $ tri1TextCoords ++ tri2TextCoords
@@ -110,7 +110,7 @@ cylinderVertices height radius segments =
         a <- angles
         return (Vertex3 (radius * sin a) (radius * cos a) bottomHeight)
       topVerts = [Vertex3 x y topHeight | (Vertex3 x y _) <- bottomVerts]
-  in (bottomCentre : bottomVerts) ++ (topCentre : topVerts)
+   in (bottomCentre : bottomVerts) ++ (topCentre : topVerts)
 
 cylinderTextCoords :: [Vertex2 GLfloat]
 cylinderTextCoords = cycle $ tri1TextCoords ++ tri2TextCoords
@@ -125,7 +125,7 @@ cylinderTriangles segments =
       sideLowerTris = [(v, mod v segments + tc + 1, v + tc) | v <- bp]
       sideUpperTris =
         [(v, mod v segments + 1, mod v segments + tc + 1) | v <- bp]
-  in bTris ++ sideLowerTris ++ sideUpperTris ++ tTris
+   in bTris ++ sideLowerTris ++ sideUpperTris ++ tTris
 
 cylinderWireframe :: Integer -> [(Integer, Integer)]
 cylinderWireframe segments =
@@ -137,7 +137,7 @@ cylinderWireframe segments =
       tEdgeLines = fmap (\(x, y) -> (x + tc, y + tc)) bEdgeLines
       tCentreLines = [(tc, v + tc) | v <- bp]
       sideLines = [(v, v + tc) | v <- bp]
-  in bEdgeLines ++ bCentreLines ++ sideLines ++ tEdgeLines ++ tCentreLines
+   in bEdgeLines ++ bCentreLines ++ sideLines ++ tEdgeLines ++ tCentreLines
 
 sphereVertices :: GLfloat -> Integer -> [Vertex3 GLfloat]
 sphereVertices radius segments =
@@ -148,17 +148,20 @@ sphereVertices radius segments =
       allRings = do
         ring <- [1 .. rings]
         ringVerts radius angDelta (fromInteger ring) segments
-  in topCentre : allRings ++ [bottomCentre]
+   in topCentre : allRings ++ [bottomCentre]
   where
     ringVerts :: GLfloat -> GLfloat -> GLfloat -> Integer -> [Vertex3 GLfloat]
     ringVerts radius angle heightRing segments =
       let width = sin (heightRing * angle) * radius
           height = cos (heightRing * angle) * radius
           points = fromInteger <$> [0 .. segments - 1]
-      in fmap
-           (\p ->
-              Vertex3 (sin (p * angle) * width) (cos (p * angle) * width) height)
-           points
+       in fmap
+            (\p ->
+               Vertex3
+                 (sin (p * angle) * width)
+                 (cos (p * angle) * width)
+                 height)
+            points
 
 sphereTextCoords :: [Vertex2 GLfloat]
 sphereTextCoords = cycle $ tri1TextCoords ++ tri2TextCoords
@@ -186,7 +189,7 @@ sphereTriangles segments =
         let lower =
               (o + s, o + s + segments, (mod s segments + 1) + (r * segments))
         [upper, lower]
-  in topTriangles ++ intraRingTriangles ++ bottomTriangles
+   in topTriangles ++ intraRingTriangles ++ bottomTriangles
 
 sphereWireframe :: Integer -> [(Integer, Integer)]
 sphereWireframe segments =
@@ -207,4 +210,4 @@ sphereWireframe segments =
         fmap
           (\s -> (s + ((rings - 1) * segments), bottomCentre))
           [1 .. segments]
-  in topLines ++ ringLines ++ intraRingLines ++ bottomLines
+   in topLines ++ ringLines ++ intraRingLines ++ bottomLines
