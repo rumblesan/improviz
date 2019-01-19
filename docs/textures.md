@@ -37,3 +37,21 @@ texture(:loop1, f)
   rotate()
   box()
 ```
+
+## Code Text
+
+The rendered code is also available as a texture that can be applied to shapes by using the `:code` texture name.
+Note: this will override any configuration in texture folders.
+
+```
+background(0, 255, 100)
+
+noStroke()
+move(3, -3, -10)
+texture(:code)
+100 times with i
+	x = cos(time + (i / 10)) * 0.05
+	y = sin(time + (i / 10)) * 0.07
+	move(x, y, 0.1)
+	rectangle(13)
+```

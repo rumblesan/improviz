@@ -21,11 +21,11 @@ makeLenses ''ImprovizFontConfig
 
 defaultFontConfig =
   ImprovizFontConfig
-  { _filepath = Nothing
-  , _size = 36
-  , _fgColour = Color4 0.0 0.0 0.0 1.0
-  , _bgColour = Color4 1.0 0.8 0.0 1.0
-  }
+    { _filepath = Nothing
+    , _size = 36
+    , _fgColour = Color4 0.0 0.0 0.0 1.0
+    , _bgColour = Color4 1.0 0.8 0.0 1.0
+    }
 
 instance (Fractional a, FromJSON a) => FromJSON (Color4 a) where
   parseJSON v = do
