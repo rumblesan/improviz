@@ -122,11 +122,12 @@ display env time = do
       atomically $ modifyTVar (env ^. I.language) IL.resetProgram
     Right scene -> do
       gs <- atomically $ readTMVar (env ^. I.graphics)
+      ui <- readTVarIO $ env ^. I.ui
       when (IL.programHasChanged as) $ do
         logInfo "Saving current ast"
+        renderCode 0 0 (textRenderer gs) (ui ^. IUI.currentText)
         atomically $ modifyTVar (env ^. I.language) IL.saveProgram
       renderGfx gs scene
-      ui <- readTVarIO $ env ^. I.ui
       when (ui ^. IUI.displayText) $ do
         renderCode 0 0 (textRenderer gs) (ui ^. IUI.currentText)
         renderCodebuffer (textRenderer gs)
