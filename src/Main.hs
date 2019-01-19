@@ -30,10 +30,11 @@ import           Gfx.PostProcessing     (createPostProcessing,
                                          deletePostProcessing,
                                          renderPostProcessing,
                                          usePostProcessing)
-import           Gfx.TextRendering      (TextRenderer, createTextRenderer,
-                                         renderText, renderTextbuffer,
+import           Gfx.TextRendering      (TextRenderer, addCodeTextureToLib,
+                                         createTextRenderer, renderCode,
+                                         renderCodebuffer,
                                          resizeTextRendererScreen)
-import           Gfx.Textures           (createTextureLib)
+import           Gfx.Textures           (addTexture, createTextureLib)
 import           Gfx.Windowing          (setupWindow)
 import           Language               (copyRNG, copyRNG, createGfx,
                                          updateEngineInfo, updateStateVariables)
@@ -67,8 +68,9 @@ initApp env width height =
          textRenderer <-
            createTextRenderer (env ^. I.config) front back width height
          textureLib <- createTextureLib (env ^. I.config . C.textureDirectories)
+         let tLibWithCode = addCodeTextureToLib textRenderer textureLib
          gfxEngineState <-
-           createGfxEngineState proj view post textRenderer textureLib
+           createGfxEngineState proj view post textRenderer tLibWithCode
          atomically $ do
            putTMVar (env ^. I.graphics) gfxEngineState
            modifyTVar
@@ -119,15 +121,15 @@ display env time = do
       logError $ "Could not interpret program: " ++ msg
       atomically $ modifyTVar (env ^. I.language) IL.resetProgram
     Right scene -> do
+      gs <- atomically $ readTMVar (env ^. I.graphics)
       when (IL.programHasChanged as) $ do
         logInfo "Saving current ast"
         atomically $ modifyTVar (env ^. I.language) IL.saveProgram
-      gs <- atomically $ readTMVar (env ^. I.graphics)
       renderGfx gs scene
       ui <- readTVarIO $ env ^. I.ui
       when (ui ^. IUI.displayText) $ do
-        renderText 0 0 (textRenderer gs) (ui ^. IUI.currentText)
-        renderTextbuffer (textRenderer gs)
+        renderCode 0 0 (textRenderer gs) (ui ^. IUI.currentText)
+        renderCodebuffer (textRenderer gs)
   atomically $
     modifyTVar
       (env ^. I.language)

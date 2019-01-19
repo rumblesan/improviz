@@ -52,7 +52,8 @@ loadTexture name path = do
     ".gif" ->
       case decodeGifImages imgData of
         Left err ->
-          print ("could not load image " ++ path ++ ": " ++ err) >> return (name, M.empty)
+          print ("could not load image " ++ path ++ ": " ++ err) >>
+          return (name, M.empty)
         Right images -> do
           i <- rights <$> mapM handleImage images
           return (name, M.fromList $ zipWith (\idx t -> (idx, t)) [0 ..] i)
@@ -60,7 +61,8 @@ loadTexture name path = do
       loaded <- either (return . Left) handleImage (decodeImage imgData)
       either
         (\err ->
-           print ("could not load image " ++ path ++ ": " ++ err) >> return (name, M.empty))
+           print ("could not load image " ++ path ++ ": " ++ err) >>
+           return (name, M.empty))
         (\i -> return (name, M.singleton 0 i))
         loaded
 
@@ -116,4 +118,8 @@ loadTextureFolder folderPath = do
       loadTexture (textureName texture) (folderPath </> textureFile texture)
 
 createTextureLib :: [FilePath] -> IO TextureLibrary
-createTextureLib folders = M.fromList . concat <$> mapM loadTextureFolder folders
+createTextureLib folders =
+  M.fromList . concat <$> mapM loadTextureFolder folders
+
+addTexture :: TextureLibrary -> String -> TextureObject -> TextureLibrary
+addTexture lib name tobj = M.insert name (M.singleton 0 tobj) lib

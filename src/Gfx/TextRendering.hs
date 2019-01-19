@@ -2,8 +2,9 @@
 
 module Gfx.TextRendering
   ( createTextRenderer
-  , renderText
-  , renderTextbuffer
+  , renderCode
+  , renderCodebuffer
+  , addCodeTextureToLib
   , resizeTextRendererScreen
   , changeTextColour
   , textCoordMatrix
@@ -54,6 +55,7 @@ import qualified Graphics.Rendering.OpenGL as GL
 
 import           Gfx.PostProcessing        (Savebuffer (..), createSavebuffer,
                                             deleteSavebuffer)
+import           Gfx.Textures              (TextureLibrary, addTexture)
 
 import           Data.Vec                  (Mat44, multmm)
 import           Gfx.Matrices              (orthographicMat, translateMat)
@@ -81,7 +83,7 @@ textCoordMatrix :: Floating f => f -> f -> f -> f -> f -> f -> Mat44 f
 textCoordMatrix left right top bottom near far =
   let o = orthographicMat left right top bottom near far
       t = translateMat (-1) 1 0
-  in multmm t o
+   in multmm t o
 
 createCharacterTextQuad :: IO VBO
 createCharacterTextQuad =
@@ -100,7 +102,7 @@ createCharacterTextQuad =
         GL.bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
         setAttribPointer vPosition posVSize stride firstPosIndex
         setAttribPointer vTexCoord texVSize stride firstTexIndex
-  in createVBO [quadConfig] Triangles firstPosIndex numVertices
+   in createVBO [quadConfig] Triangles firstPosIndex numVertices
 
 createCharacterBGQuad :: IO VBO
 createCharacterBGQuad =
@@ -115,7 +117,7 @@ createCharacterBGQuad =
       quadConfig = do
         GL.bufferData ArrayBuffer $= (size, nullPtr, DynamicDraw)
         setAttribPointer vPosition posVSize stride firstPosIndex
-  in createVBO [quadConfig] Triangles firstPosIndex numVertices
+   in createVBO [quadConfig] Triangles firstPosIndex numVertices
 
 createTextRenderer ::
      ImprovizConfig -> Float -> Float -> Int -> Int -> IO TextRenderer
@@ -166,6 +168,11 @@ createTextRenderer config front back width height = do
       (config ^. C.fontConfig . FC.bgColour)
       buffer
 
+addCodeTextureToLib :: TextRenderer -> TextureLibrary -> TextureLibrary
+addCodeTextureToLib tr tlib =
+  let (Savebuffer _ text _ _ _) = outbuffer tr
+   in addTexture tlib "code" text
+
 resizeTextRendererScreen ::
      Float -> Float -> Int -> Int -> TextRenderer -> IO TextRenderer
 resizeTextRendererScreen front back width height trender =
@@ -177,22 +184,22 @@ resizeTextRendererScreen front back width height trender =
           (fromIntegral height)
           front
           back
-  in do deleteSavebuffer $ outbuffer trender
-        nbuffer <- createSavebuffer (fromIntegral width) (fromIntegral height)
-        return trender {pMatrix = projectionMatrix, outbuffer = nbuffer}
+   in do deleteSavebuffer $ outbuffer trender
+         nbuffer <- createSavebuffer (fromIntegral width) (fromIntegral height)
+         return trender {pMatrix = projectionMatrix, outbuffer = nbuffer}
 
 changeTextColour :: Color4 GLfloat -> TextRenderer -> TextRenderer
 changeTextColour newColour trender = trender {textColour = newColour}
 
-renderText :: Int -> Int -> TextRenderer -> String -> IO ()
-renderText xpos ypos renderer strings = do
+renderCode :: Int -> Int -> TextRenderer -> String -> IO ()
+renderCode xpos ypos renderer strings = do
   let (Savebuffer fbo _ _ _ _) = outbuffer renderer
   GL.bindFramebuffer Framebuffer $= fbo
   renderCharacters xpos ypos renderer strings
   printErrors
 
-renderTextbuffer :: TextRenderer -> IO ()
-renderTextbuffer renderer = do
+renderCodebuffer :: TextRenderer -> IO ()
+renderCodebuffer renderer = do
   GL.bindFramebuffer Framebuffer $= GL.defaultFramebufferObject
   let (Savebuffer _ text _ program quadVBO) = outbuffer renderer
   GL.currentProgram $= Just program
@@ -235,22 +242,22 @@ sendVertices verts =
   let vertSize = sizeOf (head verts)
       numVerts = length verts
       size = fromIntegral (numVerts * vertSize)
-  in withArray verts $ \ptr ->
-       GL.bufferSubData ArrayBuffer WriteToBuffer 0 size ptr
+   in withArray verts $ \ptr ->
+        GL.bufferSubData ArrayBuffer WriteToBuffer 0 size ptr
 
 renderCharacterQuad ::
      Program -> Mat44 GLfloat -> VBO -> IO () -> [GLfloat] -> IO ()
 renderCharacterQuad program pMatrix character charDrawFunc charVerts =
   let (VBO arrayObject arrayBuffers primMode firstIndex numTriangles) =
         character
-  in do GL.currentProgram $= Just program
-        GL.bindVertexArrayObject $= Just arrayObject
-        GL.bindBuffer ArrayBuffer $= listToMaybe arrayBuffers
-        charDrawFunc
-        sendProjectionMatrix program pMatrix
-        sendVertices charVerts
-        GL.drawArrays primMode firstIndex numTriangles
-        printErrors
+   in do GL.currentProgram $= Just program
+         GL.bindVertexArrayObject $= Just arrayObject
+         GL.bindBuffer ArrayBuffer $= listToMaybe arrayBuffers
+         charDrawFunc
+         sendProjectionMatrix program pMatrix
+         sendVertices charVerts
+         GL.drawArrays primMode firstIndex numTriangles
+         printErrors
 
 renderCharacterTextQuad ::
      TextRenderer -> Character -> Int -> Int -> Font -> IO (Int, Int)
@@ -295,13 +302,13 @@ renderCharacterTextQuad renderer (Character c width height adv xBearing yBearing
         textBGColourU <-
           GL.get $ GL.uniformLocation (textprogram renderer) "textBGColor"
         GL.uniform textBGColourU $= textBGColour renderer
-  in do renderCharacterQuad
-          (textprogram renderer)
-          (pMatrix renderer)
-          (characterQuad renderer)
-          charDrawFunc
-          charVerts
-        return (x + adv, y)
+   in do renderCharacterQuad
+           (textprogram renderer)
+           (pMatrix renderer)
+           (characterQuad renderer)
+           charDrawFunc
+           charVerts
+         return (x + adv, y)
 
 renderCharacterBGQuad ::
      TextRenderer -> Character -> Int -> Int -> Font -> IO ()
@@ -315,9 +322,9 @@ renderCharacterBGQuad renderer (Character _ _ _ adv _ _ _) x y font =
         textBGColourU <-
           GL.get $ GL.uniformLocation (bgprogram renderer) "textBGColor"
         GL.uniform textBGColourU $= textBGColour renderer
-  in renderCharacterQuad
-       (bgprogram renderer)
-       (pMatrix renderer)
-       (characterBGQuad renderer)
-       charDrawFunc
-       charVerts
+   in renderCharacterQuad
+        (bgprogram renderer)
+        (pMatrix renderer)
+        (characterBGQuad renderer)
+        charDrawFunc
+        charVerts
