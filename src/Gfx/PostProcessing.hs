@@ -49,8 +49,8 @@ data Mixbuffer =
             VBO
 
 -- 2D positions and texture coordinates
-quadVertices :: [GLfloat]
-quadVertices =
+ordinaryQuadVertices :: [GLfloat]
+ordinaryQuadVertices =
   [ -1
   , 1
   , 0
@@ -77,8 +77,36 @@ quadVertices =
   , 0 -- v6
   ]
 
-createQuadVBO :: IO VBO
-createQuadVBO =
+textQuadVertices :: [GLfloat]
+textQuadVertices =
+  [ -1
+  , 1
+  , 0
+  , 0 -- v1
+  , -1
+  , -1
+  , 0
+  , 1 -- v2
+  , 1
+  , 1
+  , 1
+  , 0 -- v3
+  , 1
+  , 1
+  , 1
+  , 0 -- v4
+  , -1
+  , -1
+  , 0
+  , 1 -- v5
+  , 1
+  , -1
+  , 1
+  , 1 -- v6
+  ]
+
+createQuadVBO :: [GLfloat] -> IO VBO
+createQuadVBO quadVertices =
   let vertexSize = fromIntegral $ sizeOf (head quadVertices)
       posVSize = 2
       texVSize = 2
@@ -148,7 +176,26 @@ createSavebuffer width height = do
   text <- create2DTexture width height
   GL.framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
   depth <- createDepthbuffer width height
-  qvbo <- createQuadVBO
+  qvbo <- createQuadVBO ordinaryQuadVertices
+  program <-
+    loadShaders
+      [ ShaderInfo
+          VertexShader
+          (ByteStringSource $(embedFile "assets/shaders/savebuffer.vert"))
+      , ShaderInfo
+          FragmentShader
+          (ByteStringSource $(embedFile "assets/shaders/savebuffer.frag"))
+      ]
+  return $ Savebuffer fbo text depth program qvbo
+
+createTextDisplaybuffer :: GLint -> GLint -> IO Savebuffer
+createTextDisplaybuffer width height = do
+  fbo <- genObjectName
+  GL.bindFramebuffer Framebuffer $= fbo
+  text <- create2DTexture width height
+  GL.framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
+  depth <- createDepthbuffer width height
+  qvbo <- createQuadVBO textQuadVertices
   program <-
     loadShaders
       [ ShaderInfo
@@ -175,7 +222,7 @@ createMotionBlurbuffer width height = do
   text <- create2DTexture width height
   framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
   depth <- createDepthbuffer width height
-  qvbo <- createQuadVBO
+  qvbo <- createQuadVBO ordinaryQuadVertices
   program <-
     loadShaders
       [ ShaderInfo
@@ -202,7 +249,7 @@ createPaintOverbuffer width height = do
   text <- create2DTexture width height
   framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
   depth <- createDepthbuffer width height
-  qvbo <- createQuadVBO
+  qvbo <- createQuadVBO ordinaryQuadVertices
   program <-
     loadShaders
       [ ShaderInfo

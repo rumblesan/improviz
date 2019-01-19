@@ -53,7 +53,8 @@ import           Graphics.Rendering.OpenGL (ArrayIndex, AttribLocation (..),
                                             VertexArrayObject, ($=))
 import qualified Graphics.Rendering.OpenGL as GL
 
-import           Gfx.PostProcessing        (Savebuffer (..), createSavebuffer,
+import           Gfx.PostProcessing        (Savebuffer (..),
+                                            createTextDisplaybuffer,
                                             deleteSavebuffer)
 import           Gfx.Textures              (TextureLibrary, addTexture)
 
@@ -68,6 +69,8 @@ import           Lens.Simple               ((^.))
 
 data TextRenderer = TextRenderer
   { textFont        :: Font
+  , textAreaWidth   :: Int
+  , textAreaHeight  :: Int
   , charSize        :: Int
   , pMatrix         :: Mat44 GLfloat
   , textprogram     :: Program
@@ -154,10 +157,12 @@ createTextRenderer config front back width height = do
           (fromIntegral height)
           front
           back
-  buffer <- createSavebuffer (fromIntegral width) (fromIntegral height)
+  buffer <- createTextDisplaybuffer (fromIntegral width) (fromIntegral height)
   return $
     TextRenderer
       font
+      width
+      height
       (config ^. C.fontConfig . FC.size)
       projectionMatrix
       tprogram
@@ -185,18 +190,20 @@ resizeTextRendererScreen front back width height trender =
           front
           back
    in do deleteSavebuffer $ outbuffer trender
-         nbuffer <- createSavebuffer (fromIntegral width) (fromIntegral height)
+         nbuffer <-
+           createTextDisplaybuffer (fromIntegral width) (fromIntegral height)
          return trender {pMatrix = projectionMatrix, outbuffer = nbuffer}
 
 changeTextColour :: Color4 GLfloat -> TextRenderer -> TextRenderer
 changeTextColour newColour trender = trender {textColour = newColour}
 
 renderCode :: Int -> Int -> TextRenderer -> String -> IO ()
-renderCode xpos ypos renderer strings = do
+renderCode xpos ypos renderer strings =
   let (Savebuffer fbo _ _ _ _) = outbuffer renderer
-  GL.bindFramebuffer Framebuffer $= fbo
-  renderCharacters xpos ypos renderer strings
-  printErrors
+      height = textAreaHeight renderer
+   in do GL.bindFramebuffer Framebuffer $= fbo
+         renderCharacters xpos (height - ypos) renderer strings
+         printErrors
 
 renderCodebuffer :: TextRenderer -> IO ()
 renderCodebuffer renderer = do
@@ -219,10 +226,10 @@ renderCharacters xpos ypos renderer strings = do
   foldM_
     (\(xp, yp) c ->
        case c of
-         '\n' -> return (xpos, yp + fontHeight font)
+         '\n' -> return (xpos, yp - fontHeight font)
          _ ->
            maybe
-             (return (xp, yp + fontAdvance font))
+             (return (xp, yp - fontAdvance font))
              (\c -> renderChar c xp yp font)
              (getCharacter font c))
     (xpos, ypos)
@@ -262,11 +269,11 @@ renderCharacterQuad program pMatrix character charDrawFunc charVerts =
 renderCharacterTextQuad ::
      TextRenderer -> Character -> Int -> Int -> Font -> IO (Int, Int)
 renderCharacterTextQuad renderer (Character c width height adv xBearing yBearing text) x y font =
-  let baseline = fromIntegral (y + fontAscender font)
+  let baseline = fromIntegral (y - fontAscender font)
       gX1 = fromIntegral (x + xBearing)
       gX2 = gX1 + fromIntegral width
-      gY1 = baseline - fromIntegral yBearing
-      gY2 = gY1 + fromIntegral height
+      gY1 = baseline + fromIntegral yBearing
+      gY2 = gY1 - fromIntegral height
       charVerts =
         [ gX1
         , gY1
@@ -316,7 +323,7 @@ renderCharacterBGQuad renderer (Character _ _ _ adv _ _ _) x y font =
   let x1 = fromIntegral x
       x2 = fromIntegral $ x + adv
       y1 = fromIntegral y
-      y2 = fromIntegral $ y + fontHeight font
+      y2 = fromIntegral $ y - fontHeight font
       charVerts = [x1, y1, x1, y2, x2, y1, x1, y2, x2, y2, x2, y1] :: [GLfloat]
       charDrawFunc = do
         textBGColourU <-
