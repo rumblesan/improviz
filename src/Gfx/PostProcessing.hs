@@ -187,10 +187,10 @@ createSavebuffer width height = do
     loadShaders
       [ ShaderInfo
           VertexShader
-          (ByteStringSource $(embedFile "assets/shaders/savebuffer.vert"))
+          (ByteStringSource $(embedFile "src/assets/shaders/savebuffer.vert"))
       , ShaderInfo
           FragmentShader
-          (ByteStringSource $(embedFile "assets/shaders/savebuffer.frag"))
+          (ByteStringSource $(embedFile "src/assets/shaders/savebuffer.frag"))
       ]
   return $ Savebuffer fbo text depth program qvbo
 
@@ -206,10 +206,10 @@ createTextDisplaybuffer width height = do
     loadShaders
       [ ShaderInfo
           VertexShader
-          (ByteStringSource $(embedFile "assets/shaders/savebuffer.vert"))
+          (ByteStringSource $(embedFile "src/assets/shaders/savebuffer.vert"))
       , ShaderInfo
           FragmentShader
-          (ByteStringSource $(embedFile "assets/shaders/savebuffer.frag"))
+          (ByteStringSource $(embedFile "src/assets/shaders/savebuffer.frag"))
       ]
   return $ Savebuffer fbo text depth program qvbo
 
@@ -233,10 +233,10 @@ createMotionBlurbuffer width height = do
     loadShaders
       [ ShaderInfo
           VertexShader
-          (ByteStringSource $(embedFile "assets/shaders/motionBlur.vert"))
+          (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.vert"))
       , ShaderInfo
           FragmentShader
-          (ByteStringSource $(embedFile "assets/shaders/motionBlur.frag"))
+          (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.frag"))
       ]
   return $ Mixbuffer fbo text depth program qvbo
 
@@ -260,10 +260,10 @@ createPaintOverbuffer width height = do
     loadShaders
       [ ShaderInfo
           VertexShader
-          (ByteStringSource $(embedFile "assets/shaders/paintOver.vert"))
+          (ByteStringSource $(embedFile "src/assets/shaders/paintOver.vert"))
       , ShaderInfo
           FragmentShader
-          (ByteStringSource $(embedFile "assets/shaders/paintOver.frag"))
+          (ByteStringSource $(embedFile "src/assets/shaders/paintOver.frag"))
       ]
   return $ Mixbuffer fbo text depth program qvbo
 

@@ -28,10 +28,10 @@ createColourShaders = do
     loadShaders
       [ ShaderInfo
           VertexShader
-          (ByteStringSource $(embedFile "assets/shaders/basic.vert"))
+          (ByteStringSource $(embedFile "src/assets/shaders/basic.vert"))
       , ShaderInfo
           FragmentShader
-          (ByteStringSource $(embedFile "assets/shaders/basic.frag"))
+          (ByteStringSource $(embedFile "src/assets/shaders/basic.frag"))
       ]
   GL.currentProgram $= Just program
   mvpMatUniform <- GL.get $ uniformLocation program "MVPMat"
@@ -44,10 +44,10 @@ createTextureShaders = do
     loadShaders
       [ ShaderInfo
           VertexShader
-          (ByteStringSource $(embedFile "assets/shaders/texture.vert"))
+          (ByteStringSource $(embedFile "src/assets/shaders/texture.vert"))
       , ShaderInfo
           FragmentShader
-          (ByteStringSource $(embedFile "assets/shaders/texture.frag"))
+          (ByteStringSource $(embedFile "src/assets/shaders/texture.frag"))
       ]
   GL.currentProgram $= Just program
   mvpMatUniform <- GL.get $ uniformLocation program "MVPMat"

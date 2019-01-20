@@ -80,7 +80,7 @@ getCharacter :: Font -> Char -> Maybe Character
 getCharacter cm c = M.lookup c (fontCharacters cm)
 
 defaultFont :: B.ByteString
-defaultFont = $(embedFile "assets/fonts/arial.ttf")
+defaultFont = $(embedFile "src/assets/fonts/arial.ttf")
 
 runFreeType :: IO FT_Error -> IO ()
 runFreeType m = do

@@ -135,22 +135,22 @@ createTextRenderer config width height =
              [ ShaderInfo
                  VertexShader
                  (ByteStringSource
-                    $(embedFile "assets/shaders/textrenderer.vert"))
+                    $(embedFile "src/assets/shaders/textrenderer.vert"))
              , ShaderInfo
                  FragmentShader
                  (ByteStringSource
-                    $(embedFile "assets/shaders/textrenderer.frag"))
+                    $(embedFile "src/assets/shaders/textrenderer.frag"))
              ]
          bgshaderprogram <-
            loadShaders
              [ ShaderInfo
                  VertexShader
                  (ByteStringSource
-                    $(embedFile "assets/shaders/textrenderer-bg.vert"))
+                    $(embedFile "src/assets/shaders/textrenderer-bg.vert"))
              , ShaderInfo
                  FragmentShader
                  (ByteStringSource
-                    $(embedFile "assets/shaders/textrenderer-bg.frag"))
+                    $(embedFile "src/assets/shaders/textrenderer-bg.frag"))
              ]
          font <-
            loadFont
