@@ -2,8 +2,6 @@ module Language.Interpreter where
 
 import           System.Random
 
-import           Graphics.Rendering.OpenGL      (Color4 (..))
-
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
 import           Control.Monad.Writer.Strict
@@ -17,6 +15,7 @@ import           Language.Interpreter.Types
 import qualified Gfx.Ast                        as GA
 import qualified Gfx.EngineState                as GE
 import           Gfx.PostProcessing             (AnimationStyle (..))
+import           Gfx.Types                      (Colour (..))
 import           Language.Ast
 import qualified Language.Interpreter.Scope     as LS
 
@@ -26,7 +25,7 @@ emptyState =
     { variables = LS.empty
     , builtins = M.fromList []
     , blockStack = []
-    , gfxBackground = Color4 1 1 1 1
+    , gfxBackground = Colour 1 1 1 1
     , currentGfx = GA.emptyGfx
     , animationStyle = NormalStyle
     , gfxStack = []
@@ -134,7 +133,7 @@ popBlock = do
 
 setGfxBackground :: (Float, Float, Float) -> InterpreterProcess Value
 setGfxBackground (r, g, b) =
-  modify (\s -> s {gfxBackground = Color4 r g b 1}) >> return Null
+  modify (\s -> s {gfxBackground = Colour r g b 1}) >> return Null
 
 setAnimationStyle :: AnimationStyle -> InterpreterProcess Value
 setAnimationStyle style =

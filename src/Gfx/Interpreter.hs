@@ -15,15 +15,16 @@ import           Gfx.EngineState            as ES
 import           Gfx.GeometryBuffers
 import           Gfx.Matrices
 import           Gfx.Shaders
+import           Gfx.Types                  (Colour (..))
 import           Gfx.VertexBuffers          (VBO, drawVBO)
 
 import           ErrorHandling              (printErrors)
 
-hasTransparency :: Color4 GLfloat -> Bool
-hasTransparency (Color4 _ _ _ a) = a < 1.0
+hasTransparency :: Colour -> Bool
+hasTransparency (Colour _ _ _ a) = a < 1.0
 
-fullyTransparent :: Color4 GLfloat -> Bool
-fullyTransparent (Color4 _ _ _ a) = a == 0
+fullyTransparent :: Colour -> Bool
+fullyTransparent (Colour _ _ _ a) = a == 0
 
 type GfxAction = IO
 
@@ -141,10 +142,10 @@ interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
 interpretColour (Fill (TextureStyle name frame)) =
   modify' (pushFillStyle $ ES.GFXFillTexture name (floor frame))
 interpretColour (Fill (ColourStyle r g b a)) =
-  modify' (pushFillStyle $ ES.GFXFillColour $ Color4 r g b a)
+  modify' (pushFillStyle $ ES.GFXFillColour $ Colour r g b a)
 interpretColour NoFill = modify' (pushFillStyle ES.GFXNoFill)
 interpretColour (Stroke r g b a) =
-  modify' (pushStrokeStyle $ ES.GFXStrokeColour $ Color4 r g b a)
+  modify' (pushStrokeStyle $ ES.GFXStrokeColour $ Colour r g b a)
 interpretColour NoStroke = modify' (pushStrokeStyle ES.GFXNoStroke)
 
 newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput

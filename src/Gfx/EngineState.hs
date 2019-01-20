@@ -10,21 +10,22 @@ import           Gfx.PostProcessing        (AnimationStyle, PostProcessing)
 import           Gfx.Shaders
 import           Gfx.TextRendering         (TextRenderer)
 import           Gfx.Textures              (TextureLibrary)
+import           Gfx.Types                 (Colour (..))
 
 data GFXFillStyling
-  = GFXFillColour (Color4 GLfloat)
+  = GFXFillColour Colour
   | GFXFillTexture String
                    Int
   | GFXNoFill
   deriving (Eq, Show)
 
 data GFXStrokeStyling
-  = GFXStrokeColour (Color4 GLfloat)
+  = GFXStrokeColour Colour
   | GFXNoStroke
   deriving (Eq, Show)
 
 data Scene = Scene
-  { sceneBackground       :: Color4 Float
+  { sceneBackground       :: Colour
   , sceneGfx              :: Block
   , scenePostProcessingFX :: AnimationStyle
   }
@@ -61,8 +62,8 @@ createGfxEngineState projection view pprocess trender textLib = do
   tshd <- createTextureShaders
   return
     EngineState
-      { fillStyles = [GFXFillColour $ Color4 1 1 1 1]
-      , strokeStyles = [GFXStrokeColour $ Color4 0 0 0 1]
+      { fillStyles = [GFXFillColour $ Colour 1 1 1 1]
+      , strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
       , drawTransparencies = False
       , geometryBuffers = gbos
       , textureLibrary = textLib

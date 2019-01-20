@@ -13,6 +13,8 @@ import           Data.Vec
 import           Data.FileEmbed            (embedFile)
 
 import           Gfx.LoadShaders
+import           Gfx.OpenGL                (colToGLCol)
+import           Gfx.Types                 (Colour)
 
 data Shaders = Shaders
   { shaderProgram    :: GL.Program
@@ -56,5 +58,5 @@ setMVPMatrixUniform (Shaders _ (UniformLocation mvpMatUniform) _) mvpMat =
   with mvpMat $
   GLRaw.glUniformMatrix4fv mvpMatUniform 1 (fromBool True) . castPtr
 
-setColourUniform :: Shaders -> Color4 GLfloat -> IO ()
-setColourUniform shaders c = uniform (colourUniform shaders) $= c
+setColourUniform :: Shaders -> Colour -> IO ()
+setColourUniform shaders c = uniform (colourUniform shaders) $= colToGLCol c
