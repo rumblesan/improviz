@@ -42,7 +42,17 @@ fullscreen: 0
 The font used by default is arial. An alternative can be used by specifying a path to the true text file in the config file.
 
 ```yaml
-fontfile: /opt/fonts/ComicSans.ttf
+font:
+  filepath: /opt/fonts/ComicSans.ttf
+```
+
+The colour of the font and the background can also be set. This is done by giving a list of values corresponding to red, green, blue and alpha. These values should be between 0 and 255.
+*Note* a value of 0 for alpha will be fully transparent.
+
+```yaml
+font:
+  foregroundColour: [255, 0, 255, 255]
+  backgroundColour: [0, 0, 0, 0]
 ```
 
 ## Texture Directories
