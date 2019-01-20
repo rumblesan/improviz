@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Server.Http
   ( startHttpServer
@@ -7,12 +8,15 @@ module Server.Http
 import           Network.Wai.Handler.Warp
 import           Web.Scotty
 
+import           Data.FileEmbed             (embedFile)
+
 import           Control.Concurrent         (ThreadId, forkIO)
 import           Control.Concurrent.STM     (TVar, atomically, modifyTVar)
 import           Control.Monad.Trans        (liftIO)
 import           Data.Aeson                 hiding (json)
 import           Data.Monoid                ((<>))
 
+import qualified Data.ByteString.Lazy       as BL
 import           Data.ByteString.Lazy.Char8 (unpack)
 import           Data.Text.Lazy             (pack)
 import           Logging                    (logError, logInfo)
@@ -30,6 +34,9 @@ import           Improviz.UI                (ImprovizUI)
 import qualified Improviz.UI                as IUI
 
 import           Lens.Simple                (set, (^.))
+
+simpleEditorHtml :: BL.ByteString
+simpleEditorHtml = BL.fromStrict $(embedFile "src/assets/html/editor.html")
 
 updateProgram :: ImprovizEnv -> String -> IO (ImprovizResponse String)
 updateProgram env newProgram =
@@ -60,6 +67,7 @@ startHttpServer env =
    in do logInfo $ "Improviz HTTP server listening on port " ++ show port
          forkIO $ scottyOpts options $ do
            get "/" $ text "SERVING"
+           get "/editor" $ raw simpleEditorHtml
            post "/read" $ do
              b <- body
              resp <- liftIO $ updateProgram env (unpack b)

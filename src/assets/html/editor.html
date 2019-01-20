@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Improviz</title>
+</head>
+<body>
+  <h1>Improviz</h1>
+
+  <textarea id="code" rows="10" cols="50"></textarea><br>
+  <button id="submitcode" type="button">Send Code</button> 
+  <script>
+
+    var textarea = document.getElementById("code");
+    textarea.addEventListener("keydown", function(e){
+        if(e.keyCode==9 || e.which==9){
+            e.preventDefault();
+            var s = this.selectionStart;
+            this.value = this.value.substring(0,this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
+            this.selectionEnd = s+1;
+        }
+    });
+    var button = document.getElementById("submitcode");
+    button.addEventListener("click", function (e) {
+      e.preventDefault();
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/read", true);
+      xhr.send(textarea.value);
+      xhr.onload = function() {
+        console.log(this.responseText);
+      }
+    });
+  </script>
+</body>
+</html>
