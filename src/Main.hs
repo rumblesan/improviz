@@ -43,6 +43,8 @@ import           Language.Interpreter   (setRNG)
 import           Logging                (logError, logInfo)
 import           Server                 (serveComs)
 
+import           Util                   ((/.))
+
 main :: IO ()
 main = I.createEnv >>= app
 
@@ -56,7 +58,7 @@ app env =
 
 initApp :: ImprovizEnv -> Int -> Int -> IO ()
 initApp env width height =
-  let ratio = fromIntegral width / fromIntegral height
+  let ratio = width /. height
       front = env ^. I.config . C.screen . CS.front
       back = env ^. I.config . C.screen . CS.back
       proj = projectionMat front back (pi / 4) ratio

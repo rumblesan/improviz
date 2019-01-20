@@ -53,6 +53,7 @@ executable improviz
                      , Configuration.OSC
                      , Configuration.Screen
                      , ErrorHandling
+                     , Util
                      , Logging
                      , Improviz
                      , Improviz.Language
@@ -129,6 +130,7 @@ test-suite improviz-test
                      , aeson
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   other-modules:       ErrorHandling
+                     , Util
                      , Configuration
                      , Configuration.CLI
                      , Configuration.Font
