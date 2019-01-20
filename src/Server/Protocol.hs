@@ -5,8 +5,7 @@ module Server.Protocol where
 import           Data.Aeson
 import           Data.String (fromString)
 
-data (ToJSON e) =>
-     ImprovizResponse e
+data ImprovizResponse e
   = ImprovizOKResponse String
   | ImprovizErrorResponse e
   deriving (Show, Eq)
