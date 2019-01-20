@@ -71,9 +71,13 @@ See the *editor* folder for more information.
 
 Improviz can accept OSC messages to set and change the value of variables within the system. The format for this is very simple.
 
-`"/vars/<name>" <int|float>`
+`"/vars" <string> <int|float>`
 
 The OSC server must be enabled by setting the flag in the configuration. The default port is *5510* but can also be changed in the config.
+
+It is possible to set multiple variables within a single message, just add more name/value pairs.
+
+`"/vars" foo 0 bar 255 baz 0.8`
 
 ## Contact
 
