@@ -68,7 +68,7 @@ initApp env width height =
 resize :: ImprovizEnv -> Int -> Int -> Int -> Int -> IO ()
 resize env newWidth newHeight fbWidth fbHeight =
   let config = env ^. I.config
-   in do logInfo "Resizing"
+   in do logInfo $ "Resizing to " ++ show newWidth ++ " by " ++ show newHeight
          engineState <- atomically $ readTMVar (env ^. I.graphics)
          deletePostProcessing $ postFX engineState
          newPost <- createPostProcessing fbWidth fbHeight

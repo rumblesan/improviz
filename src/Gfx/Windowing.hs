@@ -2,7 +2,6 @@ module Gfx.Windowing where
 
 import           Control.Monad             (forever)
 import           Data.Maybe                (fromMaybe)
-import           ErrorHandling             (glfwErrorCallback)
 import           Graphics.Rendering.OpenGL (ComparisonFunction (Less),
                                             depthFunc, ($=))
 
@@ -16,6 +15,7 @@ import           System.IO
 import qualified Configuration             as C
 import           Improviz                  (ImprovizEnv)
 import qualified Improviz                  as I
+import           Logging                   (logError, logInfo)
 
 import           Util                      (bool, maybe', maybeElem, unless')
 
@@ -24,6 +24,10 @@ type InitCallback = Int -> Int -> IO ()
 type DisplayCallback = Double -> IO ()
 
 type WindowResizeCallback = Int -> Int -> Int -> Int -> IO ()
+
+-- type ErrorCallback = Error -> String -> IO ()
+errorCallback :: GLFW.Error -> String -> IO ()
+errorCallback _ msg = logError msg
 
 targetMonitor :: Maybe Int -> IO (Maybe GLFW.Monitor)
 targetMonitor target = do
@@ -61,7 +65,7 @@ setupWindow env initCB resizeCB displayCB =
       height = cfg ^. C.screenHeight
       mon = cfg ^. C.fullscreenDisplay
       ratio = fromIntegral width / fromIntegral height
-   in do GLFW.setErrorCallback (Just glfwErrorCallback)
+   in do GLFW.setErrorCallback (Just errorCallback)
          successfulInit <- GLFW.init
          bool successfulInit exitFailure $ do
            GLFW.windowHint $ GLFW.WindowHint'ContextVersionMajor 3
@@ -86,6 +90,7 @@ setupWindow env initCB resizeCB displayCB =
              initCB fbWidth fbHeight
              GLFW.setWindowSizeCallback window $
                Just (resizeToGLFWResize resizeCB)
+             logInfo $ "Improviz resolution: " ++ show w ++ " by " ++ show h
              forever $
                unless' (GLFW.windowShouldClose window) $ do
                  Just t <- GLFW.getTime
