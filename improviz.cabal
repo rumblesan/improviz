@@ -43,7 +43,8 @@ executable improviz
                      , Vec
                      , yaml
                      , aeson
-  other-modules:       Server.Http
+  other-modules:       Server
+                     , Server.Http
                      , Server.Protocol
                      , Server.OSC
                      , Configuration

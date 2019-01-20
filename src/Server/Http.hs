@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Server.Http
-  ( createServer
+  ( startHttpServer
   ) where
 
 import           Web.Scotty
@@ -51,8 +51,8 @@ toggleTextDisplay ui = do
   logInfo msg
   return $ ImprovizOKResponse msg
 
-createServer :: ImprovizEnv -> IO ThreadId
-createServer env =
+startHttpServer :: ImprovizEnv -> IO ThreadId
+startHttpServer env =
   forkIO $ scotty (env ^. I.config . C.serverPort) $ do
     get "/" $ text "SERVING"
     post "/read" $ do

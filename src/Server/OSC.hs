@@ -1,5 +1,5 @@
 module Server.OSC
-  ( createOSCServer
+  ( startOSCServer
   ) where
 
 import           Control.Concurrent     (ThreadId, forkIO)
@@ -45,8 +45,8 @@ combineDatumPairs (name:value:rem) =
 combineDatumPairs [] = []
 combineDatumPairs _ = []
 
-createOSCServer :: ImprovizEnv -> IO ThreadId
-createOSCServer env =
+startOSCServer :: ImprovizEnv -> IO ThreadId
+startOSCServer env =
   let oscPort = (env ^. I.config . C.osc . CO.port)
    in do print $ "OSC server on port " ++ show oscPort
          socket <- udpServer "127.0.0.1" oscPort

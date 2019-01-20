@@ -6,7 +6,7 @@ import           System.Exit            (exitSuccess)
 import           Control.Concurrent.STM (atomically, modifyTVar, putTMVar,
                                          readTMVar, readTVarIO, takeTMVar,
                                          writeTVar)
-import           Control.Monad          (void, when)
+import           Control.Monad          (when)
 import qualified Data.Map.Strict        as M
 import           Data.Maybe             (fromMaybe)
 
@@ -41,8 +41,7 @@ import           Language               (copyRNG, copyRNG, createGfx,
 import           Language.Ast           (Value (Number))
 import           Language.Interpreter   (setRNG)
 import           Logging                (logError, logInfo)
-import           Server.Http            (createServer)
-import           Server.OSC             (createOSCServer)
+import           Server                 (serveComs)
 
 main :: IO ()
 main = I.createEnv >>= app
@@ -52,9 +51,7 @@ app env =
   let initCallback = initApp env
       resizeCallback = resize env
       displayCallback = display env
-   in do when (env ^. I.config . C.osc . CO.enabled) $ void $
-           createOSCServer env
-         createServer env
+   in do serveComs env
          setupWindow env initCallback resizeCallback displayCallback
 
 initApp :: ImprovizEnv -> Int -> Int -> IO ()
