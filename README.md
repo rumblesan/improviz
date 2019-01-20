@@ -51,7 +51,7 @@ Please check the [configuration](docs/configuration.md) document for details.
 
 ## Interacting
 
-Improviz runs a web server on *localhost:3000* which currently exposes two endpoints.
+Improviz runs a web server on *localhost:3000* which currently exposes three endpoints.
 
 `/read`
 POST request
@@ -60,6 +60,9 @@ Any text sent to this will be compiled and interpreted by Improviz. If there is 
 `/toggle/text`
 POST request
 Turn the text display on and off
+
+`/editor`
+Browse to this endpoint in a browser to get a very basic form to submit programs to Improviz. Mainly just useful for testing.
 
 In the *examples* folder there is a bash script called **send.sh** which can be used to run any of the example programs.
 
