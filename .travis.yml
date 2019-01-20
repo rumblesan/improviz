@@ -1,3 +1,8 @@
+os:
+  - linux
+  - osx
+#
+#
 # This is the simple Travis configuration, which is intended for use
 # on applications which do not require cross-platform and
 # multiple-GHC-version support. For more information and other
@@ -34,12 +39,31 @@ before_install:
 # Download and unpack the stack executable
 - mkdir -p ~/.local/bin
 - export PATH=$HOME/.local/bin:$PATH
-- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then travis_retry curl -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 -C ~/.local/bin '*/stack'; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'; fi
 
 install:
-# Build dependencies
 - stack --no-terminal --install-ghc test --only-dependencies
 
 script:
-# Build the package, its tests, and its docs and run the tests
 - stack --no-terminal test --haddock --no-haddock-deps
+
+before_deploy:
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./scripts/build-osx.sh; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./scripts/build-nix.sh; fi
+
+deploy:
+  api_key:
+    secure: SpDalL8y6fr5Un8o7Yuk+PrHN13Ig/pFCpbp4oh+kV2LgCjgV+zJJpyNST7WmnJ8hR6k6i+FVDRaVRnXEP3XBFdnQRDXK5OXan0pr2fxZprcUIa08BVf3MfZEUPxa+DbggQ6DVHoWcqfWjWGfZoPh9mFbuixvqcB1xTJtrQmx5ho2GZ8zIZtInYu4iMXKPYSkfqYVslDAn5pOeVUsrXHCJigUVunl3JCbCl3JaHYMkWjRwocxLcpqObYbOaardylKH3Y900ddZpbc+WTQzdK+DCMIxLVWQdOrSjn9bpjhIUXpOKMXOCOnErxzj6hYrmNtLW2lz/HR4o7KiDDgN/YmiHJeU8+qeG2fatfA20F4xq6OjwhiuY1KugetZMdXvxmRptgHvIRK87jojLbupWMDhg9Xey3X3ufXvJ6n8H/Czz5etzvV8t1jRju3aleeQK3CVSNTxw+JaiFrP57s05cTUy0WwLIYR0+fUkWeRnG+OsvMSD4Hppg35/Yg0fMnW7M/SR7b7NOfcRWux7QaANUgT203UORbFhWia3qe/09XjNw26ONOS3BQuMhYiuZE/Q2Uji6xea6jZubBV8y5g0MV8rkjRffoIcwjflcOkR9TfNjWa2dyVgM3/6ZlmN4XDgxaKxENPJK5b/8eDDp+GGPMZFu75/IvM/L8OyG6lAgp8I=
+  file_glob: true
+  file: improviz-*-${TRAVIS_TAG}.tar.gz
+  name: Improviz-${TRAVIS_TAG}
+  on:
+    # TODO Here you can pick which targets will generate binary releases
+    # In this example, there are some targets that are tested using the stable
+    # and nightly channels. This condition makes sure there is only one release
+    # for such targets and that's generated using the stable channel
+    branch: master
+    tags: true
+  provider: releases
+  skip_cleanup: true

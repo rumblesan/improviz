@@ -1,28 +1,56 @@
-# Disabled cache in hope of improving reliability of AppVeyor builds
 cache:
 - "c:\\sr" # stack root, short paths == fewer problems
-- .stack-work -> improviz.cabal
 
 branches:
   only:
     - master
 
-build: off
-
-before_test:
-# http://help.appveyor.com/discussions/problems/6312-curl-command-not-found
-- set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
-
-- curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-i386.zip
-- 7z x stack.zip stack.exe
-
 environment:
   global:
     STACK_ROOT: "c:\\sr"
     TMP: "c:\\tmp"
+    TAG: ${APPVEYOR_REPO_TAG_NAME}
+
+install:
+# http://help.appveyor.com/discussions/problems/6312-curl-command-not-found
+- set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
+- set PATH=C:\projects\improviz\dist\improviz-win;%PATH%
+
+- curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-i386.zip
+- 7z x stack.zip stack.exe
+
+before_build:
+- stack setup > nul
+
+build_script:
+- stack build
 
 test_script:
-- stack setup > nul
 # The ugly echo "" hack is to avoid complaints about 0 being an invalid file
 # descriptor
 - echo "" | stack --no-terminal test --jobs 1
+
+after_test:
+  - ps: >-
+      if (Test-Path env:APPVEYOR_REPO_TAG_NAME) {
+        ./scripts/build-win.ps1
+      }
+
+artifacts:
+  - path: improviz-win-*.zip
+    name: improviz-win-${TAG}
+    type: zip
+
+deploy:
+  tag: $(APPVEYOR_REPO_TAG_NAME)
+  release: Improviz-$(APPVEYOR_REPO_TAG_NAME)
+  description: ''
+  provider: GitHub
+  auth_token:
+    secure: LA652uOVAT9gGEvF0oUnnmFSvrhbF2/aR1ZxxTe+n+B0FLvTi8HSz23tIsKK+yDm
+  artifact: /improviz-win-.*\.zip/
+  draft: false
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+    APPVEYOR_REPO_TAG: true        # deploy on tag push only
