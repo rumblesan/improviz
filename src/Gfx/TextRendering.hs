@@ -27,6 +27,8 @@ import           Gfx.FontHandling          (Character (..), Font (..),
                                             getCharacter, loadFont)
 import           Gfx.LoadShaders           (ShaderInfo (..), ShaderSource (..),
                                             loadShaders)
+import           Gfx.OpenGL                (colToGLCol)
+import           Gfx.Types                 (Colour (..))
 import           Gfx.VertexBuffers         (VBO (..), createVBO, drawVBO,
                                             setAttribPointer)
 import qualified Graphics.GL               as GLRaw
@@ -38,7 +40,6 @@ import           Graphics.Rendering.OpenGL (ArrayIndex, AttribLocation (..),
                                             BufferUsage (DynamicDraw),
                                             Capability (Enabled),
                                             ClearBuffer (ColorBuffer),
-                                            Color4 (..), Color4,
                                             DataType (Float),
                                             FramebufferTarget (Framebuffer),
                                             GLfloat, IntegerHandling (ToFloat),
@@ -77,8 +78,8 @@ data TextRenderer = TextRenderer
   , bgprogram       :: Program
   , characterQuad   :: VBO
   , characterBGQuad :: VBO
-  , textColour      :: Color4 GLfloat
-  , textBGColour    :: Color4 GLfloat
+  , textColour      :: Colour
+  , textBGColour    :: Colour
   , outbuffer       :: Savebuffer
   } deriving (Show)
 
@@ -194,7 +195,7 @@ resizeTextRendererScreen front back width height trender =
            createTextDisplaybuffer (fromIntegral width) (fromIntegral height)
          return trender {pMatrix = projectionMatrix, outbuffer = nbuffer}
 
-changeTextColour :: Color4 GLfloat -> TextRenderer -> TextRenderer
+changeTextColour :: Colour -> TextRenderer -> TextRenderer
 changeTextColour newColour trender = trender {textColour = newColour}
 
 renderCode :: Int -> Int -> TextRenderer -> String -> IO ()
@@ -220,7 +221,7 @@ renderCharacters xpos ypos renderer strings = do
   GL.blendEquationSeparate $= (FuncAdd, FuncAdd)
   GL.blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
   GL.depthFunc $= Nothing
-  GL.clearColor $= Color4 0.0 0.0 0.0 0.0
+  GL.clearColor $= colToGLCol (Colour 0.0 0.0 0.0 0.0)
   GL.clear [ColorBuffer]
   let font = textFont renderer
   foldM_
@@ -305,10 +306,10 @@ renderCharacterTextQuad renderer (Character c width height adv xBearing yBearing
         GL.textureBinding Texture2D $= Just text
         textColourU <-
           GL.get $ GL.uniformLocation (textprogram renderer) "textColor"
-        GL.uniform textColourU $= textColour renderer
+        GL.uniform textColourU $= colToGLCol (textColour renderer)
         textBGColourU <-
           GL.get $ GL.uniformLocation (textprogram renderer) "textBGColor"
-        GL.uniform textBGColourU $= textBGColour renderer
+        GL.uniform textBGColourU $= colToGLCol (textBGColour renderer)
    in do renderCharacterQuad
            (textprogram renderer)
            (pMatrix renderer)
@@ -328,7 +329,7 @@ renderCharacterBGQuad renderer (Character _ _ _ adv _ _ _) x y font =
       charDrawFunc = do
         textBGColourU <-
           GL.get $ GL.uniformLocation (bgprogram renderer) "textBGColor"
-        GL.uniform textBGColourU $= textBGColour renderer
+        GL.uniform textBGColourU $= colToGLCol (textBGColour renderer)
    in renderCharacterQuad
         (bgprogram renderer)
         (pMatrix renderer)

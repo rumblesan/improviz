@@ -2,7 +2,7 @@ module Gfx.EngineState where
 
 import qualified Data.Map.Strict           as M
 import           Data.Vec                  (Mat44, identity, multmm)
-import           Graphics.Rendering.OpenGL (Color4 (..), GLfloat)
+import           Graphics.Rendering.OpenGL (GLfloat)
 
 import           Gfx.Ast                   (Block)
 import           Gfx.GeometryBuffers       (GeometryBuffers, createAllBuffers)
