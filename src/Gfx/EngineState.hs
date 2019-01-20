@@ -3,14 +3,23 @@ module Gfx.EngineState where
 import qualified Data.Map.Strict           as M
 import           Data.Vec                  (Mat44, identity, multmm)
 import           Graphics.Rendering.OpenGL (GLfloat)
+import           Lens.Simple               ((^.))
 
 import           Gfx.Ast                   (Block)
 import           Gfx.GeometryBuffers       (GeometryBuffers, createAllBuffers)
+import           Gfx.Matrices              (projectionMat, vec3, viewMat)
 import           Gfx.PostProcessing        (AnimationStyle, PostProcessing)
 import           Gfx.Shaders
 import           Gfx.TextRendering         (TextRenderer)
 import           Gfx.Textures              (TextureLibrary)
 import           Gfx.Types                 (Colour (..))
+
+import           Configuration             (ImprovizConfig)
+import qualified Configuration             as C
+import qualified Configuration.Font        as FC
+import qualified Configuration.Screen      as CS
+
+import           Util                      ((/.))
 
 data GFXFillStyling
   = GFXFillColour Colour
@@ -50,31 +59,52 @@ data EngineInfo = EngineInfo
   } deriving (Show)
 
 createGfxEngineState ::
-     Mat44 GLfloat
-  -> Mat44 GLfloat
+     ImprovizConfig
+  -> Int
+  -> Int
   -> PostProcessing
   -> TextRenderer
   -> TextureLibrary
   -> IO EngineState
-createGfxEngineState projection view pprocess trender textLib = do
-  gbos <- createAllBuffers
-  cshd <- createColourShaders
-  tshd <- createTextureShaders
-  return
-    EngineState
-      { fillStyles = [GFXFillColour $ Colour 1 1 1 1]
-      , strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
-      , drawTransparencies = False
-      , geometryBuffers = gbos
-      , textureLibrary = textLib
-      , colourShaders = cshd
-      , textureShaders = tshd
-      , viewMatrix = view
-      , projectionMatrix = projection
-      , postFX = pprocess
-      , textRenderer = trender
-      , matrixStack = [identity]
-      }
+createGfxEngineState config width height pprocess trender textLib =
+  let ratio = width /. height
+      front = config ^. C.screen . CS.front
+      back = config ^. C.screen . CS.back
+      projection = projectionMat front back (pi / 4) ratio
+      view = viewMat (vec3 0 0 10) (vec3 0 0 0) (vec3 0 1 0)
+   in do gbos <- createAllBuffers
+         cshd <- createColourShaders
+         tshd <- createTextureShaders
+         return
+           EngineState
+             { fillStyles = [GFXFillColour $ Colour 1 1 1 1]
+             , strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
+             , drawTransparencies = False
+             , geometryBuffers = gbos
+             , textureLibrary = textLib
+             , colourShaders = cshd
+             , textureShaders = tshd
+             , viewMatrix = view
+             , projectionMatrix = projection
+             , postFX = pprocess
+             , textRenderer = trender
+             , matrixStack = [identity]
+             }
+
+resizeGfxEngine ::
+     ImprovizConfig
+  -> Int
+  -> Int
+  -> PostProcessing
+  -> TextRenderer
+  -> EngineState
+  -> EngineState
+resizeGfxEngine config newWidth newHeight newPP newTR es =
+  let front = config ^. C.screen . CS.front
+      back = config ^. C.screen . CS.back
+      newRatio = newWidth /. newHeight
+      newProj = projectionMat front back (pi / 4) newRatio
+   in es {projectionMatrix = newProj, postFX = newPP, textRenderer = newTR}
 
 createEngineInfo :: EngineState -> EngineInfo
 createEngineInfo es = EngineInfo $ M.size <$> textureLibrary es

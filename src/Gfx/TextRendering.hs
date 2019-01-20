@@ -65,6 +65,7 @@ import           Gfx.Matrices              (orthographicMat, translateMat)
 import           Configuration             (ImprovizConfig)
 import qualified Configuration             as C
 import qualified Configuration.Font        as FC
+import qualified Configuration.Screen      as CS
 import           ErrorHandling             (printErrors)
 import           Lens.Simple               ((^.))
 
@@ -123,56 +124,62 @@ createCharacterBGQuad =
         setAttribPointer vPosition posVSize stride firstPosIndex
    in createVBO [quadConfig] Triangles firstPosIndex numVertices
 
-createTextRenderer ::
-     ImprovizConfig -> Float -> Float -> Int -> Int -> IO TextRenderer
-createTextRenderer config front back width height = do
-  cq <- createCharacterTextQuad
-  cbq <- createCharacterBGQuad
-  tprogram <-
-    loadShaders
-      [ ShaderInfo
-          VertexShader
-          (ByteStringSource $(embedFile "assets/shaders/textrenderer.vert"))
-      , ShaderInfo
-          FragmentShader
-          (ByteStringSource $(embedFile "assets/shaders/textrenderer.frag"))
-      ]
-  bgshaderprogram <-
-    loadShaders
-      [ ShaderInfo
-          VertexShader
-          (ByteStringSource $(embedFile "assets/shaders/textrenderer-bg.vert"))
-      , ShaderInfo
-          FragmentShader
-          (ByteStringSource $(embedFile "assets/shaders/textrenderer-bg.frag"))
-      ]
-  font <-
-    loadFont
-      (config ^. C.fontConfig . FC.filepath)
-      (config ^. C.fontConfig . FC.size)
-  let projectionMatrix =
-        textCoordMatrix
-          0
-          (fromIntegral width)
-          0
-          (fromIntegral height)
-          front
-          back
-  buffer <- createTextDisplaybuffer (fromIntegral width) (fromIntegral height)
-  return $
-    TextRenderer
-      font
-      width
-      height
-      (config ^. C.fontConfig . FC.size)
-      projectionMatrix
-      tprogram
-      bgshaderprogram
-      cq
-      cbq
-      (config ^. C.fontConfig . FC.fgColour)
-      (config ^. C.fontConfig . FC.bgColour)
-      buffer
+createTextRenderer :: ImprovizConfig -> Int -> Int -> IO TextRenderer
+createTextRenderer config width height =
+  let front = config ^. C.screen . CS.front
+      back = config ^. C.screen . CS.back
+   in do cq <- createCharacterTextQuad
+         cbq <- createCharacterBGQuad
+         tprogram <-
+           loadShaders
+             [ ShaderInfo
+                 VertexShader
+                 (ByteStringSource
+                    $(embedFile "assets/shaders/textrenderer.vert"))
+             , ShaderInfo
+                 FragmentShader
+                 (ByteStringSource
+                    $(embedFile "assets/shaders/textrenderer.frag"))
+             ]
+         bgshaderprogram <-
+           loadShaders
+             [ ShaderInfo
+                 VertexShader
+                 (ByteStringSource
+                    $(embedFile "assets/shaders/textrenderer-bg.vert"))
+             , ShaderInfo
+                 FragmentShader
+                 (ByteStringSource
+                    $(embedFile "assets/shaders/textrenderer-bg.frag"))
+             ]
+         font <-
+           loadFont
+             (config ^. C.fontConfig . FC.filepath)
+             (config ^. C.fontConfig . FC.size)
+         let projectionMatrix =
+               textCoordMatrix
+                 0
+                 (fromIntegral width)
+                 0
+                 (fromIntegral height)
+                 front
+                 back
+         buffer <-
+           createTextDisplaybuffer (fromIntegral width) (fromIntegral height)
+         return $
+           TextRenderer
+             font
+             width
+             height
+             (config ^. C.fontConfig . FC.size)
+             projectionMatrix
+             tprogram
+             bgshaderprogram
+             cq
+             cbq
+             (config ^. C.fontConfig . FC.fgColour)
+             (config ^. C.fontConfig . FC.bgColour)
+             buffer
 
 addCodeTextureToLib :: TextRenderer -> TextureLibrary -> TextureLibrary
 addCodeTextureToLib tr tlib =
@@ -180,9 +187,11 @@ addCodeTextureToLib tr tlib =
    in addTexture tlib "code" text
 
 resizeTextRendererScreen ::
-     Float -> Float -> Int -> Int -> TextRenderer -> IO TextRenderer
-resizeTextRendererScreen front back width height trender =
-  let projectionMatrix =
+     ImprovizConfig -> Int -> Int -> TextRenderer -> IO TextRenderer
+resizeTextRendererScreen config width height trender =
+  let front = config ^. C.screen . CS.front
+      back = config ^. C.screen . CS.back
+      projectionMatrix =
         textCoordMatrix
           0
           (fromIntegral width)

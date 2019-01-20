@@ -3,6 +3,7 @@ module Gfx
   , EngineState(..)
   , Scene(..)
   , createGfxEngineState
+  , resizeGfxEngine
   ) where
 
 import           Control.Monad.State.Strict (evalStateT)
@@ -10,7 +11,8 @@ import           Control.Monad.State.Strict (evalStateT)
 import           Graphics.Rendering.OpenGL
 
 import           Gfx.EngineState            (EngineState (..), Scene (..),
-                                             createGfxEngineState)
+                                             createGfxEngineState,
+                                             resizeGfxEngine)
 import           Gfx.Interpreter            (interpretGfx)
 import           Gfx.OpenGL                 (colToGLCol)
 import           Gfx.PostProcessing         (AnimationStyle (..),

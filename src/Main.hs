@@ -1,45 +1,33 @@
 module Main where
 
 import           GHC.Float              (double2Float)
-import           System.Exit            (exitSuccess)
 
 import           Control.Concurrent.STM (atomically, modifyTVar, putTMVar,
-                                         readTMVar, readTVarIO, takeTMVar,
-                                         writeTVar)
+                                         readTMVar, readTVarIO, takeTMVar)
 import           Control.Monad          (when)
 import qualified Data.Map.Strict        as M
-import           Data.Maybe             (fromMaybe)
 
 import           Lens.Simple            ((^.))
 
-import qualified Graphics.UI.GLFW       as GLFW
-
 import qualified Configuration          as C
-import qualified Configuration.Font     as CF
-import qualified Configuration.OSC      as CO
-import qualified Configuration.Screen   as CS
 import           Improviz               (ImprovizEnv, ImprovizError (..))
 import qualified Improviz               as I
 import qualified Improviz.Language      as IL
 import qualified Improviz.UI            as IUI
 
 import           Gfx                    (EngineState (..), createGfxEngineState,
-                                         renderGfx)
-import           Gfx.Matrices           (projectionMat, vec3, viewMat)
+                                         renderGfx, resizeGfxEngine)
 import           Gfx.PostProcessing     (createPostProcessing,
-                                         deletePostProcessing,
-                                         renderPostProcessing,
-                                         usePostProcessing)
+                                         deletePostProcessing)
 import           Gfx.TextRendering      (TextRenderer, addCodeTextureToLib,
                                          createTextRenderer, renderCode,
                                          renderCodebuffer,
                                          resizeTextRendererScreen)
 import           Gfx.Textures           (addTexture, createTextureLib)
 import           Gfx.Windowing          (setupWindow)
-import           Language               (copyRNG, copyRNG, createGfx,
-                                         updateEngineInfo, updateStateVariables)
+import           Language               (copyRNG, createGfx, updateEngineInfo,
+                                         updateStateVariables)
 import           Language.Ast           (Value (Number))
-import           Language.Interpreter   (setRNG)
 import           Logging                (logError, logInfo)
 import           Server                 (serveComs)
 
@@ -58,51 +46,43 @@ app env =
 
 initApp :: ImprovizEnv -> Int -> Int -> IO ()
 initApp env width height =
-  let ratio = width /. height
-      front = env ^. I.config . C.screen . CS.front
-      back = env ^. I.config . C.screen . CS.back
-      proj = projectionMat front back (pi / 4) ratio
-      view = viewMat (vec3 0 0 10) (vec3 0 0 0) (vec3 0 1 0)
+  let config = env ^. I.config
    in do post <- createPostProcessing width height
-         textRenderer <-
-           createTextRenderer (env ^. I.config) front back width height
-         textureLib <- createTextureLib (env ^. I.config . C.textureDirectories)
+         textRenderer <- createTextRenderer config width height
+         textureLib <- createTextureLib (config ^. C.textureDirectories)
          let tLibWithCode = addCodeTextureToLib textRenderer textureLib
          gfxEngineState <-
-           createGfxEngineState proj view post textRenderer tLibWithCode
+           createGfxEngineState
+             config
+             width
+             height
+             post
+             textRenderer
+             tLibWithCode
          atomically $ do
            putTMVar (env ^. I.graphics) gfxEngineState
            modifyTVar
              (env ^. I.language)
              (IL.updateInterpreterState (updateEngineInfo gfxEngineState))
 
-resize :: ImprovizEnv -> GLFW.WindowSizeCallback
-resize env window newWidth newHeight = do
-  logInfo "Resizing"
-  (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
-  let front = env ^. I.config . C.screen . CS.front
-      back = env ^. I.config . C.screen . CS.back
-      newRatio = fbWidth /. fbHeight
-      newProj = projectionMat front back (pi / 4) newRatio
-  engineState <- atomically $ readTMVar (env ^. I.graphics)
-  deletePostProcessing $ postFX engineState
-  newPost <- createPostProcessing fbWidth fbHeight
-  newTrender <-
-    resizeTextRendererScreen
-      front
-      back
-      fbWidth
-      fbHeight
-      (textRenderer engineState)
-  atomically $ do
-    es <- takeTMVar (env ^. I.graphics)
-    putTMVar
-      (env ^. I.graphics)
-      es
-        { projectionMatrix = newProj
-        , postFX = newPost
-        , textRenderer = newTrender
-        }
+resize :: ImprovizEnv -> Int -> Int -> Int -> Int -> IO ()
+resize env newWidth newHeight fbWidth fbHeight =
+  let config = env ^. I.config
+   in do logInfo "Resizing"
+         engineState <- atomically $ readTMVar (env ^. I.graphics)
+         deletePostProcessing $ postFX engineState
+         newPost <- createPostProcessing fbWidth fbHeight
+         newTrender <-
+           resizeTextRendererScreen
+             config
+             fbWidth
+             fbHeight
+             (textRenderer engineState)
+         atomically $ do
+           es <- takeTMVar (env ^. I.graphics)
+           putTMVar
+             (env ^. I.graphics)
+             (resizeGfxEngine config newWidth newHeight newPost newTrender es)
 
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
