@@ -1,7 +1,9 @@
 # Disabled cache in hope of improving reliability of AppVeyor builds
-#cache:
-#- "c:\\sr" # stack root, short paths == fewer problems
 
+branches:
+  # whitelist
+  only:
+    - master
 build: off
 
 before_test:
@@ -11,14 +13,13 @@ before_test:
 - curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-i386.zip
 - 7z x stack.zip stack.exe
 
-clone_folder: "c:\\stack"
 environment:
   global:
     STACK_ROOT: "c:\\sr"
     TMP: "c:\\tmp"
 
 cache:
-  - c:\stack\.stack-work -> improviz.cabal
+  - .stack-work -> improviz.cabal
 
 test_script:
 - pwd
