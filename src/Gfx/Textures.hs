@@ -26,6 +26,8 @@ import           Graphics.Rendering.OpenGL (DataType (UnsignedByte),
 import qualified Graphics.Rendering.OpenGL as GL
 import           System.FilePath.Posix     (takeExtension, (<.>), (</>))
 
+import           Logging                   (logError, logInfo)
+
 type TextureLibrary = M.Map String (M.Map Int TextureObject)
 
 data TextureConfig = TextureConfig
@@ -52,7 +54,7 @@ loadTexture name path = do
     ".gif" ->
       case decodeGifImages imgData of
         Left err ->
-          print ("could not load image " ++ path ++ ": " ++ err) >>
+          logError ("could not load image " ++ path ++ ": " ++ err) >>
           return (name, M.empty)
         Right images -> do
           i <- rights <$> mapM handleImage images
@@ -61,7 +63,7 @@ loadTexture name path = do
       loaded <- either (return . Left) handleImage (decodeImage imgData)
       either
         (\err ->
-           print ("could not load image " ++ path ++ ": " ++ err) >>
+           logError ("could not load image " ++ path ++ ": " ++ err) >>
            return (name, M.empty))
         (\i -> return (name, M.singleton 0 i))
         loaded
@@ -111,15 +113,17 @@ loadTextureFolder :: FilePath -> IO [(String, M.Map Int TextureObject)]
 loadTextureFolder folderPath = do
   yaml <- Y.decodeFileEither $ folderPath </> "config.yaml"
   case yaml of
-    Left err  -> print err >> return []
+    Left err  -> logError (show err) >> return []
     Right cfg -> mapM tl (textures cfg)
   where
     tl texture =
       loadTexture (textureName texture) (folderPath </> textureFile texture)
 
 createTextureLib :: [FilePath] -> IO TextureLibrary
-createTextureLib folders =
-  M.fromList . concat <$> mapM loadTextureFolder folders
+createTextureLib folders = do
+  textures <- concat <$> mapM loadTextureFolder folders
+  logInfo $ "Loaded " ++ show (length textures) ++ " texture files"
+  return $ M.fromList textures
 
 addTexture :: TextureLibrary -> String -> TextureObject -> TextureLibrary
 addTexture lib name tobj = M.insert name (M.singleton 0 tobj) lib

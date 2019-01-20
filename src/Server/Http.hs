@@ -4,6 +4,7 @@ module Server.Http
   ( startHttpServer
   ) where
 
+import           Network.Wai.Handler.Warp
 import           Web.Scotty
 
 import           Control.Concurrent         (ThreadId, forkIO)
@@ -53,12 +54,16 @@ toggleTextDisplay ui = do
 
 startHttpServer :: ImprovizEnv -> IO ThreadId
 startHttpServer env =
-  forkIO $ scotty (env ^. I.config . C.serverPort) $ do
-    get "/" $ text "SERVING"
-    post "/read" $ do
-      b <- body
-      resp <- liftIO $ updateProgram env (unpack b)
-      json resp
-    post "/toggle/text" $ do
-      resp <- liftIO $ toggleTextDisplay (env ^. I.ui)
-      json resp
+  let port = (env ^. I.config . C.serverPort)
+      settings = setPort port defaultSettings
+      options = Options {verbose = 0, settings = settings}
+   in do logInfo $ "Improviz HTTP server listening on port " ++ show port
+         forkIO $ scottyOpts options $ do
+           get "/" $ text "SERVING"
+           post "/read" $ do
+             b <- body
+             resp <- liftIO $ updateProgram env (unpack b)
+             json resp
+           post "/toggle/text" $ do
+             resp <- liftIO $ toggleTextDisplay (env ^. I.ui)
+             json resp

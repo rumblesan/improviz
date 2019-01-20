@@ -5,14 +5,13 @@ module Server
 import           Control.Monad     (void, when)
 import           Lens.Simple       ((^.))
 
-import           Configuration     (ImprovizConfig)
 import qualified Configuration     as C
 import qualified Configuration.OSC as CO
 import           Improviz          (ImprovizEnv)
 import qualified Improviz          as I
 
-import           Server.Http
-import           Server.OSC
+import           Server.Http       (startHttpServer)
+import           Server.OSC        (startOSCServer)
 
 serveComs :: ImprovizEnv -> IO ()
 serveComs env = do
