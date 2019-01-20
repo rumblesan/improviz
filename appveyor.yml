@@ -1,9 +1,12 @@
 # Disabled cache in hope of improving reliability of AppVeyor builds
+cache:
+- "c:\\sr" # stack root, short paths == fewer problems
+- .stack-work -> improviz.cabal
 
 branches:
-  # whitelist
   only:
     - master
+
 build: off
 
 before_test:
@@ -17,9 +20,6 @@ environment:
   global:
     STACK_ROOT: "c:\\sr"
     TMP: "c:\\tmp"
-
-cache:
-  - .stack-work -> improviz.cabal
 
 test_script:
 - pwd
