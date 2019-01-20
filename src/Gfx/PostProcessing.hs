@@ -153,14 +153,20 @@ createDepthbuffer width height = do
   GL.textureBinding Texture2D $= Nothing
   return depth
 
-createPostProcessing :: GLint -> GLint -> IO PostProcessing
-createPostProcessing width height = do
-  inputBuffer <- createSavebuffer width height
-  motionBlurBuffer <- createMotionBlurbuffer width height
-  paintOverBuffer <- createPaintOverbuffer width height
-  outputBuffer <- createSavebuffer width height
-  return $
-    PostProcessing inputBuffer motionBlurBuffer paintOverBuffer outputBuffer
+createPostProcessing :: Int -> Int -> IO PostProcessing
+createPostProcessing w h =
+  let width = fromIntegral w
+      height = fromIntegral h
+   in do inputBuffer <- createSavebuffer width height
+         motionBlurBuffer <- createMotionBlurbuffer width height
+         paintOverBuffer <- createPaintOverbuffer width height
+         outputBuffer <- createSavebuffer width height
+         return $
+           PostProcessing
+             inputBuffer
+             motionBlurBuffer
+             paintOverBuffer
+             outputBuffer
 
 deletePostProcessing :: PostProcessing -> IO ()
 deletePostProcessing post = do

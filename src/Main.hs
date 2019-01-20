@@ -63,7 +63,7 @@ initApp env width height =
       back = env ^. I.config . C.screen . CS.back
       proj = projectionMat front back (pi / 4) ratio
       view = viewMat (vec3 0 0 10) (vec3 0 0 0) (vec3 0 1 0)
-   in do post <- createPostProcessing (fromIntegral width) (fromIntegral height)
+   in do post <- createPostProcessing width height
          textRenderer <-
            createTextRenderer (env ^. I.config) front back width height
          textureLib <- createTextureLib (env ^. I.config . C.textureDirectories)
@@ -77,40 +77,38 @@ initApp env width height =
              (IL.updateInterpreterState (updateEngineInfo gfxEngineState))
 
 resize :: ImprovizEnv -> GLFW.WindowSizeCallback
-resize env window newWidth newHeight =
+resize env window newWidth newHeight = do
+  logInfo "Resizing"
+  (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
   let front = env ^. I.config . C.screen . CS.front
       back = env ^. I.config . C.screen . CS.back
-   in do logInfo "Resizing"
-         (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
-         engineState <- atomically $ readTMVar (env ^. I.graphics)
-         deletePostProcessing $ postFX engineState
-         newPost <-
-           createPostProcessing (fromIntegral fbWidth) (fromIntegral fbHeight)
-         newTrender <-
-           resizeTextRendererScreen
-             front
-             back
-             fbWidth
-             fbHeight
-             (textRenderer engineState)
-         let newRatio = fromIntegral fbWidth / fromIntegral fbHeight
-             newProj = projectionMat front back (pi / 4) newRatio
-         atomically $ do
-           es <- takeTMVar (env ^. I.graphics)
-           putTMVar
-             (env ^. I.graphics)
-             es
-               { projectionMatrix = newProj
-               , postFX = newPost
-               , textRenderer = newTrender
-               }
+      newRatio = fbWidth /. fbHeight
+      newProj = projectionMat front back (pi / 4) newRatio
+  engineState <- atomically $ readTMVar (env ^. I.graphics)
+  deletePostProcessing $ postFX engineState
+  newPost <- createPostProcessing fbWidth fbHeight
+  newTrender <-
+    resizeTextRendererScreen
+      front
+      back
+      fbWidth
+      fbHeight
+      (textRenderer engineState)
+  atomically $ do
+    es <- takeTMVar (env ^. I.graphics)
+    putTMVar
+      (env ^. I.graphics)
+      es
+        { projectionMatrix = newProj
+        , postFX = newPost
+        , textRenderer = newTrender
+        }
 
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
   as <- readTVarIO (env ^. I.language)
   vars <- readTVarIO (env ^. I.externalVars)
-  let t = double2Float time
-      newVars = ("time", Number t) : M.toList vars
+  let newVars = ("time", Number $ double2Float time) : M.toList vars
       interpreterState =
         updateStateVariables newVars (as ^. IL.initialInterpreter)
       ((result, logs), nextState) =
