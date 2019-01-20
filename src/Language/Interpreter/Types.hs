@@ -6,14 +6,13 @@ import           Control.Monad.Except
 import           Control.Monad.State.Strict
 import           Control.Monad.Writer.Strict
 
-import           Graphics.Rendering.OpenGL   (Color4 (..))
-
 import           Language.Ast
 
 import qualified Data.Map.Strict             as M
 import qualified Gfx.Ast                     as GA
 import qualified Gfx.EngineState             as GE
 import           Gfx.PostProcessing          (AnimationStyle (..))
+import           Gfx.Types                   (Colour)
 import qualified Language.Interpreter.Scope  as LS
 
 type BuiltInFunction = InterpreterProcess Value
@@ -31,7 +30,7 @@ data InterpreterState = InterpreterState
   { variables      :: LS.ScopeStack Identifier Value
   , builtins       :: M.Map Identifier BuiltInFunction
   , blockStack     :: [Maybe Block]
-  , gfxBackground  :: Color4 Float
+  , gfxBackground  :: Colour
   , currentGfx     :: GA.Block
   , animationStyle :: AnimationStyle
   , gfxStack       :: [GA.Block]

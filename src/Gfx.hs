@@ -12,6 +12,7 @@ import           Graphics.Rendering.OpenGL
 import           Gfx.EngineState            (EngineState (..), Scene (..),
                                              createGfxEngineState)
 import           Gfx.Interpreter            (interpretGfx)
+import           Gfx.OpenGL                 (colToGLCol)
 import           Gfx.PostProcessing         (AnimationStyle (..),
                                              PostProcessing,
                                              renderPostProcessing,
@@ -32,7 +33,7 @@ renderGfx gs scene =
              blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
            PaintOver ->
              blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
-         clearColor $= sceneBackground scene
+         clearColor $= colToGLCol (sceneBackground scene)
          clear [ColorBuffer, DepthBuffer]
          evalStateT (interpretGfx $ sceneGfx scene) gs
          renderPostProcessing post $ scenePostProcessingFX scene
