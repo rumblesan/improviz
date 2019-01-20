@@ -20,12 +20,6 @@ import           Gfx.VertexBuffers          (VBO, drawVBO)
 
 import           ErrorHandling              (printErrors)
 
-hasTransparency :: Colour -> Bool
-hasTransparency (Colour _ _ _ a) = a < 1.0
-
-fullyTransparent :: Colour -> Bool
-fullyTransparent (Colour _ _ _ a) = a == 0
-
 type GfxAction = IO
 
 type GfxOutput = ()
