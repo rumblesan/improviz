@@ -14,15 +14,12 @@ import           Tests.Language.Interpreter.Scoping     (scopingTests)
 import           Tests.Language.Parser                  (parserTests)
 import           Tests.Language.Parser.Assignment       (parserAssignmentTests)
 import           Tests.Language.Parser.Blocks           (parserBlocksTests)
-import           Tests.Language.Parser.Collections      (parserCollectionTests)
 import           Tests.Language.Parser.ErrorCatching    (parserErrorCatchingTests)
 import           Tests.Language.Parser.Functions        (parserFunctionTests)
 import           Tests.Language.Parser.If               (parserIfTests)
-import           Tests.Language.Parser.Lambda           (parserLambdaTests)
 import           Tests.Language.Parser.Loops            (parserLoopTests)
 import           Tests.Language.Parser.Operators        (parserOperatorTests)
 import           Tests.Language.Parser.Symbols          (parserSymbolTests)
-import           Tests.Language.StdLib.CollectionFuncs  (collectionFuncTests)
 
 main :: IO ()
 main =
@@ -37,14 +34,11 @@ main =
     , parserTests
     , parserAssignmentTests
     , parserBlocksTests
-    , parserCollectionTests
     , parserIfTests
     , parserFunctionTests
-    , parserLambdaTests
     , parserErrorCatchingTests
     , parserLoopTests
     , parserOperatorTests
     , parserSymbolTests
-    , collectionFuncTests
     ]
     mempty

@@ -24,18 +24,14 @@ parserSymbolTests =
 test_parse_simple_symbol_usage :: Assertion
 test_parse_simple_symbol_usage =
   let program = "texture(:crystal)"
-      texture =
-        Application
-          "texture"
-          [ApplicationArg Nothing $ EVal $ Symbol "crystal"]
-          Nothing
+      texture = Application "texture" [EVal $ Symbol "crystal"] Nothing
       expected = Right $ Block [ElExpression $ EApp texture]
       result = Language.parse program
    in assertEqual "" expected result
 
 test_parse_symbol_variable_assignment :: Assertion
 test_parse_symbol_variable_assignment =
-  let program = "a = :symbol"
+  let program = "var a = :symbol"
       assignment = AbsoluteAssignment "a" (EVal $ Symbol "symbol")
       expected = Right $ Block [ElAssign assignment]
       result = Language.parse program

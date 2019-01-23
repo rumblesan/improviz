@@ -2,14 +2,12 @@ module Language.Ast
   ( Block(..)
   , Element(..)
   , Application(..)
-  , ApplicationArg(..)
   , Func(..)
   , Loop(..)
   , Assignment(..)
   , Expression(..)
   , Variable(..)
   , Value(..)
-  , FunctionArg(..)
   , If(..)
   , Identifier
   ) where
@@ -28,13 +26,8 @@ data Element
 
 data Application =
   Application Identifier
-              [ApplicationArg]
+              [Expression]
               (Maybe Block)
-  deriving (Eq, Show)
-
-data ApplicationArg =
-  ApplicationArg (Maybe Identifier)
-                 Expression
   deriving (Eq, Show)
 
 data Loop =
@@ -58,13 +51,8 @@ data If =
 
 data Func =
   Func Identifier
-       [FunctionArg]
+       [Identifier]
        Block
-  deriving (Eq, Show)
-
-data FunctionArg =
-  FunctionArg Identifier
-              (Maybe Value)
   deriving (Eq, Show)
 
 data Expression
@@ -86,9 +74,8 @@ data Value
   = Number Float
   | Null
   | Symbol String
-  | Lambda [FunctionArg]
+  | Lambda [Identifier]
            Block
-  | VList [Expression]
   | BuiltIn Identifier
             [Identifier]
   deriving (Eq, Show)

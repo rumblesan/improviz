@@ -29,8 +29,8 @@ parserTests =
 
 test_parse_program :: Assertion
 test_parse_program =
-  let fooDef = "foo = (a, b) =>\n\tc = a + b\n\tbox(c)\n"
-      loopNum = "n := (3 * 4) + 1\n"
+  let fooDef = "func foo (a, b) =>\n\tvar c = a + b\n\tbox(c)\n"
+      loopNum = "var n := (3 * 4) + 1\n"
       loop = "n times\n\trotate(0.5)\n\tfoo(1, 2)\n"
       program = fooDef ++ loopNum ++ loop
       cAss =
@@ -38,14 +38,8 @@ test_parse_program =
         AbsoluteAssignment "c" $
         BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
       fooBox =
-        ElExpression $
-        EApp $
-        Application "box" [ApplicationArg Nothing $ EVar $ Variable "c"] Nothing
-      fooLambda =
-        Lambda
-          [FunctionArg "a" Nothing, FunctionArg "b" Nothing]
-          (Block [cAss, fooBox])
-      fooLine = ElAssign $ AbsoluteAssignment "foo" $ EVal fooLambda
+        ElExpression $ EApp $ Application "box" [EVar $ Variable "c"] Nothing
+      fooLine = ElFunc $ Func "foo" ["a", "b"] (Block [cAss, fooBox])
       nLine =
         ElAssign $
         ConditionalAssignment "n" $
@@ -56,19 +50,9 @@ test_parse_program =
       loopBlock =
         Block
           [ ElExpression $
-            EApp $
-            Application
-              "rotate"
-              [ApplicationArg Nothing $ EVal $ Number 0.5]
-              Nothing
+            EApp $ Application "rotate" [EVal $ Number 0.5] Nothing
           , ElExpression $
-            EApp $
-            Application
-              "foo"
-              [ ApplicationArg Nothing $ EVal $ Number 1
-              , ApplicationArg Nothing $ EVal $ Number 2
-              ]
-              Nothing
+            EApp $ Application "foo" [EVal $ Number 1, EVal $ Number 2] Nothing
           ]
       loopLine = ElLoop $ Loop (EVar $ Variable "n") Nothing loopBlock
       expected = Right $ Block [fooLine, nLine, loopLine]

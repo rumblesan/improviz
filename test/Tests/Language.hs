@@ -28,13 +28,13 @@ languageTests =
     [ testCase "Graphics Creation" test_create_gfx
     , testCase "Animation Style Setting" test_animation_style
     , testCase "Basic program" test_basic_program
-    , testCase "Named function args" test_named_function_args
     , testCase "Loop program" test_loop_program
     ]
 
 test_basic_program :: Assertion
 test_basic_program =
-  let program = "a = 2\nb = 3\nfoo = (c, d) => c * d\nbox(b, a, foo(a, b))\n"
+  let program =
+        "var a = 2\nvar b = 3\nfunc foo (c, d) => c * d\nbox(b, a, foo(a, b))\n"
       interpreterState = Language.initialState 1 []
       result = do
         ast <- Language.parse program
@@ -42,14 +42,6 @@ test_basic_program =
         scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
-   in assertEqual "" expected result
-
-test_named_function_args :: Assertion
-test_named_function_args =
-  let program = "foo = (c, d) => c - d\nfoo(d = 3, c = 1)\n"
-      (Right ast) = Language.parse program
-      result = Language.interpret [] ast
-      expected = (Right (Number (-2)), ["Running lambda"])
    in assertEqual "" expected result
 
 test_animation_style :: Assertion
@@ -92,10 +84,7 @@ test_create_gfx =
         EApp $
         Application
           "box"
-          [ ApplicationArg Nothing $ EVal $ Number 1
-          , ApplicationArg Nothing $ EVal $ Number 2
-          , ApplicationArg Nothing $ EVal $ Number 1
-          ]
+          [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1]
           Nothing
       block = Block [ElExpression box]
       interpreterState = Language.initialState 1 []

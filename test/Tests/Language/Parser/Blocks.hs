@@ -34,11 +34,8 @@ test_parse_block_with_blank_lines =
         EApp $
         Application
           "fill"
-          [ ApplicationArg Nothing $ EVal (Number 255)
-          , ApplicationArg Nothing $ EVal (Number 0)
-          , ApplicationArg Nothing $ EVal (Number 0)
-          ]
+          [EVal (Number 255), EVal (Number 0), EVal (Number 0)]
           (Just $ Block [rotate, box])
       expected = Right $ Block [fill]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result

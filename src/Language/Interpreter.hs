@@ -175,39 +175,19 @@ interpretApplication (Application name args block) = do
             return ret)
     _ -> return Null
 
-handleLambdaArgs ::
-     [FunctionArg] -> [ApplicationArg] -> InterpreterProcess Value
-handleLambdaArgs funcArgs aargs =
-  let (named, non) = L.partition namedArg aargs
-      argNames = (\(FunctionArg name _) -> name) <$> funcArgs
-   in do nonNamedArgValues <- mapM interpretExpression (getArgExpr <$> non)
-         zipWithM_ defaultArg funcArgs (nonNamedArgValues ++ repeat Null)
-         mapM_ (assignNamedArg argNames) named
-         return Null
+handleLambdaArgs :: [Identifier] -> [Expression] -> InterpreterProcess Value
+handleLambdaArgs argNames args = do
+  argValues <- mapM interpretExpression args
+  zipWithM_ defaultArg argNames (argValues ++ repeat Null)
+  return Null
   where
-    namedArg (ApplicationArg name _) = isJust name
-    getArgExpr (ApplicationArg _ expr) = expr
-    defaultArg (FunctionArg name mayVal) argVal =
-      setVariable name $ fromMaybe argVal mayVal
+    defaultArg name argVal = setVariable name argVal
 
-handleBuiltInArgs ::
-     [Identifier] -> [ApplicationArg] -> InterpreterProcess Value
-handleBuiltInArgs argNames aargs =
-  let (named, non) = L.partition namedArg aargs
-   in do nonNamedArgValues <- mapM interpretExpression (getArgExpr <$> non)
-         zipWithM_ setVariable argNames (nonNamedArgValues ++ repeat Null)
-         mapM_ (assignNamedArg argNames) named
-         return Null
-  where
-    namedArg (ApplicationArg name _) = isJust name
-    getArgExpr (ApplicationArg _ expr) = expr
-
-assignNamedArg :: [Identifier] -> ApplicationArg -> InterpreterProcess Value
-assignNamedArg argnames (ApplicationArg Nothing expr) = return Null
-assignNamedArg argnames (ApplicationArg (Just name) expr) =
-  if name `L.elem` argnames
-    then interpretExpression expr >>= setVariable name
-    else return Null
+handleBuiltInArgs :: [Identifier] -> [Expression] -> InterpreterProcess Value
+handleBuiltInArgs argNames args = do
+  argValues <- mapM interpretExpression args
+  zipWithM_ setVariable argNames (argValues ++ repeat Null)
+  return Null
 
 interpretLoop :: Loop -> InterpreterProcess Value
 interpretLoop (Loop numExpr loopVar block) = do

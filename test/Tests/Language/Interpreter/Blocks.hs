@@ -22,7 +22,7 @@ blockTests =
 test_basic_block_calling :: Assertion
 test_basic_block_calling =
   let program =
-        "a = (sizeX, sizeY) =>\n\tscale(sizeX, sizeY)\n\trunBlock()\n\na(2, 1)\n\tbox(1)"
+        "func a (sizeX, sizeY) =>\n\tscale(sizeX, sizeY)\n\trunBlock()\n\na(2, 1)\n\tbox(1)"
       interpreterState = Language.initialState 1 []
       result = do
         ast <- Language.parse program

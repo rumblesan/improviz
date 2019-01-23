@@ -10,11 +10,29 @@ There will be many similarities to LiveCodeLab, but plenty of differences as wel
 
 *pi*
 
-## Functions
+## Assignment
+
+There are two types of assignment.
+
+Absolute assignment will set a variable identifier to a value as usual.
+
+`var a = 3 + 4`
+
+Conditional assignment will set a variable only if it currently doesn't have a value.
+This is mostly useful when expecting to have values set via OSC messages which may not have arrived yet, and so avoid `variable undefined` errors.
+
+```
+var a = 3
+var a := 4
+box(a) // box will be of size 3
+```
+
+## Function Application
 
 All functions require parentheses, with arguments separated by commas.
 
 A blue rectangle rotating on a red background.
+
 ```
 background(255, 0, 0)
 fill(0, 0, 255)
@@ -24,16 +42,35 @@ rectangle(2, 1)
 
 ## Function Definition
 
+Functions can be either single line with an expression body, or multi-line with a block.
+
 ```
-val = (a) => a + 1
-rotate()
-fill(255, 0, 0)
-box(val(1))
+func val(a) => a + 1
+
+func draw(r, g, b) =>
+  rotate()
+  fill(r, g, b)
+  box(val(1))
+
+draw(255, 0, 0)
+```
+
+## First-Class Functions
+
+Functions can be passed as values.
+
+```
+func draw(f) =>
+  rotate()
+  fill(r, g, b)
+  f(3)
+
+draw(box)
 ```
 
 ## Loops
 
-Loops in improviz work the same as in LiveCodeLab
+Loops in Improviz work the same as in LiveCodeLab
 
 ```
 stroke(0, 0, 0)
@@ -48,7 +85,8 @@ Optional `with` variable can be used as well.
 ```
 stroke(0, 0, 0)
 fill(255, 0, 0)
-100 times with i
+var n = 100
+n times with i
 	rotate()
   move(i)
 	box(8, 8, 8)
@@ -77,7 +115,9 @@ A symbol is really just a name. Currently it's only used for giving the name of 
 texture(:crystal)
   box()
 move()
-texture(:another)
+
+var t = :another
+texture(t)
   ball()
 ```
 

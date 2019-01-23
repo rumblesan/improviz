@@ -3,7 +3,6 @@ module Language.StdLib
   ) where
 
 import           Language.StdLib.BlockHandling (addBlockHandlingStdLib)
-import           Language.StdLib.CollectionOps (addCollectionStdLib)
 import           Language.StdLib.ColourOps     (addColourStdLib)
 import           Language.StdLib.Maths         (addMathStdLib)
 import           Language.StdLib.MatrixOps     (addMatrixStdLib)
@@ -26,5 +25,4 @@ addStdLib = do
   addColourStdLib
   addPostEffectsStdLib
   addBlockHandlingStdLib
-  addCollectionStdLib
   setBuiltIn "noop" noop []

@@ -119,31 +119,19 @@ argList lp = sepBy lp sep
 
 application :: LangParser Application
 application =
-  Application <$> try (m_identifier <* m_symbol "(") <*> argList applicationArg <*
+  Application <$> try (m_identifier <* m_symbol "(") <*> argList expression <*
   m_symbol ")" <*>
   optionMaybe (indented >> langBlock) <?> "application"
-
-applicationArg :: LangParser ApplicationArg
-applicationArg = namedArg <|> unnamedArg
-  where
-    namedArg =
-      try (ApplicationArg <$> (Just <$> m_identifier <* m_symbol "=")) <*>
-      expression
-    unnamedArg = ApplicationArg Nothing <$> expression
 
 function :: LangParser Func
 function =
   Func <$> try (m_symbol "func" *> m_identifier) <*>
-  m_parens (argList functionArg) <*
+  m_parens (argList m_identifier) <*
   m_symbol "=>" <*>
   (lbody <|> lexpr) <?> "function"
   where
     lexpr = (\e -> Block [ElExpression e]) <$> expression
     lbody = indented >> langBlock
-
-functionArg :: LangParser FunctionArg
-functionArg =
-  FunctionArg <$> m_identifier <*> optionMaybe (m_symbol "=" *> value)
 
 loop :: LangParser Loop
 loop =
@@ -155,10 +143,12 @@ assignment :: LangParser Assignment
 assignment = absAssignment <|> condAssignment
   where
     absAssignment =
-      AbsoluteAssignment <$> try (m_identifier <* m_symbol "=") <*>
+      AbsoluteAssignment <$>
+      try (m_symbol "var" *> m_identifier <* m_symbol "=") <*>
       expression <?> "absolute assignment"
     condAssignment =
-      ConditionalAssignment <$> try (m_identifier <* m_symbol ":=") <*>
+      ConditionalAssignment <$>
+      try (m_symbol "var" *> m_identifier <* m_symbol ":=") <*>
       expression <?> "conditional assignment"
 
 ifElem :: LangParser If
@@ -173,19 +163,10 @@ variable :: LangParser Variable
 variable = Variable <$> m_identifier
 
 value :: LangParser Value
-value = number <|> lambda <|> v_list <|> v_symbol <|> v_null
+value = number <|> v_symbol <|> v_null
   where
-    v_list = VList <$> m_brackets (argList expression) <?> "list"
     v_symbol = try m_colon >> Symbol <$> m_identifier <?> "symbol"
     v_null = Null <$ m_symbol "null" <?> "null"
-
-lambda :: LangParser Value
-lambda =
-  Lambda <$> m_parens (argList functionArg) <* m_symbol "=>" <*>
-  (lbody <|> lexpr) <?> "lambda"
-  where
-    lexpr = (\e -> Block [ElExpression e]) <$> expression
-    lbody = indented >> langBlock
 
 number :: LangParser Value
 number =
