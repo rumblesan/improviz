@@ -86,7 +86,7 @@ test_create_gfx =
           "box"
           [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1]
           Nothing
-      block = Block [ElExpression box]
+      block = Program [StExpression box]
       interpreterState = Language.initialState 1 []
       ((result, _), _) = Language.createGfx interpreterState block
       scene = either (const []) sceneGfx result

@@ -139,8 +139,17 @@ setAnimationStyle :: AnimationStyle -> InterpreterProcess Value
 setAnimationStyle style =
   modify (\s -> s {animationStyle = style}) >> return Null
 
-interpretLanguage :: Block -> InterpreterProcess Value
-interpretLanguage = interpretBlock
+-- Interpreter Logic
+interpretLanguage :: Program -> InterpreterProcess Value
+interpretLanguage (Program statements) =
+  last <$> mapM interpretStatement statements
+
+interpretStatement :: Statement -> InterpreterProcess Value
+interpretStatement (StLoop loop)             = interpretLoop loop
+interpretStatement (StAssign assignment)     = interpretAssignment assignment
+interpretStatement (StIf ifElem)             = interpretIf ifElem
+interpretStatement (StFunc funcElem)         = interpretFunc funcElem
+interpretStatement (StExpression expression) = interpretExpression expression
 
 interpretBlock :: Block -> InterpreterProcess Value
 interpretBlock (Block elements) = last <$> mapM interpretElement elements
@@ -149,7 +158,6 @@ interpretElement :: Element -> InterpreterProcess Value
 interpretElement (ElLoop loop)             = interpretLoop loop
 interpretElement (ElAssign assignment)     = interpretAssignment assignment
 interpretElement (ElIf ifElem)             = interpretIf ifElem
-interpretElement (ElFunc funcElem)         = interpretFunc funcElem
 interpretElement (ElExpression expression) = interpretExpression expression
 
 interpretApplication :: Application -> InterpreterProcess Value

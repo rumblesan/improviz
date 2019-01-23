@@ -39,9 +39,9 @@ test_parse_program =
         BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
       fooBox =
         ElExpression $ EApp $ Application "box" [EVar $ Variable "c"] Nothing
-      fooLine = ElFunc $ Func "foo" ["a", "b"] (Block [cAss, fooBox])
+      fooLine = StFunc $ Func "foo" ["a", "b"] (Block [cAss, fooBox])
       nLine =
-        ElAssign $
+        StAssign $
         ConditionalAssignment "n" $
         BinaryOp
           "+"
@@ -54,21 +54,21 @@ test_parse_program =
           , ElExpression $
             EApp $ Application "foo" [EVal $ Number 1, EVal $ Number 2] Nothing
           ]
-      loopLine = ElLoop $ Loop (EVar $ Variable "n") Nothing loopBlock
-      expected = Right $ Block [fooLine, nLine, loopLine]
+      loopLine = StLoop $ Loop (EVar $ Variable "n") Nothing loopBlock
+      expected = Right $ Program [fooLine, nLine, loopLine]
       result = Language.parse program
    in assertEqual "" expected result
 
 test_parse_blank_program :: Assertion
 test_parse_blank_program =
   let program = ""
-      expected = Right $ Block []
+      expected = Right $ Program []
       result = Language.parse program
    in assertEqual "" expected result
 
 test_parse_empty_program :: Assertion
 test_parse_empty_program =
   let program = "   \n    \n    "
-      expected = Right $ Block []
+      expected = Right $ Program []
       result = Language.parse program
    in assertEqual "" expected result

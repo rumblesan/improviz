@@ -32,7 +32,7 @@ test_simple_application =
           "cube"
           [EVal $ Number 1, EVal $ Number 1, EVar $ Variable "i"]
           Nothing
-      expected = Right $ Block [ElExpression $ EApp cube]
+      expected = Right $ Program [StExpression $ EApp cube]
       result = Language.parse program
    in assertEqual "" expected result
 
@@ -46,15 +46,15 @@ test_application_list =
 test_application_with_var_arg :: Assertion
 test_application_with_var_arg =
   let program = "var a = 2\ncube(1, a, 3)\n\n"
-      assign = ElAssign $ AbsoluteAssignment "a" $ EVal $ Number 2
+      assign = StAssign $ AbsoluteAssignment "a" $ EVal $ Number 2
       cube =
-        ElExpression $
+        StExpression $
         EApp $
         Application
           "cube"
           [EVal $ Number 1, EVar $ Variable "a", EVal $ Number 3]
           Nothing
-      expected = Right $ Block [assign, cube]
+      expected = Right $ Program [assign, cube]
       result = Language.parse program
    in assertEqual "" expected result
 
@@ -62,7 +62,7 @@ test_noargs_application :: Assertion
 test_noargs_application =
   let program = "foo()"
       cube = Application "foo" [] Nothing
-      expected = Right $ Block [ElExpression $ EApp cube]
+      expected = Right $ Program [StExpression $ EApp cube]
       result = Language.parse program
    in assertEqual "" expected result
 
@@ -81,12 +81,12 @@ test_parse_function_blocks =
           [EVar $ Variable "a", EVar $ Variable "b", EVal $ Number 1]
           Nothing
       box1 =
-        ElExpression $
+        StExpression $
         EApp $
         Application
           "box"
           [EVar $ Variable "a", EVar $ Variable "a", EVal $ Number 2] $
         Just (Block [ass, box2])
-      expected = Right $ Block [box1]
+      expected = Right $ Program [box1]
       result = Language.parse program
    in assertEqual "" expected result

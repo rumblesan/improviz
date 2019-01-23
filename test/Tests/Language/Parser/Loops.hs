@@ -28,7 +28,7 @@ test_simple_loop =
       rot = ElExpression $ EApp $ Application "rotate" [] Nothing
       box = ElExpression $ EApp $ Application "box" [] Nothing
       loop = Loop (EVal $ Number 4) Nothing $ Block [rot, box]
-      expected = Right $ Block [ElLoop loop]
+      expected = Right $ Program [StLoop loop]
       result = Language.parse program
    in assertEqual "" expected result
 
@@ -39,7 +39,7 @@ test_loop_with_var =
       boxargs = [EVar $ Variable "i", EVar $ Variable "i", EVar $ Variable "i"]
       box = ElExpression $ EApp $ Application "box" boxargs Nothing
       loop = Loop (EVal $ Number 4) (Just "i") $ Block [rot, box]
-      expected = Right $ Block [ElLoop loop]
+      expected = Right $ Program [StLoop loop]
       result = Language.parse program
    in assertEqual "" expected result
 
@@ -50,7 +50,7 @@ test_loop_with_expr_number =
       rot = ElExpression $ EApp $ Application "rotate" [] Nothing
       box = ElExpression $ EApp $ Application "box" [] Nothing
       loop = Loop numExpr Nothing $ Block [rot, box]
-      expected = Right $ Block [ElLoop loop]
+      expected = Right $ Program [StLoop loop]
       result = Language.parse program
    in assertEqual "" expected result
 
@@ -63,6 +63,6 @@ test_loop_with_expr_number_and_loop_var =
       box =
         ElExpression $ EApp $ Application "box" [EVar $ Variable "i"] Nothing
       loop = Loop numExpr (Just "i") $ Block [rot, box]
-      expected = Right $ Block [ElLoop loop]
+      expected = Right $ Program [StLoop loop]
       result = Language.parse program
    in assertEqual "" expected result

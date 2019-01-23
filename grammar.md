@@ -3,11 +3,9 @@
 This is a very rough grammar for the Improviz language. Highly likely to change and be out of date.
 
 ```
-program = block
+program = statement*
 
-block = (<indent> element eol)+
-
-element = loop | assignment | functionDef | if | expression
+statement = (loop | assignment | functionDef | if) eol
 
 loop = expression "times" ("with" identifier)? "newline" block
 
@@ -22,6 +20,10 @@ functionDef
 argList
   = identifier
   | identifier "," arglist
+
+block = (<indent> element)+
+
+element = (loop | assignment | if | expression) eol
 
 if = "if" "(" expression ")" block else?
  

@@ -30,12 +30,12 @@ test_parse_block_with_blank_lines =
       rotate = ElExpression $ EApp $ Application "rotate" [] Nothing
       box = ElExpression $ EApp $ Application "box" [] Nothing
       fill =
-        ElExpression $
+        StExpression $
         EApp $
         Application
           "fill"
           [EVal (Number 255), EVal (Number 0), EVal (Number 0)]
           (Just $ Block [rotate, box])
-      expected = Right $ Block [fill]
+      expected = Right $ Program [fill]
       result = Language.parse program
    in assertEqual "" expected result

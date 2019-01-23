@@ -20,17 +20,27 @@ type LangParser e = IndentParser String () e
 simpleParse :: LangParser a -> String -> Either ParseError a
 simpleParse parser = runIndentParser parser () "program"
 
-parseProgram :: String -> Either String Block
+parseProgram :: String -> Either String Program
 parseProgram prog =
   case simpleParse program prog of
     Right ast -> Right ast
     Left err  -> Left $ show err
 
-program :: LangParser Block
-program = topLevel >> skipMany space >> (empty <|> (langBlock <* eof))
+program :: LangParser Program
+program = topLevel >> skipMany space >> (empty <|> (programBlock <* eof))
 
-empty :: LangParser Block
-empty = const (Block []) <$> eof
+programBlock :: LangParser Program
+programBlock = Program <$> block statement <?> "program"
+
+statement :: LangParser Statement
+statement =
+  ((StLoop <$> loop) <|> (StAssign <$> assignment) <|> (StFunc <$> functionDef) <|>
+   (StIf <$> ifElem) <|>
+   (StExpression <$> try expression)) <*
+  eol <?> "element"
+
+empty :: LangParser Program
+empty = const (Program []) <$> eof
 
 exprDef :: GenLanguageDef String st Indent
 exprDef =
@@ -107,8 +117,7 @@ langBlock = Block <$> block element <?> "block"
 
 element :: LangParser Element
 element =
-  ((ElLoop <$> loop) <|> (ElAssign <$> assignment) <|> (ElFunc <$> function) <|>
-   (ElIf <$> ifElem) <|>
+  ((ElLoop <$> loop) <|> (ElAssign <$> assignment) <|> (ElIf <$> ifElem) <|>
    (ElExpression <$> try expression)) <*
   eol <?> "element"
 
@@ -123,12 +132,12 @@ application =
   m_symbol ")" <*>
   optionMaybe (indented >> langBlock) <?> "application"
 
-function :: LangParser Func
-function =
+functionDef :: LangParser Func
+functionDef =
   Func <$> try (m_symbol "func" *> m_identifier) <*>
   m_parens (argList m_identifier) <*
   m_symbol "=>" <*>
-  (lbody <|> lexpr) <?> "function"
+  (lbody <|> lexpr) <?> "functionDef"
   where
     lexpr = (\e -> Block [ElExpression e]) <$> expression
     lbody = indented >> langBlock

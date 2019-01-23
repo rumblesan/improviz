@@ -3,15 +3,15 @@
 module Improviz.Language where
 
 import           Language                   (initialState, parse)
-import           Language.Ast               (Block (..))
+import           Language.Ast               (Program (..))
 import           Language.Interpreter.Types (InterpreterState)
 import           Lens.Simple
 
 data ImprovizLanguage = ImprovizLanguage
   { _programText        :: String
   , _lastProgramText    :: String
-  , _currentAst         :: Block
-  , _lastWorkingAst     :: Block
+  , _currentAst         :: Program
+  , _lastWorkingAst     :: Program
   , _initialInterpreter :: InterpreterState
   }
 
@@ -22,12 +22,12 @@ makeLanguageState seed =
   ImprovizLanguage
     { _programText = ""
     , _lastProgramText = ""
-    , _currentAst = Block []
-    , _lastWorkingAst = Block []
+    , _currentAst = Program []
+    , _lastWorkingAst = Program []
     , _initialInterpreter = initialState seed []
     }
 
-updateProgram :: String -> Block -> ImprovizLanguage -> ImprovizLanguage
+updateProgram :: String -> Program -> ImprovizLanguage -> ImprovizLanguage
 updateProgram newProgram newAst =
   set programText newProgram . set currentAst newAst
 

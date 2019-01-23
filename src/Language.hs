@@ -18,7 +18,7 @@ import           System.Random
 
 import           Gfx                         (Scene (..))
 import qualified Gfx.EngineState             as GE
-import           Language.Ast                (Block, Identifier, Value (..))
+import           Language.Ast                (Identifier, Program, Value (..))
 import           Language.Interpreter        (emptyState, interpretLanguage,
                                               seedRNG, setVariable)
 import           Language.Interpreter.Types  (InterpreterProcess,
@@ -26,7 +26,7 @@ import           Language.Interpreter.Types  (InterpreterProcess,
 import           Language.Parser             (parseProgram)
 import           Language.StdLib             (addStdLib)
 
-parse :: String -> Either String Block
+parse :: String -> Either String Program
 parse = parseProgram
 
 initialState :: Int -> [(Identifier, Value)] -> InterpreterState
@@ -49,7 +49,7 @@ updateEngineInfo es oldState = oldState {engineInfo = GE.createEngineInfo es}
 copyRNG :: InterpreterState -> InterpreterState -> InterpreterState
 copyRNG oldState newState = newState {rng = rng oldState}
 
-interpret :: [(Identifier, Value)] -> Block -> (Either String Value, [String])
+interpret :: [(Identifier, Value)] -> Program -> (Either String Value, [String])
 interpret initialVars block =
   let run = do
         addStdLib
@@ -59,7 +59,7 @@ interpret initialVars block =
 
 createGfx ::
      InterpreterState
-  -> Block
+  -> Program
   -> ((Either String Scene, [String]), InterpreterState)
 createGfx initialState block =
   let run = do

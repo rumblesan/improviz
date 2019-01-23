@@ -1,5 +1,7 @@
 module Language.Ast
-  ( Block(..)
+  ( Program(..)
+  , Statement(..)
+  , Block(..)
   , Element(..)
   , Application(..)
   , Func(..)
@@ -12,6 +14,18 @@ module Language.Ast
   , Identifier
   ) where
 
+newtype Program =
+  Program [Statement]
+  deriving (Eq, Show)
+
+data Statement
+  = StLoop Loop
+  | StAssign Assignment
+  | StExpression Expression
+  | StIf If
+  | StFunc Func
+  deriving (Eq, Show)
+
 newtype Block =
   Block [Element]
   deriving (Eq, Show)
@@ -21,7 +35,6 @@ data Element
   | ElAssign Assignment
   | ElExpression Expression
   | ElIf If
-  | ElFunc Func
   deriving (Eq, Show)
 
 data Application =
