@@ -8,9 +8,16 @@ An offshoot of LiveCodeLab
 Improviz is built in Haskell and interacts directly with OpenGL. It's very much a work in progress but it should be about usable.
 
 
+## Installing
+
+Pre-build binaries are available for OSX, Windows and Linux, and can be found on the [Releases Page](https://github.com/rumblesan/improviz/releases).
+
+These should **"just work"** but if there are any problems please raise an issue.
+
+
 ## Building
 
-[Stack](https://docs.haskellstack.org/en/stable/README/) is the build tool for the project.
+Improviz is built using [Stack](https://docs.haskellstack.org/en/stable/README/).
 
 With that installed, it should just be a matter of cloning the repository, entering the directory and running
 
@@ -25,8 +32,6 @@ Depending on your platform it may be necessary to install some or all of the fol
 * libxi-dev
 * libxinerama-dev
 * libxcursor-dev
-
-More investigation needed on cross platform building currently.
 
 
 ## Running
@@ -44,9 +49,14 @@ It may be preferable to install the fully built binary onto your system so it's 
 With the installed folder added to your path you can just run `improviz`.
 
 
+## Language
+
+Please check the [language](docs/language.md) document for details of the language itself.
+
+
 ## Configuration
 
-Please check the [configuration](docs/configuration.md) document for details.
+Please check the [configuration](docs/configuration.md) document for details on how to configure Improviz.
 
 
 ## Interacting
@@ -81,6 +91,7 @@ The OSC server must be enabled by setting the flag in the configuration. The def
 It is possible to set multiple variables within a single message, just add more name/value pairs.
 
 `"/vars" foo 0 bar 255 baz 0.8`
+
 
 ## Contact
 
