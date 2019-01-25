@@ -79,7 +79,7 @@ executable improviz
                      , Gfx.Windowing
                      , Language
                      , Language.Ast
-                     , Language.Ast.Transformers
+                     , Language.Ast.Transformers.Globalise
                      , Language.Parser
                      , Language.Interpreter
                      , Language.Interpreter.Scope
@@ -163,7 +163,7 @@ test-suite improviz-test
                      , Gfx.Windowing
                      , Language
                      , Language.Ast
-                     , Language.Ast.Transformers
+                     , Language.Ast.Transformers.Globalise
                      , Language.Parser
                      , Language.Interpreter
                      , Language.Interpreter.Scope
@@ -178,7 +178,7 @@ test-suite improviz-test
                      , Language.StdLib.PostEffects
                      , Language.StdLib.Maths
                      , Tests.Language
-                     , Tests.Language.Ast.Transformers
+                     , Tests.Language.Ast.Transformers.Globalise
                      , Tests.Language.Interpreter.Blocks
                      , Tests.Language.Interpreter.Expressions
                      , Tests.Language.Interpreter.If

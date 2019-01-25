@@ -1,20 +1,20 @@
-module Tests.Language.Ast.Transformers
-  ( transformerTests
+module Tests.Language.Ast.Transformers.Globalise
+  ( globaliseTransformerTests
   ) where
 
-import           Test.Framework                 (Test, testGroup)
-import           Test.Framework.Providers.HUnit (testCase)
-import           Test.HUnit                     (Assertion, assertEqual)
+import           Test.Framework                      (Test, testGroup)
+import           Test.Framework.Providers.HUnit      (testCase)
+import           Test.HUnit                          (Assertion, assertEqual)
 
-import qualified Data.Set                       as S
+import qualified Data.Set                            as S
 
 import           Language.Ast
-import           Language.Ast.Transformers
+import           Language.Ast.Transformers.Globalise
 
-transformerTests :: Test
-transformerTests =
+globaliseTransformerTests :: Test
+globaliseTransformerTests =
   testGroup
-    "AST Transformer Tests"
+    "AST Transformer Variable Globalisation Tests"
     [ testCase "simple variable to global variable" test_var_to_global
     , testCase "func body globalised" test_func_var_to_global
     , testCase "overwriting globals ok" test_overwrite_global

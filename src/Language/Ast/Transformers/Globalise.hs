@@ -1,4 +1,4 @@
-module Language.Ast.Transformers where
+module Language.Ast.Transformers.Globalise where
 
 import           Control.Monad
 import           Control.Monad.Trans.State.Strict
