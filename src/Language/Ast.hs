@@ -79,8 +79,9 @@ data Expression
   | EVal Value
   deriving (Eq, Show)
 
-newtype Variable =
-  Variable Identifier
+data Variable
+  = LocalVariable Identifier
+  | GlobalVariable Identifier
   deriving (Eq, Show)
 
 data Value

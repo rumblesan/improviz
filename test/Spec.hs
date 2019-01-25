@@ -5,6 +5,7 @@ import           Data.Monoid                            (mempty)
 import           Test.Framework
 
 import           Tests.Language                         (languageTests)
+import           Tests.Language.Ast.Transformers        (transformerTests)
 import           Tests.Language.Interpreter.Blocks      (blockTests)
 import           Tests.Language.Interpreter.Expressions (expressionTests)
 import           Tests.Language.Interpreter.Functions   (interpreterFunctionTests)
@@ -25,6 +26,7 @@ main :: IO ()
 main =
   defaultMainWithOpts
     [ languageTests
+    , transformerTests
     , operatorTests
     , expressionTests
     , interpreterIfTests

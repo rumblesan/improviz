@@ -253,5 +253,9 @@ interpretExpression (BinaryOp op v1 v2) = do
 interpretExpression (UnaryOp op v) = do
   n <- interpretExpression v
   unaryOp op n
-interpretExpression (EVar (Variable varName)) = getVariable varName
+interpretExpression (EVar var) = interpretVariable var
 interpretExpression (EVal value) = return value
+
+interpretVariable :: Variable -> InterpreterProcess Value
+interpretVariable (LocalVariable varName)  = getVariable varName
+interpretVariable (GlobalVariable varName) = getVariable varName

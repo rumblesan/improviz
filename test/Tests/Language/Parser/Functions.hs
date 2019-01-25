@@ -30,7 +30,7 @@ test_simple_application =
       cube =
         Application
           "cube"
-          [EVal $ Number 1, EVal $ Number 1, EVar $ Variable "i"]
+          [EVal $ Number 1, EVal $ Number 1, EVar $ LocalVariable "i"]
           Nothing
       expected = Right $ Program [StExpression $ EApp cube]
       result = Language.parse program
@@ -39,7 +39,8 @@ test_simple_application =
 test_application_list :: Assertion
 test_application_list =
   let program = "1, b, 3"
-      expected = Right [EVal $ Number 1, EVar $ Variable "b", EVal $ Number 3]
+      expected =
+        Right [EVal $ Number 1, EVar $ LocalVariable "b", EVal $ Number 3]
       result = LP.simpleParse (LP.argList LP.expression) program
    in assertEqual "" expected result
 
@@ -52,7 +53,7 @@ test_application_with_var_arg =
         EApp $
         Application
           "cube"
-          [EVal $ Number 1, EVar $ Variable "a", EVal $ Number 3]
+          [EVal $ Number 1, EVar $ LocalVariable "a", EVal $ Number 3]
           Nothing
       expected = Right $ Program [assign, cube]
       result = Language.parse program
@@ -78,14 +79,14 @@ test_parse_function_blocks =
         EApp $
         Application
           "box"
-          [EVar $ Variable "a", EVar $ Variable "b", EVal $ Number 1]
+          [EVar $ LocalVariable "a", EVar $ LocalVariable "b", EVal $ Number 1]
           Nothing
       box1 =
         StExpression $
         EApp $
         Application
           "box"
-          [EVar $ Variable "a", EVar $ Variable "a", EVal $ Number 2] $
+          [EVar $ LocalVariable "a", EVar $ LocalVariable "a", EVal $ Number 2] $
         Just (Block [ass, box2])
       expected = Right $ Program [box1]
       result = Language.parse program

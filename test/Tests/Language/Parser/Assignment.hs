@@ -41,7 +41,7 @@ test_parse_assign_negative_number =
 test_parse_expr_assignment :: Assertion
 test_parse_expr_assignment =
   let program = "var foo = a + b\n"
-      bop = BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
+      bop = BinaryOp "+" (EVar $ LocalVariable "a") (EVar $ LocalVariable "b")
       expected = Right $ Program [StAssign $ AbsoluteAssignment "foo" bop]
       result = Language.parse program
    in assertEqual "" expected result
@@ -51,9 +51,10 @@ test_multiple_assignment =
   let program = "var foo = 1 + 2\nvar bar = foo - 2\nvar baz = foo * bar\n"
       bop1 = BinaryOp "+" (EVal $ Number 1) (EVal $ Number 2)
       foo = StAssign $ AbsoluteAssignment "foo" bop1
-      bop2 = BinaryOp "-" (EVar $ Variable "foo") (EVal $ Number 2)
+      bop2 = BinaryOp "-" (EVar $ LocalVariable "foo") (EVal $ Number 2)
       bar = StAssign $ AbsoluteAssignment "bar" bop2
-      bop3 = BinaryOp "*" (EVar $ Variable "foo") (EVar $ Variable "bar")
+      bop3 =
+        BinaryOp "*" (EVar $ LocalVariable "foo") (EVar $ LocalVariable "bar")
       baz = StAssign $ AbsoluteAssignment "baz" bop3
       expected = Right $ Program [foo, bar, baz]
       result = Language.parse program
@@ -62,7 +63,7 @@ test_multiple_assignment =
 test_parse_absolute_assignment :: Assertion
 test_parse_absolute_assignment =
   let program = "var foo := a + b\n"
-      bop = BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
+      bop = BinaryOp "+" (EVar $ LocalVariable "a") (EVar $ LocalVariable "b")
       expected = Right $ Program [StAssign $ ConditionalAssignment "foo" bop]
       result = Language.parse program
    in assertEqual "" expected result

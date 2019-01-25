@@ -169,7 +169,7 @@ expression :: LangParser Expression
 expression = buildExpressionParser table atom <?> "expression"
 
 variable :: LangParser Variable
-variable = Variable <$> m_identifier
+variable = LocalVariable <$> m_identifier
 
 value :: LangParser Value
 value = number <|> v_symbol <|> v_null

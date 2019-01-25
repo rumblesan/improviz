@@ -27,7 +27,9 @@ test_function_creation_and_application :: Assertion
 test_function_creation_and_application =
   let block =
         Block
-          [ElExpression $ BinaryOp "+" (EVar $ Variable "a") (EVal $ Number 1)]
+          [ ElExpression $
+            BinaryOp "+" (EVar $ LocalVariable "a") (EVal $ Number 1)
+          ]
       func = StFunc $ Func "foo" ["a"] block
       appl = StExpression $ EApp $ Application "foo" [EVal $ Number 3] Nothing
       result = fst $ Language.interpret [] $ Program [func, appl]

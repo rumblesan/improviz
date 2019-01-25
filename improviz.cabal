@@ -32,6 +32,7 @@ executable improviz
                      , random
                      , scotty
                      , stm
+                     , transformers
                      , text
                      , time
                      , vector
@@ -78,6 +79,7 @@ executable improviz
                      , Gfx.Windowing
                      , Language
                      , Language.Ast
+                     , Language.Ast.Transformers
                      , Language.Parser
                      , Language.Interpreter
                      , Language.Interpreter.Scope
@@ -113,6 +115,7 @@ test-suite improviz-test
                      , random
                      , scotty
                      , stm
+                     , transformers
                      , split
                      , test-framework
                      , test-framework-hunit
@@ -160,6 +163,7 @@ test-suite improviz-test
                      , Gfx.Windowing
                      , Language
                      , Language.Ast
+                     , Language.Ast.Transformers
                      , Language.Parser
                      , Language.Interpreter
                      , Language.Interpreter.Scope
@@ -174,6 +178,7 @@ test-suite improviz-test
                      , Language.StdLib.PostEffects
                      , Language.StdLib.Maths
                      , Tests.Language
+                     , Tests.Language.Ast.Transformers
                      , Tests.Language.Interpreter.Blocks
                      , Tests.Language.Interpreter.Expressions
                      , Tests.Language.Interpreter.If

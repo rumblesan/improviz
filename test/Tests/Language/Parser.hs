@@ -36,9 +36,10 @@ test_parse_program =
       cAss =
         ElAssign $
         AbsoluteAssignment "c" $
-        BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
+        BinaryOp "+" (EVar $ LocalVariable "a") (EVar $ LocalVariable "b")
       fooBox =
-        ElExpression $ EApp $ Application "box" [EVar $ Variable "c"] Nothing
+        ElExpression $
+        EApp $ Application "box" [EVar $ LocalVariable "c"] Nothing
       fooLine = StFunc $ Func "foo" ["a", "b"] (Block [cAss, fooBox])
       nLine =
         StAssign $
@@ -54,7 +55,7 @@ test_parse_program =
           , ElExpression $
             EApp $ Application "foo" [EVal $ Number 1, EVal $ Number 2] Nothing
           ]
-      loopLine = StLoop $ Loop (EVar $ Variable "n") Nothing loopBlock
+      loopLine = StLoop $ Loop (EVar $ LocalVariable "n") Nothing loopBlock
       expected = Right $ Program [fooLine, nLine, loopLine]
       result = Language.parse program
    in assertEqual "" expected result
