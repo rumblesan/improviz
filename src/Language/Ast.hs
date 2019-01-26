@@ -38,7 +38,7 @@ data Element
   deriving (Eq, Show)
 
 data Application =
-  Application Identifier
+  Application Variable
               [Expression]
               (Maybe Block)
   deriving (Eq, Show)
@@ -88,10 +88,8 @@ data Value
   = Number Float
   | Null
   | Symbol String
-  | Lambda [Identifier]
-           Block
-  | BuiltIn Identifier
-            [Identifier]
+  | UserFunctionRef Identifier
+  | BuiltInFunctionRef Identifier
   deriving (Eq, Show)
 
 type Identifier = String

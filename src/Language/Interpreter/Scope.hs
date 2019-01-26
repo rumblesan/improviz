@@ -10,7 +10,7 @@ data ScopeStack k v = ScopeStack
   } deriving (Show)
 
 empty :: Ord k => ScopeStack k v
-empty = ScopeStack {current = M.fromList [], stack = []}
+empty = ScopeStack {current = M.empty, stack = []}
 
 setVariable :: Ord k => ScopeStack k v -> k -> v -> ScopeStack k v
 setVariable scope name value =

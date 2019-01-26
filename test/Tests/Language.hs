@@ -83,7 +83,7 @@ test_create_gfx =
   let box =
         EApp $
         Application
-          "box"
+          (LocalVariable "box")
           [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1]
           Nothing
       block = Program [StExpression box]

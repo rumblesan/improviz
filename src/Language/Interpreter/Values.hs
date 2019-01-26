@@ -6,10 +6,11 @@ import           Language.Ast
 import           Language.Interpreter.Types
 
 getValueType :: Value -> String
-getValueType (Number _)       = "Number"
-getValueType Null             = "Null"
-getValueType (Lambda _ _)     = "Lambda"
-getValueType (BuiltIn name _) = "BuiltIn: " ++ name
+getValueType (Number _)                = "Number"
+getValueType Null                      = "Null"
+getValueType (Symbol _)                = "Symbol"
+getValueType (UserFunctionRef name)    = "Function: " ++ name
+getValueType (BuiltInFunctionRef name) = "BuiltIn: " ++ name
 
 getNumberValue :: Value -> InterpreterProcess Float
 getNumberValue (Number v) = return v

@@ -31,7 +31,9 @@ test_function_creation_and_application =
             BinaryOp "+" (EVar $ LocalVariable "a") (EVal $ Number 1)
           ]
       func = StFunc $ Func "foo" ["a"] block
-      appl = StExpression $ EApp $ Application "foo" [EVal $ Number 3] Nothing
+      appl =
+        StExpression $
+        EApp $ Application (LocalVariable "foo") [EVal $ Number 3] Nothing
       result = fst $ Language.interpret [] $ Program [func, appl]
       expected = Right $ Number 4
    in assertEqual "" expected result

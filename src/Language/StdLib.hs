@@ -14,9 +14,6 @@ import           Language.Interpreter          (setBuiltIn)
 import           Language.Interpreter.Types    (BuiltInFunction,
                                                 InterpreterProcess)
 
-noop :: BuiltInFunction
-noop = return Null
-
 addStdLib :: InterpreterProcess ()
 addStdLib = do
   addMathStdLib
@@ -25,4 +22,3 @@ addStdLib = do
   addColourStdLib
   addPostEffectsStdLib
   addBlockHandlingStdLib
-  setBuiltIn "noop" noop []

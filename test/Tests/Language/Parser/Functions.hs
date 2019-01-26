@@ -29,7 +29,7 @@ test_simple_application =
   let program = "cube(1, 1, i)\n\n"
       cube =
         Application
-          "cube"
+          (LocalVariable "cube")
           [EVal $ Number 1, EVal $ Number 1, EVar $ LocalVariable "i"]
           Nothing
       expected = Right $ Program [StExpression $ EApp cube]
@@ -52,7 +52,7 @@ test_application_with_var_arg =
         StExpression $
         EApp $
         Application
-          "cube"
+          (LocalVariable "cube")
           [EVal $ Number 1, EVar $ LocalVariable "a", EVal $ Number 3]
           Nothing
       expected = Right $ Program [assign, cube]
@@ -62,7 +62,7 @@ test_application_with_var_arg =
 test_noargs_application :: Assertion
 test_noargs_application =
   let program = "foo()"
-      cube = Application "foo" [] Nothing
+      cube = Application (LocalVariable "foo") [] Nothing
       expected = Right $ Program [StExpression $ EApp cube]
       result = Language.parse program
    in assertEqual "" expected result
@@ -78,14 +78,14 @@ test_parse_function_blocks =
         ElExpression $
         EApp $
         Application
-          "box"
+          (LocalVariable "box")
           [EVar $ LocalVariable "a", EVar $ LocalVariable "b", EVal $ Number 1]
           Nothing
       box1 =
         StExpression $
         EApp $
         Application
-          "box"
+          (LocalVariable "box")
           [EVar $ LocalVariable "a", EVar $ LocalVariable "a", EVal $ Number 2] $
         Just (Block [ass, box2])
       expected = Right $ Program [box1]

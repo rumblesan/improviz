@@ -34,11 +34,11 @@ globaliseStatement (StIf ifAst) = StIf <$> globaliseIf ifAst
 globaliseStatement (StFunc func) = StFunc <$> globaliseFunc func
 
 globaliseBlock :: Set String -> Block -> Transformer Block
-globaliseBlock newVars (Block elements) = do
+globaliseBlock newVars (Block elements) =
   Block <$>
-    localState
-      (\st -> st {globalVars = S.difference (globalVars st) newVars})
-      (mapM globaliseElement elements)
+  localState
+    (\st -> st {globalVars = S.difference (globalVars st) newVars})
+    (mapM globaliseElement elements)
 
 globaliseElement :: Element -> Transformer Element
 globaliseElement (ElLoop loop) = ElLoop <$> globaliseLoop loop
@@ -49,11 +49,9 @@ globaliseElement (ElExpression expression) =
 globaliseElement (ElIf ifAst) = ElIf <$> globaliseIf ifAst
 
 globaliseLoop :: Loop -> Transformer Loop
-globaliseLoop (Loop expr mbId block) = do
-  newExpr <- globaliseExpression expr
-  let mbVar = maybe S.empty S.singleton mbId
-  newBlock <- globaliseBlock mbVar block
-  return $ Loop newExpr mbId newBlock
+globaliseLoop (Loop expr mbId block) =
+  Loop <$> globaliseExpression expr <*> pure mbId <*>
+  globaliseBlock (maybe S.empty S.singleton mbId) block
 
 globaliseAssignment :: Assignment -> Transformer Assignment
 globaliseAssignment (AbsoluteAssignment ident expr) = do
@@ -70,37 +68,30 @@ globaliseAssignment (ConditionalAssignment ident expr) = do
 globaliseExpression :: Expression -> Transformer Expression
 globaliseExpression (EApp application) =
   EApp <$> globaliseApplication application
-globaliseExpression (BinaryOp op expr1 expr2) = do
+globaliseExpression (BinaryOp op expr1 expr2) =
   BinaryOp op <$> globaliseExpression expr1 <*> globaliseExpression expr2
-globaliseExpression (UnaryOp op expr1) = do
+globaliseExpression (UnaryOp op expr1) =
   UnaryOp op <$> globaliseExpression expr1
 globaliseExpression (EVar variable) = EVar <$> globaliseVariable variable
 globaliseExpression (EVal value) = EVal <$> globaliseValue value
 
 globaliseIf :: If -> Transformer If
-globaliseIf (If predicate block elseBlock) = do
-  newPred <- globaliseExpression predicate
-  newBlock <- globaliseBlock S.empty block
-  newElse <- mapM (globaliseBlock S.empty) elseBlock
-  return $ If newPred newBlock newElse
+globaliseIf (If predicate block elseBlock) =
+  If <$> globaliseExpression predicate <*> globaliseBlock S.empty block <*>
+  mapM (globaliseBlock S.empty) elseBlock
 
 globaliseFunc :: Func -> Transformer Func
-globaliseFunc (Func name argNames block)
-  -- TODO global name for name?
- = do
-  newBlock <- globaliseBlock (S.fromList argNames) block
-  return $ Func name argNames newBlock
+globaliseFunc (Func name argNames block) = do
+  modify (\st -> st {globalVars = S.insert name (globalVars st)})
+  Func name argNames <$> globaliseBlock (S.fromList argNames) block
 
 globaliseApplication :: Application -> Transformer Application
-globaliseApplication (Application name args mbBlock)
-  -- TODO should application names actually be global vars?
- = do
-  newArgs <- mapM globaliseExpression args
-  newMbBlock <- mapM (globaliseBlock S.empty) mbBlock
-  return $ Application name newArgs newMbBlock
+globaliseApplication (Application name args mbBlock) =
+  Application <$> globaliseVariable name <*> mapM globaliseExpression args <*>
+  mapM (globaliseBlock S.empty) mbBlock
 
 globaliseVariable :: Variable -> Transformer Variable
-globaliseVariable v@(LocalVariable name) = do
+globaliseVariable v@(LocalVariable name) =
   gets
     (\st ->
        if S.member name (globalVars st)

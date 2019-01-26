@@ -39,7 +39,8 @@ test_parse_program =
         BinaryOp "+" (EVar $ LocalVariable "a") (EVar $ LocalVariable "b")
       fooBox =
         ElExpression $
-        EApp $ Application "box" [EVar $ LocalVariable "c"] Nothing
+        EApp $
+        Application (LocalVariable "box") [EVar $ LocalVariable "c"] Nothing
       fooLine = StFunc $ Func "foo" ["a", "b"] (Block [cAss, fooBox])
       nLine =
         StAssign $
@@ -51,9 +52,14 @@ test_parse_program =
       loopBlock =
         Block
           [ ElExpression $
-            EApp $ Application "rotate" [EVal $ Number 0.5] Nothing
+            EApp $
+            Application (LocalVariable "rotate") [EVal $ Number 0.5] Nothing
           , ElExpression $
-            EApp $ Application "foo" [EVal $ Number 1, EVal $ Number 2] Nothing
+            EApp $
+            Application
+              (LocalVariable "foo")
+              [EVal $ Number 1, EVal $ Number 2]
+              Nothing
           ]
       loopLine = StLoop $ Loop (EVar $ LocalVariable "n") Nothing loopBlock
       expected = Right $ Program [fooLine, nLine, loopLine]

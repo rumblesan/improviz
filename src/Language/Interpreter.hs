@@ -8,6 +8,7 @@ import           Control.Monad.Writer.Strict
 import qualified Data.List                      as L
 import           Data.Map.Strict                as M
 import           Data.Maybe                     (fromMaybe, isJust)
+import qualified Data.Set                       as S
 
 import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
@@ -23,7 +24,9 @@ emptyState :: InterpreterState
 emptyState =
   InterpreterState
     { variables = LS.empty
+    , globals = M.fromList []
     , builtins = M.fromList []
+    , functions = M.fromList []
     , blockStack = []
     , gfxBackground = Colour 1 1 1 1
     , currentGfx = GA.emptyGfx
@@ -51,52 +54,85 @@ getRandom = do
   modify (\s -> s {rng = nextGen})
   return $ Number v
 
+setFunction :: Identifier -> Func -> InterpreterProcess ()
+setFunction name (Func fname args body) =
+  modify
+    (\s ->
+       s
+         { functions =
+             M.insert name (UserFunctionDef fname args body) (functions s)
+         })
+
+getFunction :: Identifier -> InterpreterProcess UserFunctionDef
+getFunction name = do
+  functionDefs <- gets functions
+  case M.lookup name functionDefs of
+    Just f  -> return f
+    Nothing -> throwError $ "Could not find function: " ++ name
+
+setBuiltIn ::
+     Identifier
+  -> InterpreterProcess Value
+  -> [Identifier]
+  -> InterpreterProcess ()
+setBuiltIn name func argNames =
+  modify
+    (\s ->
+       s
+         { globals = M.insert name (BuiltInFunctionRef name) (globals s)
+         , builtins = M.insert name (BuiltInFunction argNames func) (builtins s)
+         })
+
+getBuiltIn :: Identifier -> InterpreterProcess BuiltInFunction
+getBuiltIn name = do
+  builtInDefs <- gets builtins
+  case M.lookup name builtInDefs of
+    Just b  -> return b
+    Nothing -> throwError $ "Could not get builtin: " ++ name
+
+setGlobal :: Identifier -> Value -> InterpreterProcess Value
+setGlobal name val =
+  modify (\s -> s {globals = M.insert name val (globals s)}) >> return val
+
 setVariable :: Identifier -> Value -> InterpreterProcess Value
 setVariable name val =
   modify (\s -> s {variables = LS.setVariable (variables s) name val}) >>
   return val
 
+getGlobal :: Identifier -> InterpreterProcess Value
+getGlobal name = do
+  globalDefs <- gets globals
+  case M.lookup name globalDefs of
+    Just v  -> return v
+    Nothing -> throwError $ "Could not get global: " ++ name
+
+getGlobalNames :: InterpreterProcess (S.Set String)
+getGlobalNames = gets (M.keysSet . globals)
+
 getVariable :: Identifier -> InterpreterProcess Value
 getVariable name = do
-  s <- get
-  case LS.getVariable (variables s) name of
+  variableDefs <- gets variables
+  case LS.getVariable variableDefs name of
     Just v  -> return v
     Nothing -> throwError $ "Could not get variable: " ++ name
 
 getVariableWithDefault :: Identifier -> Value -> InterpreterProcess Value
 getVariableWithDefault name defValue = do
-  s <- get
+  variableDefs <- gets variables
   return $
-    case fromMaybe Null (LS.getVariable (variables s) name) of
+    case fromMaybe Null (LS.getVariable variableDefs name) of
       Null -> defValue
       v    -> v
 
 getVarOrNull :: Identifier -> InterpreterProcess Value
 getVarOrNull name = do
-  s <- get
-  return $ fromMaybe Null (LS.getVariable (variables s) name)
+  variableDefs <- gets variables
+  return $ fromMaybe Null (LS.getVariable variableDefs name)
 
 getNumberFromNull :: Value -> Float -> Float
 getNumberFromNull Null def       = def
 getNumberFromNull (Number val) _ = val
 getNumberFromNull _ def          = def
-
-setBuiltIn ::
-     Identifier -> BuiltInFunction -> [Identifier] -> InterpreterProcess ()
-setBuiltIn name func argNames =
-  modify
-    (\s ->
-       s
-         { variables = LS.setVariable (variables s) name (BuiltIn name argNames)
-         , builtins = M.insert name func (builtins s)
-         })
-
-getBuiltIn :: Identifier -> InterpreterProcess BuiltInFunction
-getBuiltIn name = do
-  s <- get
-  case M.lookup name (builtins s) of
-    Just b  -> return b
-    Nothing -> throwError $ "Could not get builtin: " ++ name
 
 addGfxCommand :: GA.GfxCommand -> InterpreterProcess ()
 addGfxCommand cmd = modify (\s -> s {currentGfx = GA.addGfx (currentGfx s) cmd})
@@ -161,38 +197,40 @@ interpretElement (ElIf ifElem)             = interpretIf ifElem
 interpretElement (ElExpression expression) = interpretExpression expression
 
 interpretApplication :: Application -> InterpreterProcess Value
-interpretApplication (Application name args block) = do
-  f <- getVariable name
-  case f of
-    (Lambda argNames lBlock) ->
-      newScope
-        (do tell ["Running lambda"]
-            _ <- handleLambdaArgs argNames args
-            pushBlock block
-            ret <- interpretBlock lBlock
-            popBlock
-            return ret)
-    (BuiltIn funcName argNames) ->
-      newScope
-        (do tell ["Running BuiltIn: " ++ funcName]
-            _ <- handleBuiltInArgs argNames args
-            b <- getBuiltIn funcName
-            pushBlock block
-            ret <- b
-            popBlock
-            return ret)
+interpretApplication f@(Application name args block) = do
+  v <- interpretVariable name
+  case v of
+    (UserFunctionRef name) -> do
+      userFunc <- getFunction name
+      interpretUserFunctionApplication f userFunc
+    (BuiltInFunctionRef name) -> do
+      builtInFunc <- getBuiltIn name
+      interpretBuiltInFunctionApplication f builtInFunc
     _ -> return Null
 
-handleLambdaArgs :: [Identifier] -> [Expression] -> InterpreterProcess Value
-handleLambdaArgs argNames args = do
-  argValues <- mapM interpretExpression args
-  zipWithM_ defaultArg argNames (argValues ++ repeat Null)
-  return Null
-  where
-    defaultArg name argVal = setVariable name argVal
+interpretUserFunctionApplication ::
+     Application -> UserFunctionDef -> InterpreterProcess Value
+interpretUserFunctionApplication (Application _ args mbBlock) (UserFunctionDef _ argNames body) =
+  newScope
+    (do assignApplicationArgs argNames args
+        pushBlock mbBlock
+        ret <- interpretBlock body
+        popBlock
+        return ret)
 
-handleBuiltInArgs :: [Identifier] -> [Expression] -> InterpreterProcess Value
-handleBuiltInArgs argNames args = do
+interpretBuiltInFunctionApplication ::
+     Application -> BuiltInFunction -> InterpreterProcess Value
+interpretBuiltInFunctionApplication (Application _ args mbBlock) (BuiltInFunction argNames action) =
+  newScope
+    (do assignApplicationArgs argNames args
+        pushBlock mbBlock
+        ret <- action
+        popBlock
+        return ret)
+
+assignApplicationArgs ::
+     [Identifier] -> [Expression] -> InterpreterProcess Value
+assignApplicationArgs argNames args = do
   argValues <- mapM interpretExpression args
   zipWithM_ setVariable argNames (argValues ++ repeat Null)
   return Null
@@ -208,8 +246,9 @@ interpretLoop (Loop numExpr loopVar block) = do
       interpretBlock block
 
 interpretFunc :: Func -> InterpreterProcess Value
-interpretFunc (Func name argNames lBlock) =
-  setVariable name (Lambda argNames lBlock)
+interpretFunc f@(Func name argNames lBlock) = do
+  setFunction name f
+  setGlobal name (UserFunctionRef name)
 
 interpretIf :: If -> InterpreterProcess Value
 interpretIf (If pred block1 block2) = do
@@ -230,10 +269,12 @@ loopNums :: Expression -> InterpreterProcess [Float]
 loopNums numExpr = do
   loopV <- interpretExpression numExpr
   case loopV of
-    Number v    -> return [0 .. (v - 1)]
-    Null        -> throwError "Null given as loop number expression"
-    Lambda _ _  -> throwError "Function given as loop number expression"
-    BuiltIn _ _ -> throwError "Function given as loop number expression"
+    Number v -> return [0 .. (v - 1)]
+    Null -> throwError "Null given as loop number expression"
+    Symbol _ -> throwError "Symbol given as loop number expression"
+    UserFunctionRef _ -> throwError "Function given as loop number expression"
+    BuiltInFunctionRef _ ->
+      throwError "Function given as loop number expression"
 
 interpretAssignment :: Assignment -> InterpreterProcess Value
 interpretAssignment (AbsoluteAssignment name expression) =
@@ -258,4 +299,4 @@ interpretExpression (EVal value) = return value
 
 interpretVariable :: Variable -> InterpreterProcess Value
 interpretVariable (LocalVariable varName)  = getVariable varName
-interpretVariable (GlobalVariable varName) = getVariable varName
+interpretVariable (GlobalVariable varName) = getGlobal varName

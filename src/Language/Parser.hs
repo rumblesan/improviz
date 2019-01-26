@@ -128,7 +128,7 @@ argList lp = sepBy lp sep
 
 application :: LangParser Application
 application =
-  Application <$> try (m_identifier <* m_symbol "(") <*> argList expression <*
+  Application <$> try (variable <* m_symbol "(") <*> argList expression <*
   m_symbol ")" <*>
   optionMaybe (indented >> langBlock) <?> "application"
 
