@@ -29,8 +29,8 @@ parserTests =
 
 test_parse_program :: Assertion
 test_parse_program =
-  let fooDef = "func foo (a, b) =>\n\tvar c = a + b\n\tbox(c)\n"
-      loopNum = "var n := (3 * 4) + 1\n"
+  let fooDef = "func foo (a, b) =>\n\tc = a + b\n\tbox(c)\n"
+      loopNum = "n := (3 * 4) + 1\n"
       loop = "n times\n\trotate(0.5)\n\tfoo(1, 2)\n"
       program = fooDef ++ loopNum ++ loop
       cAss =

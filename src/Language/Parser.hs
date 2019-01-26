@@ -152,12 +152,10 @@ assignment :: LangParser Assignment
 assignment = absAssignment <|> condAssignment
   where
     absAssignment =
-      AbsoluteAssignment <$>
-      try (m_symbol "var" *> m_identifier <* m_symbol "=") <*>
+      AbsoluteAssignment <$> try (m_identifier <* m_symbol "=") <*>
       expression <?> "absolute assignment"
     condAssignment =
-      ConditionalAssignment <$>
-      try (m_symbol "var" *> m_identifier <* m_symbol ":=") <*>
+      ConditionalAssignment <$> try (m_identifier <* m_symbol ":=") <*>
       expression <?> "conditional assignment"
 
 ifElem :: LangParser If

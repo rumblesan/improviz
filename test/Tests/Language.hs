@@ -33,8 +33,7 @@ languageTests =
 
 test_basic_program :: Assertion
 test_basic_program =
-  let program =
-        "var a = 2\nvar b = 3\nfunc foo (c, d) => c * d\nbox(b, a, foo(a, b))\n"
+  let program = "a = 2\nb = 3\nfunc foo (c, d) => c * d\nbox(b, a, foo(a, b))\n"
       interpreterState = Language.initialState 1 []
       result = do
         ast <- Language.parse program

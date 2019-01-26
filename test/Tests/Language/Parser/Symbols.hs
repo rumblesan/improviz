@@ -32,7 +32,7 @@ test_parse_simple_symbol_usage =
 
 test_parse_symbol_variable_assignment :: Assertion
 test_parse_symbol_variable_assignment =
-  let program = "var a = :symbol"
+  let program = "a = :symbol"
       assignment = AbsoluteAssignment "a" (EVal $ Symbol "symbol")
       expected = Right $ Program [StAssign assignment]
       result = Language.parse program

@@ -17,7 +17,7 @@ parserOperatorTests =
 
 test_parse_complex_operator :: Assertion
 test_parse_complex_operator =
-  let program = "var b = a % 2 == 1 && t < 4"
+  let program = "b = a % 2 == 1 && t < 4"
       modExpr =
         BinaryOp
           "=="

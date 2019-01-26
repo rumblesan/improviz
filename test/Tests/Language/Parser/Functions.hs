@@ -46,7 +46,7 @@ test_application_list =
 
 test_application_with_var_arg :: Assertion
 test_application_with_var_arg =
-  let program = "var a = 2\ncube(1, a, 3)\n\n"
+  let program = "a = 2\ncube(1, a, 3)\n\n"
       assign = StAssign $ AbsoluteAssignment "a" $ EVal $ Number 2
       cube =
         StExpression $
@@ -69,7 +69,7 @@ test_noargs_application =
 
 test_parse_function_blocks :: Assertion
 test_parse_function_blocks =
-  let program = "box(a, a, 2)\n\tvar b = 2 * 0.5\n\tbox(a, b, 1)\n"
+  let program = "box(a, a, 2)\n\tb = 2 * 0.5\n\tbox(a, b, 1)\n"
       ass =
         ElAssign $
         AbsoluteAssignment "b" $
