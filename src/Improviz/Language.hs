@@ -17,14 +17,14 @@ data ImprovizLanguage = ImprovizLanguage
 
 makeLenses ''ImprovizLanguage
 
-makeLanguageState :: Int -> ImprovizLanguage
-makeLanguageState seed =
+makeLanguageState :: ImprovizLanguage
+makeLanguageState =
   ImprovizLanguage
     { _programText = ""
     , _lastProgramText = ""
     , _currentAst = Program []
     , _lastWorkingAst = Program []
-    , _initialInterpreter = initialState seed []
+    , _initialInterpreter = initialState []
     }
 
 updateProgram :: String -> Program -> ImprovizLanguage -> ImprovizLanguage

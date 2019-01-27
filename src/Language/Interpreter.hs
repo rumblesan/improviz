@@ -1,7 +1,5 @@
 module Language.Interpreter where
 
-import           System.Random
-
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
 import           Control.Monad.Writer.Strict
@@ -33,26 +31,10 @@ emptyState =
     , animationStyle = NormalStyle
     , gfxStack = []
     , engineInfo = GE.EngineInfo M.empty
-    , rng = mkStdGen 0
     }
 
 getEngineInfo :: InterpreterProcess GE.EngineInfo
 getEngineInfo = gets engineInfo
-
-seedRNG :: Int -> InterpreterProcess Value
-seedRNG seed = modify (\s -> s {rng = mkStdGen seed}) >> return Null
-
-getRNG :: InterpreterProcess StdGen
-getRNG = gets rng
-
-setRNG :: StdGen -> InterpreterProcess Value
-setRNG newRNG = modify (\s -> s {rng = newRNG}) >> return Null
-
-getRandom :: InterpreterProcess Value
-getRandom = do
-  (v, nextGen) <- random <$> gets rng
-  modify (\s -> s {rng = nextGen})
-  return $ Number v
 
 setFunction :: Identifier -> Func -> InterpreterProcess ()
 setFunction name (Func fname args body) =

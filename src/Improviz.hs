@@ -44,7 +44,7 @@ makeLenses ''ImprovizEnv
 createEnv :: IO ImprovizEnv
 createEnv = do
   startTime <- getPOSIXTime
-  languageState <- newTVarIO $ makeLanguageState (round $ realToFrac startTime)
+  languageState <- newTVarIO makeLanguageState
   uiState <- newTVarIO defaultUI
   gfxState <- newEmptyTMVarIO
   config <- getConfig

@@ -28,8 +28,7 @@ test_true_if_statement =
   let program = "if (1)\n\tbox()"
       result = do
         ast <- Language.parse program
-        let ((result, _), _) =
-              Language.createGfx (Language.initialState 1 []) ast
+        let ((result, _), _) = Language.createGfx (Language.initialState []) ast
         scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Cube 1 1 1) Nothing]
@@ -40,8 +39,7 @@ test_false_if_statement =
   let program = "if (0)\n\tbox()"
       result = do
         ast <- Language.parse program
-        let ((result, _), _) =
-              Language.createGfx (Language.initialState 1 []) ast
+        let ((result, _), _) = Language.createGfx (Language.initialState []) ast
         scene <- result
         return $ sceneGfx scene
       expected = Right []
@@ -52,8 +50,7 @@ test_true_if_else_statement =
   let program = "if (1)\n\tbox()\nelse\n\tline()"
       result = do
         ast <- Language.parse program
-        let ((result, _), _) =
-              Language.createGfx (Language.initialState 1 []) ast
+        let ((result, _), _) = Language.createGfx (Language.initialState []) ast
         scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Cube 1 1 1) Nothing]
@@ -64,8 +61,7 @@ test_false_if_else_statement =
   let program = "if (0)\n\tbox()\nelse\n\tline()"
       result = do
         ast <- Language.parse program
-        let ((result, _), _) =
-              Language.createGfx (Language.initialState 1 []) ast
+        let ((result, _), _) = Language.createGfx (Language.initialState []) ast
         scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Line 1) Nothing]

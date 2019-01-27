@@ -34,7 +34,7 @@ languageTests =
 test_basic_program :: Assertion
 test_basic_program =
   let program = "a = 2\nb = 3\nfunc foo (c, d) => c * d\nbox(b, a, foo(a, b))\n"
-      interpreterState = Language.initialState 1 []
+      interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
         let ((result, _), _) = Language.createGfx interpreterState ast
@@ -46,7 +46,7 @@ test_basic_program =
 test_animation_style :: Assertion
 test_animation_style =
   let program = "motionBlur()"
-      interpreterState = Language.initialState 1 []
+      interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
         let ((result, _), _) = Language.createGfx interpreterState ast
@@ -59,7 +59,7 @@ test_loop_program :: Assertion
 test_loop_program =
   let program =
         "rotate(0.1, 0.2, 0.3)\n3 times with i\n\trotate(0.2, 0.2, 0.2)\n\tbox(i)\n\n\n"
-      interpreterState = Language.initialState 1 []
+      interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
         let ((result, _), _) = Language.createGfx interpreterState ast
@@ -86,7 +86,7 @@ test_create_gfx =
           [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1]
           Nothing
       block = Program [StExpression box]
-      interpreterState = Language.initialState 1 []
+      interpreterState = Language.initialState []
       ((result, _), _) = Language.createGfx interpreterState block
       scene = either (const []) sceneGfx result
       expected = [GA.ShapeCommand (GA.Cube 1 2 1) Nothing]

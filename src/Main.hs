@@ -25,7 +25,7 @@ import           Gfx.TextRendering      (TextRenderer, addCodeTextureToLib,
                                          resizeTextRendererScreen)
 import           Gfx.Textures           (addTexture, createTextureLib)
 import           Gfx.Windowing          (setupWindow)
-import           Language               (copyRNG, createGfx, updateEngineInfo,
+import           Language               (createGfx, updateEngineInfo,
                                          updateStateVariables)
 import           Language.Ast           (Value (Number))
 import           Logging                (logError, logInfo)
@@ -90,7 +90,7 @@ display env time = do
   vars <- readTVarIO (env ^. I.externalVars)
   let newVars = ("time", Number $ double2Float time) : M.toList vars
       is = updateStateVariables newVars (as ^. IL.initialInterpreter)
-      ((result, _), nextState) = createGfx is (as ^. IL.currentAst)
+      ((result, _), _) = createGfx is (as ^. IL.currentAst)
   case result of
     Left msg -> do
       logError $ "Could not interpret program: " ++ msg
@@ -106,7 +106,3 @@ display env time = do
       when (ui ^. IUI.displayText) $ do
         renderCode 0 0 (textRenderer gs) (ui ^. IUI.currentText)
         renderCodebuffer (textRenderer gs)
-  atomically $
-    modifyTVar
-      (env ^. I.language)
-      (IL.updateInterpreterState (copyRNG nextState))

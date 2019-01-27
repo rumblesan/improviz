@@ -6,8 +6,8 @@ import           Control.Monad.Except
 import           Control.Monad.Writer.Strict (tell)
 
 import           Language.Ast
-import           Language.Interpreter        (getRandom, getVariable,
-                                              setBuiltIn, setVariable)
+import           Language.Interpreter        (getVariable, setBuiltIn,
+                                              setVariable)
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
 
@@ -25,7 +25,6 @@ addMathStdLib = do
   setBuiltIn "min" minFunc ["vala", "valb"]
   setBuiltIn "log" logFunc ["val"]
   setBuiltIn "sqrt" sqrtFunc ["val"]
-  setBuiltIn "random" randFunc []
 
 sinFunc :: InterpreterProcess Value
 sinFunc = do
@@ -83,6 +82,3 @@ sqrtFunc :: InterpreterProcess Value
 sqrtFunc = do
   val <- getVariable "val" >>= getNumberValue
   return $ Number $ sqrt val
-
-randFunc :: InterpreterProcess Value
-randFunc = getRandom

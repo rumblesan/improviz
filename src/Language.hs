@@ -5,7 +5,6 @@ module Language
   , createGfx
   , updateStateVariables
   , updateEngineInfo
-  , copyRNG
   , module Language.Ast
   ) where
 
@@ -14,15 +13,13 @@ import           Control.Monad.Except        (runExceptT)
 import           Control.Monad.State.Strict  (evalState, execState, gets,
                                               runState)
 import           Control.Monad.Writer.Strict (runWriterT)
-import           System.Random
 
 import           Gfx                         (Scene (..))
 import qualified Gfx.EngineState             as GE
 import           Language.Ast                (Identifier, Program, Value (..))
 import           Language.Ast.Transformers   (transform)
 import           Language.Interpreter        (emptyState, getGlobalNames,
-                                              interpretLanguage, seedRNG,
-                                              setVariable)
+                                              interpretLanguage, setVariable)
 import           Language.Interpreter.Types  (InterpreterProcess,
                                               InterpreterState (..), currentGfx)
 import           Language.Parser             (parseProgram)
@@ -31,12 +28,11 @@ import           Language.StdLib             (addStdLib)
 parse :: String -> Either String Program
 parse = parseProgram
 
-initialState :: Int -> [(Identifier, Value)] -> InterpreterState
-initialState seed initialVars =
+initialState :: [(Identifier, Value)] -> InterpreterState
+initialState initialVars =
   let setup = do
         addStdLib
         addInitialVariables initialVars
-        seedRNG seed
    in execState (runWriterT (runExceptT setup)) emptyState
 
 updateStateVariables ::
@@ -47,9 +43,6 @@ updateStateVariables vars oldState =
 
 updateEngineInfo :: GE.EngineState -> InterpreterState -> InterpreterState
 updateEngineInfo es oldState = oldState {engineInfo = GE.createEngineInfo es}
-
-copyRNG :: InterpreterState -> InterpreterState -> InterpreterState
-copyRNG oldState newState = newState {rng = rng oldState}
 
 interpret :: [(Identifier, Value)] -> Program -> (Either String Value, [String])
 interpret initialVars program =
