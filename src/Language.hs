@@ -9,27 +9,24 @@ module Language
   , module Language.Ast
   ) where
 
-import           Control.Monad                       (forM_)
-import           Control.Monad.Except                (runExceptT)
-import           Control.Monad.State.Strict          (evalState, execState,
-                                                      gets, runState)
-import           Control.Monad.Writer.Strict         (runWriterT)
+import           Control.Monad               (forM_)
+import           Control.Monad.Except        (runExceptT)
+import           Control.Monad.State.Strict  (evalState, execState, gets,
+                                              runState)
+import           Control.Monad.Writer.Strict (runWriterT)
 import           System.Random
 
-import           Gfx                                 (Scene (..))
-import qualified Gfx.EngineState                     as GE
-import           Language.Ast                        (Identifier, Program,
-                                                      Value (..))
-import           Language.Ast.Transformers.Globalise (globalise)
-import           Language.Interpreter                (emptyState,
-                                                      getGlobalNames,
-                                                      interpretLanguage,
-                                                      seedRNG, setVariable)
-import           Language.Interpreter.Types          (InterpreterProcess,
-                                                      InterpreterState (..),
-                                                      currentGfx)
-import           Language.Parser                     (parseProgram)
-import           Language.StdLib                     (addStdLib)
+import           Gfx                         (Scene (..))
+import qualified Gfx.EngineState             as GE
+import           Language.Ast                (Identifier, Program, Value (..))
+import           Language.Ast.Transformers   (transform)
+import           Language.Interpreter        (emptyState, getGlobalNames,
+                                              interpretLanguage, seedRNG,
+                                              setVariable)
+import           Language.Interpreter.Types  (InterpreterProcess,
+                                              InterpreterState (..), currentGfx)
+import           Language.Parser             (parseProgram)
+import           Language.StdLib             (addStdLib)
 
 parse :: String -> Either String Program
 parse = parseProgram
@@ -55,24 +52,22 @@ copyRNG :: InterpreterState -> InterpreterState -> InterpreterState
 copyRNG oldState newState = newState {rng = rng oldState}
 
 interpret :: [(Identifier, Value)] -> Program -> (Either String Value, [String])
-interpret initialVars block =
+interpret initialVars program =
   let run = do
         addStdLib
         addInitialVariables initialVars
-        names <- getGlobalNames
-        let ast = globalise names block
-        interpretLanguage ast
+        globals <- getGlobalNames
+        interpretLanguage (transform globals program)
    in evalState (runWriterT (runExceptT run)) emptyState
 
 createGfx ::
      InterpreterState
   -> Program
   -> ((Either String Scene, [String]), InterpreterState)
-createGfx initialState block =
+createGfx initialState program =
   let run = do
-        names <- getGlobalNames
-        let ast = globalise names block
-        _ <- interpretLanguage ast
+        globals <- getGlobalNames
+        _ <- interpretLanguage (transform globals program)
         gfxB <- gets currentGfx
         gfxBg <- gets gfxBackground
         gfxAnimStyle <- gets animationStyle
