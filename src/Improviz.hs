@@ -5,8 +5,7 @@ module Improviz where
 
 import           GHC.Generics
 
-import           Control.Concurrent.STM (TMVar, TVar, newEmptyTMVarIO,
-                                         newTVarIO)
+import           Control.Concurrent.STM (TVar, newTVarIO)
 import qualified Data.Map.Strict        as M
 import           Data.Time.Clock.POSIX  (POSIXTime, getPOSIXTime)
 
@@ -15,6 +14,7 @@ import           Lens.Simple
 import           Data.Aeson
 
 import           Configuration          (ImprovizConfig, getConfig)
+import           Gfx                    (emptyGfx)
 import           Gfx.EngineState        (EngineState)
 
 import           Improviz.Language      (ImprovizLanguage, makeLanguageState)
@@ -32,7 +32,7 @@ instance ToJSON ImprovizError where
 data ImprovizEnv = ImprovizEnv
   { _language     :: TVar ImprovizLanguage
   , _ui           :: TVar ImprovizUI
-  , _graphics     :: TMVar EngineState
+  , _graphics     :: TVar EngineState
   , _config       :: ImprovizConfig
   , _startTime    :: POSIXTime
   , _externalVars :: TVar (M.Map String LA.Value)
@@ -46,8 +46,8 @@ createEnv = do
   startTime <- getPOSIXTime
   languageState <- newTVarIO makeLanguageState
   uiState <- newTVarIO defaultUI
-  gfxState <- newEmptyTMVarIO
   config <- getConfig
+  gfxState <- newTVarIO emptyGfx
   externalVars <- newTVarIO M.empty
   uiState <- newTVarIO defaultUI
   errors <- newTVarIO []
