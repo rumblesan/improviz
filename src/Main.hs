@@ -41,7 +41,9 @@ initApp :: ImprovizEnv -> Int -> Int -> Int -> Int -> IO ()
 initApp env width height fbWidth fbHeight =
   let config = env ^. I.config
       gfxVar = env ^. I.graphics
-   in do gfx <- createGfx config width height fbWidth fbHeight
+   in do logInfo $ "Running at " ++ show width ++ " by " ++ show height
+         logInfo $ "Framebuffer " ++ show fbWidth ++ " by " ++ show fbHeight
+         gfx <- createGfx config width height fbWidth fbHeight
          atomically $ swapTVar gfxVar gfx
          return ()
 
@@ -50,6 +52,7 @@ resize env newWidth newHeight fbWidth fbHeight =
   let config = env ^. I.config
       gfxVar = env ^. I.graphics
    in do logInfo $ "Resizing to " ++ show newWidth ++ " by " ++ show newHeight
+         logInfo $ "Framebuffer " ++ show fbWidth ++ " by " ++ show fbHeight
          engineState <- readTVarIO gfxVar
          newGfx <-
            resizeGfx engineState config newWidth newHeight fbWidth fbHeight
