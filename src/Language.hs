@@ -2,7 +2,7 @@ module Language
   ( initialState
   , parse
   , interpret
-  , createGfx
+  , createGfxScene
   , updateStateVariables
   , updateEngineInfo
   , module Language.Ast
@@ -53,11 +53,11 @@ interpret initialVars program =
         interpretLanguage (transform globals program)
    in evalState (runWriterT (runExceptT run)) emptyState
 
-createGfx ::
+createGfxScene ::
      InterpreterState
   -> Program
   -> ((Either String Scene, [String]), InterpreterState)
-createGfx initialState program =
+createGfxScene initialState program =
   let run = do
         globals <- getGlobalNames
         _ <- interpretLanguage (transform globals program)

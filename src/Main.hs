@@ -2,25 +2,24 @@ module Main where
 
 import           GHC.Float              (double2Float)
 
-import           Control.Concurrent.STM (atomically, modifyTVar, readTMVar,
-                                         readTVarIO, swapTVar, takeTMVar)
+import           Control.Concurrent.STM (atomically, modifyTVar, readTVarIO,
+                                         swapTVar)
 import           Control.Monad          (when)
 import qualified Data.Map.Strict        as M
 
 import           Lens.Simple            ((^.))
 
 import qualified Configuration          as C
-import           Improviz               (ImprovizEnv, ImprovizError (..))
+import           Improviz               (ImprovizEnv)
 import qualified Improviz               as I
 import qualified Improviz.Language      as IL
 import qualified Improviz.UI            as IUI
 
-import           Gfx                    (EngineState (..), createGfxEngine,
+import           Gfx                    (EngineState (textRenderer), createGfx,
                                          renderGfx, resizeGfx)
 import           Gfx.TextRendering      (renderCode, renderCodebuffer)
 import           Gfx.Windowing          (setupWindow)
-import           Language               (createGfx, updateEngineInfo,
-                                         updateStateVariables)
+import           Language               (createGfxScene, updateStateVariables)
 import           Language.Ast           (Value (Number))
 import           Logging                (logError, logInfo)
 import           Server                 (serveComs)
@@ -38,11 +37,11 @@ app env =
    in do serveComs env
          setupWindow env initCallback resizeCallback displayCallback
 
-initApp :: ImprovizEnv -> Int -> Int -> IO ()
-initApp env width height =
+initApp :: ImprovizEnv -> Int -> Int -> Int -> Int -> IO ()
+initApp env width height fbWidth fbHeight =
   let config = env ^. I.config
       gfxVar = env ^. I.graphics
-   in do gfx <- createGfxEngine config width height
+   in do gfx <- createGfx config width height fbWidth fbHeight
          atomically $ swapTVar gfxVar gfx
          return ()
 
@@ -63,7 +62,7 @@ display env time = do
   vars <- readTVarIO (env ^. I.externalVars)
   let newVars = ("time", Number $ double2Float time) : M.toList vars
       is = updateStateVariables newVars (as ^. IL.initialInterpreter)
-      ((result, _), _) = createGfx is (as ^. IL.currentAst)
+      ((result, _), _) = createGfxScene is (as ^. IL.currentAst)
   case result of
     Left msg -> do
       logError $ "Could not interpret program: " ++ msg

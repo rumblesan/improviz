@@ -19,7 +19,7 @@ import           Logging                   (logError, logInfo)
 
 import           Util                      (bool, maybe', maybeElem, unless')
 
-type InitCallback = Int -> Int -> IO ()
+type InitCallback = Int -> Int -> Int -> Int -> IO ()
 
 type DisplayCallback = Double -> IO ()
 
@@ -87,7 +87,7 @@ setupWindow env initCB resizeCB displayCB =
              GLFW.makeContextCurrent mw
              (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
              depthFunc $= Just Less
-             initCB fbWidth fbHeight
+             initCB w h fbWidth fbHeight
              GLFW.setWindowSizeCallback window $
                Just (resizeToGLFWResize resizeCB)
              logInfo $ "Improviz resolution: " ++ show w ++ " by " ++ show h

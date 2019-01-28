@@ -37,7 +37,7 @@ test_basic_program =
       interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
-        let ((result, _), _) = Language.createGfx interpreterState ast
+        let ((result, _), _) = Language.createGfxScene interpreterState ast
         scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
@@ -49,7 +49,7 @@ test_animation_style =
       interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
-        let ((result, _), _) = Language.createGfx interpreterState ast
+        let ((result, _), _) = Language.createGfxScene interpreterState ast
         scene <- result
         return $ scenePostProcessingFX scene
       expected = Right MotionBlur
@@ -62,7 +62,7 @@ test_loop_program =
       interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
-        let ((result, _), _) = Language.createGfx interpreterState ast
+        let ((result, _), _) = Language.createGfxScene interpreterState ast
         scene <- result
         return $ sceneGfx scene
       expected =
@@ -87,7 +87,7 @@ test_create_gfx =
           Nothing
       block = Program [StExpression box]
       interpreterState = Language.initialState []
-      ((result, _), _) = Language.createGfx interpreterState block
+      ((result, _), _) = Language.createGfxScene interpreterState block
       scene = either (const []) sceneGfx result
       expected = [GA.ShapeCommand (GA.Cube 1 2 1) Nothing]
    in assertEqual "" expected scene

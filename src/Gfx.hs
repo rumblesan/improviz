@@ -3,7 +3,7 @@ module Gfx
   , Scene(..)
   , renderGfx
   , emptyGfx
-  , createGfxEngine
+  , createGfx
   , resizeGfx
   ) where
 
@@ -37,10 +37,10 @@ import qualified Configuration              as C
 emptyGfx :: EngineState
 emptyGfx = undefined
 
-createGfxEngine :: ImprovizConfig -> Int -> Int -> IO EngineState
-createGfxEngine config width height = do
-  post <- createPostProcessing width height
-  textRenderer <- createTextRenderer config width height
+createGfx :: ImprovizConfig -> Int -> Int -> Int -> Int -> IO EngineState
+createGfx config width height fbWidth fbHeight = do
+  post <- createPostProcessing fbWidth fbHeight
+  textRenderer <- createTextRenderer config fbWidth fbHeight
   textureLib <- createTextureLib (config ^. C.textureDirectories)
   let tLibWithCode = addCodeTextureToLib textRenderer textureLib
   createGfxEngineState config width height post textRenderer tLibWithCode
