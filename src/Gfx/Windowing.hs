@@ -10,7 +10,6 @@ import qualified Graphics.UI.GLFW          as GLFW
 import           Lens.Simple               ((^.))
 
 import           System.Exit               (exitFailure)
-import           System.IO
 
 import qualified Configuration             as C
 import           Improviz                  (ImprovizEnv)
@@ -25,7 +24,6 @@ type DisplayCallback = Double -> IO ()
 
 type WindowResizeCallback = Int -> Int -> Int -> Int -> IO ()
 
--- type ErrorCallback = Error -> String -> IO ()
 errorCallback :: GLFW.Error -> String -> IO ()
 errorCallback _ msg = logError msg
 
