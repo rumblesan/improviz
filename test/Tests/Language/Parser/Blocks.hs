@@ -27,18 +27,16 @@ parserBlocksTests =
 test_parse_block_with_blank_lines :: Assertion
 test_parse_block_with_blank_lines =
   let program = "\n\nfill(255, 0, 0)\n\n\trotate()\n\t\n\tbox()\n\n"
-      rotate = ElExpression $ EApp $ Application "rotate" [] Nothing
-      box = ElExpression $ EApp $ Application "box" [] Nothing
+      rotate =
+        ElExpression $ EApp $ Application (LocalVariable "rotate") [] Nothing
+      box = ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing
       fill =
-        ElExpression $
+        StExpression $
         EApp $
         Application
-          "fill"
-          [ ApplicationArg Nothing $ EVal (Number 255)
-          , ApplicationArg Nothing $ EVal (Number 0)
-          , ApplicationArg Nothing $ EVal (Number 0)
-          ]
+          (LocalVariable "fill")
+          [EVal (Number 255), EVal (Number 0), EVal (Number 0)]
           (Just $ Block [rotate, box])
-      expected = Right $ Block [fill]
+      expected = Right $ Program [fill]
       result = Language.parse program
-  in assertEqual "" expected result
+   in assertEqual "" expected result

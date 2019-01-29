@@ -1,7 +1,5 @@
 module Language.Interpreter.Types where
 
-import           System.Random
-
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
 import           Control.Monad.Writer.Strict
@@ -15,7 +13,14 @@ import           Gfx.PostProcessing          (AnimationStyle (..))
 import           Gfx.Types                   (Colour)
 import qualified Language.Interpreter.Scope  as LS
 
-type BuiltInFunction = InterpreterProcess Value
+data BuiltInFunction =
+  BuiltInFunction [Identifier]
+                  (InterpreterProcess Value)
+
+data UserFunctionDef =
+  UserFunctionDef Identifier
+                  [Identifier]
+                  Block
 
 type InterpreterProcessing = State InterpreterState
 
@@ -28,12 +33,13 @@ type InterpreterProcess v
 
 data InterpreterState = InterpreterState
   { variables      :: LS.ScopeStack Identifier Value
+  , globals        :: M.Map Identifier Value
   , builtins       :: M.Map Identifier BuiltInFunction
+  , functions      :: M.Map Identifier UserFunctionDef
   , blockStack     :: [Maybe Block]
   , gfxBackground  :: Colour
   , currentGfx     :: GA.Block
   , animationStyle :: AnimationStyle
   , gfxStack       :: [GA.Block]
   , engineInfo     :: GE.EngineInfo
-  , rng            :: StdGen
   }

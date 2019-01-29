@@ -29,9 +29,9 @@ executable improviz
                      , mtl
                      , optparse-applicative
                      , parsec
-                     , random
                      , scotty
                      , stm
+                     , transformers
                      , text
                      , time
                      , vector
@@ -78,6 +78,8 @@ executable improviz
                      , Gfx.Windowing
                      , Language
                      , Language.Ast
+                     , Language.Ast.Transformers
+                     , Language.Ast.Transformers.Globalise
                      , Language.Parser
                      , Language.Interpreter
                      , Language.Interpreter.Scope
@@ -85,7 +87,6 @@ executable improviz
                      , Language.Interpreter.Values
                      , Language.Interpreter.Operators
                      , Language.StdLib
-                     , Language.StdLib.CollectionOps
                      , Language.StdLib.Shapes
                      , Language.StdLib.MatrixOps
                      , Language.StdLib.ColourOps
@@ -111,9 +112,9 @@ test-suite improviz-test
                      , mtl
                      , optparse-applicative
                      , parsec
-                     , random
                      , scotty
                      , stm
+                     , transformers
                      , split
                      , test-framework
                      , test-framework-hunit
@@ -161,6 +162,8 @@ test-suite improviz-test
                      , Gfx.Windowing
                      , Language
                      , Language.Ast
+                     , Language.Ast.Transformers
+                     , Language.Ast.Transformers.Globalise
                      , Language.Parser
                      , Language.Interpreter
                      , Language.Interpreter.Scope
@@ -169,13 +172,13 @@ test-suite improviz-test
                      , Language.Interpreter.Operators
                      , Language.StdLib
                      , Language.StdLib.Shapes
-                     , Language.StdLib.CollectionOps
                      , Language.StdLib.MatrixOps
                      , Language.StdLib.ColourOps
                      , Language.StdLib.BlockHandling
                      , Language.StdLib.PostEffects
                      , Language.StdLib.Maths
                      , Tests.Language
+                     , Tests.Language.Ast.Transformers.Globalise
                      , Tests.Language.Interpreter.Blocks
                      , Tests.Language.Interpreter.Expressions
                      , Tests.Language.Interpreter.If
@@ -185,15 +188,12 @@ test-suite improviz-test
                      , Tests.Language.Parser
                      , Tests.Language.Parser.Assignment
                      , Tests.Language.Parser.Blocks
-                     , Tests.Language.Parser.Collections
                      , Tests.Language.Parser.Functions
-                     , Tests.Language.Parser.Lambda
                      , Tests.Language.Parser.Symbols
                      , Tests.Language.Parser.Loops
                      , Tests.Language.Parser.Operators
                      , Tests.Language.Parser.If
                      , Tests.Language.Parser.ErrorCatching
-                     , Tests.Language.StdLib.CollectionFuncs
   default-language:    Haskell2010
 
 source-repository head

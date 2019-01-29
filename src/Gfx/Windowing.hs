@@ -10,7 +10,6 @@ import qualified Graphics.UI.GLFW          as GLFW
 import           Lens.Simple               ((^.))
 
 import           System.Exit               (exitFailure)
-import           System.IO
 
 import qualified Configuration             as C
 import           Improviz                  (ImprovizEnv)
@@ -19,13 +18,12 @@ import           Logging                   (logError, logInfo)
 
 import           Util                      (bool, maybe', maybeElem, unless')
 
-type InitCallback = Int -> Int -> IO ()
+type InitCallback = Int -> Int -> Int -> Int -> IO ()
 
 type DisplayCallback = Double -> IO ()
 
 type WindowResizeCallback = Int -> Int -> Int -> Int -> IO ()
 
--- type ErrorCallback = Error -> String -> IO ()
 errorCallback :: GLFW.Error -> String -> IO ()
 errorCallback _ msg = logError msg
 
@@ -87,7 +85,7 @@ setupWindow env initCB resizeCB displayCB =
              GLFW.makeContextCurrent mw
              (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
              depthFunc $= Just Less
-             initCB fbWidth fbHeight
+             initCB w h fbWidth fbHeight
              GLFW.setWindowSizeCallback window $
                Just (resizeToGLFWResize resizeCB)
              logInfo $ "Improviz resolution: " ++ show w ++ " by " ++ show h

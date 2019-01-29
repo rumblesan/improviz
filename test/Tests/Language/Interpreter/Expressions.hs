@@ -27,10 +27,10 @@ expressionTests =
 
 test_number_expression :: Assertion
 test_number_expression =
-  let block = Block [ElExpression $ EVal $ Number 3]
+  let block = Program [StExpression $ EVal $ Number 3]
       result = fst $ Language.interpret [] block
       expected = Right $ Number 3
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_bare_number :: Assertion
 test_bare_number =
@@ -41,4 +41,4 @@ test_bare_number =
           (runWriterT $ runExceptT $ interpretExpression expr)
           emptyState
       expected = Right $ Number 3
-  in assertEqual "" expected result
+   in assertEqual "" expected result

@@ -20,17 +20,27 @@ type LangParser e = IndentParser String () e
 simpleParse :: LangParser a -> String -> Either ParseError a
 simpleParse parser = runIndentParser parser () "program"
 
-parseProgram :: String -> Either String Block
+parseProgram :: String -> Either String Program
 parseProgram prog =
   case simpleParse program prog of
     Right ast -> Right ast
     Left err  -> Left $ show err
 
-program :: LangParser Block
-program = topLevel >> skipMany space >> (empty <|> (langBlock <* eof))
+program :: LangParser Program
+program = topLevel >> skipMany space >> (empty <|> (programBlock <* eof))
 
-empty :: LangParser Block
-empty = const (Block []) <$> eof
+programBlock :: LangParser Program
+programBlock = Program <$> block statement <?> "program"
+
+statement :: LangParser Statement
+statement =
+  ((StLoop <$> loop) <|> (StAssign <$> assignment) <|> (StFunc <$> functionDef) <|>
+   (StIf <$> ifElem) <|>
+   (StExpression <$> try expression)) <*
+  eol <?> "element"
+
+empty :: LangParser Program
+empty = const (Program []) <$> eof
 
 exprDef :: GenLanguageDef String st Indent
 exprDef =
@@ -107,8 +117,7 @@ langBlock = Block <$> block element <?> "block"
 
 element :: LangParser Element
 element =
-  ((ElLoop <$> loop) <|> (ElAssign <$> assignment) <|> (ElFunc <$> function) <|>
-   (ElIf <$> ifElem) <|>
+  ((ElLoop <$> loop) <|> (ElAssign <$> assignment) <|> (ElIf <$> ifElem) <|>
    (ElExpression <$> try expression)) <*
   eol <?> "element"
 
@@ -119,31 +128,19 @@ argList lp = sepBy lp sep
 
 application :: LangParser Application
 application =
-  Application <$> try (m_identifier <* m_symbol "(") <*> argList applicationArg <*
+  Application <$> try (variable <* m_symbol "(") <*> argList expression <*
   m_symbol ")" <*>
   optionMaybe (indented >> langBlock) <?> "application"
 
-applicationArg :: LangParser ApplicationArg
-applicationArg = namedArg <|> unnamedArg
-  where
-    namedArg =
-      try (ApplicationArg <$> (Just <$> m_identifier <* m_symbol "=")) <*>
-      expression
-    unnamedArg = ApplicationArg Nothing <$> expression
-
-function :: LangParser Func
-function =
+functionDef :: LangParser Func
+functionDef =
   Func <$> try (m_symbol "func" *> m_identifier) <*>
-  m_parens (argList functionArg) <*
+  m_parens (argList m_identifier) <*
   m_symbol "=>" <*>
-  (lbody <|> lexpr) <?> "function"
+  (lbody <|> lexpr) <?> "functionDef"
   where
     lexpr = (\e -> Block [ElExpression e]) <$> expression
     lbody = indented >> langBlock
-
-functionArg :: LangParser FunctionArg
-functionArg =
-  FunctionArg <$> m_identifier <*> optionMaybe (m_symbol "=" *> value)
 
 loop :: LangParser Loop
 loop =
@@ -170,22 +167,13 @@ expression :: LangParser Expression
 expression = buildExpressionParser table atom <?> "expression"
 
 variable :: LangParser Variable
-variable = Variable <$> m_identifier
+variable = LocalVariable <$> m_identifier
 
 value :: LangParser Value
-value = number <|> lambda <|> v_list <|> v_symbol <|> v_null
+value = number <|> v_symbol <|> v_null
   where
-    v_list = VList <$> m_brackets (argList expression) <?> "list"
     v_symbol = try m_colon >> Symbol <$> m_identifier <?> "symbol"
     v_null = Null <$ m_symbol "null" <?> "null"
-
-lambda :: LangParser Value
-lambda =
-  Lambda <$> m_parens (argList functionArg) <* m_symbol "=>" <*>
-  (lbody <|> lexpr) <?> "lambda"
-  where
-    lexpr = (\e -> Block [ElExpression e]) <$> expression
-    lbody = indented >> langBlock
 
 number :: LangParser Value
 number =

@@ -1,18 +1,30 @@
 module Language.Ast
-  ( Block(..)
+  ( Program(..)
+  , Statement(..)
+  , Block(..)
   , Element(..)
   , Application(..)
-  , ApplicationArg(..)
   , Func(..)
   , Loop(..)
   , Assignment(..)
   , Expression(..)
   , Variable(..)
   , Value(..)
-  , FunctionArg(..)
   , If(..)
   , Identifier
   ) where
+
+newtype Program =
+  Program [Statement]
+  deriving (Eq, Show)
+
+data Statement
+  = StLoop Loop
+  | StAssign Assignment
+  | StExpression Expression
+  | StIf If
+  | StFunc Func
+  deriving (Eq, Show)
 
 newtype Block =
   Block [Element]
@@ -23,18 +35,12 @@ data Element
   | ElAssign Assignment
   | ElExpression Expression
   | ElIf If
-  | ElFunc Func
   deriving (Eq, Show)
 
 data Application =
-  Application Identifier
-              [ApplicationArg]
+  Application Variable
+              [Expression]
               (Maybe Block)
-  deriving (Eq, Show)
-
-data ApplicationArg =
-  ApplicationArg (Maybe Identifier)
-                 Expression
   deriving (Eq, Show)
 
 data Loop =
@@ -58,13 +64,8 @@ data If =
 
 data Func =
   Func Identifier
-       [FunctionArg]
+       [Identifier]
        Block
-  deriving (Eq, Show)
-
-data FunctionArg =
-  FunctionArg Identifier
-              (Maybe Value)
   deriving (Eq, Show)
 
 data Expression
@@ -78,19 +79,17 @@ data Expression
   | EVal Value
   deriving (Eq, Show)
 
-newtype Variable =
-  Variable Identifier
+data Variable
+  = LocalVariable Identifier
+  | GlobalVariable Identifier
   deriving (Eq, Show)
 
 data Value
   = Number Float
   | Null
   | Symbol String
-  | Lambda [FunctionArg]
-           Block
-  | VList [Expression]
-  | BuiltIn Identifier
-            [Identifier]
+  | UserFunctionRef Identifier
+  | BuiltInFunctionRef Identifier
   deriving (Eq, Show)
 
 type Identifier = String

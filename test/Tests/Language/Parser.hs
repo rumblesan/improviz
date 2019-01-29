@@ -29,25 +29,21 @@ parserTests =
 
 test_parse_program :: Assertion
 test_parse_program =
-  let fooDef = "foo = (a, b) =>\n\tc = a + b\n\tbox(c)\n"
+  let fooDef = "func foo (a, b) =>\n\tc = a + b\n\tbox(c)\n"
       loopNum = "n := (3 * 4) + 1\n"
       loop = "n times\n\trotate(0.5)\n\tfoo(1, 2)\n"
       program = fooDef ++ loopNum ++ loop
       cAss =
         ElAssign $
         AbsoluteAssignment "c" $
-        BinaryOp "+" (EVar $ Variable "a") (EVar $ Variable "b")
+        BinaryOp "+" (EVar $ LocalVariable "a") (EVar $ LocalVariable "b")
       fooBox =
         ElExpression $
         EApp $
-        Application "box" [ApplicationArg Nothing $ EVar $ Variable "c"] Nothing
-      fooLambda =
-        Lambda
-          [FunctionArg "a" Nothing, FunctionArg "b" Nothing]
-          (Block [cAss, fooBox])
-      fooLine = ElAssign $ AbsoluteAssignment "foo" $ EVal fooLambda
+        Application (LocalVariable "box") [EVar $ LocalVariable "c"] Nothing
+      fooLine = StFunc $ Func "foo" ["a", "b"] (Block [cAss, fooBox])
       nLine =
-        ElAssign $
+        StAssign $
         ConditionalAssignment "n" $
         BinaryOp
           "+"
@@ -57,34 +53,29 @@ test_parse_program =
         Block
           [ ElExpression $
             EApp $
-            Application
-              "rotate"
-              [ApplicationArg Nothing $ EVal $ Number 0.5]
-              Nothing
+            Application (LocalVariable "rotate") [EVal $ Number 0.5] Nothing
           , ElExpression $
             EApp $
             Application
-              "foo"
-              [ ApplicationArg Nothing $ EVal $ Number 1
-              , ApplicationArg Nothing $ EVal $ Number 2
-              ]
+              (LocalVariable "foo")
+              [EVal $ Number 1, EVal $ Number 2]
               Nothing
           ]
-      loopLine = ElLoop $ Loop (EVar $ Variable "n") Nothing loopBlock
-      expected = Right $ Block [fooLine, nLine, loopLine]
+      loopLine = StLoop $ Loop (EVar $ LocalVariable "n") Nothing loopBlock
+      expected = Right $ Program [fooLine, nLine, loopLine]
       result = Language.parse program
    in assertEqual "" expected result
 
 test_parse_blank_program :: Assertion
 test_parse_blank_program =
   let program = ""
-      expected = Right $ Block []
+      expected = Right $ Program []
       result = Language.parse program
    in assertEqual "" expected result
 
 test_parse_empty_program :: Assertion
 test_parse_empty_program =
   let program = "   \n    \n    "
-      expected = Right $ Block []
+      expected = Right $ Program []
       result = Language.parse program
    in assertEqual "" expected result

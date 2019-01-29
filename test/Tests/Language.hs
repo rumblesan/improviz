@@ -28,37 +28,28 @@ languageTests =
     [ testCase "Graphics Creation" test_create_gfx
     , testCase "Animation Style Setting" test_animation_style
     , testCase "Basic program" test_basic_program
-    , testCase "Named function args" test_named_function_args
     , testCase "Loop program" test_loop_program
     ]
 
 test_basic_program :: Assertion
 test_basic_program =
-  let program = "a = 2\nb = 3\nfoo = (c, d) => c * d\nbox(b, a, foo(a, b))\n"
-      interpreterState = Language.initialState 1 []
+  let program = "a = 2\nb = 3\nfunc foo (c, d) => c * d\nbox(b, a, foo(a, b))\n"
+      interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
-        let ((result, _), _) = Language.createGfx interpreterState ast
+        let ((result, _), _) = Language.createGfxScene interpreterState ast
         scene <- result
         return $ sceneGfx scene
       expected = Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
    in assertEqual "" expected result
 
-test_named_function_args :: Assertion
-test_named_function_args =
-  let program = "foo = (c, d) => c - d\nfoo(d = 3, c = 1)\n"
-      (Right ast) = Language.parse program
-      result = Language.interpret [] ast
-      expected = (Right (Number (-2)), ["Running lambda"])
-   in assertEqual "" expected result
-
 test_animation_style :: Assertion
 test_animation_style =
   let program = "motionBlur()"
-      interpreterState = Language.initialState 1 []
+      interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
-        let ((result, _), _) = Language.createGfx interpreterState ast
+        let ((result, _), _) = Language.createGfxScene interpreterState ast
         scene <- result
         return $ scenePostProcessingFX scene
       expected = Right MotionBlur
@@ -68,10 +59,10 @@ test_loop_program :: Assertion
 test_loop_program =
   let program =
         "rotate(0.1, 0.2, 0.3)\n3 times with i\n\trotate(0.2, 0.2, 0.2)\n\tbox(i)\n\n\n"
-      interpreterState = Language.initialState 1 []
+      interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
-        let ((result, _), _) = Language.createGfx interpreterState ast
+        let ((result, _), _) = Language.createGfxScene interpreterState ast
         scene <- result
         return $ sceneGfx scene
       expected =
@@ -91,15 +82,12 @@ test_create_gfx =
   let box =
         EApp $
         Application
-          "box"
-          [ ApplicationArg Nothing $ EVal $ Number 1
-          , ApplicationArg Nothing $ EVal $ Number 2
-          , ApplicationArg Nothing $ EVal $ Number 1
-          ]
+          (LocalVariable "box")
+          [EVal $ Number 1, EVal $ Number 2, EVal $ Number 1]
           Nothing
-      block = Block [ElExpression box]
-      interpreterState = Language.initialState 1 []
-      ((result, _), _) = Language.createGfx interpreterState block
+      block = Program [StExpression box]
+      interpreterState = Language.initialState []
+      ((result, _), _) = Language.createGfxScene interpreterState block
       scene = either (const []) sceneGfx result
       expected = [GA.ShapeCommand (GA.Cube 1 2 1) Nothing]
    in assertEqual "" expected scene

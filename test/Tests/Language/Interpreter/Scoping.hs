@@ -25,7 +25,7 @@ test_basic_default_scoping =
       result = do
         ast <- Language.parse program
         let ((result, _), _) =
-              Language.createGfx (Language.initialState 1 []) ast
+              Language.createGfxScene (Language.initialState []) ast
         scene <- result
         return $ sceneGfx scene
       boxBlock = [GA.ShapeCommand (GA.Cube 1 1 1) Nothing]

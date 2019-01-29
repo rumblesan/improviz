@@ -20,24 +20,20 @@ import           Language.Interpreter
 interpreterFunctionTests :: Test
 interpreterFunctionTests =
   testGroup
-    "Expression Tests"
+    "Function Tests"
     [testCase "Test function creation" test_function_creation_and_application]
 
 test_function_creation_and_application :: Assertion
 test_function_creation_and_application =
   let block =
         Block
-          [ElExpression $ BinaryOp "+" (EVar $ Variable "a") (EVal $ Number 1)]
-      func = ElFunc $ Func "foo" [FunctionArg "a" Nothing] block
-      appl =
-        ElExpression $
-        EApp $
-        Application
-          "foo"
-          [ ApplicationArg (Just "b") (EVal $ Number 1)
-          , ApplicationArg (Just "a") (EVal $ Number 3)
+          [ ElExpression $
+            BinaryOp "+" (EVar $ LocalVariable "a") (EVal $ Number 1)
           ]
-          Nothing
-      result = fst $ Language.interpret [] $ Block [func, appl]
+      func = StFunc $ Func "foo" ["a"] block
+      appl =
+        StExpression $
+        EApp $ Application (LocalVariable "foo") [EVal $ Number 3] Nothing
+      result = fst $ Language.interpret [] $ Program [func, appl]
       expected = Right $ Number 4
-  in assertEqual "" expected result
+   in assertEqual "" expected result

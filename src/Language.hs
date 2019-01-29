@@ -2,10 +2,9 @@ module Language
   ( initialState
   , parse
   , interpret
-  , createGfx
+  , createGfxScene
   , updateStateVariables
   , updateEngineInfo
-  , copyRNG
   , module Language.Ast
   ) where
 
@@ -14,27 +13,26 @@ import           Control.Monad.Except        (runExceptT)
 import           Control.Monad.State.Strict  (evalState, execState, gets,
                                               runState)
 import           Control.Monad.Writer.Strict (runWriterT)
-import           System.Random
 
 import           Gfx                         (Scene (..))
 import qualified Gfx.EngineState             as GE
-import           Language.Ast                (Block, Identifier, Value (..))
-import           Language.Interpreter        (emptyState, interpretLanguage,
-                                              seedRNG, setVariable)
+import           Language.Ast                (Identifier, Program, Value (..))
+import           Language.Ast.Transformers   (transform)
+import           Language.Interpreter        (emptyState, getGlobalNames,
+                                              interpretLanguage, setVariable)
 import           Language.Interpreter.Types  (InterpreterProcess,
                                               InterpreterState (..), currentGfx)
 import           Language.Parser             (parseProgram)
 import           Language.StdLib             (addStdLib)
 
-parse :: String -> Either String Block
+parse :: String -> Either String Program
 parse = parseProgram
 
-initialState :: Int -> [(Identifier, Value)] -> InterpreterState
-initialState seed initialVars =
+initialState :: [(Identifier, Value)] -> InterpreterState
+initialState initialVars =
   let setup = do
         addStdLib
         addInitialVariables initialVars
-        seedRNG seed
    in execState (runWriterT (runExceptT setup)) emptyState
 
 updateStateVariables ::
@@ -46,24 +44,23 @@ updateStateVariables vars oldState =
 updateEngineInfo :: GE.EngineState -> InterpreterState -> InterpreterState
 updateEngineInfo es oldState = oldState {engineInfo = GE.createEngineInfo es}
 
-copyRNG :: InterpreterState -> InterpreterState -> InterpreterState
-copyRNG oldState newState = newState {rng = rng oldState}
-
-interpret :: [(Identifier, Value)] -> Block -> (Either String Value, [String])
-interpret initialVars block =
+interpret :: [(Identifier, Value)] -> Program -> (Either String Value, [String])
+interpret initialVars program =
   let run = do
         addStdLib
         addInitialVariables initialVars
-        interpretLanguage block
+        globals <- getGlobalNames
+        interpretLanguage (transform globals program)
    in evalState (runWriterT (runExceptT run)) emptyState
 
-createGfx ::
+createGfxScene ::
      InterpreterState
-  -> Block
+  -> Program
   -> ((Either String Scene, [String]), InterpreterState)
-createGfx initialState block =
+createGfxScene initialState program =
   let run = do
-        _ <- interpretLanguage block
+        globals <- getGlobalNames
+        _ <- interpretLanguage (transform globals program)
         gfxB <- gets currentGfx
         gfxBg <- gets gfxBackground
         gfxAnimStyle <- gets animationStyle
