@@ -1,0 +1,20 @@
+
+// Absolute Assignment
+exprOp
+exprOp
+exprOp
+exprOp
+
+save N
+
+// Conditional Assignment
+load N
+nullOp
+equal
+branch (length exprOps + 1)
+exprOp
+exprOp
+exprOp
+exprOp
+save N
+

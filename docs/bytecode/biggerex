@@ -1,0 +1,36 @@
+
+a = time
+
+10 times with i
+  rotate(a / 10, a, i)
+  box(1)
+
+
+vars
+ 0 "time" // globals set in vars beforehand
+ 1 var "a"
+ 2 10
+ 3 0
+
+
+ 0   load 0 // "time"
+ 1   save 1 // "a"
+ 2   constant 10
+ 3   save 2 // "loopvar"
+ 4   constant 0
+ 5   save 3 // "i"
+ 6   load 2 // "loopvar"
+ 7   branch <N>
+ 8   constant 10
+ 9   load 1 // "a"
+10   binaryOp "/"
+11   load 1 // "a"
+12   load 3 // "i"
+13   callFunction <addr> // "rotate"
+14   pop
+15   constant 1
+16   callFunction <addr> // "box"
+
+
+
+

@@ -1,0 +1,26 @@
+
+func foo(a, b)
+  c = a + 1
+  box(b + c)
+
+
+foo(1, 2)
+
+
+
+save 1 // b arg from stack
+save 0 // a arg from stack
+funcblockops
+funcblockops
+funcblockops
+funcblockops
+return // return address kept on call stack
+
+constant 1
+constant 2
+address <addr>
+callFunction 2 // save current addr on callstack
+pop // don't need return value
+
+
+

@@ -1,0 +1,22 @@
+
+save N loopcount
+save I 0 // optinal if loop has `with` var
+
+load N
+
+branch (loop op length + 5)
+
+loopOp
+loopOp
+loopOp
+loopOp
+loopOp
+loopOp
+
+incr I
+load N
+constant 1
+binaryOp -
+branch - (loopOp length + 4)4
+
+
