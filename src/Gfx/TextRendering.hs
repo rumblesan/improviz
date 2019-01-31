@@ -12,14 +12,11 @@ module Gfx.TextRendering
 
 import           Control.Monad             (foldM_)
 import           Data.Maybe                (listToMaybe)
-import           GHC.Int                   (Int32)
 
 import           Foreign.Marshal.Array     (withArray)
 import           Foreign.Marshal.Utils     (fromBool, with)
 import           Foreign.Ptr               (castPtr, nullPtr)
-import           Foreign.Storable          (peek, sizeOf)
-
-import qualified Data.Map.Strict           as M
+import           Foreign.Storable          (sizeOf)
 
 import           Data.FileEmbed            (embedFile)
 import           Gfx.FontHandling          (Character (..), Font (..),
@@ -31,26 +28,21 @@ import           Gfx.Types                 (Colour (..))
 import           Gfx.VertexBuffers         (VBO (..), createVBO, drawVBO,
                                             setAttribPointer)
 import qualified Graphics.GL               as GLRaw
-import           Graphics.Rendering.OpenGL (ArrayIndex, AttribLocation (..),
+import           Graphics.Rendering.OpenGL (AttribLocation (..),
                                             BlendEquation (FuncAdd),
                                             BlendingFactor (One, OneMinusSrcAlpha, SrcAlpha, Zero),
-                                            BufferObject,
                                             BufferTarget (ArrayBuffer),
                                             BufferUsage (DynamicDraw),
                                             Capability (Enabled),
                                             ClearBuffer (ColorBuffer),
-                                            DataType (Float),
                                             FramebufferTarget (Framebuffer),
-                                            GLfloat, IntegerHandling (ToFloat),
-                                            NumArrayIndices,
-                                            PrimitiveMode (Triangles), Program,
+                                            GLfloat, PrimitiveMode (Triangles),
+                                            Program,
                                             ShaderType (FragmentShader, VertexShader),
                                             TextureTarget2D (Texture2D),
                                             TextureUnit (..),
                                             TransferDirection (WriteToBuffer),
-                                            UniformLocation (..),
-                                            VertexArrayDescriptor (..),
-                                            VertexArrayObject, ($=))
+                                            UniformLocation (..), ($=))
 import qualified Graphics.Rendering.OpenGL as GL
 
 import           Gfx.PostProcessing        (Savebuffer (..),
@@ -70,9 +62,7 @@ import           Lens.Simple               ((^.))
 
 data TextRenderer = TextRenderer
   { textFont        :: Font
-  , textAreaWidth   :: Int
   , textAreaHeight  :: Int
-  , charSize        :: Int
   , pMatrix         :: Mat44 GLfloat
   , textprogram     :: Program
   , bgprogram       :: Program
@@ -168,9 +158,7 @@ createTextRenderer config width height =
          return $
            TextRenderer
              font
-             width
              height
-             (config ^. C.fontConfig . FC.size)
              projectionMatrix
              tprogram
              bgshaderprogram

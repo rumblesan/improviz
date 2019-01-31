@@ -6,12 +6,6 @@ import           Test.Framework                 (Test, testGroup)
 import           Test.Framework.Providers.HUnit (testCase)
 import           Test.HUnit                     (Assertion, assertEqual)
 
-import           Control.Monad.Except
-import           Control.Monad.State.Strict
-import           Control.Monad.Writer.Strict
-import           Data.Map.Strict
-import           Data.Maybe
-
 import qualified Language
 import           Language.Ast
 

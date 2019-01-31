@@ -29,7 +29,7 @@ import           Configuration.Font   (ImprovizFontConfig, defaultFontConfig)
 import           Configuration.OSC    (ImprovizOSCConfig, defaultOSCConfig)
 import           Configuration.Screen (ImprovizScreenConfig,
                                        defaultScreenConfig)
-import           Data.Yaml            (FromJSON (..), (.!=), (.:), (.:?))
+import           Data.Yaml            (FromJSON (..), (.!=), (.:?))
 import qualified Data.Yaml            as Y
 
 data ImprovizConfig = ImprovizConfig

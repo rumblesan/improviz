@@ -5,7 +5,7 @@ module Configuration.Screen where
 
 import           Lens.Simple (makeLenses, (^.))
 
-import           Data.Yaml   (FromJSON (..), (.!=), (.:), (.:?))
+import           Data.Yaml   (FromJSON (..), (.!=), (.:?))
 import qualified Data.Yaml   as Y
 
 data ImprovizScreenConfig = ImprovizScreenConfig

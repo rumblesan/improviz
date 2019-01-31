@@ -2,10 +2,9 @@ module Gfx.Interpreter
   ( interpretGfx
   ) where
 
-import           Control.Monad              (mapM, void, when)
+import           Control.Monad              (mapM, void)
 import           Control.Monad.State.Strict
 import qualified Data.Map.Strict            as M
-import           Data.Maybe                 (maybe)
 
 import           Data.Vec                   (Mat44, multmm)
 

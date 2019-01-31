@@ -2,9 +2,7 @@ module Language.Ast.Transformers.Globalise
   ( globalise
   ) where
 
-import           Control.Monad
 import           Control.Monad.Trans.State.Strict
-import qualified Data.Maybe                       as M
 import           Data.Set                         (Set (..))
 import qualified Data.Set                         as S
 
@@ -17,7 +15,7 @@ newtype InliningState = InliningState
 type Transformer = State InliningState
 
 localState :: (s -> s) -> State s a -> State s a
-localState f ls = gets (\st -> (evalState ls) (f st))
+localState f ls = gets (evalState ls . f)
 
 globalise :: Set String -> Program -> Program
 globalise globals p = evalState (globaliseProgram p) (InliningState globals)

@@ -290,7 +290,7 @@ renderPostProcessing post animStyle = do
   case animStyle of
     NormalStyle -> renderSavebuffer $ input post
     MotionBlur -> do
-      let (Savebuffer _ sceneFrame sceneDepth _ _) = input post
+      let (Savebuffer _ sceneFrame _ _ _) = input post
       renderMotionBlurbuffer (motionBlur post) sceneFrame previousFrame 0.7
     PaintOver -> do
       let (Savebuffer _ sceneFrame sceneDepth _ _) = input post

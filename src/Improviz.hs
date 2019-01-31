@@ -9,19 +9,14 @@ module Improviz
   , config
   , startTime
   , externalVars
-  , errors
   , createEnv
   ) where
-
-import           GHC.Generics
 
 import           Control.Concurrent.STM (TVar, newTVarIO)
 import qualified Data.Map.Strict        as M
 import           Data.Time.Clock.POSIX  (POSIXTime, getPOSIXTime)
 
 import           Lens.Simple
-
-import           Data.Aeson
 
 import           Configuration          (ImprovizConfig, getConfig)
 import           Gfx                    (emptyGfx)
@@ -31,14 +26,6 @@ import           Improviz.Language      (ImprovizLanguage, makeLanguageState)
 import           Improviz.UI            (ImprovizUI, defaultUI)
 import qualified Language.Ast           as LA
 
-data ImprovizError = ImprovizError
-  { text     :: String
-  , position :: Maybe (Int, Int)
-  } deriving (Eq, Show, Generic)
-
-instance ToJSON ImprovizError where
-  toEncoding = genericToEncoding defaultOptions
-
 data ImprovizEnv = ImprovizEnv
   { _language     :: TVar ImprovizLanguage
   , _ui           :: TVar ImprovizUI
@@ -46,7 +33,6 @@ data ImprovizEnv = ImprovizEnv
   , _config       :: ImprovizConfig
   , _startTime    :: POSIXTime
   , _externalVars :: TVar (M.Map String LA.Value)
-  , _errors       :: TVar [ImprovizError]
   }
 
 makeLenses ''ImprovizEnv
@@ -60,13 +46,5 @@ createEnv = do
   gfxState <- newTVarIO emptyGfx
   externalVars <- newTVarIO M.empty
   uiState <- newTVarIO defaultUI
-  errors <- newTVarIO []
   return $
-    ImprovizEnv
-      languageState
-      uiState
-      gfxState
-      config
-      startTime
-      externalVars
-      errors
+    ImprovizEnv languageState uiState gfxState config startTime externalVars

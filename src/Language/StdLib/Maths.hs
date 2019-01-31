@@ -2,9 +2,6 @@ module Language.StdLib.Maths
   ( addMathStdLib
   ) where
 
-import           Control.Monad.Except
-import           Control.Monad.Writer.Strict (tell)
-
 import           Language.Ast
 import           Language.Interpreter        (getVariable, setBuiltIn,
                                               setVariable)

@@ -4,7 +4,7 @@ module Language.StdLib.PostEffects
 
 import           Gfx.PostProcessing         (AnimationStyle (..))
 
-import           Language.Ast               (Block, Value (Null))
+import           Language.Ast               (Value)
 import           Language.Interpreter       (setAnimationStyle, setBuiltIn)
 import           Language.Interpreter.Types (InterpreterProcess)
 

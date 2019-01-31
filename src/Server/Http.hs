@@ -13,12 +13,9 @@ import           Data.FileEmbed             (embedFile)
 import           Control.Concurrent         (ThreadId, forkIO)
 import           Control.Concurrent.STM     (TVar, atomically, modifyTVar)
 import           Control.Monad.Trans        (liftIO)
-import           Data.Aeson                 hiding (json)
-import           Data.Monoid                ((<>))
 
 import qualified Data.ByteString.Lazy       as BL
 import           Data.ByteString.Lazy.Char8 (unpack)
-import           Data.Text.Lazy             (pack)
 import           Logging                    (logError, logInfo)
 
 import qualified Language                   as L
@@ -28,7 +25,6 @@ import           Server.Protocol
 import qualified Configuration              as C
 import           Improviz                   (ImprovizEnv)
 import qualified Improviz                   as I
-import           Improviz.Language          (ImprovizLanguage)
 import qualified Improviz.Language          as IL
 import           Improviz.UI                (ImprovizUI)
 import qualified Improviz.UI                as IUI

@@ -7,7 +7,7 @@ import           Gfx.Types   (Colour (..))
 
 import           Lens.Simple (makeLenses, (^.))
 
-import           Data.Yaml   (FromJSON (..), (.!=), (.:), (.:?))
+import           Data.Yaml   (FromJSON (..), (.!=), (.:?))
 import qualified Data.Yaml   as Y
 
 data ImprovizFontConfig = ImprovizFontConfig

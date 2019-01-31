@@ -12,10 +12,7 @@ import qualified Data.ByteString           as B
 import           Data.Either               (rights)
 import           Data.List                 (concat)
 import qualified Data.Map.Strict           as M
-import           Data.Maybe                (catMaybes)
 import           Data.Vector.Storable      (unsafeWith)
-
-import           Foreign.Ptr               (castPtr)
 
 import           Data.Yaml                 (FromJSON (..), (.:))
 import qualified Data.Yaml                 as Y
@@ -30,7 +27,7 @@ import           Graphics.Rendering.OpenGL (DataType (UnsignedByte),
                                             TextureSize2D (..),
                                             TextureTarget2D (Texture2D), ($=))
 import qualified Graphics.Rendering.OpenGL as GL
-import           System.FilePath.Posix     (takeExtension, (<.>), (</>))
+import           System.FilePath.Posix     (takeExtension, (</>))
 
 import           Logging                   (logError, logInfo)
 

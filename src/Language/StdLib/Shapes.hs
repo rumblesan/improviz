@@ -3,8 +3,6 @@ module Language.StdLib.Shapes
   ) where
 
 import           Control.Monad.Except
-import           Control.Monad.State.Strict
-import           Control.Monad.Writer.Strict
 
 import qualified Gfx.Ast                     as GA
 import           Language.Ast
@@ -34,7 +32,7 @@ box = do
       (Number x, Null, Null) -> return (x, x, x)
       (Number x, Number y, Null) -> return (x, y, 1)
       (Number x, Number y, Number z) -> return (x, y, z)
-      _ -> throwError "Error with functions to box"
+      _ -> throwError "Error with arguments to box"
   let cmd = GA.ShapeCommand $ GA.Cube xSize ySize zSize
   block <- getBlock
   maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
@@ -51,7 +49,7 @@ sphere = do
       (Number x, Null, Null) -> return (x, x, x)
       (Number x, Number y, Null) -> return (x, y, 1)
       (Number x, Number y, Number z) -> return (x, y, z)
-      _ -> throwError "Error with functions to sphere"
+      _ -> throwError "Error with arguments to sphere"
   let cmd = GA.ShapeCommand $ GA.Cube xSize ySize zSize
   block <- getBlock
   maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
@@ -68,7 +66,7 @@ cylinder = do
       (Number x, Null, Null) -> return (x, x, x)
       (Number x, Number y, Null) -> return (x, y, 1)
       (Number x, Number y, Number z) -> return (x, y, z)
-      _ -> throwError "Error with functions to cylinder"
+      _ -> throwError "Error with arguments to cylinder"
   let cmd = GA.ShapeCommand $ GA.Cylinder xSize ySize zSize
   block <- getBlock
   maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
@@ -83,7 +81,7 @@ rectangle = do
       (Null, Null)         -> return (1, 1)
       (Number x, Null)     -> return (x, x)
       (Number x, Number y) -> return (x, y)
-      _                    -> throwError "Error with functions to rectangle"
+      _                    -> throwError "Error with arguments to rectangle"
   let cmd = GA.ShapeCommand $ GA.Rectangle xSize ySize
   block <- getBlock
   maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block

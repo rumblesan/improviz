@@ -1,6 +1,6 @@
 module Gfx.Geometries where
 
-import           Data.List                 (cycle, genericIndex, repeat)
+import           Data.List                 (cycle, genericIndex)
 import           Graphics.Rendering.OpenGL (GLfloat, Vertex2 (..), Vertex3 (..))
 
 tri1TextCoords :: [Vertex2 GLfloat]
@@ -194,7 +194,6 @@ sphereTriangles segments =
 sphereWireframe :: Integer -> [(Integer, Integer)]
 sphereWireframe segments =
   let rings = div (segments - 1) 2
-      topCentre = 0
       bottomCentre = segments * rings + 1
       topLines = fmap (\s -> (s, 0)) [1 .. segments]
       ringLines = do

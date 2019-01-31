@@ -7,21 +7,20 @@ module Language
   , module Language.Ast
   ) where
 
-import           Control.Monad               (forM_)
-import           Control.Monad.State.Strict  (gets)
-import           Control.Monad.Writer.Strict (runWriterT)
+import           Control.Monad              (forM_)
+import           Control.Monad.State.Strict (gets)
 
-import           Gfx                         (Scene (..))
+import           Gfx                        (Scene (..))
 
-import           Language.Ast                (Identifier, Program, Value (..))
-import           Language.Ast.Transformers   (transform)
-import           Language.Interpreter        (emptyState, getGlobalNames,
-                                              interpretLanguage, setVariable)
-import           Language.Interpreter.Types  (InterpreterProcess,
-                                              InterpreterState (..), currentGfx,
-                                              runInterpreterM)
-import           Language.Parser             (parseProgram)
-import           Language.StdLib             (addStdLib)
+import           Language.Ast               (Identifier, Program, Value (..))
+import           Language.Ast.Transformers  (transform)
+import           Language.Interpreter       (emptyState, getGlobalNames,
+                                             interpretLanguage, setVariable)
+import           Language.Interpreter.Types (InterpreterProcess,
+                                             InterpreterState (..), currentGfx,
+                                             runInterpreterM)
+import           Language.Parser            (parseProgram)
+import           Language.StdLib            (addStdLib)
 
 parse :: String -> Either String Program
 parse = parseProgram

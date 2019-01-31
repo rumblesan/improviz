@@ -79,13 +79,11 @@ exprDef =
     }
 
 TokenParser { parens = m_parens
-            , brackets = m_brackets
             , integer = m_integer
             , float = m_float
             , comma = m_comma
             , colon = m_colon
             , reservedOp = m_reservedOp
-            , whiteSpace = m_whiteSpace
             , identifier = m_identifier
             , symbol = m_symbol
             } = makeTokenParser exprDef

@@ -11,7 +11,7 @@ module Improviz.Language
   , programHasChanged
   ) where
 
-import           Language                   (initialState, parse)
+import           Language                   (initialState)
 import           Language.Ast               (Program (..))
 import           Language.Interpreter.Types (InterpreterState)
 import           Lens.Simple
@@ -54,9 +54,3 @@ saveProgram as =
 
 programHasChanged :: ImprovizLanguage -> Bool
 programHasChanged as = as ^. currentAst /= as ^. lastWorkingAst
-
-updateInterpreterState ::
-     (InterpreterState -> InterpreterState)
-  -> ImprovizLanguage
-  -> ImprovizLanguage
-updateInterpreterState = over initialInterpreter

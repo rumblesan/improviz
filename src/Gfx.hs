@@ -19,17 +19,15 @@ import           Gfx.EngineState            (EngineState (..), Scene (..),
 import           Gfx.Interpreter            (interpretGfx)
 import           Gfx.OpenGL                 (colToGLCol)
 import           Gfx.PostProcessing         (AnimationStyle (..),
-                                             PostProcessing,
                                              createPostProcessing,
                                              createPostProcessing,
                                              deletePostProcessing,
                                              renderPostProcessing,
                                              usePostProcessing)
-import           Gfx.TextRendering          (TextRenderer, addCodeTextureToLib,
-                                             createTextRenderer, renderCode,
-                                             renderCodebuffer,
+import           Gfx.TextRendering          (addCodeTextureToLib,
+                                             createTextRenderer,
                                              resizeTextRendererScreen)
-import           Gfx.Textures               (addTexture, createTextureLib)
+import           Gfx.Textures               (createTextureLib)
 
 import           Configuration              (ImprovizConfig)
 import qualified Configuration              as C

@@ -3,7 +3,6 @@ module Gfx.Windowing
   ) where
 
 import           Control.Monad             (forever)
-import           Data.Maybe                (fromMaybe)
 import           Graphics.Rendering.OpenGL (ComparisonFunction (Less),
                                             depthFunc, ($=))
 
@@ -64,7 +63,6 @@ setupWindow env initCB resizeCB displayCB =
       width = cfg ^. C.screenWidth
       height = cfg ^. C.screenHeight
       mon = cfg ^. C.fullscreenDisplay
-      ratio = fromIntegral width / fromIntegral height
    in do GLFW.setErrorCallback (Just errorCallback)
          successfulInit <- GLFW.init
          bool successfulInit exitFailure $ do

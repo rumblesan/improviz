@@ -6,13 +6,6 @@ import           Test.Framework                 (Test, testGroup)
 import           Test.Framework.Providers.HUnit (testCase)
 import           Test.HUnit                     (Assertion, assertEqual)
 
-import           Control.Monad.Except
-import           Control.Monad.State.Strict
-import           Control.Monad.Writer.Strict
-import           Data.Either
-import           Data.Map.Strict
-import           Data.Maybe
-
 import           Gfx                            (Scene (..))
 import qualified Gfx.Ast                        as GA
 import           Gfx.PostProcessing             (AnimationStyle (..))

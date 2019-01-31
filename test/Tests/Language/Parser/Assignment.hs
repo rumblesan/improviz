@@ -19,7 +19,7 @@ parserAssignmentTests =
         test_parse_assign_negative_number
     , testCase "Parse assignment of an expression" test_parse_expr_assignment
     , testCase "Parse multiple assignments" test_multiple_assignment
-    , testCase "Parse conditional assignments" test_multiple_assignment
+    , testCase "Parse conditional assignments" test_parse_conditional_assignment
     ]
 
 test_parse_assign_simple_number :: Assertion
@@ -60,8 +60,8 @@ test_multiple_assignment =
       result = Language.parse program
    in assertEqual "" expected result
 
-test_parse_absolute_assignment :: Assertion
-test_parse_absolute_assignment =
+test_parse_conditional_assignment :: Assertion
+test_parse_conditional_assignment =
   let program = "foo := a + b\n"
       bop = BinaryOp "+" (EVar $ LocalVariable "a") (EVar $ LocalVariable "b")
       expected = Right $ Program [StAssign $ ConditionalAssignment "foo" bop]

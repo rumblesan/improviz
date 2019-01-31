@@ -3,7 +3,6 @@
 module Server.Protocol where
 
 import           Data.Aeson
-import           Data.String (fromString)
 
 data ImprovizResponse e
   = ImprovizOKResponse String

@@ -5,7 +5,6 @@ module Gfx.GeometryBuffers
 
 import           Foreign.Marshal.Array     (withArray)
 import           Foreign.Storable          (sizeOf)
-import           GHC.Int                   (Int32)
 
 import           Graphics.Rendering.OpenGL as GL
 

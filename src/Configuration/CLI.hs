@@ -13,7 +13,7 @@ module Configuration.CLI
 import           Data.Semigroup      ((<>))
 import           Options.Applicative
 
-import           Lens.Simple         (makeLenses, (^.))
+import           Lens.Simple         (makeLenses)
 
 data ImprovizCLIConfig = ImprovizCLIConfig
   { _screenWidth       :: Maybe Int

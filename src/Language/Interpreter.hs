@@ -20,10 +20,8 @@ module Language.Interpreter
 
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
-import           Control.Monad.Writer.Strict
-import qualified Data.List                      as L
 import           Data.Map.Strict                as M
-import           Data.Maybe                     (fromMaybe, isJust)
+import           Data.Maybe                     (fromMaybe)
 import qualified Data.Set                       as S
 
 import           Language.Interpreter.Operators

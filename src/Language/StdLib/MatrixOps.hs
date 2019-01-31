@@ -2,10 +2,6 @@ module Language.StdLib.MatrixOps
   ( addMatrixStdLib
   ) where
 
-import           Control.Monad.Except
-import           Control.Monad.State.Strict
-import           Control.Monad.Writer.Strict
-
 import qualified Gfx.Ast                     as GA
 import           Language.Ast
 import           Language.Interpreter        (addGfxCommand, getBlock,

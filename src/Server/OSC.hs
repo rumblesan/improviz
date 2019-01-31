@@ -3,16 +3,16 @@ module Server.OSC
   ) where
 
 import           Control.Concurrent     (ThreadId, forkIO)
-import           Control.Concurrent.STM (TVar, atomically, modifyTVar)
+import           Control.Concurrent.STM (atomically, modifyTVar)
 import           Control.Monad          (forever, mapM_)
 import           Lens.Simple            ((^.))
 
 import qualified Data.Map.Strict        as M
-import           Data.Maybe             (catMaybes, fromMaybe)
+import           Data.Maybe             (catMaybes)
 
 import           Sound.OSC.Datum        (Datum, datum_floating)
 import           Sound.OSC.Datum.Datem  (datum_string)
-import           Sound.OSC.FD           (Bundle, Message, recvPacket, udpServer)
+import           Sound.OSC.FD           (Message, recvPacket, udpServer)
 import           Sound.OSC.Packet       (Bundle (..), Message (..), Packet (..))
 
 import qualified Configuration          as C
