@@ -3,20 +3,20 @@ module Language.Interpreter.Types
   , UserFunctionDef(..)
   , InterpreterState(..)
   , InterpreterProcess
+  , runInterpreterM
   ) where
 
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
-import           Control.Monad.Writer.Strict
 
 import           Language.Ast
 
-import qualified Data.Map.Strict             as M
-import qualified Gfx.Ast                     as GA
-import qualified Gfx.EngineState             as GE
-import           Gfx.PostProcessing          (AnimationStyle (..))
-import           Gfx.Types                   (Colour)
-import qualified Language.Interpreter.Scope  as LS
+import qualified Data.Map.Strict            as M
+import qualified Gfx.Ast                    as GA
+import qualified Gfx.EngineState            as GE
+import           Gfx.PostProcessing         (AnimationStyle (..))
+import           Gfx.Types                  (Colour)
+import qualified Language.Interpreter.Scope as LS
 
 data BuiltInFunction =
   BuiltInFunction [Identifier]
@@ -29,12 +29,9 @@ data UserFunctionDef =
 
 type InterpreterProcessing = State InterpreterState
 
-type InterpreterLogging m = WriterT [String] m
-
 type InterpreterErrors m = ExceptT String m
 
-type InterpreterProcess v
-   = InterpreterErrors (InterpreterLogging InterpreterProcessing) v
+type InterpreterProcess v = InterpreterErrors InterpreterProcessing v
 
 data InterpreterState = InterpreterState
   { variables      :: LS.ScopeStack Identifier Value
@@ -48,3 +45,9 @@ data InterpreterState = InterpreterState
   , gfxStack       :: [GA.Block]
   , engineInfo     :: GE.EngineInfo
   }
+
+runInterpreterM ::
+     InterpreterProcess a
+  -> InterpreterState
+  -> (Either String a, InterpreterState)
+runInterpreterM op = runState (runExceptT op)

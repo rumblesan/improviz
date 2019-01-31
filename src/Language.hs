@@ -8,19 +8,18 @@ module Language
   ) where
 
 import           Control.Monad               (forM_)
-import           Control.Monad.Except        (runExceptT)
-import           Control.Monad.State.Strict  (evalState, execState, gets,
-                                              runState)
+import           Control.Monad.State.Strict  (gets)
 import           Control.Monad.Writer.Strict (runWriterT)
 
 import           Gfx                         (Scene (..))
-import qualified Gfx.EngineState             as GE
+
 import           Language.Ast                (Identifier, Program, Value (..))
 import           Language.Ast.Transformers   (transform)
 import           Language.Interpreter        (emptyState, getGlobalNames,
                                               interpretLanguage, setVariable)
 import           Language.Interpreter.Types  (InterpreterProcess,
-                                              InterpreterState (..), currentGfx)
+                                              InterpreterState (..), currentGfx,
+                                              runInterpreterM)
 import           Language.Parser             (parseProgram)
 import           Language.StdLib             (addStdLib)
 
@@ -32,27 +31,25 @@ initialState initialVars =
   let setup = do
         addStdLib
         addInitialVariables initialVars
-   in execState (runWriterT (runExceptT setup)) emptyState
+   in snd $ runInterpreterM setup emptyState
 
 updateStateVariables ::
      [(Identifier, Value)] -> InterpreterState -> InterpreterState
 updateStateVariables vars oldState =
   let setVars = addInitialVariables vars
-   in execState (runWriterT (runExceptT setVars)) oldState
+   in snd $ runInterpreterM setVars oldState
 
-interpret :: [(Identifier, Value)] -> Program -> (Either String Value, [String])
+interpret :: [(Identifier, Value)] -> Program -> Either String Value
 interpret initialVars program =
   let run = do
         addStdLib
         addInitialVariables initialVars
         globals <- getGlobalNames
         interpretLanguage (transform globals program)
-   in evalState (runWriterT (runExceptT run)) emptyState
+   in fst $ runInterpreterM run emptyState
 
 createGfxScene ::
-     InterpreterState
-  -> Program
-  -> ((Either String Scene, [String]), InterpreterState)
+     InterpreterState -> Program -> (Either String Scene, InterpreterState)
 createGfxScene initialState program =
   let run = do
         globals <- getGlobalNames
@@ -66,7 +63,7 @@ createGfxScene initialState program =
             , sceneGfx = gfxB
             , scenePostProcessingFX = gfxAnimStyle
             }
-   in runState (runWriterT (runExceptT run)) initialState
+   in runInterpreterM run initialState
 
 addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess ()
 addInitialVariables vars = forM_ vars (uncurry setVariable)

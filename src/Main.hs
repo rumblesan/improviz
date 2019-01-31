@@ -62,7 +62,7 @@ display env time = do
   vars <- readTVarIO (env ^. I.externalVars)
   let newVars = ("time", Number $ double2Float time) : M.toList vars
       is = updateStateVariables newVars (as ^. IL.initialInterpreter)
-      ((result, _), _) = createGfxScene is (as ^. IL.currentAst)
+      result = fst $ createGfxScene is (as ^. IL.currentAst)
   case result of
     Left msg -> do
       logError $ "Could not interpret program: " ++ msg

@@ -22,7 +22,7 @@ test_basic_block_calling =
       interpreterState = Language.initialState []
       result = do
         ast <- Language.parse program
-        let ((result, _), _) = Language.createGfxScene interpreterState ast
+        let result = fst $ Language.createGfxScene interpreterState ast
         scene <- result
         return $ sceneGfx scene
       expected =

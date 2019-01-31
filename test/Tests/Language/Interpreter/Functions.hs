@@ -33,6 +33,6 @@ test_function_creation_and_application =
       appl =
         StExpression $
         EApp $ Application (LocalVariable "foo") [EVal $ Number 3] Nothing
-      result = fst $ Language.interpret [] $ Program [func, appl]
+      result = Language.interpret [] $ Program [func, appl]
       expected = Right $ Number 4
    in assertEqual "" expected result
