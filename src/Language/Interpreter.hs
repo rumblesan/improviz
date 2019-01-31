@@ -1,4 +1,22 @@
-module Language.Interpreter where
+module Language.Interpreter
+  ( emptyState
+  , getEngineInfo
+  , setBuiltIn
+  , getBlock
+  , getGlobalNames
+  , setVariable
+  , getVariable
+  , getVariableWithDefault
+  , getVarOrNull
+  , getNumberFromNull
+  , addGfxCommand
+  , gfxScopedBlock
+  , setGfxBackground
+  , setAnimationStyle
+  , interpretLanguage
+  , interpretBlock
+  , interpretExpression
+  ) where
 
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
@@ -76,11 +94,6 @@ setGlobal :: Identifier -> Value -> InterpreterProcess Value
 setGlobal name val =
   modify (\s -> s {globals = M.insert name val (globals s)}) >> return val
 
-setVariable :: Identifier -> Value -> InterpreterProcess Value
-setVariable name val =
-  modify (\s -> s {variables = LS.setVariable (variables s) name val}) >>
-  return val
-
 getGlobal :: Identifier -> InterpreterProcess Value
 getGlobal name = do
   globalDefs <- gets globals
@@ -90,6 +103,11 @@ getGlobal name = do
 
 getGlobalNames :: InterpreterProcess (S.Set String)
 getGlobalNames = gets (M.keysSet . globals)
+
+setVariable :: Identifier -> Value -> InterpreterProcess Value
+setVariable name val =
+  modify (\s -> s {variables = LS.setVariable (variables s) name val}) >>
+  return val
 
 getVariable :: Identifier -> InterpreterProcess Value
 getVariable name = do
@@ -119,10 +137,12 @@ getNumberFromNull _ def          = def
 addGfxCommand :: GA.GfxCommand -> InterpreterProcess ()
 addGfxCommand cmd = modify (\s -> s {currentGfx = GA.addGfx (currentGfx s) cmd})
 
-newGfxScope :: InterpreterProcess ()
-newGfxScope =
-  modify
-    (\s -> s {currentGfx = GA.emptyGfx, gfxStack = currentGfx s : gfxStack s})
+gfxScopedBlock :: GA.GfxCommand -> Block -> InterpreterProcess ()
+gfxScopedBlock scopedCommand block = do
+  addGfxCommand $ GA.ScopeCommand GA.PushScope
+  addGfxCommand scopedCommand
+  interpretBlock block
+  addGfxCommand $ GA.ScopeCommand GA.PopScope
 
 newScope :: InterpreterProcess Value -> InterpreterProcess Value
 newScope childScope = do

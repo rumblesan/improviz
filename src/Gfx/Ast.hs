@@ -14,11 +14,9 @@ type GfxAst = Block
 
 data GfxCommand
   = ShapeCommand ShapeGfx
-                 (Maybe Block)
   | MatrixCommand MatrixGfx
-                  (Maybe Block)
   | ColourCommand ColourGfx
-                  (Maybe Block)
+  | ScopeCommand ScopeInstruction
   deriving (Show, Eq)
 
 data ShapeGfx
@@ -65,4 +63,9 @@ data StyleGfx
                 Float
   | TextureStyle String
                  Float
+  deriving (Show, Eq)
+
+data ScopeInstruction
+  = PushScope
+  | PopScope
   deriving (Show, Eq)

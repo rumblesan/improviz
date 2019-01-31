@@ -28,6 +28,11 @@ test_basic_default_scoping =
               Language.createGfxScene (Language.initialState []) ast
         scene <- result
         return $ sceneGfx scene
-      boxBlock = [GA.ShapeCommand (GA.Cube 1 1 1) Nothing]
-      expected = Right [GA.MatrixCommand (GA.Rotate 3 4 5) (Just boxBlock)]
+      expected =
+        Right
+          [ GA.ScopeCommand GA.PushScope
+          , GA.MatrixCommand (GA.Rotate 3 4 5)
+          , GA.ShapeCommand (GA.Cube 1 1 1)
+          , GA.ScopeCommand GA.PopScope
+          ]
    in assertEqual "" expected result

@@ -1,4 +1,9 @@
-module Language.Parser where
+module Language.Parser
+  ( simpleParse
+  , parseProgram
+  , argList
+  , expression
+  ) where
 
 import           Control.Monad         (void)
 import           Data.Functor.Identity

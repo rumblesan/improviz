@@ -32,7 +32,7 @@ test_true_if_statement =
               Language.createGfxScene (Language.initialState []) ast
         scene <- result
         return $ sceneGfx scene
-      expected = Right [GA.ShapeCommand (GA.Cube 1 1 1) Nothing]
+      expected = Right [GA.ShapeCommand (GA.Cube 1 1 1)]
    in assertEqual "" expected result
 
 test_false_if_statement :: Assertion
@@ -56,7 +56,7 @@ test_true_if_else_statement =
               Language.createGfxScene (Language.initialState []) ast
         scene <- result
         return $ sceneGfx scene
-      expected = Right [GA.ShapeCommand (GA.Cube 1 1 1) Nothing]
+      expected = Right [GA.ShapeCommand (GA.Cube 1 1 1)]
    in assertEqual "" expected result
 
 test_false_if_else_statement :: Assertion
@@ -68,5 +68,5 @@ test_false_if_else_statement =
               Language.createGfxScene (Language.initialState []) ast
         scene <- result
         return $ sceneGfx scene
-      expected = Right [GA.ShapeCommand (GA.Line 1) Nothing]
+      expected = Right [GA.ShapeCommand (GA.Line 1)]
    in assertEqual "" expected result

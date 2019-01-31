@@ -1,4 +1,6 @@
-module Gfx.Interpreter where
+module Gfx.Interpreter
+  ( interpretGfx
+  ) where
 
 import           Control.Monad              (mapM, void, when)
 import           Control.Monad.State.Strict
@@ -35,17 +37,11 @@ interpretGfx ast = do
 interpretBlock :: Block -> GraphicsEngine [GfxOutput]
 interpretBlock = mapM interpretCommand
 
-interpretCommand' ::
-     GraphicsEngine GfxOutput -> Maybe Block -> GraphicsEngine GfxOutput
-interpretCommand' commandOutput = maybe commandOutput (newScope commandOutput)
-
 interpretCommand :: GfxCommand -> GraphicsEngine GfxOutput
-interpretCommand (ShapeCommand shapeAst block) =
-  interpretCommand' (interpretShape shapeAst) block
-interpretCommand (MatrixCommand matrixAst block) =
-  interpretCommand' (interpretMatrix matrixAst) block
-interpretCommand (ColourCommand colourAst block) =
-  interpretCommand' (interpretColour colourAst) block
+interpretCommand (ShapeCommand shapeAst)    = interpretShape shapeAst
+interpretCommand (MatrixCommand matrixAst)  = interpretMatrix matrixAst
+interpretCommand (ColourCommand colourAst)  = interpretColour colourAst
+interpretCommand (ScopeCommand instruction) = interpretScoping instruction
 
 getFullMatrix :: GraphicsEngine (Mat44 GLfloat)
 getFullMatrix = do
@@ -142,9 +138,23 @@ interpretColour (Stroke r g b a) =
   modify' (pushStrokeStyle $ ES.GFXStrokeColour $ Colour r g b a)
 interpretColour NoStroke = modify' (pushStrokeStyle ES.GFXNoStroke)
 
-newScope :: GraphicsEngine GfxOutput -> Block -> GraphicsEngine GfxOutput
-newScope gfx block = do
-  priorState <- get
-  gfx
-  _ <- interpretBlock block
-  put priorState
+interpretScoping :: ScopeInstruction -> GraphicsEngine GfxOutput
+interpretScoping PushScope = do
+  st <- get
+  let savable =
+        SavableState
+          { savedMatrixStack = matrixStack st
+          , savedFillStyles = fillStyles st
+          , savedStrokeStyles = strokeStyles st
+          }
+  modify (\s -> s {scopeStack = savable : (scopeStack s)})
+interpretScoping PopScope = modify popStack
+  where
+    popStack st =
+      let prev = head $ scopeStack st
+       in st
+            { scopeStack = tail $ scopeStack st
+            , fillStyles = savedFillStyles prev
+            , strokeStyles = savedStrokeStyles prev
+            , matrixStack = savedMatrixStack prev
+            }

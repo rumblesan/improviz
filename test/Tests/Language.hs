@@ -40,7 +40,7 @@ test_basic_program =
         let ((result, _), _) = Language.createGfxScene interpreterState ast
         scene <- result
         return $ sceneGfx scene
-      expected = Right [GA.ShapeCommand (GA.Cube 3 2 6) Nothing]
+      expected = Right [GA.ShapeCommand (GA.Cube 3 2 6)]
    in assertEqual "" expected result
 
 test_animation_style :: Assertion
@@ -67,13 +67,13 @@ test_loop_program =
         return $ sceneGfx scene
       expected =
         Right
-          [ GA.MatrixCommand (GA.Rotate 0.1 0.2 0.3) Nothing
-          , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing
-          , GA.ShapeCommand (GA.Cube 0 0 0) Nothing
-          , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing
-          , GA.ShapeCommand (GA.Cube 1 1 1) Nothing
-          , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2) Nothing
-          , GA.ShapeCommand (GA.Cube 2 2 2) Nothing
+          [ GA.MatrixCommand (GA.Rotate 0.1 0.2 0.3)
+          , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2)
+          , GA.ShapeCommand (GA.Cube 0 0 0)
+          , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2)
+          , GA.ShapeCommand (GA.Cube 1 1 1)
+          , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2)
+          , GA.ShapeCommand (GA.Cube 2 2 2)
           ]
    in assertEqual "" expected result
 
@@ -89,5 +89,5 @@ test_create_gfx =
       interpreterState = Language.initialState []
       ((result, _), _) = Language.createGfxScene interpreterState block
       scene = either (const []) sceneGfx result
-      expected = [GA.ShapeCommand (GA.Cube 1 2 1) Nothing]
+      expected = [GA.ShapeCommand (GA.Cube 1 2 1)]
    in assertEqual "" expected scene

@@ -16,7 +16,6 @@ import           Gfx.Types                 (Colour (..))
 
 import           Configuration             (ImprovizConfig)
 import qualified Configuration             as C
-import qualified Configuration.Font        as FC
 import qualified Configuration.Screen      as CS
 
 import           Util                      ((/.))
@@ -52,6 +51,13 @@ data EngineState = EngineState
   , postFX             :: PostProcessing
   , textRenderer       :: TextRenderer
   , matrixStack        :: [Mat44 GLfloat]
+  , scopeStack         :: [SavableState]
+  } deriving (Show)
+
+data SavableState = SavableState
+  { savedMatrixStack  :: [Mat44 GLfloat]
+  , savedFillStyles   :: [GFXFillStyling]
+  , savedStrokeStyles :: [GFXStrokeStyling]
   } deriving (Show)
 
 data EngineInfo = EngineInfo
@@ -89,6 +95,7 @@ createGfxEngineState config width height pprocess trender textLib =
              , postFX = pprocess
              , textRenderer = trender
              , matrixStack = [identity]
+             , scopeStack = []
              }
 
 resizeGfxEngine ::

@@ -3,21 +3,19 @@ module Language.StdLib.ColourOps
   ) where
 
 import           Control.Monad.Except
-import           Data.Map.Strict               as M
+import           Data.Map.Strict             as M
 
-import qualified Gfx.Ast                       as GA
-import qualified Gfx.EngineState               as GE
+import qualified Gfx.Ast                     as GA
+import qualified Gfx.EngineState             as GE
 import           Language.Ast
-import           Language.Interpreter          (addGfxCommand, getBlock,
-                                                getEngineInfo, getVarOrNull,
-                                                getVariable,
-                                                getVariableWithDefault,
-                                                interpretBlock, setBuiltIn,
-                                                setGfxBackground)
+import           Language.Interpreter        (addGfxCommand, getBlock,
+                                              getEngineInfo, getVarOrNull,
+                                              getVariable,
+                                              getVariableWithDefault,
+                                              gfxScopedBlock, interpretBlock,
+                                              setBuiltIn, setGfxBackground)
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
-
-import           Language.StdLib.BlockHandling (handleGfxBlock)
 
 addColourStdLib :: InterpreterProcess ()
 addColourStdLib = do
@@ -46,11 +44,11 @@ fill = do
       (Number x, Number y, Number z, Null) -> return (x, y, z, 255)
       (Number x, Number y, Number z, Number w) -> return (x, y, z, w)
       _ -> throwError "Error with functions to fill"
-  let partialCmd =
+  let cmd =
         GA.ColourCommand $
         GA.Fill $ GA.ColourStyle (dToC rVal) (dToC gVal) (dToC bVal) (dToC aVal)
   block <- getBlock
-  maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
+  maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
   return Null
 
 texture :: InterpreterProcess Value
@@ -59,12 +57,9 @@ texture = do
   frame <- getVariableWithDefault "frame" (Number 0) >>= getNumberValue
   case textName of
     Symbol name -> do
-      let partialCmd = GA.ColourCommand $ GA.Fill $ GA.TextureStyle name frame
+      let cmd = GA.ColourCommand $ GA.Fill $ GA.TextureStyle name frame
       block <- getBlock
-      maybe
-        (addGfxCommand $ partialCmd Nothing)
-        (handleGfxBlock partialCmd)
-        block
+      maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
       return Null
     _ -> return Null
 
@@ -82,9 +77,9 @@ frames = do
 
 noFill :: InterpreterProcess Value
 noFill = do
-  let partialCmd = GA.ColourCommand GA.NoFill
+  let cmd = GA.ColourCommand GA.NoFill
   block <- getBlock
-  maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
+  maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
   return Null
 
 stroke :: InterpreterProcess Value
@@ -101,18 +96,18 @@ stroke = do
       (Number x, Number y, Number z, Null) -> return (x, y, z, 255)
       (Number x, Number y, Number z, Number w) -> return (x, y, z, w)
       _ -> throwError "Error with functions to stroke"
-  let partialCmd =
+  let cmd =
         GA.ColourCommand $
         GA.Stroke (dToC rVal) (dToC gVal) (dToC bVal) (dToC aVal)
   block <- getBlock
-  maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
+  maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
   return Null
 
 noStroke :: InterpreterProcess Value
 noStroke = do
-  let partialCmd = GA.ColourCommand GA.NoStroke
+  let cmd = GA.ColourCommand GA.NoStroke
   block <- getBlock
-  maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
+  maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
   return Null
 
 background :: InterpreterProcess Value

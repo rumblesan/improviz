@@ -9,7 +9,6 @@ import qualified Data.Map.Strict        as M
 
 import           Lens.Simple            ((^.))
 
-import qualified Configuration          as C
 import           Improviz               (ImprovizEnv)
 import qualified Improviz               as I
 import qualified Improviz.Language      as IL
@@ -23,8 +22,6 @@ import           Language               (createGfxScene, updateStateVariables)
 import           Language.Ast           (Value (Number))
 import           Logging                (logError, logInfo)
 import           Server                 (serveComs)
-
-import           Util                   ((/.))
 
 main :: IO ()
 main = I.createEnv >>= app

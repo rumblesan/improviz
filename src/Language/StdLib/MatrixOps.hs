@@ -6,16 +6,14 @@ import           Control.Monad.Except
 import           Control.Monad.State.Strict
 import           Control.Monad.Writer.Strict
 
-import qualified Gfx.Ast                       as GA
+import qualified Gfx.Ast                     as GA
 import           Language.Ast
-import           Language.Interpreter          (addGfxCommand, getBlock,
-                                                getNumberFromNull, getVarOrNull,
-                                                getVariableWithDefault,
-                                                setBuiltIn)
+import           Language.Interpreter        (addGfxCommand, getBlock,
+                                              getNumberFromNull, getVarOrNull,
+                                              getVariableWithDefault,
+                                              gfxScopedBlock, setBuiltIn)
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
-
-import           Language.StdLib.BlockHandling (handleGfxBlock)
 
 addMatrixStdLib :: InterpreterProcess ()
 addMatrixStdLib = do
@@ -38,9 +36,9 @@ rotate = do
           ( getNumberFromNull v1 0
           , getNumberFromNull v2 0
           , getNumberFromNull v3 0)
-  let partialCmd = GA.MatrixCommand $ GA.Rotate xRot yRot zRot
+  let cmd = GA.MatrixCommand $ GA.Rotate xRot yRot zRot
   block <- getBlock
-  maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
+  maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
   return Null
 
 scale :: InterpreterProcess Value
@@ -58,9 +56,9 @@ scale = do
           ( getNumberFromNull v1 0
           , getNumberFromNull v2 0
           , getNumberFromNull v3 0)
-  let partialCmd = GA.MatrixCommand $ GA.Scale xScl yScl zScl
+  let cmd = GA.MatrixCommand $ GA.Scale xScl yScl zScl
   block <- getBlock
-  maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
+  maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
   return Null
 
 move :: InterpreterProcess Value
@@ -78,7 +76,7 @@ move = do
           ( getNumberFromNull v1 0
           , getNumberFromNull v2 0
           , getNumberFromNull v3 0)
-  let partialCmd = GA.MatrixCommand $ GA.Move xMov yMov zMov
+  let cmd = GA.MatrixCommand $ GA.Move xMov yMov zMov
   block <- getBlock
-  maybe (addGfxCommand $ partialCmd Nothing) (handleGfxBlock partialCmd) block
+  maybe (addGfxCommand cmd) (gfxScopedBlock cmd) block
   return Null
