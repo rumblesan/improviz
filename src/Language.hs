@@ -4,7 +4,6 @@ module Language
   , interpret
   , createGfxScene
   , updateStateVariables
-  , updateEngineInfo
   , module Language.Ast
   ) where
 
@@ -40,9 +39,6 @@ updateStateVariables ::
 updateStateVariables vars oldState =
   let setVars = addInitialVariables vars
    in execState (runWriterT (runExceptT setVars)) oldState
-
-updateEngineInfo :: GE.EngineState -> InterpreterState -> InterpreterState
-updateEngineInfo es oldState = oldState {engineInfo = GE.createEngineInfo es}
 
 interpret :: [(Identifier, Value)] -> Program -> (Either String Value, [String])
 interpret initialVars program =

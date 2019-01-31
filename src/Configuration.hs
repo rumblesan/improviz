@@ -1,7 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module Configuration where
+module Configuration
+  ( ImprovizConfig
+  , screenWidth
+  , screenHeight
+  , fullscreenDisplay
+  , debug
+  , screen
+  , fontConfig
+  , textureDirectories
+  , serverPort
+  , osc
+  , apptitle
+  , decorated
+  , getConfig
+  ) where
 
 import           Control.Applicative  ((<|>))
 import           Data.Maybe           (fromMaybe)

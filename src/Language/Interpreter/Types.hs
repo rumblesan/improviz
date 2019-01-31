@@ -1,4 +1,9 @@
-module Language.Interpreter.Types where
+module Language.Interpreter.Types
+  ( BuiltInFunction(..)
+  , UserFunctionDef(..)
+  , InterpreterState(..)
+  , InterpreterProcess
+  ) where
 
 import           Control.Monad.Except
 import           Control.Monad.State.Strict

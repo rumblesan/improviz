@@ -1,7 +1,17 @@
 {-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Improviz where
+module Improviz
+  ( ImprovizEnv
+  , language
+  , ui
+  , graphics
+  , config
+  , startTime
+  , externalVars
+  , errors
+  , createEnv
+  ) where
 
 import           GHC.Generics
 

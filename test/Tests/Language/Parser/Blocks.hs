@@ -12,11 +12,8 @@ import           Control.Monad.Writer.Strict
 import           Data.Map.Strict
 import           Data.Maybe
 
-import qualified Gfx.Ast                        as GA
-
 import qualified Language
 import           Language.Ast
-import           Language.Interpreter
 
 parserBlocksTests :: Test
 parserBlocksTests =

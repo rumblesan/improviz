@@ -19,7 +19,6 @@ import           Gfx.PostProcessing             (AnimationStyle (..))
 
 import qualified Language
 import           Language.Ast
-import           Language.Interpreter
 
 languageTests :: Test
 languageTests =

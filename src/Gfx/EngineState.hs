@@ -113,26 +113,17 @@ resizeGfxEngine config newWidth newHeight newPP newTR es =
       newProj = projectionMat front back (pi / 4) newRatio
    in es {projectionMatrix = newProj, postFX = newPP, textRenderer = newTR}
 
-createEngineInfo :: EngineState -> EngineInfo
-createEngineInfo es = EngineInfo $ M.size <$> textureLibrary es
-
 pushFillStyle :: GFXFillStyling -> EngineState -> EngineState
 pushFillStyle s es = es {fillStyles = s : fillStyles es}
 
 currentFillStyle :: EngineState -> GFXFillStyling
 currentFillStyle = head . fillStyles
 
-popFillStyle :: EngineState -> EngineState
-popFillStyle es = es {fillStyles = tail $ fillStyles es}
-
 pushStrokeStyle :: GFXStrokeStyling -> EngineState -> EngineState
 pushStrokeStyle c es = es {strokeStyles = c : strokeStyles es}
 
 currentStrokeStyle :: EngineState -> GFXStrokeStyling
 currentStrokeStyle = head . strokeStyles
-
-popStrokeStyles :: EngineState -> EngineState
-popStrokeStyles es = es {strokeStyles = tail $ strokeStyles es}
 
 pushMatrix :: EngineState -> Mat44 Float -> EngineState
 pushMatrix es mat =
@@ -151,6 +142,3 @@ multMatrix es mat =
   let stack = matrixStack es
       newhead = multmm (head stack) mat
    in es {matrixStack = newhead : tail stack}
-
-dupeHeadMatrix :: EngineState -> EngineState
-dupeHeadMatrix es = es {matrixStack = head (matrixStack es) : matrixStack es}

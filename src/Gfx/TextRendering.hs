@@ -7,7 +7,6 @@ module Gfx.TextRendering
   , addCodeTextureToLib
   , resizeTextRendererScreen
   , changeTextColour
-  , textCoordMatrix
   , TextRenderer
   ) where
 

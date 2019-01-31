@@ -9,8 +9,6 @@ import           Test.HUnit                     (Assertion, assertBool)
 import           Data.Either                    (isLeft)
 
 import qualified Language
-import           Language.Ast
-import           Language.Interpreter
 
 parserErrorCatchingTests :: Test
 parserErrorCatchingTests =

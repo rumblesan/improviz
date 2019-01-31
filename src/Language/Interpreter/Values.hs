@@ -1,4 +1,6 @@
-module Language.Interpreter.Values where
+module Language.Interpreter.Values
+  ( getNumberValue
+  ) where
 
 import           Control.Monad.Except
 

@@ -1,4 +1,7 @@
-module Gfx.GeometryBuffers where
+module Gfx.GeometryBuffers
+  ( GeometryBuffers(..)
+  , createAllBuffers
+  ) where
 
 import           Foreign.Marshal.Array     (withArray)
 import           Foreign.Storable          (sizeOf)

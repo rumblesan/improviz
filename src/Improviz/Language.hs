@@ -1,6 +1,15 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Improviz.Language where
+module Improviz.Language
+  ( ImprovizLanguage
+  , makeLanguageState
+  , initialInterpreter
+  , currentAst
+  , updateProgram
+  , resetProgram
+  , saveProgram
+  , programHasChanged
+  ) where
 
 import           Language                   (initialState, parse)
 import           Language.Ast               (Program (..))

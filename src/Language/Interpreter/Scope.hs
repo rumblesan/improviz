@@ -2,11 +2,9 @@ module Language.Interpreter.Scope where
 
 import qualified Data.Map.Strict as M
 
-type Scope k v = M.Map k v
-
 data ScopeStack k v = ScopeStack
-  { current :: Scope k v
-  , stack   :: [Scope k v]
+  { current :: M.Map k v
+  , stack   :: [M.Map k v]
   } deriving (Show)
 
 empty :: Ord k => ScopeStack k v
@@ -22,7 +20,7 @@ getVariable scope name =
     Just v  -> Just v
     Nothing -> getVariable' (stack scope) name
 
-getVariable' :: Ord k => [Scope k v] -> k -> Maybe v
+getVariable' :: Ord k => [M.Map k v] -> k -> Maybe v
 getVariable' (s:rest) name =
   case M.lookup name s of
     Just v  -> Just v

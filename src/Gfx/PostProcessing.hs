@@ -1,6 +1,16 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Gfx.PostProcessing where
+module Gfx.PostProcessing
+  ( createPostProcessing
+  , renderPostProcessing
+  , usePostProcessing
+  , deletePostProcessing
+  , createTextDisplaybuffer
+  , deleteSavebuffer
+  , PostProcessing(..)
+  , Savebuffer(..)
+  , AnimationStyle(..)
+  ) where
 
 import           Graphics.Rendering.OpenGL as GL
 

@@ -1,4 +1,6 @@
-module Gfx.Windowing where
+module Gfx.Windowing
+  ( setupWindow
+  ) where
 
 import           Control.Monad             (forever)
 import           Data.Maybe                (fromMaybe)

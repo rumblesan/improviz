@@ -1,4 +1,8 @@
-module Logging where
+module Logging
+  ( logInfo
+  , logDebug
+  , logError
+  ) where
 
 import           Control.Monad (when)
 import           Data.Monoid   ((<>))

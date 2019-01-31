@@ -8,7 +8,6 @@ import           Test.HUnit                     (Assertion, assertEqual)
 
 import qualified Language
 import           Language.Ast
-import           Language.Interpreter
 
 operatorTests :: Test
 operatorTests =
@@ -32,7 +31,7 @@ test_addition_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 5
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_subtraction_operator :: Assertion
 test_subtraction_operator =
@@ -41,7 +40,7 @@ test_subtraction_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 1
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_multiplication_operator :: Assertion
 test_multiplication_operator =
@@ -50,7 +49,7 @@ test_multiplication_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 6
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_division_operator :: Assertion
 test_division_operator =
@@ -59,7 +58,7 @@ test_division_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 1.5
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_exponent_operator :: Assertion
 test_exponent_operator =
@@ -68,7 +67,7 @@ test_exponent_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 9
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_modulo_operator :: Assertion
 test_modulo_operator =
@@ -77,7 +76,7 @@ test_modulo_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 1
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_lessthan_operator :: Assertion
 test_lessthan_operator =
@@ -86,7 +85,7 @@ test_lessthan_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 0
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_equal_operator :: Assertion
 test_equal_operator =
@@ -95,7 +94,7 @@ test_equal_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 1
-  in assertEqual "" expected result
+   in assertEqual "" expected result
 
 test_logical_and_operator :: Assertion
 test_logical_and_operator =
@@ -104,4 +103,4 @@ test_logical_and_operator =
         ast <- Language.parse program
         fst $ Language.interpret [] ast
       expected = Right $ Number 0
-  in assertEqual "" expected result
+   in assertEqual "" expected result

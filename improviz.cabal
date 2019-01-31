@@ -107,29 +107,21 @@ test-suite improviz-test
                      , filepath
                      , file-embed
                      , freetype2
-                     , hosc
                      , lens-simple
                      , mtl
                      , optparse-applicative
                      , parsec
-                     , scotty
-                     , stm
                      , transformers
-                     , split
                      , test-framework
                      , test-framework-hunit
-                     , text
                      , time
                      , vector
-                     , GLFW-b
-                     , GLURaw
                      , HUnit
                      , JuicyPixels
                      , OpenGL
                      , OpenGLRaw
                      , Vec
                      , yaml
-                     , warp
                      , aeson
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   other-modules:       ErrorHandling
@@ -140,9 +132,6 @@ test-suite improviz-test
                      , Configuration.OSC
                      , Configuration.Screen
                      , Logging
-                     , Improviz
-                     , Improviz.Language
-                     , Improviz.UI
                      , Gfx
                      , Gfx.Ast
                      , Gfx.Interpreter
@@ -159,7 +148,6 @@ test-suite improviz-test
                      , Gfx.Matrices
                      , Gfx.PostProcessing
                      , Gfx.Shaders
-                     , Gfx.Windowing
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers

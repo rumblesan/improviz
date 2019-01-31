@@ -9,9 +9,6 @@ import           Test.HUnit                     (Assertion, assertEqual)
 import           Gfx                            (Scene (..))
 import qualified Gfx.Ast                        as GA
 import qualified Language
-import           Language.Ast
-import           Language.Interpreter
-import qualified Language.StdLib                as SL
 
 scopingTests :: Test
 scopingTests =

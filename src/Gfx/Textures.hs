@@ -1,6 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Gfx.Textures where
+module Gfx.Textures
+  ( TextureConfig(..)
+  , TextureFolderConfig(..)
+  , TextureLibrary
+  , createTextureLib
+  , addTexture
+  ) where
 
 import qualified Data.ByteString           as B
 import           Data.Either               (rights)

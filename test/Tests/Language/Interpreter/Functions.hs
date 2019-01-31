@@ -15,7 +15,6 @@ import           Data.Maybe
 
 import qualified Language
 import           Language.Ast
-import           Language.Interpreter
 
 interpreterFunctionTests :: Test
 interpreterFunctionTests =

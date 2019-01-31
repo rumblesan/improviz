@@ -8,7 +8,6 @@ import           Test.HUnit                     (Assertion, assertEqual)
 
 import qualified Language
 import           Language.Ast
-import           Language.Interpreter
 import qualified Language.Parser                as LP
 
 parserFunctionTests :: Test

@@ -8,7 +8,6 @@ module Configuration.CLI
   , configFilePath
   , ImprovizCLIConfig
   , opts
-  , parser
   ) where
 
 import           Data.Semigroup      ((<>))
