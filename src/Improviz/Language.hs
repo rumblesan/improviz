@@ -26,14 +26,14 @@ data ImprovizLanguage = ImprovizLanguage
 
 makeLenses ''ImprovizLanguage
 
-makeLanguageState :: ImprovizLanguage
-makeLanguageState =
+makeLanguageState :: [Program] -> ImprovizLanguage
+makeLanguageState userCode =
   ImprovizLanguage
     { _programText = ""
     , _lastProgramText = ""
     , _currentAst = Program []
     , _lastWorkingAst = Program []
-    , _initialInterpreter = initialState []
+    , _initialInterpreter = initialState userCode
     }
 
 updateProgram :: String -> Program -> ImprovizLanguage -> ImprovizLanguage

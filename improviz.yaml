@@ -5,3 +5,5 @@ osc:
   enabled: true
 textureDirectories:
   - "./textures"
+codeFiles:
+  - "./usercode/grid.pz"
