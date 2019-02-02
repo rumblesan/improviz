@@ -5,22 +5,31 @@ module Language
   , createGfxScene
   , updateStateVariables
   , module Language.Ast
-  ) where
+  )
+where
 
-import           Control.Monad              (forM_)
-import           Control.Monad.State.Strict (gets)
+import           Control.Monad                  ( forM_ )
+import           Control.Monad.State.Strict     ( gets )
 
-import           Gfx                        (Scene (..))
+import           Gfx                            ( Scene(..) )
 
-import           Language.Ast               (Identifier, Program, Value (..))
-import           Language.Ast.Transformers  (transform)
-import           Language.Interpreter       (emptyState, getGlobalNames,
-                                             interpretLanguage, setVariable)
-import           Language.Interpreter.Types (InterpreterProcess,
-                                             InterpreterState (..), currentGfx,
-                                             runInterpreterM)
-import           Language.Parser            (parseProgram)
-import           Language.StdLib            (addStdLib)
+import           Language.Ast                   ( Identifier
+                                                , Program
+                                                , Value(..)
+                                                )
+import           Language.Ast.Transformers      ( transform )
+import           Language.Interpreter           ( emptyState
+                                                , getGlobalNames
+                                                , interpretLanguage
+                                                , setVariable
+                                                )
+import           Language.Interpreter.Types     ( InterpreterProcess
+                                                , InterpreterState(..)
+                                                , currentGfx
+                                                , runInterpreterM
+                                                )
+import           Language.Parser                ( parseProgram )
+import           Language.StdLib                ( addStdLib )
 
 parse :: String -> Either String Program
 parse = parseProgram
@@ -31,13 +40,13 @@ initialState userCode =
         addStdLib
         globals <- getGlobalNames
         mapM (\p -> interpretLanguage (transform globals p)) userCode
-   in snd $ runInterpreterM setup emptyState
+  in  snd $ runInterpreterM setup emptyState
 
-updateStateVariables ::
-     [(Identifier, Value)] -> InterpreterState -> InterpreterState
+updateStateVariables
+  :: [(Identifier, Value)] -> InterpreterState -> InterpreterState
 updateStateVariables vars oldState =
   let setVars = addInitialVariables vars
-   in snd $ runInterpreterM setVars oldState
+  in  snd $ runInterpreterM setVars oldState
 
 interpret :: [(Identifier, Value)] -> Program -> Either String Value
 interpret initialVars program =
@@ -46,24 +55,22 @@ interpret initialVars program =
         addInitialVariables initialVars
         globals <- getGlobalNames
         interpretLanguage (transform globals program)
-   in fst $ runInterpreterM run emptyState
+  in  fst $ runInterpreterM run emptyState
 
-createGfxScene ::
-     InterpreterState -> Program -> (Either String Scene, InterpreterState)
+createGfxScene
+  :: InterpreterState -> Program -> (Either String Scene, InterpreterState)
 createGfxScene initialState program =
   let run = do
-        globals <- getGlobalNames
-        _ <- interpretLanguage (transform globals program)
-        gfxB <- gets currentGfx
-        gfxBg <- gets gfxBackground
+        globals      <- getGlobalNames
+        _            <- interpretLanguage (transform globals program)
+        gfxB         <- gets currentGfx
+        gfxBg        <- gets gfxBackground
         gfxAnimStyle <- gets animationStyle
-        return
-          Scene
-            { sceneBackground = gfxBg
-            , sceneGfx = gfxB
-            , scenePostProcessingFX = gfxAnimStyle
-            }
-   in runInterpreterM run initialState
+        return Scene { sceneBackground       = gfxBg
+                     , sceneGfx              = gfxB
+                     , scenePostProcessingFX = gfxAnimStyle
+                     }
+  in  runInterpreterM run initialState
 
 addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess ()
 addInitialVariables vars = forM_ vars (uncurry setVariable)

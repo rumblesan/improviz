@@ -16,11 +16,12 @@ module Gfx.LoadShaders
   ( ShaderSource(..)
   , ShaderInfo(..)
   , loadShaders
-  ) where
+  )
+where
 
 import           Control.Exception
 import           Control.Monad
-import qualified Data.ByteString           as B
+import qualified Data.ByteString               as B
 import           Graphics.Rendering.OpenGL
 
 --------------------------------------------------------------------------------
@@ -35,9 +36,9 @@ data ShaderSource
   deriving (Eq, Ord, Show)
 
 getSource :: ShaderSource -> IO B.ByteString
-getSource (ByteStringSource bs) = return bs
-getSource (StringSource str)    = return $ packUtf8 str
-getSource (FileSource path)     = B.readFile path
+getSource (ByteStringSource bs  ) = return bs
+getSource (StringSource     str ) = return $ packUtf8 str
+getSource (FileSource       path) = B.readFile path
 
 --------------------------------------------------------------------------------
 -- | A description of a shader: The type of the shader plus its source code.
@@ -61,7 +62,7 @@ linkAndCheck = checked linkProgram linkStatus programInfoLog "link"
 
 loadCompileAttach :: Program -> [ShaderInfo] -> IO ()
 loadCompileAttach _ [] = return ()
-loadCompileAttach program (ShaderInfo shType source:infos) =
+loadCompileAttach program (ShaderInfo shType source : infos) =
   createShader shType `bracketOnError` deleteObjectName $ \shader -> do
     src <- getSource source
     shaderSourceBS shader $= src
@@ -72,8 +73,8 @@ loadCompileAttach program (ShaderInfo shType source:infos) =
 compileAndCheck :: Shader -> IO ()
 compileAndCheck = checked compileShader compileStatus shaderInfoLog "compile"
 
-checked ::
-     (t -> IO ())
+checked
+  :: (t -> IO ())
   -> (t -> GettableStateVar Bool)
   -> (t -> GettableStateVar String)
   -> String

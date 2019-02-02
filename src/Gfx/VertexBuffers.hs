@@ -1,10 +1,22 @@
-module Gfx.VertexBuffers where
+module Gfx.VertexBuffers
+  ( VBO(..)
+  , setAttribPointer
+  , createVBO
+  , drawVBO
+  , deleteVBO
+  )
+where
 
-import           Graphics.Rendering.OpenGL as GL
+import           Graphics.Rendering.OpenGL     as GL
 
-import           Control.Monad             (forM, forM_)
-import           Foreign.Ptr               (Ptr, nullPtr, plusPtr)
-import           GHC.Int                   (Int32)
+import           Control.Monad                  ( forM
+                                                , forM_
+                                                )
+import           Foreign.Ptr                    ( Ptr
+                                                , nullPtr
+                                                , plusPtr
+                                                )
+import           GHC.Int                        ( Int32 )
 
 data VBO =
   VBO VertexArrayObject
@@ -19,24 +31,25 @@ bufferOffset = plusPtr nullPtr . fromIntegral
 
 setAttribPointer :: AttribLocation -> Int32 -> Int32 -> Int32 -> IO ()
 setAttribPointer location numComponents stride idx = do
-  vertexAttribPointer location $=
-    ( ToFloat
-    , VertexArrayDescriptor numComponents Float stride (bufferOffset idx))
+  vertexAttribPointer location
+    $= ( ToFloat
+       , VertexArrayDescriptor numComponents Float stride (bufferOffset idx)
+       )
   vertexAttribArray location $= Enabled
 
 createVBO :: [IO ()] -> PrimitiveMode -> ArrayIndex -> NumArrayIndices -> IO VBO
 createVBO arrayConfigFuncs primMode arrIdx numVertices = do
   vao <- GL.genObjectName
   GL.bindVertexArrayObject $= Just vao
-  arrayBuffers <-
-    forM
-      arrayConfigFuncs
-      (\arrayConfig -> do
-         arrayBuffer <- GL.genObjectName
-         GL.bindBuffer ArrayBuffer $= Just arrayBuffer
-         arrayConfig
-         GL.bindBuffer ArrayBuffer $= Nothing
-         return arrayBuffer)
+  arrayBuffers <- forM
+    arrayConfigFuncs
+    (\arrayConfig -> do
+      arrayBuffer <- GL.genObjectName
+      GL.bindBuffer ArrayBuffer $= Just arrayBuffer
+      arrayConfig
+      GL.bindBuffer ArrayBuffer $= Nothing
+      return arrayBuffer
+    )
   GL.bindVertexArrayObject $= Nothing
   return $ VBO vao arrayBuffers primMode arrIdx numVertices
 

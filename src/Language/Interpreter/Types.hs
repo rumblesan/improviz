@@ -42,7 +42,6 @@ data InterpreterState = InterpreterState
   , gfxBackground  :: Colour
   , currentGfx     :: GA.Block
   , animationStyle :: AnimationStyle
-  , gfxStack       :: [GA.Block]
   , engineInfo     :: GE.EngineInfo
   }
 

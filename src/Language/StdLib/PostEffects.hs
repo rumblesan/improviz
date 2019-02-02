@@ -1,16 +1,19 @@
 module Language.StdLib.PostEffects
   ( addPostEffectsStdLib
-  ) where
+  )
+where
 
-import           Gfx.PostProcessing         (AnimationStyle (..))
+import           Gfx.PostProcessing             ( AnimationStyle(..) )
 
-import           Language.Ast               (Value)
-import           Language.Interpreter       (setAnimationStyle, setBuiltIn)
-import           Language.Interpreter.Types (InterpreterProcess)
+import           Language.Ast                   ( Value )
+import           Language.Interpreter           ( setAnimationStyle
+                                                , setBuiltIn
+                                                )
+import           Language.Interpreter.Types     ( InterpreterProcess )
 
 addPostEffectsStdLib :: InterpreterProcess ()
 addPostEffectsStdLib = do
-  setBuiltIn "paintOver" paintOver []
+  setBuiltIn "paintOver"  paintOver  []
   setBuiltIn "motionBlur" motionBlur []
 
 motionBlur :: InterpreterProcess Value

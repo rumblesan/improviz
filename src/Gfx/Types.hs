@@ -1,6 +1,6 @@
 module Gfx.Types where
 
-import           Data.Yaml (FromJSON (..))
+import           Data.Yaml                      ( FromJSON(..) )
 
 data Colour =
   Colour Float

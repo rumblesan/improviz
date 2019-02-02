@@ -13,13 +13,16 @@ module Language.Interpreter
   , setGfxBackground
   , setAnimationStyle
   , interpretLanguage
-  , interpretBlock
-  , interpretExpression
   )
 where
 
-import           Control.Monad.Except
-import           Control.Monad.State.Strict
+import           Control.Monad                  ( zipWithM_
+                                                , foldM_
+                                                )
+import           Control.Monad.Except           ( throwError )
+import           Control.Monad.State.Strict     ( gets
+                                                , modify
+                                                )
 import           Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Set                      as S
@@ -36,13 +39,12 @@ import qualified Language.Interpreter.Scope    as LS
 
 emptyState :: InterpreterState
 emptyState = InterpreterState { variables      = LS.empty
-                              , globals        = M.fromList []
-                              , builtins       = M.fromList []
-                              , functions      = M.fromList []
+                              , globals        = M.empty
+                              , builtins       = M.empty
+                              , functions      = M.empty
                               , gfxBackground  = Colour 1 1 1 1
                               , currentGfx     = GA.emptyGfx
                               , animationStyle = NormalStyle
-                              , gfxStack       = []
                               , engineInfo     = GE.EngineInfo M.empty
                               }
 
