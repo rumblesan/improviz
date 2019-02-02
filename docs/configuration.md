@@ -66,6 +66,15 @@ textureDirectories:
  - ./downloads/textures
 ```
 
+## Pre-loaded Code
+
+It is possible to give Improviz a list of code files that it will load on startup. This makes it possible to have specific functions for performances available without having to modify the source or copying it into the editor window each time.
+
+```yaml
+codeFiles:
+  - "./usercode/grid.pz"
+```
+
 ## Debug
 
 The debug setting can be turned on via the cli or the config file.
