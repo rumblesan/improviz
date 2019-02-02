@@ -4,27 +4,28 @@ module Language.Interpreter.Types
   , InterpreterState(..)
   , InterpreterProcess
   , runInterpreterM
-  ) where
+  )
+where
 
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
 
 import           Language.Ast
 
-import qualified Data.Map.Strict            as M
-import qualified Gfx.Ast                    as GA
-import qualified Gfx.EngineState            as GE
-import           Gfx.PostProcessing         (AnimationStyle (..))
-import           Gfx.Types                  (Colour)
-import qualified Language.Interpreter.Scope as LS
+import qualified Data.Map.Strict               as M
+import qualified Gfx.Ast                       as GA
+import qualified Gfx.EngineState               as GE
+import           Gfx.PostProcessing             ( AnimationStyle(..) )
+import           Gfx.Types                      ( Colour )
+import qualified Language.Interpreter.Scope    as LS
 
 data BuiltInFunction =
-  BuiltInFunction [Identifier]
+  BuiltInFunction [FuncArg]
                   (InterpreterProcess Value)
 
 data UserFunctionDef =
   UserFunctionDef Identifier
-                  [Identifier]
+                  [FuncArg]
                   Block
 
 type InterpreterProcessing = State InterpreterState
@@ -38,7 +39,6 @@ data InterpreterState = InterpreterState
   , globals        :: M.Map Identifier Value
   , builtins       :: M.Map Identifier BuiltInFunction
   , functions      :: M.Map Identifier UserFunctionDef
-  , blockStack     :: [Maybe Block]
   , gfxBackground  :: Colour
   , currentGfx     :: GA.Block
   , animationStyle :: AnimationStyle
@@ -46,8 +46,8 @@ data InterpreterState = InterpreterState
   , engineInfo     :: GE.EngineInfo
   }
 
-runInterpreterM ::
-     InterpreterProcess a
+runInterpreterM
+  :: InterpreterProcess a
   -> InterpreterState
   -> (Either String a, InterpreterState)
 runInterpreterM op = runState (runExceptT op)

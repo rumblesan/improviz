@@ -55,6 +55,26 @@ func draw(r, g, b) =>
 draw(255, 0, 0)
 ```
 
+## Function Blocks
+
+When a function is called in can be passed an optional block.
+If the function has a **BlockArg** argument then this block is available to be used within the function body.
+
+```
+func myf(x, y, &blk) =>
+	if (isNull(blk))
+		sphere()
+	else
+		move(x, y, 0)
+			blk()
+
+myf(1, 1)
+	rotate()
+	box()
+```
+
+The **BlockArg** must start with an ampersand *(&)* symbol.
+
 ## First-Class Functions
 
 Functions can be passed as values.
@@ -94,9 +114,22 @@ n times with i
 
 Tabs are used for indentation.
 
-## Blocks
+## Saving and Loading GFX state
 
-Scoping of commands with blocks also works the same as LiveCodeLab
+The built in functions **pushScope** and **popScope** can be used to save and load snapshots of the GFX engine state on a stack.
+
+```
+pushScope
+rotate()
+box()
+popScope
+move(1,0,0)
+sphere()
+```
+
+This state will include the stroke and fill styling, as well as the matrix manipulations.
+
+This feature is used in conjuction with the function blocks to allow simplified scoping of some commands in much the same way as LiveCodeLab.
 
 ```
 fill(255, 0, 0)

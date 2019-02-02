@@ -1,27 +1,30 @@
 module Language.StdLib.Maths
   ( addMathStdLib
-  ) where
+  )
+where
 
 import           Language.Ast
-import           Language.Interpreter        (getVariable, setBuiltIn,
-                                              setVariable)
+import           Language.Interpreter           ( getVariable
+                                                , setBuiltIn
+                                                , setVariable
+                                                )
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
 
 addMathStdLib :: InterpreterProcess ()
 addMathStdLib = do
   setVariable "pi" (Number pi)
-  setBuiltIn "sin" sinFunc ["rads"]
-  setBuiltIn "cos" cosFunc ["rads"]
-  setBuiltIn "tan" tanFunc ["rads"]
-  setBuiltIn "abs" absFunc ["val"]
-  setBuiltIn "ceil" ceilFunc ["val"]
-  setBuiltIn "floor" floorFunc ["val"]
-  setBuiltIn "round" roundFunc ["val"]
-  setBuiltIn "max" maxFunc ["vala", "valb"]
-  setBuiltIn "min" minFunc ["vala", "valb"]
-  setBuiltIn "log" logFunc ["val"]
-  setBuiltIn "sqrt" sqrtFunc ["val"]
+  setBuiltIn "sin"   sinFunc   [VarArg "rads"]
+  setBuiltIn "cos"   cosFunc   [VarArg "rads"]
+  setBuiltIn "tan"   tanFunc   [VarArg "rads"]
+  setBuiltIn "abs"   absFunc   [VarArg "val"]
+  setBuiltIn "ceil"  ceilFunc  [VarArg "val"]
+  setBuiltIn "floor" floorFunc [VarArg "val"]
+  setBuiltIn "round" roundFunc [VarArg "val"]
+  setBuiltIn "max"   maxFunc   [VarArg "vala", VarArg "valb"]
+  setBuiltIn "min"   minFunc   [VarArg "vala", VarArg "valb"]
+  setBuiltIn "log"   logFunc   [VarArg "val"]
+  setBuiltIn "sqrt"  sqrtFunc  [VarArg "val"]
 
 sinFunc :: InterpreterProcess Value
 sinFunc = do

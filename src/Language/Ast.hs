@@ -5,6 +5,7 @@ module Language.Ast
   , Element(..)
   , Application(..)
   , Func(..)
+  , FuncArg(..)
   , Loop(..)
   , Assignment(..)
   , Expression(..)
@@ -12,7 +13,8 @@ module Language.Ast
   , Value(..)
   , If(..)
   , Identifier
-  ) where
+  )
+where
 
 newtype Program =
   Program [Statement]
@@ -64,9 +66,11 @@ data If =
 
 data Func =
   Func Identifier
-       [Identifier]
+       [FuncArg]
        Block
   deriving (Eq, Show)
+
+data FuncArg = VarArg Identifier | BlockArg Identifier deriving (Eq, Show)
 
 data Expression
   = EApp Application
@@ -88,6 +92,7 @@ data Value
   = Number Float
   | Null
   | Symbol String
+  | BlockRef Block
   | UserFunctionRef Identifier
   | BuiltInFunctionRef Identifier
   deriving (Eq, Show)
