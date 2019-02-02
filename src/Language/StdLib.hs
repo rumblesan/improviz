@@ -1,15 +1,17 @@
 module Language.StdLib
   ( addStdLib
-  ) where
+  )
+where
 
-import           Language.StdLib.BlockHandling (addBlockHandlingStdLib)
-import           Language.StdLib.ColourOps     (addColourStdLib)
-import           Language.StdLib.Maths         (addMathStdLib)
-import           Language.StdLib.MatrixOps     (addMatrixStdLib)
-import           Language.StdLib.PostEffects   (addPostEffectsStdLib)
-import           Language.StdLib.Shapes        (addShapesStdLib)
+import           Language.StdLib.BlockHandling  ( addBlockHandlingStdLib )
+import           Language.StdLib.ColourOps      ( addColourStdLib )
+import           Language.StdLib.Maths          ( addMathStdLib )
+import           Language.StdLib.MatrixOps      ( addMatrixStdLib )
+import           Language.StdLib.PostEffects    ( addPostEffectsStdLib )
+import           Language.StdLib.Shapes         ( addShapesStdLib )
+import           Language.StdLib.Util           ( addUtilStdLib )
 
-import           Language.Interpreter.Types    (InterpreterProcess)
+import           Language.Interpreter.Types     ( InterpreterProcess )
 
 addStdLib :: InterpreterProcess ()
 addStdLib = do
@@ -19,3 +21,4 @@ addStdLib = do
   addColourStdLib
   addPostEffectsStdLib
   addBlockHandlingStdLib
+  addUtilStdLib
