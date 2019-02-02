@@ -18,8 +18,10 @@ functionDef
   | "func" identifier "(" argList? ")" "=>" block
 
 argList
-  = identifier
-  | identifier "," arglist
+  = functionArg
+  | functionArg "," arglist
+
+functionArg = identifier | &identifier
 
 block = (<indent> element)+
 
