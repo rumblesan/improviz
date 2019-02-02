@@ -1,10 +1,11 @@
 module Language.Ast.Transformers.Globalise
   ( globalise
-  ) where
+  )
+where
 
 import           Control.Monad.Trans.State.Strict
-import           Data.Set                         (Set (..))
-import qualified Data.Set                         as S
+import           Data.Set                       ( Set(..) )
+import qualified Data.Set                      as S
 
 import           Language.Ast
 
@@ -30,15 +31,13 @@ globaliseStatement (StAssign assignment) =
   StAssign <$> globaliseAssignment assignment
 globaliseStatement (StExpression expression) =
   StExpression <$> globaliseExpression expression
-globaliseStatement (StIf ifAst) = StIf <$> globaliseIf ifAst
-globaliseStatement (StFunc func) = StFunc <$> globaliseFunc func
+globaliseStatement (StIf   ifAst) = StIf <$> globaliseIf ifAst
+globaliseStatement (StFunc func ) = StFunc <$> globaliseFunc func
 
 globaliseBlock :: Set String -> Block -> Transformer Block
-globaliseBlock newVars (Block elements) =
-  Block <$>
-  localState
-    (\st -> st {globalVars = S.difference (globalVars st) newVars})
-    (mapM globaliseElement elements)
+globaliseBlock newVars (Block elements) = Block <$> localState
+  (\st -> st { globalVars = S.difference (globalVars st) newVars })
+  (mapM globaliseElement elements)
 
 globaliseElement :: Element -> Transformer Element
 globaliseElement (ElLoop loop) = ElLoop <$> globaliseLoop loop
@@ -50,19 +49,23 @@ globaliseElement (ElIf ifAst) = ElIf <$> globaliseIf ifAst
 
 globaliseLoop :: Loop -> Transformer Loop
 globaliseLoop (Loop expr mbId block) =
-  Loop <$> globaliseExpression expr <*> pure mbId <*>
-  globaliseBlock (maybe S.empty S.singleton mbId) block
+  Loop
+    <$> globaliseExpression expr
+    <*> pure mbId
+    <*> globaliseBlock (maybe S.empty S.singleton mbId) block
 
 globaliseAssignment :: Assignment -> Transformer Assignment
 globaliseAssignment (AbsoluteAssignment ident expr) = do
   newExpr <- globaliseExpression expr
   modify
-    (\st -> st {globalVars = S.difference (globalVars st) (S.singleton ident)})
+    (\st -> st { globalVars = S.difference (globalVars st) (S.singleton ident) }
+    )
   return $ AbsoluteAssignment ident newExpr
 globaliseAssignment (ConditionalAssignment ident expr) = do
   newExpr <- globaliseExpression expr
   modify
-    (\st -> st {globalVars = S.difference (globalVars st) (S.singleton ident)})
+    (\st -> st { globalVars = S.difference (globalVars st) (S.singleton ident) }
+    )
   return $ ConditionalAssignment ident newExpr
 
 globaliseExpression :: Expression -> Transformer Expression
@@ -73,30 +76,36 @@ globaliseExpression (BinaryOp op expr1 expr2) =
 globaliseExpression (UnaryOp op expr1) =
   UnaryOp op <$> globaliseExpression expr1
 globaliseExpression (EVar variable) = EVar <$> globaliseVariable variable
-globaliseExpression (EVal value) = EVal <$> globaliseValue value
+globaliseExpression (EVal value   ) = EVal <$> globaliseValue value
 
 globaliseIf :: If -> Transformer If
 globaliseIf (If predicate block elseBlock) =
-  If <$> globaliseExpression predicate <*> globaliseBlock S.empty block <*>
-  mapM (globaliseBlock S.empty) elseBlock
+  If
+    <$> globaliseExpression predicate
+    <*> globaliseBlock S.empty block
+    <*> mapM (globaliseBlock S.empty) elseBlock
 
 globaliseFunc :: Func -> Transformer Func
-globaliseFunc (Func name argNames block) = do
-  modify (\st -> st {globalVars = S.insert name (globalVars st)})
-  Func name argNames <$> globaliseBlock (S.fromList argNames) block
+globaliseFunc (Func name args block) = do
+  modify (\st -> st { globalVars = S.insert name (globalVars st) })
+  Func name args <$> globaliseBlock (argNames args) block
+
+argNames :: [FuncArg] -> S.Set String
+argNames args = S.fromList $ an <$> args
+ where
+  an (VarArg   n) = n
+  an (BlockArg n) = n
 
 globaliseApplication :: Application -> Transformer Application
 globaliseApplication (Application name args mbBlock) =
-  Application <$> globaliseVariable name <*> mapM globaliseExpression args <*>
-  mapM (globaliseBlock S.empty) mbBlock
+  Application
+    <$> globaliseVariable name
+    <*> mapM globaliseExpression      args
+    <*> mapM (globaliseBlock S.empty) mbBlock
 
 globaliseVariable :: Variable -> Transformer Variable
 globaliseVariable v@(LocalVariable name) =
-  gets
-    (\st ->
-       if S.member name (globalVars st)
-         then GlobalVariable name
-         else v)
+  gets (\st -> if S.member name (globalVars st) then GlobalVariable name else v)
 globaliseVariable globalVar = return globalVar
 
 globaliseValue :: Value -> Transformer Value

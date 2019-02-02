@@ -1,6 +1,8 @@
 module Language.Interpreter.Values
   ( getNumberValue
-  ) where
+  , valIsNull
+  )
+where
 
 import           Control.Monad.Except
 
@@ -10,9 +12,14 @@ import           Language.Interpreter.Types
 getValueType :: Value -> String
 getValueType (Number _)                = "Number"
 getValueType Null                      = "Null"
-getValueType (Symbol _)                = "Symbol"
-getValueType (UserFunctionRef name)    = "Function: " ++ name
+getValueType (Symbol             _   ) = "Symbol"
+getValueType (BlockRef           _   ) = "Block"
+getValueType (UserFunctionRef    name) = "Function: " ++ name
 getValueType (BuiltInFunctionRef name) = "BuiltIn: " ++ name
+
+valIsNull :: Value -> Bool
+valIsNull Null = True
+valIsNull _    = False
 
 getNumberValue :: Value -> InterpreterProcess Float
 getNumberValue (Number v) = return v
