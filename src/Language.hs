@@ -25,11 +25,12 @@ import           Language.StdLib            (addStdLib)
 parse :: String -> Either String Program
 parse = parseProgram
 
-initialState :: [(Identifier, Value)] -> InterpreterState
-initialState initialVars =
+initialState :: [Program] -> InterpreterState
+initialState userCode =
   let setup = do
         addStdLib
-        addInitialVariables initialVars
+        globals <- getGlobalNames
+        mapM (\p -> interpretLanguage (transform globals p)) userCode
    in snd $ runInterpreterM setup emptyState
 
 updateStateVariables ::
