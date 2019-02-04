@@ -17,15 +17,16 @@ import           Language.Ast
 parserTests :: Test
 parserTests = testGroup
   "Parser Tests"
-  [ testCase "Parse basic program" test_parse_program
-  , testCase "Parse blank program" test_parse_blank_program
-  , testCase "Parse empty program" test_parse_empty_program
+  [ testCase "Parse basic program"        test_parse_program
+  , testCase "Parse blank program"        test_parse_blank_program
+  , testCase "Parse empty program"        test_parse_empty_program
+  , testCase "Parse nested indent blocks" test_nested_indent_blocks
   ]
 
 test_parse_program :: Assertion
 test_parse_program =
   let
-    fooDef  = "func foo (a, b) =>\n\tc = a + b\n\tbox(c)\n"
+    fooDef  = "func foo (a, b)\n\tc = a + b\n\tbox(c)\n"
     loopNum = "n := (3 * 4) + 1\n"
     loop    = "n times\n\trotate(0.5)\n\tfoo(1, 2)\n"
     program = fooDef ++ loopNum ++ loop
@@ -69,3 +70,30 @@ test_parse_empty_program =
       expected = Right $ Program []
       result   = Language.parse program
   in  assertEqual "" expected result
+
+test_nested_indent_blocks :: Assertion
+test_nested_indent_blocks =
+  let
+    code
+      = "10 times with x\n\
+           \\trotate()\n\
+           \\t10 times with y\n\
+           \\t\trotate()\n\
+           \\t\tbox()"
+    ast = Program
+      [ StLoop $ Loop (EVal $ Number 10) (Just "x") $ Block
+          [ ElExpression $ EApp $ Application (LocalVariable "rotate")
+                                              []
+                                              Nothing
+          , ElLoop $ Loop (EVal $ Number 10) (Just "y") $ Block
+            [ ElExpression $ EApp $ Application (LocalVariable "rotate")
+                                                []
+                                                Nothing
+            , ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing
+            ]
+          ]
+      ]
+    expected = Right ast
+    result   = Language.parse code
+  in
+    assertEqual "" expected result
