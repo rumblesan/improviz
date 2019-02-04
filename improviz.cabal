@@ -21,7 +21,6 @@ executable improviz
   build-depends:       base >= 4.8 && < 5
                      , bytestring
                      , containers
-                     , indents
                      , filepath
                      , file-embed
                      , freetype2
@@ -29,7 +28,8 @@ executable improviz
                      , lens-simple
                      , mtl
                      , optparse-applicative
-                     , parsec
+                     , megaparsec >= 7
+                     , parser-combinators >= 1
                      , scotty
                      , stm
                      , transformers
@@ -105,14 +105,14 @@ test-suite improviz-test
   build-depends:       base >= 4.8 && < 5
                      , bytestring
                      , containers
-                     , indents
                      , filepath
                      , file-embed
                      , freetype2
                      , lens-simple
                      , mtl
                      , optparse-applicative
-                     , parsec
+                     , megaparsec >= 7
+                     , parser-combinators >= 1
                      , transformers
                      , test-framework
                      , test-framework-hunit

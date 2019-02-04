@@ -17,10 +17,10 @@ import           Lens.Simple                    ( (^.) )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( catMaybes )
 
-import           Sound.OSC.Datum                ( Datum
+import           Sound.OSC.Datum                ( Datum(..)
                                                 , datum_floating
+                                                , ascii_to_string
                                                 )
-import           Sound.OSC.Datum.Datem          ( datum_string )
 import           Sound.OSC.FD                   ( Message
                                                 , recvPacket
                                                 , udpServer
@@ -54,7 +54,7 @@ updateVars datem existing =
 combineDatumPairs :: [Datum] -> [Maybe (String, Value)]
 combineDatumPairs (name : value : rem) =
   let pair = do
-        n <- datum_string name
+        n <- Just $ ascii_to_string (d_ascii_string name)
         v <- datum_floating value
         return (n, Number v)
   in  pair : combineDatumPairs rem

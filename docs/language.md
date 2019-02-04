@@ -42,12 +42,12 @@ rectangle(2, 1)
 
 ## Function Definition
 
-Functions can be either single line with an expression body, or multi-line with a block.
+Functions are defined using the `func` keyword, followed by a name, argument list and then either an indented block or an arrow and single line expression
 
 ```
 func val(a) => a + 1
 
-func draw(r, g, b) =>
+func draw(r, g, b)
   rotate()
   fill(r, g, b)
   box(val(1))
@@ -55,13 +55,13 @@ func draw(r, g, b) =>
 draw(255, 0, 0)
 ```
 
-## Function Blocks
+## Function Application Blocks
 
 When a function is called in can be passed an optional block.
 If the function has a **BlockArg** argument then this block is available to be used within the function body.
 
 ```
-func myf(x, y, &blk) =>
+func myf(x, y, &blk)
 	if (isNull(blk))
 		sphere()
 	else
@@ -80,7 +80,7 @@ The **BlockArg** must start with an ampersand *(&)* symbol.
 Functions can be passed as values.
 
 ```
-func draw(f) =>
+func draw(f)
   rotate()
   fill(r, g, b)
   f(3)

@@ -82,7 +82,7 @@ setupWindow env initCB resizeCB displayCB =
         GLFW.windowHint $ GLFW.WindowHint'ContextVersionMinor 2
         GLFW.windowHint $ GLFW.WindowHint'OpenGLForwardCompat True
         GLFW.windowHint $ GLFW.WindowHint'OpenGLProfile GLFW.OpenGLProfile'Core
-        GLFW.windowHint $ GLFW.WindowHint'DepthBits 16
+        GLFW.windowHint $ GLFW.WindowHint'DepthBits (Just 16)
         GLFW.windowHint $ GLFW.WindowHint'Decorated (cfg ^. C.decorated)
         monitor      <- targetMonitor mon
         (w, h, x, y) <- maybe (return (width, height, 0, 0))
@@ -90,13 +90,19 @@ setupWindow env initCB resizeCB displayCB =
                               monitor
         mw <- GLFW.createWindow w h (cfg ^. C.apptitle) Nothing Nothing
         maybe' mw (GLFW.terminate >> exitFailure) $ \window -> do
-          GLFW.setWindowPos window x y
+          GLFW.setWindowPos window (x + 5) (y + 5) -- horrible hack for OSX 10.14
           GLFW.makeContextCurrent mw
           (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
           depthFunc $= Just Less
           initCB w h fbWidth fbHeight
           GLFW.setWindowSizeCallback window $ Just (resizeToGLFWResize resizeCB)
           logInfo $ "Improviz resolution: " ++ show w ++ " by " ++ show h
+          -- next 3 lines also for horrible hack
+          -- otherwise the screen is just black and won't draw
+          -- https://github.com/glfw/glfw/issues/1334
+          GLFW.swapBuffers window
+          GLFW.pollEvents
+          GLFW.setWindowPos window x y
           forever $ unless' (GLFW.windowShouldClose window) $ do
             Just t <- GLFW.getTime
             displayCB t

@@ -1,203 +1,241 @@
-module Language.Parser
-  ( simpleParse
-  , parseProgram
-  , argList
-  , expression
-  )
-where
+module Language.Parser where
 
 import           Control.Monad                  ( void )
-import           Data.Functor.Identity
+import           Data.Void
+import           Data.Monoid                    ( (<>) )
 
 import           GHC.Float                      ( double2Float )
 
-import           Text.Parsec
-import           Text.Parsec.Expr
-import           Text.Parsec.Indent      hiding ( Block )
-import           Text.Parsec.Language
-import           Text.Parsec.Token
+import           Text.Megaparsec
+import           Text.Megaparsec.Char           ( alphaNumChar
+                                                , space1
+                                                , letterChar
+                                                , newline
+                                                , string
+                                                , char
+                                                )
+import           Control.Monad.Combinators.Expr
+import qualified Text.Megaparsec.Char.Lexer    as L
 
 import           Language.Ast
 
-type Indent = IndentT Identity
 
-type LangParser e = IndentParser String () e
+type Parser = Parsec Void String
 
-simpleParse :: LangParser a -> String -> Either ParseError a
-simpleParse parser = runIndentParser parser () "program"
+type ParserError = ParseErrorBundle String Void
+
+lineCmnt = L.skipLineComment "//"
+blockCmnt = L.skipBlockComment "/*" "*/"
+
+scn :: Parser ()
+scn = L.space (void $ takeWhile1P Nothing f) lineCmnt blockCmnt
+  where f x = x == '\t' || x == '\n'
+
+sc :: Parser ()
+sc = L.space (void $ takeWhile1P Nothing f) lineCmnt blockCmnt
+  where f x = x == ' '
+
+whitespace :: Parser ()
+whitespace = L.space space1 lineCmnt blockCmnt
+
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme sc
+
+symbol :: String -> Parser String
+symbol = L.symbol sc
+
+parens :: Parser a -> Parser a
+parens = between (symbol "(") (symbol ")")
+
+comma :: Parser String
+comma = symbol ","
+
+rword :: String -> Parser ()
+rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
+
+rws :: [String]
+rws = ["if", "else", "null", "func", "times", "with"]
+
+identifier :: Parser String
+identifier = (lexeme . try) (p >>= check)
+ where
+  p = (:) <$> letterChar <*> many alphaNumChar
+  check x = if x `elem` rws
+    then fail $ "keyword " ++ show x ++ " cannot be an identifier"
+    else return x
+
+eol :: Parser ()
+eol = void $ many newline
+
+-- Improviz Language Parser
+
+simpleParse :: Parser a -> String -> Either ParserError a
+simpleParse parser = parse parser "program"
 
 parseProgram :: String -> Either String Program
 parseProgram prog = case simpleParse program prog of
   Right ast -> Right ast
   Left  err -> Left $ show err
 
-program :: LangParser Program
-program = topLevel >> skipMany space >> (empty <|> (programBlock <* eof))
+program :: Parser Program
+program = between whitespace eof programBlock
 
-programBlock :: LangParser Program
-programBlock = Program <$> block statement <?> "program"
+programBlock :: Parser Program
+programBlock = Program <$> many statement <?> "program block"
 
-statement :: LangParser Statement
-statement =
-  (   (StLoop <$> loop)
+statement :: Parser Statement
+statement = L.nonIndented scn statement' <?> "statement"
+
+statement' :: Parser Statement
+statement' =
+  (   (StIf <$> ifElem)
     <|> (StAssign <$> assignment)
     <|> (StFunc <$> functionDef)
-    <|> (StIf <$> ifElem)
-    <|> (StExpression <$> try expression)
+    <|> (StLoop <$> loop)
+    <|> (StExpression <$> expression)
     )
-    <*  eol
-    <?> "element"
+    <* eol
 
-empty :: LangParser Program
-empty = Program [] <$ eof
-
-exprDef :: GenLanguageDef String st Indent
-exprDef = LanguageDef
-  { commentStart    = ""
-  , commentEnd      = ""
-  , commentLine     = "#"
-  , nestedComments  = True
-  , identStart      = letter <|> char '_'
-  , identLetter     = alphaNum <|> oneOf "_'"
-  , opStart         = oneOf "^*/%+-^<>=!&|:"
-  , opLetter        = oneOf "^*/%+-^<>=!&|:"
-  , reservedOpNames = [ "^"
-                      , "*"
-                      , "/"
-                      , "%"
-                      , "+"
-                      , "-"
-                      , "<"
-                      , ">"
-                      , "=="
-                      , "<="
-                      , ">="
-                      , "!="
-                      , "&&"
-                      , "||"
-                      ]
-  , reservedNames   = ["if", "else", "times", "with", "null", "func"]
-  , caseSensitive   = True
-  }
-
-TokenParser { parens = m_parens, integer = m_integer, float = m_float, comma = m_comma, colon = m_colon, reservedOp = m_reservedOp, identifier = m_identifier, symbol = m_symbol }
-  = makeTokenParser exprDef
-
-table =
-  [ [Prefix (m_reservedOp "-" >> return (UnaryOp "-"))]
-  , [ Infix (m_reservedOp "^" >> return (BinaryOp "^")) AssocLeft
-    , Infix (m_reservedOp "*" >> return (BinaryOp "*")) AssocLeft
-    , Infix (m_reservedOp "/" >> return (BinaryOp "/")) AssocLeft
-    , Infix (m_reservedOp "%" >> return (BinaryOp "%")) AssocLeft
+operators =
+  [ [Prefix (UnaryOp <$> symbol "-")]
+  , [ InfixL (BinaryOp <$> symbol "^")
+    , InfixL (BinaryOp <$> symbol "*")
+    , InfixL (BinaryOp <$> symbol "/")
+    , InfixL (BinaryOp <$> symbol "%")
     ]
-  , [ Infix (m_reservedOp "+" >> return (BinaryOp "+")) AssocLeft
-    , Infix (m_reservedOp "-" >> return (BinaryOp "-")) AssocLeft
+  , [InfixL (BinaryOp <$> symbol "+"), InfixL (BinaryOp <$> symbol "-")]
+  , [ InfixL (BinaryOp <$> symbol "<")
+    , InfixL (BinaryOp <$> symbol ">")
+    , InfixL (BinaryOp <$> symbol "<=")
+    , InfixL (BinaryOp <$> symbol ">=")
+    , InfixL (BinaryOp <$> symbol "==")
+    , InfixL (BinaryOp <$> symbol "!=")
     ]
-  , [ Infix (m_reservedOp "<" >> return (BinaryOp "<"))   AssocLeft
-    , Infix (m_reservedOp ">" >> return (BinaryOp ">"))   AssocLeft
-    , Infix (m_reservedOp "<=" >> return (BinaryOp "<=")) AssocLeft
-    , Infix (m_reservedOp ">=" >> return (BinaryOp ">=")) AssocLeft
-    , Infix (m_reservedOp "==" >> return (BinaryOp "==")) AssocLeft
-    , Infix (m_reservedOp "==" >> return (BinaryOp "==")) AssocLeft
-    ]
-  , [ Infix (m_reservedOp "&&" >> return (BinaryOp "&&")) AssocLeft
-    , Infix (m_reservedOp "||" >> return (BinaryOp "||")) AssocLeft
-    ]
+  , [InfixL (BinaryOp <$> symbol "&&"), InfixL (BinaryOp <$> symbol "||")]
   ]
 
-atom :: LangParser Expression
-atom =
+exprs :: Parser Expression
+exprs =
   EApp <$> application <|> EVar <$> try variable <|> EVal <$> try value <|> try
-    (m_parens expression)
+    (parens expression)
 
-langBlock :: LangParser Block
-langBlock = Block <$> block element <?> "block"
-
-element :: LangParser Element
+element :: Parser Element
 element =
-  (   (ElLoop <$> loop)
+  (   (ElIf <$> ifElem)
     <|> (ElAssign <$> assignment)
-    <|> (ElIf <$> ifElem)
+    <|> (ElLoop <$> loop)
     <|> (ElExpression <$> try expression)
     )
-    <*  eol
     <?> "element"
 
-argList :: LangParser e -> LangParser [e]
-argList lp = sepBy lp sep
-  where sep = skipMany space >> m_comma >> skipMany space
+argList :: Parser e -> Parser [e]
+argList lp = sepBy lp comma
 
-application :: LangParser Application
-application =
-  Application
-    <$> try (variable <* m_symbol "(")
-    <*> argList expression
-    <*  m_symbol ")"
-    <*> optionMaybe (indented >> langBlock)
-    <?> "application"
-
-functionDef :: LangParser Func
-functionDef =
-  Func
-    <$> try (m_symbol "func" *> m_identifier)
-    <*> m_parens (argList functionArg)
-    <*  m_symbol "=>"
-    <*> (lbody <|> lexpr)
-    <?> "functionDef"
+application :: Parser Application
+application = L.indentBlock scn ap
  where
-  lexpr = (\e -> Block [ElExpression e]) <$> expression
-  lbody = indented >> langBlock
+  ap = do
+    ilevel <- L.indentLevel
+    apVar  <- try (variable <* symbol "(")
+    args   <- sepBy expression comma
+    void $ symbol ")"
+    return
+      (L.IndentMany (Just (ilevel <> defaultTabWidth))
+                    (return . (Application apVar args . blk))
+                    element
+      )
+  blk []    = Nothing
+  blk elems = Just $ Block elems
 
-functionArg :: LangParser FuncArg
+functionDef :: Parser Func
+functionDef = L.indentBlock scn fb
+ where
+  fb = do
+    ilevel <- L.indentLevel
+    rword "func"
+    name     <- identifier
+    args     <- parens $ sepBy functionArg comma
+    exprBody <- optional $ symbol "=>" *> expression
+    return $ case exprBody of
+      Just expr -> L.IndentNone (Func name args $ Block [ElExpression expr])
+      Nothing   -> L.IndentSome (Just (ilevel <> defaultTabWidth))
+                                (return . Func name args . Block)
+                                element
+
+
+functionArg :: Parser FuncArg
 functionArg =
-  (VarArg <$> m_identifier) <|> (BlockArg <$> (m_symbol "&" *> m_identifier))
+  (VarArg <$> identifier) <|> (BlockArg <$> (char '&' *> identifier))
 
-loop :: LangParser Loop
-loop =
-  Loop
-    <$> try (expression <* m_symbol "times")
-    <*> optionMaybe (m_symbol "with" *> m_identifier)
-    <*> (indented >> langBlock)
-    <?> "loop"
+loop :: Parser Loop
+loop = L.indentBlock scn l
+ where
+  l = do
+    ilevel   <- L.indentLevel
+    loopExpr <- try (expression <* symbol "times")
+    loopVar  <- optional (rword "with" *> identifier)
+    return
+      (L.IndentSome (Just (ilevel <> defaultTabWidth))
+                    (return . (Loop loopExpr loopVar . Block))
+                    element
+      )
 
-assignment :: LangParser Assignment
+assignment :: Parser Assignment
 assignment = absAssignment <|> condAssignment
  where
   absAssignment =
     AbsoluteAssignment
-      <$> try (m_identifier <* m_symbol "=")
+      <$> try (identifier <* symbol "=")
       <*> expression
       <?> "absolute assignment"
   condAssignment =
     ConditionalAssignment
-      <$> try (m_identifier <* m_symbol ":=")
+      <$> try (identifier <* symbol ":=")
       <*> expression
       <?> "conditional assignment"
 
-ifElem :: LangParser If
-ifElem =
-  If
-    <$> try (m_symbol "if" *> m_parens expression)
-    <*> langBlock
-    <*> optionMaybe (m_symbol "else" *> langBlock)
-    <?> "if"
+ifElem :: Parser If
+ifElem = do
+  i  <- ifBlock
+  el <- optional elseBlock
+  return $ i el
 
-expression :: LangParser Expression
-expression = buildExpressionParser table atom <?> "expression"
-
-variable :: LangParser Variable
-variable = LocalVariable <$> m_identifier
-
-value :: LangParser Value
-value = number <|> v_symbol <|> v_null
+ifBlock :: Parser (Maybe Block -> If)
+ifBlock = L.indentBlock scn i
  where
-  v_symbol = try m_colon >> Symbol <$> m_identifier <?> "symbol"
-  v_null   = Null <$ m_symbol "null" <?> "null"
+  i = do
+    ilevel <- L.indentLevel
+    rword "if"
+    predicate <- parens expression
+    return
+      (L.IndentSome (Just (ilevel <> defaultTabWidth))
+                    (return . If predicate . Block)
+                    element
+      )
 
-number :: LangParser Value
+
+elseBlock :: Parser Block
+elseBlock = L.indentBlock scn i
+ where
+  i = do
+    ilevel <- L.indentLevel
+    rword "else"
+    return
+      (L.IndentSome (Just (ilevel <> defaultTabWidth)) (return . Block) element)
+
+expression :: Parser Expression
+expression = makeExprParser exprs operators <?> "expression"
+
+variable :: Parser Variable
+variable = LocalVariable <$> identifier
+
+value :: Parser Value
+value = v_number <|> v_symbol <|> v_null
+ where
+  v_symbol = try (char ':') >> Symbol <$> identifier <?> "symbol"
+  v_null   = Null <$ rword "null" <?> "null"
+  v_number = Number <$> number
+
+number :: Parser Float
 number =
-  Number <$> (try (fmap double2Float m_float) <|> try m_intToFloat) <?> "number"
-  where m_intToFloat = fmap fromIntegral m_integer
-
-eol :: LangParser ()
-eol = many newline *> eof <|> void (many newline)
+  lexeme $ (double2Float <$> try L.float) <|> (fromIntegral <$> L.decimal)
