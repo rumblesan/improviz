@@ -1,7 +1,7 @@
 
-func grid(width, height, f)
+func grid(width, height, &blk)
 	width times with x
 		height times with y
 			move(x, y, 0)
-				f()
+				blk()
 
