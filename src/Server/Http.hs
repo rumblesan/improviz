@@ -64,6 +64,13 @@ toggleTextDisplay ui = do
   logInfo msg
   return $ ImprovizOKResponse msg
 
+updateExternalVar
+  :: ImprovizEnv -> String -> Float -> IO (ImprovizResponse String)
+updateExternalVar env name value = do
+  atomically $ modifyTVar (env ^. I.externalVars) (M.insert name (Number value))
+  return $ ImprovizOKResponse $ name ++ " variable updated"
+
+
 startHttpServer :: ImprovizEnv -> IO ThreadId
 startHttpServer env =
   let port     = (env ^. I.config . C.serverPort)
@@ -81,3 +88,11 @@ startHttpServer env =
           post "/toggle/text" $ do
             resp <- liftIO $ toggleTextDisplay (env ^. I.ui)
             json resp
+          post "/vars/edit/:name" $ do
+            name <- param "name"
+            b    <- body
+            case reads (unpack b) of
+              [(v, _)] -> do
+                resp <- liftIO $ updateExternalVar env name v
+                json resp
+              _ -> json $ ImprovizErrorResponse $ name ++ " variable updated"
