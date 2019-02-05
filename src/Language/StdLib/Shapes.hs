@@ -10,6 +10,8 @@ import           Language.Ast
 import           Language.Interpreter           ( addGfxCommand
                                                 , getVarOrNull
                                                 , getVariableWithDefault
+                                                , getNumberFromNull
+                                                , getVariableWithError
                                                 , gfxScopedBlock
                                                 , setBuiltIn
                                                 )
@@ -27,6 +29,7 @@ addShapesStdLib = do
              [VarArg "a", VarArg "b", VarArg "c", BlockArg "block"]
   setBuiltIn "rectangle" rectangle [VarArg "a", VarArg "b", BlockArg "block"]
   setBuiltIn "line"      line      [VarArg "a", BlockArg "block"]
+  setBuiltIn "shape"     shape     [VarArg "name", VarArg "a", BlockArg "block"]
 
 box :: InterpreterProcess Value
 box = do
@@ -107,3 +110,50 @@ line = do
     Null         -> addGfxCommand cmd
     BlockRef blk -> gfxScopedBlock cmd blk
   return Null
+
+shape :: InterpreterProcess Value
+shape = do
+  name <- getVariableWithError "name" "Must give shape function name argument"
+  case name of
+    (Symbol "cube"     ) -> cubeS
+    (Symbol "sphere"   ) -> sphereS
+    (Symbol "cylinder" ) -> cylinderS
+    (Symbol "rectangle") -> rectangleS
+    (Symbol "line"     ) -> lineS
+    _                    -> throwError "invalid shape command value"
+  return Null
+ where
+  cubeS = do
+    vX <- getVariableWithError "x" "Must give cube an X size"
+    vY <- getVariableWithError "y" "Must give cube a Y size"
+    vZ <- getVariableWithError "z" "Must give cube a Z size"
+    let x = getNumberFromNull vX 0
+    let y = getNumberFromNull vY 0
+    let z = getNumberFromNull vZ 0
+    addGfxCommand $ GA.ShapeCommand $ GA.Cube x y z
+  sphereS = do
+    vX <- getVariableWithError "x" "Must give sphere an X size"
+    vY <- getVariableWithError "y" "Must give sphere a Y size"
+    vZ <- getVariableWithError "z" "Must give sphere a Z size"
+    let x = getNumberFromNull vX 0
+    let y = getNumberFromNull vY 0
+    let z = getNumberFromNull vZ 0
+    addGfxCommand $ GA.ShapeCommand $ GA.Sphere x y z
+  cylinderS = do
+    vX <- getVariableWithError "x" "Must give cylinder an X size"
+    vY <- getVariableWithError "y" "Must give cylinder a Y size"
+    vZ <- getVariableWithError "z" "Must give cylinder a Z size"
+    let x = getNumberFromNull vX 0
+    let y = getNumberFromNull vY 0
+    let z = getNumberFromNull vZ 0
+    addGfxCommand $ GA.ShapeCommand $ GA.Cylinder x y z
+  rectangleS = do
+    vX <- getVariableWithError "x" "Must give rectangle an X size"
+    vY <- getVariableWithError "y" "Must give rectangle a Y size"
+    let x = getNumberFromNull vX 0
+    let y = getNumberFromNull vY 0
+    addGfxCommand $ GA.ShapeCommand $ GA.Rectangle x y
+  lineS = do
+    vX <- getVariableWithError "x" "Must give line a size"
+    let x = getNumberFromNull vX 0
+    addGfxCommand $ GA.ShapeCommand $ GA.Line x
