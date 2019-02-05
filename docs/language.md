@@ -119,10 +119,10 @@ Tabs are used for indentation.
 The built in functions **pushScope** and **popScope** can be used to save and load snapshots of the GFX engine state on a stack.
 
 ```
-pushScope
+pushScope()
 rotate()
 box()
-popScope
+popScope()
 move(1,0,0)
 sphere()
 ```
