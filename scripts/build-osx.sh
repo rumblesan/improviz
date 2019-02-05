@@ -2,6 +2,7 @@
 
 BUILD_DIR="dist/improviz-osx"
 mkdir -p $BUILD_DIR
+cp -r ./assets $BUILD_DIR
 cp -r ./textures $BUILD_DIR
 cp -r ./examples $BUILD_DIR
 cp ./improviz.yaml $BUILD_DIR
