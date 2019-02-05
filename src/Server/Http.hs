@@ -16,6 +16,7 @@ import           Control.Concurrent.STM         ( TVar
                                                 , modifyTVar
                                                 )
 import           Control.Monad.Trans            ( liftIO )
+import           System.FilePath.Posix          ( (</>) )
 
 import           Data.ByteString.Lazy.Char8     ( pack
                                                 , unpack
@@ -41,8 +42,8 @@ import           Lens.Simple                    ( set
                                                 , (^.)
                                                 )
 
-simpleEditorHtml :: FilePath
-simpleEditorHtml = "./assets/html/editor.html"
+editorHtmlFilePath :: FilePath
+editorHtmlFilePath = "html/editor.html"
 
 updateProgram :: ImprovizEnv -> String -> IO (ImprovizResponse String)
 updateProgram env newProgram = case L.parse newProgram of
@@ -81,7 +82,11 @@ startHttpServer env =
         forkIO $ scottyOpts options $ do
           get "/" $ text "SERVING"
           get "/editor" $ do
-            html <- liftIO $ readFile simpleEditorHtml
+            html <-
+              liftIO
+              $   readFile
+              $   (env ^. I.config . C.assetsDirectory)
+              </> editorHtmlFilePath
             raw $ pack html
           post "/read" $ do
             b    <- body
