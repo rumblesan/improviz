@@ -75,11 +75,15 @@ resize env newWidth newHeight fbWidth fbHeight =
         atomically $ swapTVar gfxVar newGfx
         return ()
 
+initialVars :: M.Map String Value -> Float -> [(String, Value)]
+initialVars vars t =
+  ("time", Number t) : ("nudge", Number 0) : ("bpm", Number 120) : M.toList vars
+
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
   as   <- readTVarIO (env ^. I.language)
   vars <- readTVarIO (env ^. I.externalVars)
-  let newVars = ("time", Number $ double2Float time) : M.toList vars
+  let newVars = initialVars vars (double2Float time)
       is      = updateStateVariables newVars (as ^. IL.initialInterpreter)
       result  = fst $ createGfxScene is (as ^. IL.currentAst)
   case result of
