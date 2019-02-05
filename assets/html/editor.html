@@ -8,7 +8,8 @@
   <h1>Improviz</h1>
 
   <textarea id="code" rows="10" cols="50"></textarea><br>
-  <button id="submitcode" type="button">Send Code</button> 
+  <button id="submitcode" type="button">Send Code</button><br>
+  <input id="varname" type="text"> <input id="varvalue" type="text"> <button id="submitvar" type="button">Send Value</button> 
   <script>
 
     var textarea = document.getElementById("code");
@@ -20,12 +21,23 @@
             this.selectionEnd = s+1;
         }
     });
-    var button = document.getElementById("submitcode");
-    button.addEventListener("click", function (e) {
+    document.getElementById("submitcode").addEventListener("click", function (e) {
       e.preventDefault();
       var xhr = new XMLHttpRequest();
       xhr.open("POST", "/read", true);
       xhr.send(textarea.value);
+      xhr.onload = function() {
+        console.log(this.responseText);
+      }
+    });
+    document.getElementById("submitvar").addEventListener("click", function (e) {
+      e.preventDefault();
+      var varName = document.getElementById("varname").value;
+      var varValue = document.getElementById("varvalue").value;
+      var xhr = new XMLHttpRequest();
+      var url = "/vars/edit/" + varName;
+      xhr.open("POST", url, true);
+      xhr.send(varValue);
       xhr.onload = function() {
         console.log(this.responseText);
       }

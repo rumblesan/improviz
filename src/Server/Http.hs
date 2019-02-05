@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module Server.Http
   ( startHttpServer
@@ -8,8 +7,6 @@ where
 
 import           Network.Wai.Handler.Warp
 import           Web.Scotty
-
-import           Data.FileEmbed                 ( embedFile )
 
 import           Control.Concurrent             ( ThreadId
                                                 , forkIO
@@ -20,13 +17,16 @@ import           Control.Concurrent.STM         ( TVar
                                                 )
 import           Control.Monad.Trans            ( liftIO )
 
-import qualified Data.ByteString.Lazy          as BL
-import           Data.ByteString.Lazy.Char8     ( unpack )
+import           Data.ByteString.Lazy.Char8     ( pack
+                                                , unpack
+                                                )
+import qualified Data.Map.Strict               as M
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
 
 import qualified Language                      as L
+import           Language.Ast                   ( Value(Number) )
 
 import           Server.Protocol
 
@@ -41,8 +41,8 @@ import           Lens.Simple                    ( set
                                                 , (^.)
                                                 )
 
-simpleEditorHtml :: BL.ByteString
-simpleEditorHtml = BL.fromStrict $(embedFile "src/assets/html/editor.html")
+simpleEditorHtml :: FilePath
+simpleEditorHtml = "./assets/html/editor.html"
 
 updateProgram :: ImprovizEnv -> String -> IO (ImprovizResponse String)
 updateProgram env newProgram = case L.parse newProgram of
@@ -80,7 +80,9 @@ startHttpServer env =
         logInfo $ "Improviz HTTP server listening on port " ++ show port
         forkIO $ scottyOpts options $ do
           get "/" $ text "SERVING"
-          get "/editor" $ raw simpleEditorHtml
+          get "/editor" $ do
+            html <- liftIO $ readFile simpleEditorHtml
+            raw $ pack html
           post "/read" $ do
             b    <- body
             resp <- liftIO $ updateProgram env (unpack b)
