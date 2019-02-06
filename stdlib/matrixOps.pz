@@ -1,5 +1,5 @@
 
-func myRotate(x, y, z, &blk)
+func rotate(x, y, z, &blk)
 	x := (time / 4 * pi)
 	y := x
 	z := 0
@@ -12,7 +12,7 @@ func myRotate(x, y, z, &blk)
 		blk()
 		popScope()
 
-func myScale(x, y, z, &blk)
+func scale(x, y, z, &blk)
 	x := cos(time)
 	y := x
 	z := y
@@ -25,7 +25,7 @@ func myScale(x, y, z, &blk)
 		blk()
 		popScope()
 
-func myMove(x, y, z, &blk)
+func move(x, y, z, &blk)
 	if (isNull(x))
 		x = cos(2 * pi * time)
 		y = sin(2 * pi * time)
