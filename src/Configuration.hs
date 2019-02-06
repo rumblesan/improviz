@@ -11,6 +11,7 @@ module Configuration
   , fontConfig
   , textureDirectories
   , codeFiles
+  , assetsDirectory
   , serverPort
   , osc
   , apptitle
@@ -51,6 +52,7 @@ data ImprovizConfig = ImprovizConfig
   , _fontConfig         :: ImprovizFontConfig
   , _textureDirectories :: [FilePath]
   , _codeFiles          :: [FilePath]
+  , _assetsDirectory    :: FilePath
   , _serverPort         :: Int
   , _osc                :: ImprovizOSCConfig
   , _apptitle           :: String
@@ -71,6 +73,7 @@ defaultConfig = ImprovizConfig { _screenWidth        = 640
                                , _fontConfig         = defaultFontConfig
                                , _textureDirectories = ["./textures"]
                                , _codeFiles          = []
+                               , _assetsDirectory    = "./assets"
                                , _serverPort         = 3000
                                , _osc                = defaultOSCConfig
                                , _apptitle           = "Improviz"
@@ -103,6 +106,9 @@ instance FromJSON ImprovizConfig where
       <*> v
       .:? "codeFiles"
       .!= (defaultConfig ^. codeFiles)
+      <*> v
+      .:? "assetsDirectory"
+      .!= (defaultConfig ^. assetsDirectory)
       <*> v
       .:? "serverPort"
       .!= (defaultConfig ^. serverPort)

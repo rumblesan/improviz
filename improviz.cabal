@@ -31,6 +31,7 @@ executable improviz
                      , megaparsec >= 7
                      , parser-combinators >= 1
                      , scotty
+                     , split
                      , stm
                      , transformers
                      , text

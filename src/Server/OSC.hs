@@ -15,12 +15,10 @@ import           Control.Monad                  ( forever
 import           Lens.Simple                    ( (^.) )
 
 import qualified Data.Map.Strict               as M
-import           Data.Maybe                     ( catMaybes )
+import           Data.Maybe                     ( fromMaybe )
+import           Data.List.Split                ( splitOn )
 
-import           Sound.OSC.Datum                ( Datum(..)
-                                                , datum_floating
-                                                , ascii_to_string
-                                                )
+import           Sound.OSC.Datum                ( datum_floating )
 import           Sound.OSC.FD                   ( Message
                                                 , recvPacket
                                                 , udpServer
@@ -42,24 +40,13 @@ import           Logging                        ( logDebug
                                                 )
 
 handleMessage :: ImprovizEnv -> Message -> IO ()
-handleMessage env (Message addr datem) = case addr of
-  "/vars" -> atomically $ modifyTVar (env ^. I.externalVars) (updateVars datem)
-  errAddr -> logError $ errAddr ++ " is an invalid OSC address"
-
-updateVars :: [Datum] -> M.Map String Value -> M.Map String Value
-updateVars datem existing =
-  let updates = M.fromList $ catMaybes $ combineDatumPairs datem
-  in  M.union updates existing
-
-combineDatumPairs :: [Datum] -> [Maybe (String, Value)]
-combineDatumPairs (name : value : rem) =
-  let pair = do
-        n <- Just $ ascii_to_string (d_ascii_string name)
-        v <- datum_floating value
-        return (n, Number v)
-  in  pair : combineDatumPairs rem
-combineDatumPairs [] = []
-combineDatumPairs _  = []
+handleMessage env (Message addr datem) =
+  let path = splitOn "/" addr
+  in  case (path, datem) of
+        (["", "vars", name], [value]) -> atomically $ modifyTVar
+          (env ^. I.externalVars)
+          (M.insert name (Number $ fromMaybe 0.0 $ datum_floating value))
+        _ -> logError "invalid OSC address"
 
 startOSCServer :: ImprovizEnv -> IO ThreadId
 startOSCServer env =

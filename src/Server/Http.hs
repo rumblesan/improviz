@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module Server.Http
   ( startHttpServer
@@ -9,8 +8,6 @@ where
 import           Network.Wai.Handler.Warp
 import           Web.Scotty
 
-import           Data.FileEmbed                 ( embedFile )
-
 import           Control.Concurrent             ( ThreadId
                                                 , forkIO
                                                 )
@@ -19,14 +16,18 @@ import           Control.Concurrent.STM         ( TVar
                                                 , modifyTVar
                                                 )
 import           Control.Monad.Trans            ( liftIO )
+import           System.FilePath.Posix          ( (</>) )
 
-import qualified Data.ByteString.Lazy          as BL
-import           Data.ByteString.Lazy.Char8     ( unpack )
+import           Data.ByteString.Lazy.Char8     ( pack
+                                                , unpack
+                                                )
+import qualified Data.Map.Strict               as M
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
 
 import qualified Language                      as L
+import           Language.Ast                   ( Value(Number) )
 
 import           Server.Protocol
 
@@ -41,8 +42,8 @@ import           Lens.Simple                    ( set
                                                 , (^.)
                                                 )
 
-simpleEditorHtml :: BL.ByteString
-simpleEditorHtml = BL.fromStrict $(embedFile "src/assets/html/editor.html")
+editorHtmlFilePath :: FilePath
+editorHtmlFilePath = "html/editor.html"
 
 updateProgram :: ImprovizEnv -> String -> IO (ImprovizResponse String)
 updateProgram env newProgram = case L.parse newProgram of
@@ -64,6 +65,13 @@ toggleTextDisplay ui = do
   logInfo msg
   return $ ImprovizOKResponse msg
 
+updateExternalVar
+  :: ImprovizEnv -> String -> Float -> IO (ImprovizResponse String)
+updateExternalVar env name value = do
+  atomically $ modifyTVar (env ^. I.externalVars) (M.insert name (Number value))
+  return $ ImprovizOKResponse $ name ++ " variable updated"
+
+
 startHttpServer :: ImprovizEnv -> IO ThreadId
 startHttpServer env =
   let port     = (env ^. I.config . C.serverPort)
@@ -73,7 +81,13 @@ startHttpServer env =
         logInfo $ "Improviz HTTP server listening on port " ++ show port
         forkIO $ scottyOpts options $ do
           get "/" $ text "SERVING"
-          get "/editor" $ raw simpleEditorHtml
+          get "/editor" $ do
+            html <-
+              liftIO
+              $   readFile
+              $   (env ^. I.config . C.assetsDirectory)
+              </> editorHtmlFilePath
+            raw $ pack html
           post "/read" $ do
             b    <- body
             resp <- liftIO $ updateProgram env (unpack b)
@@ -81,3 +95,11 @@ startHttpServer env =
           post "/toggle/text" $ do
             resp <- liftIO $ toggleTextDisplay (env ^. I.ui)
             json resp
+          post "/vars/edit/:name" $ do
+            name <- param "name"
+            b    <- body
+            case reads (unpack b) of
+              [(v, _)] -> do
+                resp <- liftIO $ updateExternalVar env name v
+                json resp
+              _ -> json $ ImprovizErrorResponse $ name ++ " variable updated"
