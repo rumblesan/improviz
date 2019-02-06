@@ -1,0 +1,43 @@
+
+func rotate(x, y, z, &blk)
+	x := (time / 4 * pi)
+	y := x
+	z := 0
+	m = :rotate
+	if (isNull(blk))
+		matrix(m, x, y, z)
+	else
+		pushScope()
+		matrix(m, x, y, z)
+		blk()
+		popScope()
+
+func scale(x, y, z, &blk)
+	x := cos(time)
+	y := x
+	z := y
+	m = :scale
+	if (isNull(blk))
+		matrix(m, x, y, z)
+	else
+		pushScope()
+		matrix(m, x, y, z)
+		blk()
+		popScope()
+
+func move(x, y, z, &blk)
+	if (isNull(x))
+		x = cos(2 * pi * time)
+		y = sin(2 * pi * time)
+		z = cos(2 * pi * time)
+	else
+		y := 0
+		z := 0
+	m = :move
+	if (isNull(blk))
+		matrix(m, x, y, z)
+	else
+		pushScope()
+		matrix(m, x, y, z)
+		blk()
+		popScope()

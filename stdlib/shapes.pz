@@ -1,0 +1,27 @@
+
+func cube(x, y, z)
+	x := 1
+	y := x
+	z := y
+	shape(:cube, x, y, z)
+
+func sphere(x, y, z)
+	x := 1
+	y := x
+	z := y
+	shape(:sphere, x, y, z)
+
+func cylinder(x, y, z)
+	x := 1
+	y := x
+	z := y
+	shape(:cylinder, x, y, z)
+
+func rectangle(x, y)
+	x := 1
+	y := x
+	shape(:rectangle, x, y, z)
+
+func line(x)
+	x := 1
+	shape(:line, x)

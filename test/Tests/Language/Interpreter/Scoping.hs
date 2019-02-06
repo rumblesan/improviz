@@ -1,35 +1,43 @@
 module Tests.Language.Interpreter.Scoping
   ( scopingTests
-  ) where
+  )
+where
 
-import           Test.Framework                 (Test, testGroup)
-import           Test.Framework.Providers.HUnit (testCase)
-import           Test.HUnit                     (Assertion, assertEqual)
+import           Test.Framework                 ( Test
+                                                , testGroup
+                                                )
+import           Test.Framework.Providers.HUnit ( testCase )
+import           Test.HUnit                     ( Assertion
+                                                , assertEqual
+                                                )
 
-import           Gfx                            (Scene (..))
-import qualified Gfx.Ast                        as GA
+import           Gfx                            ( Scene(..) )
+import qualified Gfx.Ast                       as GA
 import qualified Language
 
 scopingTests :: Test
-scopingTests =
-  testGroup
-    "Scoping Tests"
-    [testCase "Simple scoping of default" test_basic_default_scoping]
+scopingTests = testGroup
+  "Scoping Tests"
+  [testCase "Simple scoping of default" test_basic_default_scoping]
 
 test_basic_default_scoping :: Assertion
 test_basic_default_scoping =
-  let program = "rotate(3, 4, 5)\n\tbox()"
-      result = do
-        ast <- Language.parse program
-        let result =
-              fst $ Language.createGfxScene (Language.initialState []) ast
-        scene <- result
-        return $ sceneGfx scene
-      expected =
-        Right
-          [ GA.ScopeCommand GA.PushScope
-          , GA.MatrixCommand (GA.Rotate 3 4 5)
-          , GA.ShapeCommand (GA.Cube 1 1 1)
-          , GA.ScopeCommand GA.PopScope
-          ]
-   in assertEqual "" expected result
+  let
+    program
+      = "pushScope()\n\
+          \matrix(:rotate, 3, 4, 5)\n\
+          \shape(:cube, 1, 1, 1)\n\
+          \popScope()"
+    result = do
+      ast <- Language.parse program
+      let result = fst $ Language.createGfxScene (Language.initialState []) ast
+      scene <- result
+      return $ sceneGfx scene
+    expected = Right
+      [ GA.ScopeCommand GA.PushScope
+      , GA.MatrixCommand (GA.Rotate 3 4 5)
+      , GA.ShapeCommand (GA.Cube 1 1 1)
+      , GA.ScopeCommand GA.PopScope
+      ]
+  in
+    assertEqual "" expected result

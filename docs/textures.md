@@ -4,7 +4,7 @@ Improviz supports textures on shapes. These can either be single bitmap images, 
 
 ```
 texture(:another)
-  box()
+  cube()
 move()
 fill(255, 0, 0)
   ball()
@@ -26,7 +26,7 @@ Animated gifs can be loaded and used. This may be somewhat resource intensive at
 
 ```
 texture(:loop1, 1)
-  box()
+  cube()
 ```
 
 This can be animated as necessary.
@@ -35,7 +35,7 @@ This can be animated as necessary.
 f = (time * 90) % 90
 texture(:loop1, f)
   rotate()
-  box()
+  cube()
 ```
 
 ## Code Text

@@ -5,6 +5,7 @@ module Language.Interpreter
   , getGlobalNames
   , setVariable
   , getVariable
+  , getVariableWithError
   , getVariableWithDefault
   , getVarOrNull
   , getNumberFromNull
@@ -102,6 +103,13 @@ setVariable :: Identifier -> Value -> InterpreterProcess Value
 setVariable name val =
   modify (\s -> s { variables = LS.setVariable (variables s) name val })
     >> return val
+
+getVariableWithError :: Identifier -> String -> InterpreterProcess Value
+getVariableWithError name errorMsg = do
+  variableDefs <- gets variables
+  case LS.getVariable variableDefs name of
+    Just v  -> return v
+    Nothing -> throwError errorMsg
 
 getVariable :: Identifier -> InterpreterProcess Value
 getVariable name = do

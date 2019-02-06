@@ -24,7 +24,7 @@ This is mostly useful when expecting to have values set via OSC messages which m
 ```
 var a = 3
 var a := 4
-box(a) // box will be of size 3
+cube(a) // cube will be of size 3
 ```
 
 ## Function Application
@@ -50,7 +50,7 @@ func val(a) => a + 1
 func draw(r, g, b)
   rotate()
   fill(r, g, b)
-  box(val(1))
+  cube(val(1))
 
 draw(255, 0, 0)
 ```
@@ -70,7 +70,7 @@ func myf(x, y, &blk)
 
 myf(1, 1)
 	rotate()
-	box()
+	cube()
 ```
 
 The **BlockArg** must start with an ampersand *(&)* symbol.
@@ -85,7 +85,7 @@ func draw(f)
   fill(r, g, b)
   f(3)
 
-draw(box)
+draw(cube)
 ```
 
 ## Loops
@@ -97,7 +97,7 @@ stroke(0, 0, 0)
 fill(255, 0, 0)
 100 times
 	rotate()
-	box(8, 8, 8)
+	cube(8, 8, 8)
 ```
 
 Optional `with` variable can be used as well.
@@ -109,7 +109,7 @@ var n = 100
 n times with i
 	rotate()
   move(i)
-	box(8, 8, 8)
+	cube(8, 8, 8)
 ```
 
 Tabs are used for indentation.
@@ -119,10 +119,10 @@ Tabs are used for indentation.
 The built in functions **pushScope** and **popScope** can be used to save and load snapshots of the GFX engine state on a stack.
 
 ```
-pushScope
+pushScope()
 rotate()
-box()
-popScope
+cube()
+popScope()
 move(1,0,0)
 sphere()
 ```
@@ -133,7 +133,7 @@ This feature is used in conjuction with the function blocks to allow simplified 
 
 ```
 fill(255, 0, 0)
-	box()
+	cube()
 rotate()
 move()
 fill(0, 255, 0)
@@ -146,7 +146,7 @@ A symbol is really just a name. Currently it's only used for giving the name of 
 
 ```
 texture(:crystal)
-  box()
+  cube()
 move()
 
 var t = :another
@@ -157,8 +157,8 @@ texture(t)
 ### Currently Available Functions
 
 #### Shapes
-*box* [x, y, z]
-Create a box with dimensions x, y and z. Default value for any missed is 1.
+*cube* [x, y, z]
+Create a cube with dimensions x, y and z. Default value for any missed is 1.
 *sphere* [x, y, z]
 Create a sphere with dimensions x, y and z. Default value for any missed is 1.
 *cylinder* [x, y, z]
