@@ -188,38 +188,19 @@ interpretElement (ElIf         ifElem    ) = interpretIf ifElem
 interpretElement (ElExpression expression) = interpretExpression expression
 
 interpretApplication :: Application -> InterpreterProcess Value
-interpretApplication f@(Application name args block) = do
+interpretApplication f@(Application name args mbBlock) = do
   v <- interpretVariable name
   case v of
-    (BlockRef blk) -> do
-      interpretBlock blk
-    (UserFunctionRef name) -> do
-      userFunc <- getFunction name
-      interpretUserFunctionApplication f userFunc
-    (BuiltInFunctionRef name) -> do
-      builtInFunc <- getBuiltIn name
-      interpretBuiltInFunctionApplication f builtInFunc
+    (BlockRef        blk ) -> interpretBlock blk
+    (UserFunctionRef name) -> newScope $ do
+      (UserFunctionDef _ argNames body) <- getFunction name
+      assignApplicationArgs argNames args mbBlock
+      interpretBlock body
+    (BuiltInFunctionRef name) -> newScope $ do
+      (BuiltInFunction argNames action) <- getBuiltIn name
+      assignApplicationArgs argNames args mbBlock
+      action
     _ -> return Null
-
-interpretUserFunctionApplication
-  :: Application -> UserFunctionDef -> InterpreterProcess Value
-interpretUserFunctionApplication (Application _ args mbBlock) (UserFunctionDef _ funcArgs body)
-  = newScope
-    (do
-      assignApplicationArgs funcArgs args mbBlock
-      ret <- interpretBlock body
-      return ret
-    )
-
-interpretBuiltInFunctionApplication
-  :: Application -> BuiltInFunction -> InterpreterProcess Value
-interpretBuiltInFunctionApplication (Application _ args mbBlock) (BuiltInFunction funcArgs action)
-  = newScope
-    (do
-      assignApplicationArgs funcArgs args mbBlock
-      ret <- action
-      return ret
-    )
 
 assignApplicationArgs
   :: [FuncArg] -> [Expression] -> Maybe Block -> InterpreterProcess Value
@@ -228,9 +209,8 @@ assignApplicationArgs funcArgs args mbBlock = do
   zipWithM_ (assignArg mbBlock) funcArgs (argValues ++ repeat Null)
   return Null
  where
-  assignArg _ (VarArg name) v = setVariable name v
-  assignArg mb (BlockArg name) _ =
-    setVariable name $ maybe Null (\b -> BlockRef b) mb
+  assignArg _  (VarArg   name) v = setVariable name v
+  assignArg mb (BlockArg name) _ = setVariable name $ maybe Null BlockRef mb
 
 interpretLoop :: Loop -> InterpreterProcess Value
 interpretLoop (Loop numExpr loopVar block) = do
