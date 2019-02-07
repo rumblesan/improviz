@@ -8,4 +8,5 @@ textureDirectories:
 codeFiles:
   - "./stdlib/matrixOps.pz"
   - "./stdlib/shapes.pz"
+  - "./stdlib/style.pz"
   - "./usercode/grid.pz"

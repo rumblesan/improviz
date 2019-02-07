@@ -20,8 +20,7 @@ import           Gfx.Types                      ( Colour )
 import qualified Language.Interpreter.Scope    as LS
 
 data BuiltInFunction =
-  BuiltInFunction [FuncArg]
-                  (InterpreterProcess Value)
+  BuiltInFunction ([Value] -> Maybe Block -> InterpreterProcess Value)
 
 data UserFunctionDef =
   UserFunctionDef Identifier

@@ -5,137 +5,92 @@ where
 
 import           Control.Monad.Except
 import           Data.Map.Strict               as M
+import           Data.Maybe                     ( maybe
+                                                , listToMaybe
+                                                )
 
 import qualified Gfx.Ast                       as GA
 import qualified Gfx.EngineState               as GE
-import           Language.Ast
+import           Language.Ast                   ( Block
+                                                , Value(Number, Null, Symbol)
+                                                )
 import           Language.Interpreter           ( addGfxCommand
                                                 , getEngineInfo
-                                                , getVarOrNull
                                                 , getVariable
-                                                , getVariableWithDefault
                                                 , gfxScopedBlock
                                                 , setBuiltIn
                                                 , setGfxBackground
                                                 )
-import           Language.Interpreter.Types
-import           Language.Interpreter.Values
+import           Language.Interpreter.Types     ( InterpreterProcess )
+import           Language.Interpreter.Values    ( getNumberValue )
 
 addColourStdLib :: InterpreterProcess ()
 addColourStdLib = do
-  setBuiltIn
-    "fill"
-    fill
-    [VarArg "r", VarArg "g", VarArg "b", VarArg "a", BlockArg "block"]
-  setBuiltIn "texture" texture [VarArg "name", VarArg "frame", BlockArg "block"]
-  setBuiltIn "frames"  frames  [VarArg "name"]
-  setBuiltIn "noFill"  noFill  [BlockArg "block"]
-  setBuiltIn
-    "stroke"
-    stroke
-    [VarArg "r", VarArg "g", VarArg "b", VarArg "a", BlockArg "block"]
-  setBuiltIn "noStroke"   noStroke   [BlockArg "block"]
-  setBuiltIn "background" background [VarArg "r", VarArg "g", VarArg "b"]
+  setBuiltIn "texture"    texture
+  setBuiltIn "frames"     frames
+  setBuiltIn "background" background
+  setBuiltIn "style"      style
 
 dToC :: Float -> Float
 dToC c = max 0 (min c 255) / 255
 
-fill :: InterpreterProcess Value
-fill = do
-  r                        <- getVarOrNull "r"
-  g                        <- getVarOrNull "g"
-  b                        <- getVarOrNull "b"
-  a                        <- getVarOrNull "a"
-  blockRef                 <- getVarOrNull "block"
-  (rVal, gVal, bVal, aVal) <- case (r, g, b, a) of
-    (Null, Null, Null, Null) -> return (255, 255, 255, 255)
-    (Number x, Null, Null, Null) -> return (x, x, x, 255)
-    (Number x, Number y, Null, Null) -> return (x, x, x, y)
-    (Number x, Number y, Number z, Null) -> return (x, y, z, 255)
-    (Number x, Number y, Number z, Number w) -> return (x, y, z, w)
-    _ -> throwError "Error with functions to fill"
-  let cmd = GA.ColourCommand $ GA.Fill $ GA.ColourStyle (dToC rVal)
-                                                        (dToC gVal)
-                                                        (dToC bVal)
-                                                        (dToC aVal)
-  case blockRef of
-    Null         -> addGfxCommand cmd
-    BlockRef blk -> gfxScopedBlock cmd blk
-  return Null
+texture :: [Value] -> Maybe Block -> InterpreterProcess Value
+texture args mbBlock = case args of
+  Symbol name : rest -> do
+    frame <- maybe (return 0) getNumberValue $ listToMaybe rest
+    let cmd = GA.ColourCommand $ GA.Fill $ GA.TextureStyle name frame
+    case mbBlock of
+      Nothing  -> addGfxCommand cmd
+      Just blk -> gfxScopedBlock cmd blk
+    return Null
+  _ -> return Null
 
-texture :: InterpreterProcess Value
-texture = do
-  textName <- getVariable "name"
-  frame    <- getVariableWithDefault "frame" (Number 0) >>= getNumberValue
-  blockRef <- getVarOrNull "block"
-  case textName of
-    Symbol name -> do
-      let cmd = GA.ColourCommand $ GA.Fill $ GA.TextureStyle name frame
-      case blockRef of
-        Null         -> addGfxCommand cmd
-        BlockRef blk -> gfxScopedBlock cmd blk
-      return Null
-    _ -> return Null
-
-frames :: InterpreterProcess Value
-frames = do
+frames :: [Value] -> Maybe Block -> InterpreterProcess Value
+frames args _ = do
   ei       <- getEngineInfo
   textName <- getVariable "name"
-  return $ case textName of
-    Symbol name -> case M.lookup name (GE.textureFrames ei) of
+  return $ case args of
+    Symbol name : rest -> case M.lookup name (GE.textureFrames ei) of
       Nothing -> Null
       Just v  -> Number (fromIntegral v)
     _ -> Null
 
-noFill :: InterpreterProcess Value
-noFill = do
-  blockRef <- getVarOrNull "block"
-  let cmd = GA.ColourCommand GA.NoFill
-  case blockRef of
-    Null         -> addGfxCommand cmd
-    BlockRef blk -> gfxScopedBlock cmd blk
-  return Null
-
-stroke :: InterpreterProcess Value
-stroke = do
-  r                        <- getVarOrNull "r"
-  g                        <- getVarOrNull "g"
-  b                        <- getVarOrNull "b"
-  a                        <- getVarOrNull "a"
-  blockRef                 <- getVarOrNull "block"
-  (rVal, gVal, bVal, aVal) <- case (r, g, b, a) of
-    (Null, Null, Null, Null) -> return (255, 255, 255, 255)
-    (Number x, Null, Null, Null) -> return (x, x, x, 255)
-    (Number x, Number y, Null, Null) -> return (x, x, x, y)
-    (Number x, Number y, Number z, Null) -> return (x, y, z, 255)
-    (Number x, Number y, Number z, Number w) -> return (x, y, z, w)
-    _ -> throwError "Error with functions to stroke"
-  let cmd = GA.ColourCommand
-        $ GA.Stroke (dToC rVal) (dToC gVal) (dToC bVal) (dToC aVal)
-  case blockRef of
-    Null         -> addGfxCommand cmd
-    BlockRef blk -> gfxScopedBlock cmd blk
-  return Null
-
-noStroke :: InterpreterProcess Value
-noStroke = do
-  blockRef <- getVarOrNull "block"
-  let cmd = GA.ColourCommand GA.NoStroke
-  case blockRef of
-    Null         -> addGfxCommand cmd
-    BlockRef blk -> gfxScopedBlock cmd blk
-  return Null
-
-background :: InterpreterProcess Value
-background = do
-  r                  <- getVarOrNull "r"
-  g                  <- getVarOrNull "g"
-  b                  <- getVarOrNull "b"
-  (rVal, gVal, bVal) <- case (r, g, b) of
-    (Null    , Null    , Null    ) -> return (255, 255, 255)
-    (Number x, Null    , Null    ) -> return (x, x, x)
-    (Number x, Number y, Null    ) -> return (x, x, x)
-    (Number x, Number y, Number z) -> return (x, y, z)
+background :: [Value] -> Maybe Block -> InterpreterProcess Value
+background args _ = do
+  (rVal, gVal, bVal) <- case args of
+    [Null    , Null    , Null    ] -> return (255, 255, 255)
+    [Number x, Null    , Null    ] -> return (x, x, x)
+    [Number x, Number y, Null    ] -> return (x, x, x)
+    [Number x, Number y, Number z] -> return (x, y, z)
     _ -> throwError "Error with functions to background"
   _ <- setGfxBackground (dToC rVal, dToC gVal, dToC bVal)
   return Null
+
+
+style :: [Value] -> Maybe Block -> InterpreterProcess Value
+style styleArgs mbBlock = do
+  cmd <- case styleArgs of
+    Symbol "fill"     : rest -> fill rest
+    Symbol "noFill"   : rest -> noFill
+    Symbol "stroke"   : rest -> stroke rest
+    Symbol "noStroke" : rest -> noStroke
+  case mbBlock of
+    Nothing  -> addGfxCommand cmd
+    Just blk -> gfxScopedBlock cmd blk
+  return Null
+ where
+  fill :: [Value] -> InterpreterProcess GA.GfxCommand
+  fill args = case args of
+    [Number r, Number g, Number b, Number a] ->
+      return $ GA.ColourCommand $ GA.Fill $ GA.ColourStyle (dToC r)
+                                                           (dToC g)
+                                                           (dToC b)
+                                                           (dToC a)
+    _ -> throwError "Error with functions to fill"
+  noFill = return $ GA.ColourCommand GA.NoFill
+  stroke :: [Value] -> InterpreterProcess GA.GfxCommand
+  stroke args = case args of
+    [Number r, Number g, Number b, Number a] ->
+      return $ GA.ColourCommand $ GA.Stroke (dToC r) (dToC g) (dToC b) (dToC a)
+    _ -> throwError "Error with functions to fill"
+  noStroke = return $ GA.ColourCommand GA.NoStroke

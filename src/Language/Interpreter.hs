@@ -68,14 +68,12 @@ getFunction name = do
 
 setBuiltIn
   :: Identifier
-  -> InterpreterProcess Value
-  -> [FuncArg]
+  -> ([Value] -> Maybe Block -> InterpreterProcess Value)
   -> InterpreterProcess ()
-setBuiltIn name func funcArgs = modify
-  (\s -> s
-    { globals  = M.insert name (BuiltInFunctionRef name) (globals s)
-    , builtins = M.insert name (BuiltInFunction funcArgs func) (builtins s)
-    }
+setBuiltIn name func = modify
+  (\s -> s { globals  = M.insert name (BuiltInFunctionRef name) (globals s)
+           , builtins = M.insert name (BuiltInFunction func) (builtins s)
+           }
   )
 
 getBuiltIn :: Identifier -> InterpreterProcess BuiltInFunction
@@ -197,9 +195,9 @@ interpretApplication f@(Application name args mbBlock) = do
       assignApplicationArgs argNames args mbBlock
       interpretBlock body
     (BuiltInFunctionRef name) -> newScope $ do
-      (BuiltInFunction argNames action) <- getBuiltIn name
-      assignApplicationArgs argNames args mbBlock
-      action
+      (BuiltInFunction action) <- getBuiltIn name
+      argValues                <- mapM interpretExpression args
+      action argValues mbBlock
     _ -> return Null
 
 assignApplicationArgs

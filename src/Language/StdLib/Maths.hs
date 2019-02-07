@@ -3,82 +3,89 @@ module Language.StdLib.Maths
   )
 where
 
-import           Language.Ast
-import           Language.Interpreter           ( getVariable
-                                                , setBuiltIn
+import           Control.Monad.Except           ( throwError )
+
+import           Language.Ast                   ( Block
+                                                , Value(Number)
+                                                )
+import           Language.Interpreter           ( setBuiltIn
                                                 , setVariable
                                                 )
-import           Language.Interpreter.Types
-import           Language.Interpreter.Values
+import           Language.Interpreter.Types     ( InterpreterProcess )
+import           Language.Interpreter.Values    ( getNumberValue )
 
 addMathStdLib :: InterpreterProcess ()
 addMathStdLib = do
   setVariable "pi" (Number pi)
-  setBuiltIn "sin"   sinFunc   [VarArg "rads"]
-  setBuiltIn "cos"   cosFunc   [VarArg "rads"]
-  setBuiltIn "tan"   tanFunc   [VarArg "rads"]
-  setBuiltIn "abs"   absFunc   [VarArg "val"]
-  setBuiltIn "ceil"  ceilFunc  [VarArg "val"]
-  setBuiltIn "floor" floorFunc [VarArg "val"]
-  setBuiltIn "round" roundFunc [VarArg "val"]
-  setBuiltIn "max"   maxFunc   [VarArg "vala", VarArg "valb"]
-  setBuiltIn "min"   minFunc   [VarArg "vala", VarArg "valb"]
-  setBuiltIn "log"   logFunc   [VarArg "val"]
-  setBuiltIn "sqrt"  sqrtFunc  [VarArg "val"]
+  setBuiltIn "sin"   sinFunc
+  setBuiltIn "cos"   cosFunc
+  setBuiltIn "tan"   tanFunc
+  setBuiltIn "abs"   absFunc
+  setBuiltIn "ceil"  ceilFunc
+  setBuiltIn "floor" floorFunc
+  setBuiltIn "round" roundFunc
+  setBuiltIn "max"   maxFunc
+  setBuiltIn "min"   minFunc
+  setBuiltIn "log"   logFunc
+  setBuiltIn "sqrt"  sqrtFunc
 
-sinFunc :: InterpreterProcess Value
-sinFunc = do
-  rads <- getVariable "rads" >>= getNumberValue
-  return $ Number $ sin rads
+sinFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+sinFunc args _ = case args of
+  [rads] -> Number . sin <$> getNumberValue rads
+  []     -> throwError "Must give sin function an argument"
 
-cosFunc :: InterpreterProcess Value
-cosFunc = do
-  rads <- getVariable "rads" >>= getNumberValue
-  return $ Number $ cos rads
+cosFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+cosFunc args _ = case args of
+  [rads] -> Number . cos <$> getNumberValue rads
+  []     -> throwError "Must give cos function an argument"
 
-tanFunc :: InterpreterProcess Value
-tanFunc = do
-  rads <- getVariable "rads" >>= getNumberValue
-  return $ Number $ tan rads
+tanFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+tanFunc args _ = case args of
+  [rads] -> Number . tan <$> getNumberValue rads
+  []     -> throwError "Must give tan function an argument"
 
-absFunc :: InterpreterProcess Value
-absFunc = do
-  val <- getVariable "val" >>= getNumberValue
-  return $ Number $ abs val
+absFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+absFunc args _ = case args of
+  [val] -> Number . abs <$> getNumberValue val
+  []    -> throwError "Must give abs function an argument"
 
-ceilFunc :: InterpreterProcess Value
-ceilFunc = do
-  val <- getVariable "val" >>= getNumberValue
-  return $ Number $ fromIntegral $ ceiling val
+ceilFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+ceilFunc args _ = case args of
+  [val] -> Number . fromIntegral . ceiling <$> getNumberValue val
+  []    -> throwError "Must give ceil function an argument"
 
-floorFunc :: InterpreterProcess Value
-floorFunc = do
-  val <- getVariable "val" >>= getNumberValue
-  return $ Number $ fromIntegral $ floor val
+floorFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+floorFunc args _ = case args of
+  [val] -> Number . fromIntegral . floor <$> getNumberValue val
+  []    -> throwError "Must give floor function an argument"
 
-roundFunc :: InterpreterProcess Value
-roundFunc = do
-  val <- getVariable "val" >>= getNumberValue
-  return $ Number $ fromIntegral $ round val
+roundFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+roundFunc args _ = case args of
+  [val] -> Number . fromIntegral . round <$> getNumberValue val
+  []    -> throwError "Must give round function an argument"
 
-maxFunc :: InterpreterProcess Value
-maxFunc = do
-  vala <- getVariable "vala" >>= getNumberValue
-  valb <- getVariable "valb" >>= getNumberValue
-  return $ Number $ max vala valb
+maxFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+maxFunc args _ = case args of
+  [valA, valB] -> do
+    a <- getNumberValue valA
+    b <- getNumberValue valB
+    return $ Number $ max a b
+  [] -> throwError "Must give max function two arguments"
 
-minFunc :: InterpreterProcess Value
-minFunc = do
-  vala <- getVariable "vala" >>= getNumberValue
-  valb <- getVariable "valb" >>= getNumberValue
-  return $ Number $ min vala valb
+minFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+minFunc args _ = case args of
+  [valA, valB] -> do
+    a <- getNumberValue valA
+    b <- getNumberValue valB
+    return $ Number $ min a b
+  [] -> throwError "Must give min function two arguments"
 
-logFunc :: InterpreterProcess Value
-logFunc = do
-  val <- getVariable "val" >>= getNumberValue
-  return $ Number $ log val
+logFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+logFunc args _ = case args of
+  [val] -> Number . log <$> getNumberValue val
+  []    -> throwError "Must give log function an argument"
 
-sqrtFunc :: InterpreterProcess Value
-sqrtFunc = do
-  val <- getVariable "val" >>= getNumberValue
-  return $ Number $ sqrt val
+sqrtFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+sqrtFunc args _ = case args of
+  [val] -> Number . sqrt <$> getNumberValue val
+  []    -> throwError "Must give sqrt function an argument"

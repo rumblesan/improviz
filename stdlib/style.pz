@@ -1,0 +1,49 @@
+
+func fill(r, g, b, a, &blk)
+	r := 255
+	g := r
+	b := r
+	a := 255
+	s = :fill
+	if (isNull(blk))
+		style(s, r, g, b, a)
+	else
+		pushScope()
+		style(s, r, g, b, a)
+		blk()
+		popScope()
+
+func noFill(&blk)
+	s = :noFill
+	if (isNull(blk))
+		style(s)
+	else
+		pushScope()
+		style(s)
+		blk()
+		popScope()
+
+func stroke(r, g, b, a, &blk)
+	r := 255
+	g := r
+	b := r
+	a := 255
+	s = :stroke
+	if (isNull(blk))
+		style(s, r, g, b, a)
+	else
+		pushScope()
+		style(s, r, g, b, a)
+		blk()
+		popScope()
+
+func noStroke(&blk)
+	s = :noStroke
+	if (isNull(blk))
+		style(s)
+	else
+		pushScope()
+		style(s)
+		blk()
+		popScope()
+
