@@ -1,6 +1,5 @@
 module Gfx.EngineState where
 
-import qualified Data.Map.Strict               as M
 import           Data.Vec                       ( Mat44
                                                 , identity
                                                 , multmm
@@ -68,10 +67,6 @@ data SavableState = SavableState
   { savedMatrixStack  :: [Mat44 GLfloat]
   , savedFillStyles   :: [GFXFillStyling]
   , savedStrokeStyles :: [GFXStrokeStyling]
-  } deriving (Show)
-
-data EngineInfo = EngineInfo
-  { textureFrames :: M.Map String Int
   } deriving (Show)
 
 createGfxEngineState

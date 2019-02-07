@@ -15,7 +15,12 @@ where
 import           Language                       ( initialState )
 import           Language.Ast                   ( Program(..) )
 import           Language.Interpreter.Types     ( InterpreterState )
-import           Lens.Simple
+import           Lens.Simple                    ( (^.)
+                                                , set
+                                                , view
+                                                , makeLenses
+                                                )
+
 
 data ImprovizLanguage = ImprovizLanguage
   { _programText        :: String

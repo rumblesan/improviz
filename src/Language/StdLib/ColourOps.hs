@@ -4,19 +4,16 @@ module Language.StdLib.ColourOps
 where
 
 import           Control.Monad.Except
-import           Data.Map.Strict               as M
 import           Data.Maybe                     ( maybe
                                                 , listToMaybe
                                                 )
 
 import qualified Gfx.Ast                       as GA
-import qualified Gfx.EngineState               as GE
 import           Language.Ast                   ( Block
                                                 , Value(Number, Null, Symbol)
                                                 )
 import           Language.Interpreter           ( addGfxCommand
-                                                , getEngineInfo
-                                                , getVariable
+                                                , getTextureInfo
                                                 , gfxScopedBlock
                                                 , setBuiltIn
                                                 , setGfxBackground
@@ -46,14 +43,13 @@ texture args mbBlock = case args of
   _ -> return Null
 
 frames :: [Value] -> Maybe Block -> InterpreterProcess Value
-frames args _ = do
-  ei       <- getEngineInfo
-  textName <- getVariable "name"
-  return $ case args of
-    Symbol name : rest -> case M.lookup name (GE.textureFrames ei) of
+frames args _ = case args of
+  [Symbol name] -> do
+    symbolFrames <- getTextureInfo name
+    return $ case symbolFrames of
       Nothing -> Null
       Just v  -> Number (fromIntegral v)
-    _ -> Null
+  _ -> return Null
 
 background :: [Value] -> Maybe Block -> InterpreterProcess Value
 background args _ = do
@@ -63,7 +59,7 @@ background args _ = do
     [Number x, Number y, Null    ] -> return (x, x, x)
     [Number x, Number y, Number z] -> return (x, y, z)
     _ -> throwError "Error with functions to background"
-  _ <- setGfxBackground (dToC rVal, dToC gVal, dToC bVal)
+  setGfxBackground (dToC rVal, dToC gVal, dToC bVal)
   return Null
 
 

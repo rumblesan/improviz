@@ -1,6 +1,6 @@
 module Language.Interpreter
   ( emptyState
-  , getEngineInfo
+  , getTextureInfo
   , setBuiltIn
   , getGlobalNames
   , setVariable
@@ -17,8 +17,8 @@ import           Control.Monad                  ( zipWithM_
                                                 , foldM_
                                                 )
 import           Control.Monad.Except           ( throwError )
-import           Control.Monad.State.Strict     ( gets
-                                                , modify
+import           Lens.Simple                    ( use
+                                                , assign
                                                 )
 import           Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
@@ -28,36 +28,36 @@ import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
 
 import qualified Gfx.Ast                       as GA
-import qualified Gfx.EngineState               as GE
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 import           Gfx.Types                      ( Colour(..) )
+import           Gfx.Textures                   ( TextureInfo(..) )
 import           Language.Ast
 import qualified Language.Interpreter.Scope    as LS
 
 emptyState :: InterpreterState
-emptyState = InterpreterState { variables      = LS.empty
-                              , globals        = M.empty
-                              , builtins       = M.empty
-                              , functions      = M.empty
-                              , gfxBackground  = Colour 1 1 1 1
-                              , currentGfx     = GA.emptyGfx
-                              , animationStyle = NormalStyle
-                              , engineInfo     = GE.EngineInfo M.empty
+emptyState = InterpreterState { _variables      = LS.empty
+                              , _globals        = M.empty
+                              , _builtins       = M.empty
+                              , _functions      = M.empty
+                              , _gfxBackground  = Colour 1 1 1 1
+                              , _currentGfx     = GA.emptyGfx
+                              , _animationStyle = NormalStyle
+                              , _textureInfo    = TextureInfo M.empty
                               }
 
-getEngineInfo :: InterpreterProcess GE.EngineInfo
-getEngineInfo = gets engineInfo
+getTextureInfo :: String -> InterpreterProcess (Maybe Int)
+getTextureInfo name = do
+  ti <- use textureInfo
+  return $ M.lookup name $ textureFrames ti
 
 setFunction :: Identifier -> Func -> InterpreterProcess ()
-setFunction name (Func fname args body) = modify
-  (\s -> s
-    { functions = M.insert name (UserFunctionDef fname args body) (functions s)
-    }
-  )
+setFunction name (Func fname args body) = do
+  f <- use functions
+  assign functions (M.insert name (UserFunctionDef fname args body) f)
 
 getFunction :: Identifier -> InterpreterProcess UserFunctionDef
 getFunction name = do
-  functionDefs <- gets functions
+  functionDefs <- use functions
   case M.lookup name functionDefs of
     Just f  -> return f
     Nothing -> throwError $ "Could not find function: " ++ name
@@ -66,48 +66,52 @@ setBuiltIn
   :: Identifier
   -> ([Value] -> Maybe Block -> InterpreterProcess Value)
   -> InterpreterProcess ()
-setBuiltIn name func = modify
-  (\s -> s { globals  = M.insert name (BuiltInFunctionRef name) (globals s)
-           , builtins = M.insert name (BuiltInFunction func) (builtins s)
-           }
-  )
+setBuiltIn name func = do
+  g <- use globals
+  assign globals (M.insert name (BuiltInFunctionRef name) g)
+  b <- use builtins
+  assign builtins (M.insert name (BuiltInFunction func) b)
 
 getBuiltIn :: Identifier -> InterpreterProcess BuiltInFunction
 getBuiltIn name = do
-  builtInDefs <- gets builtins
+  builtInDefs <- use builtins
   case M.lookup name builtInDefs of
     Just b  -> return b
     Nothing -> throwError $ "Could not get builtin: " ++ name
 
 setGlobal :: Identifier -> Value -> InterpreterProcess Value
-setGlobal name val =
-  modify (\s -> s { globals = M.insert name val (globals s) }) >> return val
+setGlobal name val = do
+  g <- use globals
+  assign globals (M.insert name val g)
+  return val
 
 getGlobal :: Identifier -> InterpreterProcess Value
 getGlobal name = do
-  globalDefs <- gets globals
+  globalDefs <- use globals
   case M.lookup name globalDefs of
     Just v  -> return v
     Nothing -> throwError $ "Could not get global: " ++ name
 
 getGlobalNames :: InterpreterProcess (S.Set String)
-getGlobalNames = gets (M.keysSet . globals)
+getGlobalNames = M.keysSet <$> use globals
 
 setVariable :: Identifier -> Value -> InterpreterProcess Value
-setVariable name val =
-  modify (\s -> s { variables = LS.setVariable (variables s) name val })
-    >> return val
+setVariable name val = do
+  v <- use variables
+  assign variables (LS.setVariable v name val)
+  return val
 
 getVariable :: Identifier -> InterpreterProcess Value
 getVariable name = do
-  variableDefs <- gets variables
+  variableDefs <- use variables
   case LS.getVariable variableDefs name of
     Just v  -> return v
     Nothing -> throwError $ "Could not get variable: " ++ name
 
 addGfxCommand :: GA.GfxCommand -> InterpreterProcess ()
-addGfxCommand cmd =
-  modify (\s -> s { currentGfx = GA.addGfx (currentGfx s) cmd })
+addGfxCommand cmd = do
+  g <- use currentGfx
+  assign currentGfx (GA.addGfx g cmd)
 
 gfxScopedBlock :: GA.GfxCommand -> Block -> InterpreterProcess ()
 gfxScopedBlock scopedCommand block = do
@@ -118,9 +122,11 @@ gfxScopedBlock scopedCommand block = do
 
 newScope :: InterpreterProcess Value -> InterpreterProcess Value
 newScope childScope = do
-  modify (\s -> s { variables = LS.newScope (variables s) })
-  v <- childScope
-  modify (\s -> s { variables = popScope (variables s) })
+  varB <- use variables
+  assign variables (LS.newScope varB)
+  v    <- childScope
+  varA <- use variables
+  assign variables (popScope varA)
   return v
  where
   popScope :: LS.ScopeStack k v -> LS.ScopeStack k v
@@ -128,13 +134,11 @@ newScope childScope = do
     Left  _      -> oldS
     Right popped -> popped
 
-setGfxBackground :: (Float, Float, Float) -> InterpreterProcess Value
-setGfxBackground (r, g, b) =
-  modify (\s -> s { gfxBackground = Colour r g b 1 }) >> return Null
+setGfxBackground :: (Float, Float, Float) -> InterpreterProcess ()
+setGfxBackground (r, g, b) = assign gfxBackground (Colour r g b 1)
 
-setAnimationStyle :: AnimationStyle -> InterpreterProcess Value
-setAnimationStyle style =
-  modify (\s -> s { animationStyle = style }) >> return Null
+setAnimationStyle :: AnimationStyle -> InterpreterProcess ()
+setAnimationStyle = assign animationStyle
 
 -- Interpreter Logic
 interpretLanguage :: Program -> InterpreterProcess Value
@@ -225,7 +229,7 @@ interpretAssignment :: Assignment -> InterpreterProcess Value
 interpretAssignment (AbsoluteAssignment name expression) =
   interpretExpression expression >>= setVariable name
 interpretAssignment (ConditionalAssignment name expression) = do
-  variableDefs <- gets variables
+  variableDefs <- use variables
   let var = fromMaybe Null (LS.getVariable variableDefs name)
   case var of
     Null -> interpretExpression expression >>= setVariable name

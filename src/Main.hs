@@ -10,14 +10,19 @@ import           Control.Concurrent.STM         ( atomically
 import           Control.Monad                  ( when )
 import qualified Data.Map.Strict               as M
 
-import           Lens.Simple                    ( (^.) )
+import           Lens.Simple                    ( set
+                                                , (^.)
+                                                )
 
 import           Improviz                       ( ImprovizEnv )
 import qualified Improviz                      as I
 import qualified Improviz.Language             as IL
 import qualified Improviz.UI                   as IUI
 
-import           Gfx                            ( EngineState(textRenderer)
+import           Gfx                            ( EngineState
+                                                  ( textRenderer
+                                                  , textureLibrary
+                                                  )
                                                 , createGfx
                                                 , renderGfx
                                                 , resizeGfx
@@ -25,11 +30,13 @@ import           Gfx                            ( EngineState(textRenderer)
 import           Gfx.TextRendering              ( renderCode
                                                 , renderCodebuffer
                                                 )
+import           Gfx.Textures                   ( TextureInfo(..) )
 import           Gfx.Windowing                  ( setupWindow )
 import           Language                       ( createGfxScene
                                                 , updateStateVariables
                                                 )
 import           Language.Ast                   ( Value(Number) )
+import           Language.Interpreter.Types     ( textureInfo )
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
@@ -49,13 +56,17 @@ app env =
 
 initApp :: ImprovizEnv -> Int -> Int -> Int -> Int -> IO ()
 initApp env width height fbWidth fbHeight =
-  let config = env ^. I.config
-      gfxVar = env ^. I.graphics
+  let config   = env ^. I.config
+      gfxVar   = env ^. I.graphics
+      language = env ^. I.language
   in  do
         logInfo $ "Running at " ++ show width ++ " by " ++ show height
         logInfo $ "Framebuffer " ++ show fbWidth ++ " by " ++ show fbHeight
         gfx <- createGfx config width height fbWidth fbHeight
-        atomically $ swapTVar gfxVar gfx
+        let ti = TextureInfo $ M.map M.size (textureLibrary gfx)
+        atomically $ do
+          swapTVar gfxVar gfx
+          modifyTVar language (set (IL.initialInterpreter . textureInfo) ti)
         return ()
 
 resize :: ImprovizEnv -> Int -> Int -> Int -> Int -> IO ()
