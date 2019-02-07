@@ -5,10 +5,6 @@ module Language.Interpreter
   , getGlobalNames
   , setVariable
   , getVariable
-  , getVariableWithError
-  , getVariableWithDefault
-  , getVarOrNull
-  , getNumberFromNull
   , addGfxCommand
   , gfxScopedBlock
   , setGfxBackground
@@ -68,14 +64,12 @@ getFunction name = do
 
 setBuiltIn
   :: Identifier
-  -> InterpreterProcess Value
-  -> [FuncArg]
+  -> ([Value] -> Maybe Block -> InterpreterProcess Value)
   -> InterpreterProcess ()
-setBuiltIn name func funcArgs = modify
-  (\s -> s
-    { globals  = M.insert name (BuiltInFunctionRef name) (globals s)
-    , builtins = M.insert name (BuiltInFunction funcArgs func) (builtins s)
-    }
+setBuiltIn name func = modify
+  (\s -> s { globals  = M.insert name (BuiltInFunctionRef name) (globals s)
+           , builtins = M.insert name (BuiltInFunction func) (builtins s)
+           }
   )
 
 getBuiltIn :: Identifier -> InterpreterProcess BuiltInFunction
@@ -104,36 +98,12 @@ setVariable name val =
   modify (\s -> s { variables = LS.setVariable (variables s) name val })
     >> return val
 
-getVariableWithError :: Identifier -> String -> InterpreterProcess Value
-getVariableWithError name errorMsg = do
-  variableDefs <- gets variables
-  case LS.getVariable variableDefs name of
-    Just v  -> return v
-    Nothing -> throwError errorMsg
-
 getVariable :: Identifier -> InterpreterProcess Value
 getVariable name = do
   variableDefs <- gets variables
   case LS.getVariable variableDefs name of
     Just v  -> return v
     Nothing -> throwError $ "Could not get variable: " ++ name
-
-getVariableWithDefault :: Identifier -> Value -> InterpreterProcess Value
-getVariableWithDefault name defValue = do
-  variableDefs <- gets variables
-  return $ case fromMaybe Null (LS.getVariable variableDefs name) of
-    Null -> defValue
-    v    -> v
-
-getVarOrNull :: Identifier -> InterpreterProcess Value
-getVarOrNull name = do
-  variableDefs <- gets variables
-  return $ fromMaybe Null (LS.getVariable variableDefs name)
-
-getNumberFromNull :: Value -> Float -> Float
-getNumberFromNull Null         def = def
-getNumberFromNull (Number val) _   = val
-getNumberFromNull _            def = def
 
 addGfxCommand :: GA.GfxCommand -> InterpreterProcess ()
 addGfxCommand cmd =
@@ -188,38 +158,19 @@ interpretElement (ElIf         ifElem    ) = interpretIf ifElem
 interpretElement (ElExpression expression) = interpretExpression expression
 
 interpretApplication :: Application -> InterpreterProcess Value
-interpretApplication f@(Application name args block) = do
+interpretApplication f@(Application name args mbBlock) = do
   v <- interpretVariable name
   case v of
-    (BlockRef blk) -> do
-      interpretBlock blk
-    (UserFunctionRef name) -> do
-      userFunc <- getFunction name
-      interpretUserFunctionApplication f userFunc
-    (BuiltInFunctionRef name) -> do
-      builtInFunc <- getBuiltIn name
-      interpretBuiltInFunctionApplication f builtInFunc
+    (BlockRef        blk ) -> interpretBlock blk
+    (UserFunctionRef name) -> newScope $ do
+      (UserFunctionDef _ argNames body) <- getFunction name
+      assignApplicationArgs argNames args mbBlock
+      interpretBlock body
+    (BuiltInFunctionRef name) -> newScope $ do
+      (BuiltInFunction action) <- getBuiltIn name
+      argValues                <- mapM interpretExpression args
+      action argValues mbBlock
     _ -> return Null
-
-interpretUserFunctionApplication
-  :: Application -> UserFunctionDef -> InterpreterProcess Value
-interpretUserFunctionApplication (Application _ args mbBlock) (UserFunctionDef _ funcArgs body)
-  = newScope
-    (do
-      assignApplicationArgs funcArgs args mbBlock
-      ret <- interpretBlock body
-      return ret
-    )
-
-interpretBuiltInFunctionApplication
-  :: Application -> BuiltInFunction -> InterpreterProcess Value
-interpretBuiltInFunctionApplication (Application _ args mbBlock) (BuiltInFunction funcArgs action)
-  = newScope
-    (do
-      assignApplicationArgs funcArgs args mbBlock
-      ret <- action
-      return ret
-    )
 
 assignApplicationArgs
   :: [FuncArg] -> [Expression] -> Maybe Block -> InterpreterProcess Value
@@ -228,9 +179,8 @@ assignApplicationArgs funcArgs args mbBlock = do
   zipWithM_ (assignArg mbBlock) funcArgs (argValues ++ repeat Null)
   return Null
  where
-  assignArg _ (VarArg name) v = setVariable name v
-  assignArg mb (BlockArg name) _ =
-    setVariable name $ maybe Null (\b -> BlockRef b) mb
+  assignArg _  (VarArg   name) v = setVariable name v
+  assignArg mb (BlockArg name) _ = setVariable name $ maybe Null BlockRef mb
 
 interpretLoop :: Loop -> InterpreterProcess Value
 interpretLoop (Loop numExpr loopVar block) = do
@@ -275,7 +225,8 @@ interpretAssignment :: Assignment -> InterpreterProcess Value
 interpretAssignment (AbsoluteAssignment name expression) =
   interpretExpression expression >>= setVariable name
 interpretAssignment (ConditionalAssignment name expression) = do
-  var <- getVarOrNull name
+  variableDefs <- gets variables
+  let var = fromMaybe Null (LS.getVariable variableDefs name)
   case var of
     Null -> interpretExpression expression >>= setVariable name
     _    -> return var

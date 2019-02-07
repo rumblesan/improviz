@@ -3,18 +3,17 @@ module Language.StdLib.Util
   )
 where
 
+import           Control.Monad.Except           ( throwError )
+
 import           Language.Ast
-import           Language.Interpreter           ( getVariable
-                                                , setBuiltIn
-                                                )
+import           Language.Interpreter           ( setBuiltIn )
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
 
 addUtilStdLib :: InterpreterProcess ()
-addUtilStdLib = do
-  setBuiltIn "isNull" isNullFunc [VarArg "v"]
+addUtilStdLib = setBuiltIn "isNull" isNullFunc
 
-isNullFunc :: InterpreterProcess Value
-isNullFunc = do
-  v <- getVariable "v"
-  return $ if valIsNull v then Number 1 else Number 0
+isNullFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
+isNullFunc args _ = case args of
+  []      -> throwError "Need to provide isNull with argument"
+  arg : _ -> return $ if valIsNull arg then Number 1 else Number 0
