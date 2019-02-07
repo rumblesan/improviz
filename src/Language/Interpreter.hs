@@ -5,10 +5,6 @@ module Language.Interpreter
   , getGlobalNames
   , setVariable
   , getVariable
-  , getVariableWithError
-  , getVariableWithDefault
-  , getVarOrNull
-  , getNumberFromNull
   , addGfxCommand
   , gfxScopedBlock
   , setGfxBackground
@@ -102,36 +98,12 @@ setVariable name val =
   modify (\s -> s { variables = LS.setVariable (variables s) name val })
     >> return val
 
-getVariableWithError :: Identifier -> String -> InterpreterProcess Value
-getVariableWithError name errorMsg = do
-  variableDefs <- gets variables
-  case LS.getVariable variableDefs name of
-    Just v  -> return v
-    Nothing -> throwError errorMsg
-
 getVariable :: Identifier -> InterpreterProcess Value
 getVariable name = do
   variableDefs <- gets variables
   case LS.getVariable variableDefs name of
     Just v  -> return v
     Nothing -> throwError $ "Could not get variable: " ++ name
-
-getVariableWithDefault :: Identifier -> Value -> InterpreterProcess Value
-getVariableWithDefault name defValue = do
-  variableDefs <- gets variables
-  return $ case fromMaybe Null (LS.getVariable variableDefs name) of
-    Null -> defValue
-    v    -> v
-
-getVarOrNull :: Identifier -> InterpreterProcess Value
-getVarOrNull name = do
-  variableDefs <- gets variables
-  return $ fromMaybe Null (LS.getVariable variableDefs name)
-
-getNumberFromNull :: Value -> Float -> Float
-getNumberFromNull Null         def = def
-getNumberFromNull (Number val) _   = val
-getNumberFromNull _            def = def
 
 addGfxCommand :: GA.GfxCommand -> InterpreterProcess ()
 addGfxCommand cmd =
@@ -253,7 +225,8 @@ interpretAssignment :: Assignment -> InterpreterProcess Value
 interpretAssignment (AbsoluteAssignment name expression) =
   interpretExpression expression >>= setVariable name
 interpretAssignment (ConditionalAssignment name expression) = do
-  var <- getVarOrNull name
+  variableDefs <- gets variables
+  let var = fromMaybe Null (LS.getVariable variableDefs name)
   case var of
     Null -> interpretExpression expression >>= setVariable name
     _    -> return var
