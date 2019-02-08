@@ -1,6 +1,6 @@
 
 func rotate(x, y, z, &blk)
-	x := (time / 4 * pi)
+	x := ((bpm/60) * (time + nudge) / 4 * pi)
 	y := x
 	z := 0
 	m = :rotate
@@ -13,7 +13,7 @@ func rotate(x, y, z, &blk)
 		popScope()
 
 func scale(x, y, z, &blk)
-	x := cos(time)
+	x := cos((bpm/60)*(time + nudge))
 	y := x
 	z := y
 	m = :scale
@@ -27,9 +27,10 @@ func scale(x, y, z, &blk)
 
 func move(x, y, z, &blk)
 	if (isNull(x))
-		x = cos(2 * pi * time)
-		y = sin(2 * pi * time)
-		z = cos(2 * pi * time)
+		b = 2 * pi * (bpm/60) * (time + nudge)
+		x = cos(b)
+		y = sin(b)
+		z = cos(b)
 	else
 		y := 0
 		z := 0

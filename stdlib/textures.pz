@@ -1,0 +1,12 @@
+
+func animate(name, speed, &blk)
+	speed := 1
+	f = ((bpm/60) * (time + nudge) * speed) % frames(name)
+	if (isNull(blk))
+		texture(name, f)
+	else
+		pushScope()
+		texture(name, f)
+		blk()
+		popScope()
+
