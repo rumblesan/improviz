@@ -6,7 +6,7 @@ where
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 
 import           Language.Ast                   ( Block
-                                                , Value
+                                                , Value(Null)
                                                 )
 import           Language.Interpreter           ( setAnimationStyle
                                                 , setBuiltIn
@@ -19,7 +19,7 @@ addPostEffectsStdLib = do
   setBuiltIn "motionBlur" motionBlur
 
 motionBlur :: [Value] -> Maybe Block -> InterpreterProcess Value
-motionBlur _ _ = setAnimationStyle MotionBlur
+motionBlur _ _ = setAnimationStyle MotionBlur >> return Null
 
 paintOver :: [Value] -> Maybe Block -> InterpreterProcess Value
-paintOver _ _ = setAnimationStyle PaintOver
+paintOver _ _ = setAnimationStyle PaintOver >> return Null

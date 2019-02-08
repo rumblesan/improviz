@@ -9,7 +9,7 @@ module Language
 where
 
 import           Control.Monad                  ( forM_ )
-import           Control.Monad.State.Strict     ( gets )
+import           Lens.Simple                    ( use )
 
 import           Gfx                            ( Scene(..) )
 
@@ -26,6 +26,8 @@ import           Language.Interpreter           ( emptyState
 import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , InterpreterState(..)
                                                 , currentGfx
+                                                , gfxBackground
+                                                , animationStyle
                                                 , runInterpreterM
                                                 )
 import           Language.Parser                ( parseProgram )
@@ -39,7 +41,7 @@ initialState userCode =
   let setup = do
         addStdLib
         globals <- getGlobalNames
-        mapM (\p -> interpretLanguage (transform globals p)) userCode
+        mapM (interpretLanguage . transform globals) userCode
   in  snd $ runInterpreterM setup emptyState
 
 updateStateVariables
@@ -63,9 +65,9 @@ createGfxScene initialState program =
   let run = do
         globals      <- getGlobalNames
         _            <- interpretLanguage (transform globals program)
-        gfxB         <- gets currentGfx
-        gfxBg        <- gets gfxBackground
-        gfxAnimStyle <- gets animationStyle
+        gfxB         <- use currentGfx
+        gfxBg        <- use gfxBackground
+        gfxAnimStyle <- use animationStyle
         return Scene { sceneBackground       = gfxBg
                      , sceneGfx              = gfxB
                      , scenePostProcessingFX = gfxAnimStyle

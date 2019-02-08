@@ -2,6 +2,7 @@
 
 module Gfx.Textures
   ( TextureLibrary
+  , TextureInfo(..)
   , createTextureLib
   , addTexture
   )
@@ -62,6 +63,10 @@ newtype TextureFolderConfig = TextureFolderConfig
 instance FromJSON TextureFolderConfig where
   parseJSON (Y.Object v) = TextureFolderConfig <$> v .: "textures"
   parseJSON _            = fail "Expected Object for Config value"
+
+newtype TextureInfo = TextureInfo
+  { textureFrames :: M.Map String Int
+  } deriving (Show)
 
 loadTexture :: String -> FilePath -> IO (String, M.Map Int TextureObject)
 loadTexture name path = do
