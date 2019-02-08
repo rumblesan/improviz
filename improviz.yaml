@@ -6,7 +6,8 @@ osc:
 textureDirectories:
   - "./textures"
 codeFiles:
-  - "./stdlib/matrixOps.pz"
+  - "./stdlib/transformations.pz"
   - "./stdlib/shapes.pz"
   - "./stdlib/style.pz"
+  - "./stdlib/textures.pz"
   - "./usercode/grid.pz"
