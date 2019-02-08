@@ -20,7 +20,7 @@ func cylinder(x, y, z)
 func rectangle(x, y)
 	x := 1
 	y := x
-	shape(:rectangle, x, y, z)
+	shape(:rectangle, x, y)
 
 func line(x)
 	x := 1
