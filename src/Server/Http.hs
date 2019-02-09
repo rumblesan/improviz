@@ -28,6 +28,9 @@ import           Logging                        ( logError
 
 import qualified Language                      as L
 import           Language.Ast                   ( Value(Number) )
+import           Language.Parser.Errors         ( prettyPrintErrors
+                                                , parseErrorsOut
+                                                )
 
 import           Server.Protocol
 
@@ -45,7 +48,7 @@ import           Lens.Simple                    ( set
 editorHtmlFilePath :: FilePath
 editorHtmlFilePath = "html/editor.html"
 
-updateProgram :: ImprovizEnv -> String -> IO (ImprovizResponse String)
+updateProgram :: ImprovizEnv -> String -> IO ImprovizResponse
 updateProgram env newProgram = case L.parse newProgram of
   Right newAst -> do
     atomically $ do
@@ -55,18 +58,17 @@ updateProgram env newProgram = case L.parse newProgram of
     logInfo msg
     return $ ImprovizOKResponse msg
   Left err -> do
-    logError err
-    return $ ImprovizErrorResponse err
+    logError $ prettyPrintErrors err
+    return $ ImprovizCodeErrorResponse $ parseErrorsOut err
 
-toggleTextDisplay :: TVar ImprovizUI -> IO (ImprovizResponse String)
+toggleTextDisplay :: TVar ImprovizUI -> IO ImprovizResponse
 toggleTextDisplay ui = do
   atomically $ modifyTVar ui IUI.toggleTextDisplay
   let msg = "Text display toggled"
   logInfo msg
   return $ ImprovizOKResponse msg
 
-updateExternalVar
-  :: ImprovizEnv -> String -> Float -> IO (ImprovizResponse String)
+updateExternalVar :: ImprovizEnv -> String -> Float -> IO ImprovizResponse
 updateExternalVar env name value = do
   atomically $ modifyTVar (env ^. I.externalVars) (M.insert name (Number value))
   return $ ImprovizOKResponse $ name ++ " variable updated"
@@ -102,4 +104,8 @@ startHttpServer env =
               [(v, _)] -> do
                 resp <- liftIO $ updateExternalVar env name v
                 json resp
-              _ -> json $ ImprovizErrorResponse $ name ++ " variable updated"
+              _ ->
+                json
+                  $  ImprovizErrorResponse
+                  $  name
+                  ++ " variable not updated. Value invalid"

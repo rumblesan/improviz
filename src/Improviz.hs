@@ -20,6 +20,7 @@ import           Control.Monad                  ( mapM )
 import qualified Data.ByteString.Char8         as B
 import           Data.Either                    ( rights )
 import qualified Data.Map.Strict               as M
+import           Data.Monoid                    ( (<>) )
 import           Data.Time.Clock.POSIX          ( POSIXTime
                                                 , getPOSIXTime
                                                 )
@@ -43,6 +44,7 @@ import           Improviz.UI                    ( ImprovizUI
                                                 )
 import qualified Language                      as L
 import qualified Language.Ast                  as LA
+import           Language.Parser.Errors         ( prettyPrintErrors )
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
@@ -80,8 +82,7 @@ readExternalCode files = rights <$> mapM readCode files
     d <- B.unpack <$> B.readFile path
     let result = L.parse d
     case result of
-      Right _ -> do
-        logInfo $ "Loaded " ++ path ++ " user code file"
-      Left err -> do
-        logError $ "Could not load " ++ path ++ ": " ++ err
+      Right _ -> logInfo $ "Loaded " <> path <> " user code file"
+      Left err ->
+        logError $ "Could not load " <> path <> "\n" <> prettyPrintErrors err
     return result

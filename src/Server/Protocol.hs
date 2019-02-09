@@ -4,13 +4,18 @@ module Server.Protocol where
 
 import           Data.Aeson
 
-data ImprovizResponse e
+import           Language.Parser.Errors         ( ImprovizCodeError(..) )
+
+data ImprovizResponse
   = ImprovizOKResponse String
-  | ImprovizErrorResponse e
+  | ImprovizErrorResponse String
+  | ImprovizCodeErrorResponse [ImprovizCodeError]
   deriving (Show, Eq)
 
-instance (ToJSON e) => ToJSON (ImprovizResponse e) where
+instance ToJSON ImprovizResponse where
   toJSON (ImprovizOKResponse payload) =
     object [("status", "ok"), "payload" .= payload]
   toJSON (ImprovizErrorResponse payload) =
+    object [("status", "error"), "payload" .= payload]
+  toJSON (ImprovizCodeErrorResponse payload) =
     object [("status", "error"), "payload" .= payload]

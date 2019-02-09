@@ -18,11 +18,10 @@ import           Control.Monad.Combinators.Expr
 import qualified Text.Megaparsec.Char.Lexer    as L
 
 import           Language.Ast
+import           Language.Parser.Errors         ( ParserError )
 
 
 type Parser = Parsec Void String
-
-type ParserError = ParseErrorBundle String Void
 
 lineCmnt = L.skipLineComment "//"
 blockCmnt = L.skipBlockComment "/*" "*/"
@@ -69,13 +68,11 @@ eol = void $ many newline
 
 -- Improviz Language Parser
 
-simpleParse :: Parser a -> String -> Either ParserError a
-simpleParse parser = parse parser "program"
+parseProgram :: String -> Either ParserError Program
+parseProgram = parse program "program"
 
-parseProgram :: String -> Either String Program
-parseProgram prog = case simpleParse program prog of
-  Right ast -> Right ast
-  Left  err -> Left $ show err
+prettyPrintError :: ParserError -> String
+prettyPrintError = errorBundlePretty
 
 program :: Parser Program
 program = between whitespace eof programBlock

@@ -83,6 +83,7 @@ executable improviz
                      , Language.Ast.Transformers
                      , Language.Ast.Transformers.Globalise
                      , Language.Parser
+                     , Language.Parser.Errors
                      , Language.Interpreter
                      , Language.Interpreter.Scope
                      , Language.Interpreter.Types
@@ -157,6 +158,7 @@ test-suite improviz-test
                      , Language.Ast.Transformers
                      , Language.Ast.Transformers.Globalise
                      , Language.Parser
+                     , Language.Parser.Errors
                      , Language.Interpreter
                      , Language.Interpreter.Scope
                      , Language.Interpreter.Types

@@ -31,9 +31,10 @@ import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , runInterpreterM
                                                 )
 import           Language.Parser                ( parseProgram )
+import           Language.Parser.Errors         ( ParserError )
 import           Language.StdLib                ( addStdLib )
 
-parse :: String -> Either String Program
+parse :: String -> Either ParserError Program
 parse = parseProgram
 
 initialState :: [Program] -> InterpreterState
