@@ -8,12 +8,13 @@ where
 import           Control.Monad                  ( when )
 import           Data.Monoid                    ( (<>) )
 import           Data.Time
+import           Data.Time.Format
 import           Lens.Simple                    ( (^.) )
 
 import qualified Configuration                 as C
 
 getTime :: IO String
-getTime = show <$> getCurrentTime
+getTime = formatTime defaultTimeLocale "%F %H:%M:%6Q" <$> getCurrentTime
 
 logInfo :: String -> IO ()
 logInfo message = do
