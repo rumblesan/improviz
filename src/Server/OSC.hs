@@ -54,7 +54,7 @@ startOSCServer env =
       oscPort = (config ^. C.osc . CO.port)
   in  do
         logInfo $ "Improviz OSC server listening on port " ++ show oscPort
-        socket <- udpServer "127.0.0.1" oscPort
+        socket <- udpServer "0.0.0.0" oscPort
         forkIO $ forever $ do
           packet <- recvPacket socket
           logDebug config $ "Packet received: " ++ show packet
