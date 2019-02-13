@@ -34,10 +34,9 @@ test_basic_program =
       "a = 2\nb = 3\nfunc foo (c, d) => c * d\nshape(:cube, b, a, foo(a, b))\n"
     interpreterState = Language.initialState []
     result           = do
-      ast <- Language.parse program
+      ast <- Language.simpleParse program
       let result = fst $ Language.createGfxScene interpreterState ast
-      scene <- result
-      return $ sceneGfx scene
+      sceneGfx <$> result
     expected = Right [GA.ShapeCommand (GA.Cube 3 2 6)]
   in
     assertEqual "" expected result
@@ -47,10 +46,9 @@ test_animation_style =
   let program          = "motionBlur()"
       interpreterState = Language.initialState []
       result           = do
-        ast <- Language.parse program
+        ast <- Language.simpleParse program
         let result = fst $ Language.createGfxScene interpreterState ast
-        scene <- result
-        return $ scenePostProcessingFX scene
+        scenePostProcessingFX <$> result
       expected = Right MotionBlur
   in  assertEqual "" expected result
 
@@ -61,10 +59,9 @@ test_loop_program =
       = "matrix(:rotate, 0.1, 0.2, 0.3)\n3 times with i\n\tmatrix(:rotate, 0.2, 0.2, 0.2)\n\tshape(:cube, i, i, i)\n\n\n"
     interpreterState = Language.initialState []
     result           = do
-      ast <- Language.parse program
+      ast <- Language.simpleParse program
       let result = fst $ Language.createGfxScene interpreterState ast
-      scene <- result
-      return $ sceneGfx scene
+      sceneGfx <$> result
     expected = Right
       [ GA.MatrixCommand (GA.Rotate 0.1 0.2 0.3)
       , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2)

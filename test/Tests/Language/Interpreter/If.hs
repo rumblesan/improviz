@@ -28,11 +28,10 @@ test_true_if_statement :: Assertion
 test_true_if_statement =
   let program = "if (1)\n\tshape(:cube, 1, 1, 1)"
       result  = do
-        ast <- Language.parse program
+        ast <- Language.simpleParse program
         let result =
               fst $ Language.createGfxScene (Language.initialState []) ast
-        scene <- result
-        return $ sceneGfx scene
+        sceneGfx <$> result
       expected = Right [GA.ShapeCommand (GA.Cube 1 1 1)]
   in  assertEqual "" expected result
 
@@ -40,11 +39,10 @@ test_false_if_statement :: Assertion
 test_false_if_statement =
   let program = "if (0)\n\tshape(:cube, 1, 1, 1)"
       result  = do
-        ast <- Language.parse program
+        ast <- Language.simpleParse program
         let result =
               fst $ Language.createGfxScene (Language.initialState []) ast
-        scene <- result
-        return $ sceneGfx scene
+        sceneGfx <$> result
       expected = Right []
   in  assertEqual "" expected result
 
@@ -52,11 +50,10 @@ test_true_if_else_statement :: Assertion
 test_true_if_else_statement =
   let program = "if (1)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1)"
       result  = do
-        ast <- Language.parse program
+        ast <- Language.simpleParse program
         let result =
               fst $ Language.createGfxScene (Language.initialState []) ast
-        scene <- result
-        return $ sceneGfx scene
+        sceneGfx <$> result
       expected = Right [GA.ShapeCommand (GA.Cube 1 1 1)]
   in  assertEqual "" expected result
 
@@ -64,10 +61,9 @@ test_false_if_else_statement :: Assertion
 test_false_if_else_statement =
   let program = "if (0)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1)"
       result  = do
-        ast <- Language.parse program
+        ast <- Language.simpleParse program
         let result =
               fst $ Language.createGfxScene (Language.initialState []) ast
-        scene <- result
-        return $ sceneGfx scene
+        sceneGfx <$> result
       expected = Right [GA.ShapeCommand (GA.Line 1)]
   in  assertEqual "" expected result

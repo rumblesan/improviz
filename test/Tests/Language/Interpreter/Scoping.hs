@@ -29,10 +29,9 @@ test_basic_default_scoping =
           \shape(:cube, 1, 1, 1)\n\
           \popScope()"
     result = do
-      ast <- Language.parse program
+      ast <- Language.simpleParse program
       let result = fst $ Language.createGfxScene (Language.initialState []) ast
-      scene <- result
-      return $ sceneGfx scene
+      sceneGfx <$> result
     expected = Right
       [ GA.ScopeCommand GA.PushScope
       , GA.MatrixCommand (GA.Rotate 3 4 5)

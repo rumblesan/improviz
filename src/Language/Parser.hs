@@ -71,6 +71,9 @@ eol = void $ many newline
 parseProgram :: String -> Either ParserError Program
 parseProgram = parse program "program"
 
+simpleParse :: Parser a -> String -> Either ParserError a
+simpleParse parser = parse parser "program"
+
 prettyPrintError :: ParserError -> String
 prettyPrintError = errorBundlePretty
 
