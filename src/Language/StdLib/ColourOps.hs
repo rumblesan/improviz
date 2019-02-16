@@ -54,9 +54,9 @@ frames args _ = case args of
 background :: [Value] -> Maybe Block -> InterpreterProcess Value
 background args _ = do
   (rVal, gVal, bVal) <- case args of
-    [Null    , Null    , Null    ] -> return (255, 255, 255)
-    [Number x, Null    , Null    ] -> return (x, x, x)
-    [Number x, Number y, Null    ] -> return (x, x, x)
+    []                             -> return (255, 255, 255)
+    [Number x]                     -> return (x, x, x)
+    [Number x, Number y]           -> return (x, y, 0)
     [Number x, Number y, Number z] -> return (x, y, z)
     _ -> throwError "Error with functions to background"
   setGfxBackground (dToC rVal, dToC gVal, dToC bVal)
