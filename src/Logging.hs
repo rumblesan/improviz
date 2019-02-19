@@ -8,7 +8,6 @@ where
 import           Control.Monad                  ( when )
 import           Data.Monoid                    ( (<>) )
 import           Data.Time
-import           Data.Time.Format
 import           Lens.Simple                    ( (^.) )
 
 import qualified Configuration                 as C
