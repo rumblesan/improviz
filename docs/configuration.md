@@ -75,6 +75,8 @@ codeFiles:
   - "./usercode/grid.pz"
 ```
 
+Much of the standard library of functions is now implemented like this.
+
 ## Debug
 
 The debug setting can be turned on via the cli or the config file.
