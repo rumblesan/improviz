@@ -44,6 +44,7 @@ executable improviz
                      , OpenGLRaw
                      , Vec
                      , yaml
+                     , vector
                      , warp
                      , aeson
   other-modules:       Server
@@ -98,6 +99,10 @@ executable improviz
                      , Language.StdLib.PostEffects
                      , Language.StdLib.Maths
                      , Language.StdLib.Util
+                     , Language.ImpVM
+                     , Language.ImpVM.StdLib
+                     , Language.ImpVM.Types
+                     , Language.ImpVM.VM
   default-language:    Haskell2010
 
 test-suite improviz-test
@@ -128,6 +133,7 @@ test-suite improviz-test
                      , stm
                      , Vec
                      , yaml
+                     , vector
                      , aeson
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
                        -fwarn-unused-binds -fwarn-unused-imports
