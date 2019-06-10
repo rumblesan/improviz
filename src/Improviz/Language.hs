@@ -4,6 +4,7 @@ module Improviz.Language
   ( ImprovizLanguage
   , makeLanguageState
   , initialInterpreter
+  , impVMState
   , currentAst
   , updateProgram
   , resetProgram
@@ -15,6 +16,8 @@ where
 import           Language                       ( initialState )
 import           Language.Ast                   ( Program(..) )
 import           Language.Interpreter.Types     ( InterpreterState )
+import           Language.ImpVM.Types           ( VMState )
+import           Language.ImpVM.VM              ( cleanVM )
 import           Lens.Simple                    ( (^.)
                                                 , set
                                                 , view
@@ -23,17 +26,18 @@ import           Lens.Simple                    ( (^.)
 import           Gfx.Context                    ( GfxContext )
 
 
-data ImprovizLanguage = ImprovizLanguage
+data ImprovizLanguage gfxContext = ImprovizLanguage
   { _programText        :: String
   , _lastProgramText    :: String
   , _currentAst         :: Program
   , _lastWorkingAst     :: Program
   , _initialInterpreter :: InterpreterState
+  , _impVMState :: VMState gfxContext
   }
 
 makeLenses ''ImprovizLanguage
 
-makeLanguageState :: [Program] -> GfxContext -> IO ImprovizLanguage
+makeLanguageState :: [Program] -> GfxContext -> IO (ImprovizLanguage GfxContext)
 makeLanguageState userCode ctx = do
   initial <- initialState userCode ctx
   return ImprovizLanguage { _programText        = ""
@@ -41,23 +45,24 @@ makeLanguageState userCode ctx = do
                           , _currentAst         = Program []
                           , _lastWorkingAst     = Program []
                           , _initialInterpreter = initial
+                          , _impVMState         = cleanVM ctx
                           }
 
-updateProgram :: String -> Program -> ImprovizLanguage -> ImprovizLanguage
+updateProgram :: String -> Program -> ImprovizLanguage eg -> ImprovizLanguage eg
 updateProgram newProgram newAst =
   set programText newProgram . set currentAst newAst
 
-resetProgram :: ImprovizLanguage -> ImprovizLanguage
+resetProgram :: ImprovizLanguage eg -> ImprovizLanguage eg
 resetProgram as =
   let oldAst  = view lastWorkingAst as
       oldText = view lastProgramText as
   in  set programText oldText $ set currentAst oldAst as
 
-saveProgram :: ImprovizLanguage -> ImprovizLanguage
+saveProgram :: ImprovizLanguage eg -> ImprovizLanguage eg
 saveProgram as =
   let ast  = view currentAst as
       text = view programText as
   in  set lastWorkingAst ast $ set lastProgramText text as
 
-programHasChanged :: ImprovizLanguage -> Bool
+programHasChanged :: ImprovizLanguage eg -> Bool
 programHasChanged as = as ^. currentAst /= as ^. lastWorkingAst

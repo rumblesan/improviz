@@ -52,7 +52,7 @@ import           Logging                        ( logError
                                                 )
 
 data ImprovizEnv = ImprovizEnv
-  { _language     :: TVar ImprovizLanguage
+  { _language     :: TVar (ImprovizLanguage GfxContext)
   , _ui           :: TVar ImprovizUI
   , _graphics     :: TVar GfxEngine
   , _gfxContext   :: GfxContext
