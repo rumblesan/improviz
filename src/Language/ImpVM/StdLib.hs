@@ -7,10 +7,10 @@ import           Lens.Simple                    ( assign )
 import           Language.ImpVM.Types
 import           Language.ImpVM.VM
 
-addStdLib :: VM ()
+addStdLib :: VM es ()
 addStdLib = assign builtins $ M.fromList [("print", printValue)]
 
-printValue :: VM ()
+printValue :: VM es ()
 printValue = do
   v <- popStack
   liftIO $ print v

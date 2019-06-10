@@ -15,8 +15,8 @@ import           Language.ImpVM.Types
 import           Language.ImpVM.VM
 import           Language.ImpVM.StdLib
 
-run :: Vector Instruction -> IO VMState
-run prog = execStateT eval cleanVM
+run :: externalState -> Vector Instruction -> IO (VMState externalState)
+run es prog = execStateT eval (cleanVM es)
  where
   eval = do
     assign program prog
@@ -25,7 +25,7 @@ run prog = execStateT eval cleanVM
     addStdLib
     execute
 
-execute :: VM ()
+execute :: VM es ()
 execute = do
   pc   <- getProgramCounter
   prog <- use program
@@ -36,7 +36,7 @@ execute = do
   when runState execute
 
 
-runInstruction :: Instruction -> VM ()
+runInstruction :: Instruction -> VM es ()
 runInstruction (Push item)         = pushStack item
 runInstruction Pop                 = void popStack
 runInstruction (Operator op      ) = runOp op
@@ -66,7 +66,7 @@ runInstruction Return = do
   setProgramCounter a
 runInstruction End = assign running False
 
-runOp :: Op -> VM ()
+runOp :: Op -> VM es ()
 runOp AddOp = do
   i1 <- popStack
   i2 <- popStack

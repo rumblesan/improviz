@@ -4,10 +4,9 @@ import qualified Data.Map                      as M
 import           Data.Vector                    ( Vector )
 import           Control.Monad.State            ( StateT )
 
-
 data StackItem = SFloat Float | SString String deriving (Show, Eq)
 
-type VM a = StateT VMState IO a
+type VM externalState a = StateT (VMState externalState) IO a
 
 data Op = AddOp | SubOp | MultOp | DivOp deriving (Show)
 
@@ -28,13 +27,14 @@ data Instruction
   | Return
   | End deriving (Show)
 
-data VMState = VMState
+data VMState externalState = VMState
   { _programCounter :: Int
   , _program :: Vector Instruction
   , _opstack :: [StackItem]
   , _callstack :: [Int]
   , _memory :: Vector StackItem
-  , _builtins :: M.Map String (VM ())
+  , _builtins :: M.Map String (VM externalState ())
   , _running :: Bool
   , _vmError :: Maybe ImpVMError
+  , _externalState:: externalState
   }
