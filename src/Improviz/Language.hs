@@ -13,6 +13,8 @@ module Improviz.Language
   )
 where
 
+import qualified Data.Map.Strict               as M
+
 import           Language                       ( initialState )
 import           Language.Ast                   ( Program(..) )
 import           Language.Interpreter.Types     ( InterpreterState )
@@ -45,7 +47,7 @@ makeLanguageState userCode ctx = do
                           , _currentAst         = Program []
                           , _lastWorkingAst     = Program []
                           , _initialInterpreter = initial
-                          , _impVMState         = cleanVM ctx
+                          , _impVMState         = cleanVM ctx M.empty
                           }
 
 updateProgram :: String -> Program -> ImprovizLanguage eg -> ImprovizLanguage eg

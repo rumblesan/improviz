@@ -4,7 +4,7 @@ module Language.ImpVM.VM where
 
 import qualified Data.Vector                   as V
 import qualified Data.Map                      as M
-import           Data.Vector                    ( (!)
+import           Data.Vector                    ( (!?)
                                                 , (//)
                                                 )
 
@@ -17,33 +17,38 @@ import           Language.ImpVM.Types
 
 makeLenses ''VMState
 
-cleanVM :: externalState -> VMState externalState
-cleanVM es = VMState { _programCounter = 0
-                     , _program        = V.empty
-                     , _opstack        = []
-                     , _callstack      = []
-                     , _memory         = V.empty
-                     , _builtins       = M.empty
-                     , _running        = False
-                     , _vmError        = Nothing
-                     , _externalVars   = M.empty
-                     , _externalState  = es
-                     }
+cleanVM :: externalState -> M.Map String StackItem -> VMState externalState
+cleanVM es extVars = VMState { _programCounter = 0
+                             , _program        = V.empty
+                             , _opstack        = []
+                             , _callstack      = []
+                             , _memory         = V.replicate 1000 SNull
+                             , _builtins       = M.empty
+                             , _running        = False
+                             , _vmError        = Nothing
+                             , _externalVars   = extVars
+                             , _externalState  = es
+                             }
 
 readInstruction :: Int -> VM es Instruction
 readInstruction address = do
   pg <- use program
-  return $ pg ! address
+  case pg !? address of
+    Just i  -> return i
+    Nothing -> setError "Instruction address out of bounds" >> return End
 
 readAddress :: Int -> VM es StackItem
 readAddress address = do
   mem <- use memory
-  return $ mem ! address
+  case mem !? address of
+    Just i  -> return i
+    Nothing -> setError "Memory address out of bounds" >> return SNull
 
 writeAddress :: Int -> StackItem -> VM es ()
 writeAddress address value = do
   mem <- use memory
-  assign memory $ mem // [(address, value)]
+  let updatedMem = mem // [(address, value)]
+  assign memory updatedMem
 
 readExternal :: String -> VM es StackItem
 readExternal name = do

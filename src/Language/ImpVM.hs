@@ -15,8 +15,12 @@ import           Language.ImpVM.Types
 import           Language.ImpVM.VM
 import           Language.ImpVM.StdLib
 
-run :: externalState -> Vector Instruction -> IO (VMState externalState)
-run es prog = execStateT eval (cleanVM es)
+run
+  :: externalState
+  -> M.Map String StackItem
+  -> Vector Instruction
+  -> IO (VMState externalState)
+run es extVars prog = execStateT eval (cleanVM es extVars)
  where
   eval = do
     assign program prog
