@@ -26,6 +26,7 @@ cleanVM es = VMState { _programCounter = 0
                      , _builtins       = M.empty
                      , _running        = False
                      , _vmError        = Nothing
+                     , _externalVars   = M.empty
                      , _externalState  = es
                      }
 
@@ -43,6 +44,11 @@ writeAddress :: Int -> StackItem -> VM es ()
 writeAddress address value = do
   mem <- use memory
   assign memory $ mem // [(address, value)]
+
+readExternal :: String -> VM es StackItem
+readExternal name = do
+  exts <- use externalVars
+  return $ M.findWithDefault SNull name exts
 
 pushStack :: StackItem -> VM es ()
 pushStack item = do

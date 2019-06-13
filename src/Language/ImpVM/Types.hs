@@ -20,6 +20,7 @@ data Instruction
   | RelJump Int
   | Branch Int
   | Constant StackItem
+  | External String
   | Load Int
   | Save Int
   | Call Int Int
@@ -36,5 +37,6 @@ data VMState externalState = VMState
   , _builtins :: M.Map String (VM externalState ())
   , _running :: Bool
   , _vmError :: Maybe ImpVMError
-  , _externalState:: externalState
+  , _externalVars :: M.Map String StackItem
+  , _externalState :: externalState
   }

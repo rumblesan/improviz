@@ -47,8 +47,11 @@ runInstruction (RelJump  distance) = do
 runInstruction (Branch address) = do
   v <- popStack
   when (v /= SFloat 0) $ setProgramCounter address
-runInstruction (Constant item   ) = pushStack item
-runInstruction (Load     address) = do
+runInstruction (Constant item) = pushStack item
+runInstruction (External name) = do
+  v <- readExternal name
+  pushStack v
+runInstruction (Load address) = do
   v <- readAddress address
   pushStack v
 runInstruction (Save address) = do
@@ -99,4 +102,3 @@ runOp NEQOp = do
   i1 <- popStack
   i2 <- popStack
   pushStack $ SFloat $ if i1 == i2 then 0 else 1
-
