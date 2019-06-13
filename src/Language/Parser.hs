@@ -53,7 +53,7 @@ rword :: String -> Parser ()
 rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
 
 rws :: [String]
-rws = ["if", "else", "null", "func", "times", "with"]
+rws = ["if", "else", "null", "func", "times", "with", "time"]
 
 identifier :: Parser String
 identifier = (lexeme . try) (p >>= check)
@@ -227,7 +227,13 @@ expression :: Parser Expression
 expression = makeExprParser exprs operators <?> "expression"
 
 variable :: Parser Variable
-variable = LocalVariable <$> identifier
+variable =
+  ExternalVariable
+    <$> lexeme (string "ext:" *> identifier)
+    <|> ExternalVariable
+    <$> symbol "time"
+    <|> LocalVariable
+    <$> identifier
 
 value :: Parser Value
 value = v_number <|> v_symbol <|> v_null

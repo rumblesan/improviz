@@ -231,5 +231,6 @@ interpretExpression (EVar var  ) = interpretVariable var
 interpretExpression (EVal value) = return value
 
 interpretVariable :: Variable -> InterpreterProcess Value
-interpretVariable (LocalVariable  varName) = getVariable varName
-interpretVariable (GlobalVariable varName) = getGlobal varName
+interpretVariable (LocalVariable    varName) = getVariable varName
+interpretVariable (GlobalVariable   varName) = getGlobal varName
+interpretVariable (ExternalVariable varName) = getVariable varName
