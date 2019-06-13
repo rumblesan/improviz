@@ -1,8 +1,13 @@
 
-save N loopcount
-save I 0 // optinal if loop has `with` var
+loopExprOp
+loopExprOp
+save N
+Constant 0
+save I // either user defined variable name or anonymous
 
 load N
+load I
+operator EQOp
 
 branch (loop op length + 5)
 
@@ -13,10 +18,10 @@ loopOp
 loopOp
 loopOp
 
-incr I
-load N
+load I
 constant 1
-binaryOp -
-branch - (loopOp length + 4)4
+operator AddOp
+save I
+branch - (loopOp length + 4 + 1 + 3)
 
 

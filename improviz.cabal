@@ -84,6 +84,8 @@ executable improviz
                      , Language.Ast
                      , Language.Ast.Transformers
                      , Language.Ast.Transformers.Globalise
+                     , Language.Compiler
+                     , Language.Compiler.State
                      , Language.Parser
                      , Language.Parser.Errors
                      , Language.Interpreter

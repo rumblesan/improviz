@@ -7,20 +7,21 @@ func foo(a, b)
 foo(1, 2)
 
 
+# Compiles to
 
-save 1 // b arg from stack
-save 0 // a arg from stack
-funcblockops
-funcblockops
-funcblockops
-funcblockops
-return // return address kept on call stack
 
 constant 1
 constant 2
-address <addr>
-callFunction 2 // save current addr on callstack
-pop // don't need return value
-
+callFunction <addr> 2 // save current addr on callstack
+save 0 // b arg from stack
+save 1 // a arg from stack
+load 1
+constant 1
+operator "+"
+save 2 // save c variable
+load 0
+load 2
+builtin "box" 2
+return // return to address kept on call stack
 
 

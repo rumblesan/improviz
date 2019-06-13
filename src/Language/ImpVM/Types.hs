@@ -4,11 +4,11 @@ import qualified Data.Map                      as M
 import           Data.Vector                    ( Vector )
 import           Control.Monad.State            ( StateT )
 
-data StackItem = SFloat Float | SString String deriving (Show, Eq)
+data StackItem = SFloat Float | SString String | SNull deriving (Show, Eq)
 
 type VM externalState a = StateT (VMState externalState) IO a
 
-data Op = AddOp | SubOp | MultOp | DivOp deriving (Show)
+data Op = AddOp | SubOp | MultOp | DivOp | EQOp | NEQOp deriving (Show)
 
 newtype ImpVMError = ImpVMError String deriving (Show)
 

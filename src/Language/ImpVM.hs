@@ -91,3 +91,12 @@ runOp DivOp = do
   case (i1, i2) of
     (SFloat v1, SFloat v2) -> pushStack $ SFloat (v1 / v2)
     _                      -> setError "invalid args for div"
+runOp EQOp = do
+  i1 <- popStack
+  i2 <- popStack
+  pushStack $ SFloat $ if i1 == i2 then 1 else 0
+runOp NEQOp = do
+  i1 <- popStack
+  i2 <- popStack
+  pushStack $ SFloat $ if i1 == i2 then 0 else 1
+
