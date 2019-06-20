@@ -39,22 +39,4 @@ There is a very basic client avaialable for [Emacs](https://github.com/rumblesan
 
 ## Documentation
 
-Currently the best docs are those that live in the main repository.
-
-[Docs](https://github.com/rumblesan/improviz/tree/master/docs)
-
-
-## Troubleshooting
-
-I'm gradually going to flesh this out with some sort of FAQ, but for the time-being either [raise an issue](https://github.com/rumblesan/improviz/issues) on the repository, email me, or message me via some form of social media.
-
-
-## Contact
-
-Drop me an email at guy@rumblesan.com
-
-
-## License
-
-BSD License.
-
+Currently the best docs are those that live on the [Improviz website](https://improviz.rumblesan.com).

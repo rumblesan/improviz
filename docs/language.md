@@ -16,14 +16,14 @@ There are two types of assignment.
 
 Absolute assignment will set a variable identifier to a value as usual.
 
-`var a = 3 + 4`
+`a = 3 + 4`
 
 Conditional assignment will set a variable only if it currently doesn't have a value.
 This is mostly useful when expecting to have values set via OSC messages which may not have arrived yet, and so avoid `variable undefined` errors.
 
 ```
-var a = 3
-var a := 4
+a = 3
+a := 4
 cube(a) // cube will be of size 3
 ```
 
@@ -105,7 +105,7 @@ Optional `with` variable can be used as well.
 ```
 stroke(0, 0, 0)
 fill(255, 0, 0)
-var n = 100
+n = 100
 n times with i
 	rotate()
   move(i)
@@ -149,7 +149,7 @@ texture(:crystal)
   cube()
 move()
 
-var t = :another
+t = :another
 texture(t)
   ball()
 ```
