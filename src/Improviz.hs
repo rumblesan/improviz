@@ -15,6 +15,8 @@ where
 
 import           Control.Concurrent.STM         ( TVar
                                                 , newTVarIO
+                                                , TMVar
+                                                , newEmptyTMVarIO
                                                 )
 import           Control.Monad                  ( mapM )
 import qualified Data.ByteString.Char8         as B
@@ -33,7 +35,6 @@ import           Configuration                  ( ImprovizConfig
                                                 , codeFiles
                                                 , getConfig
                                                 )
-import           Gfx                            ( emptyGfx )
 import           Gfx.EngineState                ( EngineState )
 
 import           Improviz.Language              ( ImprovizLanguage
@@ -52,7 +53,7 @@ import           Logging                        ( logError
 data ImprovizEnv = ImprovizEnv
   { _language     :: TVar ImprovizLanguage
   , _ui           :: TVar ImprovizUI
-  , _graphics     :: TVar EngineState
+  , _graphics     :: TMVar EngineState
   , _config       :: ImprovizConfig
   , _startTime    :: POSIXTime
   , _externalVars :: TVar (M.Map String LA.Value)
@@ -67,7 +68,7 @@ createEnv = do
   startTime     <- getPOSIXTime
   uiState       <- newTVarIO defaultUI
   config        <- getConfig
-  gfxState      <- newTVarIO emptyGfx
+  gfxState      <- newEmptyTMVarIO
   externalVars  <- newTVarIO M.empty
   uiState       <- newTVarIO defaultUI
   userCode      <- readExternalCode (config ^. codeFiles)

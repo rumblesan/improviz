@@ -5,7 +5,8 @@ import           GHC.Float                      ( double2Float )
 import           Control.Concurrent.STM         ( atomically
                                                 , modifyTVar
                                                 , readTVarIO
-                                                , swapTVar
+                                                , takeTMVar
+                                                , putTMVar
                                                 )
 import           Control.Monad                  ( when )
 import qualified Data.Map.Strict               as M
@@ -67,7 +68,7 @@ initApp env width height fbWidth fbHeight =
         gfx <- createGfx config width height fbWidth fbHeight
         let ti = TextureInfo $ M.map M.size (textureLibrary gfx)
         atomically $ do
-          swapTVar gfxVar gfx
+          putTMVar gfxVar gfx
           modifyTVar language (set (IL.initialInterpreter . textureInfo) ti)
         return ()
 
@@ -78,14 +79,14 @@ resize env newWidth newHeight fbWidth fbHeight =
   in  do
         logInfo $ "Resizing to " ++ show newWidth ++ " by " ++ show newHeight
         logInfo $ "Framebuffer " ++ show fbWidth ++ " by " ++ show fbHeight
-        engineState <- readTVarIO gfxVar
+        engineState <- atomically $ takeTMVar gfxVar
         newGfx      <- resizeGfx engineState
                                  config
                                  newWidth
                                  newHeight
                                  fbWidth
                                  fbHeight
-        atomically $ swapTVar gfxVar newGfx
+        atomically $ putTMVar gfxVar newGfx
         return ()
 
 initialVars :: M.Map String Value -> Float -> [(String, Value)]
@@ -96,7 +97,7 @@ display :: ImprovizEnv -> Double -> IO ()
 display env time = do
   as   <- readTVarIO (env ^. I.language)
   vars <- readTVarIO (env ^. I.externalVars)
-  gs   <- readTVarIO (env ^. I.graphics)
+  gs   <- atomically $ takeTMVar (env ^. I.graphics)
   let newVars = initialVars vars (double2Float time)
       is      = setGfxEngine gs
         $ updateStateVariables newVars (as ^. IL.initialInterpreter)
@@ -109,7 +110,7 @@ display env time = do
     (_          , Nothing    ) -> logError "No Graphics Engine"
     (Right scene, Just gfxEng) -> do
       ui <- readTVarIO $ env ^. I.ui
-      _  <- atomically $ swapTVar (env ^. I.graphics) gfxEng
+      atomically $ putTMVar (env ^. I.graphics) gfxEng
       when (IL.programHasChanged as) $ do
         logInfo "Saving current ast"
         renderCode 0 0 (textRenderer gfxEng) (ui ^. IUI.currentText)

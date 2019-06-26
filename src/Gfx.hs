@@ -37,9 +37,6 @@ import           Gfx.Textures                   ( createTextureLib )
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
 
-emptyGfx :: EngineState
-emptyGfx = undefined
-
 createGfx :: ImprovizConfig -> Int -> Int -> Int -> Int -> IO EngineState
 createGfx config width height fbWidth fbHeight = do
   post         <- createPostProcessing fbWidth fbHeight
