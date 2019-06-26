@@ -64,7 +64,8 @@ renderGfx :: EngineState -> Scene -> IO ()
 renderGfx gs scene =
   let
     post      = postFX gs
-    animStyle = scenePostProcessingFX scene
+    animStyle = postProcessingFX gs
+    bgColor   = backgroundColor gs
   in
     do
       usePostProcessing post
@@ -78,7 +79,7 @@ renderGfx gs scene =
           blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
         PaintOver ->
           blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
-      clearColor $= colToGLCol (sceneBackground scene)
+      clearColor $= colToGLCol bgColor
       clear [ColorBuffer, DepthBuffer]
       evalStateT (interpretGfx $ sceneGfx scene) gs
-      renderPostProcessing post $ scenePostProcessingFX scene
+      renderPostProcessing post animStyle
