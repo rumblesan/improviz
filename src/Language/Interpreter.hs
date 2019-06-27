@@ -19,6 +19,7 @@ import           Control.Monad                  ( zipWithM_
 import           Control.Monad.Except           ( throwError )
 import           Lens.Simple                    ( use
                                                 , assign
+                                                , set
                                                 )
 import           Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
@@ -27,7 +28,7 @@ import qualified Data.Set                      as S
 import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
 
-import           Gfx.EngineState                ( postProcessingFX
+import           Gfx.EngineState                ( animationStyle
                                                 , backgroundColor
                                                 )
 import qualified Gfx.Ast                       as GA
@@ -142,14 +143,14 @@ setGfxBackground (r, g, b) = do
   case mbGfx of
     Nothing -> return ()
     Just gfx ->
-      assign gfxEngine $ Just $ gfx { backgroundColor = Colour r g b 1 }
+      assign gfxEngine $ Just $ set backgroundColor (Colour r g b 1) gfx
 
 setAnimationStyle :: AnimationStyle -> InterpreterProcess ()
 setAnimationStyle animStyle = do
   mbGfx <- use gfxEngine
   case mbGfx of
     Nothing  -> return ()
-    Just gfx -> assign gfxEngine $ Just $ gfx { postProcessingFX = animStyle }
+    Just gfx -> assign gfxEngine $ Just $ set animationStyle animStyle gfx
 
 -- Interpreter Logic
 interpretLanguage :: Program -> InterpreterProcess Value

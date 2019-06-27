@@ -7,6 +7,10 @@ import           Control.Monad                  ( mapM
                                                 , void
                                                 )
 import           Control.Monad.State.Strict
+import           Lens.Simple                    ( use
+                                                , assign
+                                                , view
+                                                )
 import qualified Data.Map.Strict               as M
 
 import           Data.Vec                       ( Mat44
@@ -41,7 +45,7 @@ type GraphicsEngine v = StateT EngineState GfxAction v
 
 interpretGfx :: GfxAst -> GraphicsEngine GfxOutput
 interpretGfx ast = do
-  program <- gets colourShaders
+  program <- use colourShaders
   liftIO (currentProgram $= Just (shaderProgram program))
   void $ interpretBlock ast
 
@@ -57,8 +61,8 @@ interpretCommand (ScopeCommand  instruction) = interpretScoping instruction
 getFullMatrix :: GraphicsEngine (Mat44 GLfloat)
 getFullMatrix = do
   mMat <- gets modelMatrix
-  pMat <- gets projectionMatrix
-  vMat <- gets viewMatrix
+  pMat <- use projectionMatrix
+  vMat <- use viewMatrix
   return $ multmm (multmm pMat vMat) mMat
 
 drawShape :: VBO -> GraphicsEngine GfxOutput
@@ -67,15 +71,15 @@ drawShape vbo = do
   style <- gets currentFillStyle
   case style of
     ES.GFXFillColour fillC -> do
-      program <- gets colourShaders
+      program <- use colourShaders
       liftIO (currentProgram $= Just (shaderProgram program))
       lift $ setMVPMatrixUniform program mvp
       lift $ setColourUniform program fillC
       lift $ drawVBO vbo
     ES.GFXFillTexture name frame -> do
-      program <- gets textureShaders
+      program <- use textureShaders
       liftIO (currentProgram $= Just (shaderProgram program))
-      textureLib <- gets textureLibrary
+      textureLib <- use textureLibrary
       case M.lookup name textureLib >>= M.lookup frame of
         Nothing      -> return ()
         Just texture -> do
@@ -92,7 +96,7 @@ drawWireframe vbo = do
   case style of
     ES.GFXStrokeColour strokeC -> do
       mvp     <- getFullMatrix
-      program <- gets colourShaders
+      program <- use colourShaders
       liftIO (currentProgram $= Just (shaderProgram program))
       lift $ setMVPMatrixUniform program mvp
       lift $ setColourUniform program strokeC
@@ -102,30 +106,30 @@ drawWireframe vbo = do
 
 interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
 interpretShape (Cube x y z) = do
-  gbos <- gets geometryBuffers
+  gbos <- use geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y z))
   drawWireframe (cubeWireBuffer gbos)
   drawShape (cubeBuffer gbos)
   modify' popMatrix
 interpretShape (Rectangle x y) = do
-  gbos <- gets geometryBuffers
+  gbos <- use geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y 1))
   drawWireframe (rectWireBuffer gbos)
   drawShape (rectBuffer gbos)
   modify' popMatrix
 interpretShape (Line l) = do
-  gbos <- gets geometryBuffers
+  gbos <- use geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat l 1 1))
   drawWireframe (lineBuffer gbos)
   modify' popMatrix
 interpretShape (Cylinder x y z) = do
-  gbos <- gets geometryBuffers
+  gbos <- use geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y z))
   drawWireframe (cylinderWireBuffer gbos)
   drawShape (cylinderBuffer gbos)
   modify' popMatrix
 interpretShape (Sphere x y z) = do
-  gbos <- gets geometryBuffers
+  gbos <- use geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y z))
   drawWireframe (sphereWireBuffer gbos)
   drawShape (sphereBuffer gbos)
@@ -151,18 +155,16 @@ interpretColour NoStroke = modify' (pushStrokeStyle ES.GFXNoStroke)
 
 interpretScoping :: ScopeInstruction -> GraphicsEngine GfxOutput
 interpretScoping PushScope = do
-  st <- get
-  let savable = SavableState { savedMatrixStack  = matrixStack st
-                             , savedFillStyles   = fillStyles st
-                             , savedStrokeStyles = strokeStyles st
-                             }
-  modify (\s -> s { scopeStack = savable : (scopeStack s) })
-interpretScoping PopScope = modify popStack
- where
-  popStack st =
-    let prev = head $ scopeStack st
-    in  st { scopeStack   = tail $ scopeStack st
-           , fillStyles   = savedFillStyles prev
-           , strokeStyles = savedStrokeStyles prev
-           , matrixStack  = savedMatrixStack prev
-           }
+  mStack  <- use matrixStack
+  fStyles <- use fillStyles
+  sStyles <- use strokeStyles
+  stack   <- use scopeStack
+  let savable = SavableState mStack fStyles sStyles
+  assign scopeStack (savable : stack)
+interpretScoping PopScope = do
+  stack <- use scopeStack
+  let prev = head stack
+  assign scopeStack   (tail stack)
+  assign fillStyles   (view savedFillStyles prev)
+  assign strokeStyles (view savedStrokeStyles prev)
+  assign matrixStack  (view savedMatrixStack prev)

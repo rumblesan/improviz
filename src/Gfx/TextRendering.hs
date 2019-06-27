@@ -2,8 +2,8 @@
 
 module Gfx.TextRendering
   ( createTextRenderer
-  , renderCode
-  , renderCodebuffer
+  , renderText
+  , renderTextToBuffer
   , addCodeTextureToLib
   , resizeTextRendererScreen
   , changeTextColour
@@ -194,16 +194,16 @@ resizeTextRendererScreen config width height trender =
 changeTextColour :: Colour -> TextRenderer -> TextRenderer
 changeTextColour newColour trender = trender {textColour = newColour}
 
-renderCode :: Int -> Int -> TextRenderer -> String -> IO ()
-renderCode xpos ypos renderer strings =
+renderText :: Int -> Int -> TextRenderer -> String -> IO ()
+renderText xpos ypos renderer strings =
   let (Savebuffer fbo _ _ _ _) = outbuffer renderer
       height = textAreaHeight renderer
    in do GL.bindFramebuffer Framebuffer $= fbo
          renderCharacters xpos (height - ypos) renderer strings
          printErrors
 
-renderCodebuffer :: TextRenderer -> IO ()
-renderCodebuffer renderer = do
+renderTextToBuffer :: TextRenderer -> IO ()
+renderTextToBuffer renderer = do
   GL.bindFramebuffer Framebuffer $= GL.defaultFramebufferObject
   let (Savebuffer _ text _ program quadVBO) = outbuffer renderer
   GL.currentProgram $= Just program

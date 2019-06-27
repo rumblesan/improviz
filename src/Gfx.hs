@@ -1,10 +1,12 @@
 module Gfx
-  ( EngineState(..)
+  ( EngineState
   , Scene(..)
   , renderGfx
-  , emptyGfx
   , createGfx
   , resizeGfx
+  , renderCode
+  , renderCodeToBuffer
+  , textureLibrary
   )
 where
 
@@ -14,10 +16,15 @@ import           Lens.Simple                    ( (^.) )
 
 import           Graphics.Rendering.OpenGL
 
-import           Gfx.EngineState                ( EngineState(..)
+import           Gfx.EngineState                ( EngineState
                                                 , Scene(..)
                                                 , createGfxEngineState
                                                 , resizeGfxEngine
+                                                , backgroundColor
+                                                , postFX
+                                                , animationStyle
+                                                , textRenderer
+                                                , textureLibrary
                                                 )
 import           Gfx.Interpreter                ( interpretGfx )
 import           Gfx.OpenGL                     ( colToGLCol )
@@ -31,6 +38,8 @@ import           Gfx.PostProcessing             ( AnimationStyle(..)
 import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 , createTextRenderer
                                                 , resizeTextRendererScreen
+                                                , renderText
+                                                , renderTextToBuffer
                                                 )
 import           Gfx.Textures                   ( createTextureLib )
 
@@ -48,21 +57,21 @@ createGfx config width height fbWidth fbHeight = do
 resizeGfx
   :: EngineState -> ImprovizConfig -> Int -> Int -> Int -> Int -> IO EngineState
 resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
-  deletePostProcessing $ postFX engineState
+  deletePostProcessing $ engineState ^. postFX
   newPost    <- createPostProcessing fbWidth fbHeight
   newTrender <- resizeTextRendererScreen config
                                          fbWidth
                                          fbHeight
-                                         (textRenderer engineState)
+                                         (engineState ^. textRenderer)
   return
     $ resizeGfxEngine config newWidth newHeight newPost newTrender engineState
 
 renderGfx :: EngineState -> Scene -> IO ()
 renderGfx gs scene =
   let
-    post      = postFX gs
-    animStyle = postProcessingFX gs
-    bgColor   = backgroundColor gs
+    post      = gs ^. postFX
+    animStyle = gs ^. animationStyle
+    bgColor   = gs ^. backgroundColor
   in
     do
       usePostProcessing post
@@ -80,3 +89,11 @@ renderGfx gs scene =
       clear [ColorBuffer, DepthBuffer]
       evalStateT (interpretGfx $ sceneGfx scene) gs
       renderPostProcessing post animStyle
+
+renderCode :: EngineState -> String -> IO ()
+renderCode gfxEngine = renderText 0 0 (gfxEngine ^. textRenderer)
+
+renderCodeToBuffer :: EngineState -> String -> IO ()
+renderCodeToBuffer gfxEngine codeText = do
+  renderText 0 0 (gfxEngine ^. textRenderer) codeText
+  renderTextToBuffer (gfxEngine ^. textRenderer)

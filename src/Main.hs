@@ -20,16 +20,12 @@ import qualified Improviz                      as I
 import qualified Improviz.Language             as IL
 import qualified Improviz.UI                   as IUI
 
-import           Gfx                            ( EngineState
-                                                  ( textRenderer
-                                                  , textureLibrary
-                                                  )
-                                                , createGfx
+import           Gfx                            ( createGfx
                                                 , renderGfx
                                                 , resizeGfx
-                                                )
-import           Gfx.TextRendering              ( renderCode
-                                                , renderCodebuffer
+                                                , renderCode
+                                                , renderCodeToBuffer
+                                                , textureLibrary
                                                 )
 import           Gfx.Textures                   ( TextureInfo(..) )
 import           Gfx.Windowing                  ( setupWindow )
@@ -66,7 +62,7 @@ initApp env width height fbWidth fbHeight =
         logInfo $ "Running at " ++ show width ++ " by " ++ show height
         logInfo $ "Framebuffer " ++ show fbWidth ++ " by " ++ show fbHeight
         gfx <- createGfx config width height fbWidth fbHeight
-        let ti = TextureInfo $ M.map M.size (textureLibrary gfx)
+        let ti = TextureInfo $ M.map M.size (gfx ^. textureLibrary)
         atomically $ do
           putTMVar gfxVar gfx
           modifyTVar language (set (IL.initialInterpreter . textureInfo) ti)
@@ -113,9 +109,8 @@ display env time = do
       atomically $ putTMVar (env ^. I.graphics) gfxEng
       when (IL.programHasChanged as) $ do
         logInfo "Saving current ast"
-        renderCode 0 0 (textRenderer gfxEng) (ui ^. IUI.currentText)
+        renderCode gfxEng (ui ^. IUI.currentText)
         atomically $ modifyTVar (env ^. I.language) IL.saveProgram
       renderGfx gfxEng scene
-      when (ui ^. IUI.displayText) $ do
-        renderCode 0 0 (textRenderer gfxEng) (ui ^. IUI.currentText)
-        renderCodebuffer (textRenderer gfxEng)
+      when (ui ^. IUI.displayText)
+        $ renderCodeToBuffer gfxEng (ui ^. IUI.currentText)

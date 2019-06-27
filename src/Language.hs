@@ -12,7 +12,10 @@ module Language
 where
 
 import           Control.Monad                  ( forM_ )
-import           Lens.Simple                    ( use )
+import           Lens.Simple                    ( use
+                                                , set
+                                                , view
+                                                )
 
 import           Gfx                            ( EngineState
                                                 , Scene(..)
@@ -29,8 +32,9 @@ import           Language.Interpreter           ( emptyState
                                                 , setVariable
                                                 )
 import           Language.Interpreter.Types     ( InterpreterProcess
-                                                , InterpreterState(..)
+                                                , InterpreterState
                                                 , currentGfx
+                                                , gfxEngine
                                                 , runInterpreterM
                                                 )
 import           Language.Parser                ( parseProgram )
@@ -60,10 +64,10 @@ updateStateVariables vars oldState =
   in  snd $ runInterpreterM setVars oldState
 
 setGfxEngine :: EngineState -> InterpreterState -> InterpreterState
-setGfxEngine es is = is { _gfxEngine = Just es }
+setGfxEngine es = set gfxEngine (Just es)
 
 getGfxEngine :: InterpreterState -> Maybe EngineState
-getGfxEngine = _gfxEngine
+getGfxEngine = view gfxEngine
 
 interpret :: [(Identifier, Value)] -> Program -> Either String Value
 interpret initialVars program =

@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell   #-}
+
 module Gfx.EngineState where
 
 import           Data.Vec                       ( Mat44
@@ -5,7 +7,12 @@ import           Data.Vec                       ( Mat44
                                                 , multmm
                                                 )
 import           Graphics.Rendering.OpenGL      ( GLfloat )
-import           Lens.Simple                    ( (^.) )
+import           Lens.Simple                    ( makeLenses
+                                                , over
+                                                , view
+                                                , set
+                                                , (^.)
+                                                )
 
 import           Gfx.Ast                        ( Block )
 import           Gfx.GeometryBuffers            ( GeometryBuffers
@@ -43,29 +50,33 @@ data GFXStrokeStyling
 
 newtype Scene = Scene { sceneGfx :: Block }
 
-data EngineState = EngineState
-  { fillStyles         :: [GFXFillStyling]
-  , strokeStyles       :: [GFXStrokeStyling]
-  , drawTransparencies :: Bool
-  , geometryBuffers    :: GeometryBuffers
-  , textureLibrary     :: TextureLibrary
-  , colourShaders      :: Shaders
-  , textureShaders     :: Shaders
-  , viewMatrix         :: Mat44 GLfloat
-  , projectionMatrix   :: Mat44 GLfloat
-  , postFX             :: PostProcessing
-  , textRenderer       :: TextRenderer
-  , matrixStack        :: [Mat44 GLfloat]
-  , scopeStack         :: [SavableState]
-  , postProcessingFX   :: AnimationStyle
-  , backgroundColor    :: Colour
+data SavableState = SavableState
+  { _savedMatrixStack  :: [Mat44 GLfloat]
+  , _savedFillStyles   :: [GFXFillStyling]
+  , _savedStrokeStyles :: [GFXStrokeStyling]
   } deriving (Show)
 
-data SavableState = SavableState
-  { savedMatrixStack  :: [Mat44 GLfloat]
-  , savedFillStyles   :: [GFXFillStyling]
-  , savedStrokeStyles :: [GFXStrokeStyling]
+makeLenses ''SavableState
+
+data EngineState = EngineState
+  { _fillStyles         :: [GFXFillStyling]
+  , _strokeStyles       :: [GFXStrokeStyling]
+  , _drawTransparencies :: Bool
+  , _geometryBuffers    :: GeometryBuffers
+  , _textureLibrary     :: TextureLibrary
+  , _colourShaders      :: Shaders
+  , _textureShaders     :: Shaders
+  , _viewMatrix         :: Mat44 GLfloat
+  , _projectionMatrix   :: Mat44 GLfloat
+  , _postFX             :: PostProcessing
+  , _textRenderer       :: TextRenderer
+  , _matrixStack        :: [Mat44 GLfloat]
+  , _scopeStack         :: [SavableState]
+  , _animationStyle   :: AnimationStyle
+  , _backgroundColor    :: Colour
   } deriving (Show)
+
+makeLenses ''EngineState
 
 createGfxEngineState
   :: ImprovizConfig
@@ -85,21 +96,21 @@ createGfxEngineState config width height pprocess trender textLib =
         gbos <- createAllBuffers
         cshd <- createColourShaders
         tshd <- createTextureShaders
-        return EngineState { fillStyles = [GFXFillColour $ Colour 1 1 1 1]
-                           , strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
-                           , drawTransparencies = False
-                           , geometryBuffers    = gbos
-                           , textureLibrary     = textLib
-                           , colourShaders      = cshd
-                           , textureShaders     = tshd
-                           , viewMatrix         = view
-                           , projectionMatrix   = projection
-                           , postFX             = pprocess
-                           , textRenderer       = trender
-                           , matrixStack        = [identity]
-                           , scopeStack         = []
-                           , postProcessingFX   = NormalStyle
-                           , backgroundColor    = Colour 1 1 1 1
+        return EngineState { _fillStyles = [GFXFillColour $ Colour 1 1 1 1]
+                           , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
+                           , _drawTransparencies = False
+                           , _geometryBuffers    = gbos
+                           , _textureLibrary     = textLib
+                           , _colourShaders      = cshd
+                           , _textureShaders     = tshd
+                           , _viewMatrix         = view
+                           , _projectionMatrix   = projection
+                           , _postFX             = pprocess
+                           , _textRenderer       = trender
+                           , _matrixStack        = [identity]
+                           , _scopeStack         = []
+                           , _animationStyle     = NormalStyle
+                           , _backgroundColor    = Colour 1 1 1 1
                            }
 
 resizeGfxEngine
@@ -110,39 +121,39 @@ resizeGfxEngine
   -> TextRenderer
   -> EngineState
   -> EngineState
-resizeGfxEngine config newWidth newHeight newPP newTR es =
+resizeGfxEngine config newWidth newHeight newPP newTR =
   let front    = config ^. C.screen . CS.front
       back     = config ^. C.screen . CS.back
       newRatio = newWidth /. newHeight
       newProj  = projectionMat front back (pi / 4) newRatio
-  in  es { projectionMatrix = newProj, postFX = newPP, textRenderer = newTR }
+  in  set projectionMatrix newProj . set postFX newPP . set textRenderer newTR
 
 pushFillStyle :: GFXFillStyling -> EngineState -> EngineState
-pushFillStyle s es = es { fillStyles = s : fillStyles es }
+pushFillStyle s = over fillStyles (s :)
 
 currentFillStyle :: EngineState -> GFXFillStyling
-currentFillStyle = head . fillStyles
+currentFillStyle = head . view fillStyles
 
 pushStrokeStyle :: GFXStrokeStyling -> EngineState -> EngineState
-pushStrokeStyle c es = es { strokeStyles = c : strokeStyles es }
+pushStrokeStyle c = over strokeStyles (c :)
 
 currentStrokeStyle :: EngineState -> GFXStrokeStyling
-currentStrokeStyle = head . strokeStyles
+currentStrokeStyle = head . view strokeStyles
 
 pushMatrix :: EngineState -> Mat44 Float -> EngineState
 pushMatrix es mat =
-  let stack = matrixStack es
+  let stack = view matrixStack es
       comp  = multmm (head stack) mat
-  in  es { matrixStack = comp : stack }
+  in  set matrixStack (comp : stack) es
 
 popMatrix :: EngineState -> EngineState
-popMatrix es = es { matrixStack = tail $ matrixStack es }
+popMatrix = over matrixStack tail
 
 modelMatrix :: EngineState -> Mat44 Float
-modelMatrix = head . matrixStack
+modelMatrix = head . view matrixStack
 
 multMatrix :: EngineState -> Mat44 Float -> EngineState
 multMatrix es mat =
-  let stack   = matrixStack es
+  let stack   = view matrixStack es
       newhead = multmm (head stack) mat
-  in  es { matrixStack = newhead : tail stack }
+  in  set matrixStack (newhead : tail stack) es
