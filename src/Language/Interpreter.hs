@@ -27,6 +27,9 @@ import qualified Data.Set                      as S
 import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
 
+import           Gfx.EngineState                ( postProcessingFX
+                                                , backgroundColor
+                                                )
 import qualified Gfx.Ast                       as GA
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 import           Gfx.Types                      ( Colour(..) )
@@ -35,14 +38,13 @@ import           Language.Ast
 import qualified Language.Interpreter.Scope    as LS
 
 emptyState :: InterpreterState
-emptyState = InterpreterState { _variables      = LS.empty
-                              , _globals        = M.empty
-                              , _builtins       = M.empty
-                              , _functions      = M.empty
-                              , _gfxBackground  = Colour 1 1 1 1
-                              , _currentGfx     = GA.emptyGfx
-                              , _animationStyle = NormalStyle
-                              , _textureInfo    = TextureInfo M.empty
+emptyState = InterpreterState { _variables   = LS.empty
+                              , _globals     = M.empty
+                              , _builtins    = M.empty
+                              , _functions   = M.empty
+                              , _currentGfx  = GA.emptyGfx
+                              , _textureInfo = TextureInfo M.empty
+                              , _gfxEngine   = Nothing
                               }
 
 getTextureInfo :: String -> InterpreterProcess (Maybe Int)
@@ -135,10 +137,19 @@ newScope childScope = do
     Right popped -> popped
 
 setGfxBackground :: (Float, Float, Float) -> InterpreterProcess ()
-setGfxBackground (r, g, b) = assign gfxBackground (Colour r g b 1)
+setGfxBackground (r, g, b) = do
+  mbGfx <- use gfxEngine
+  case mbGfx of
+    Nothing -> return ()
+    Just gfx ->
+      assign gfxEngine $ Just $ gfx { backgroundColor = Colour r g b 1 }
 
 setAnimationStyle :: AnimationStyle -> InterpreterProcess ()
-setAnimationStyle = assign animationStyle
+setAnimationStyle animStyle = do
+  mbGfx <- use gfxEngine
+  case mbGfx of
+    Nothing  -> return ()
+    Just gfx -> assign gfxEngine $ Just $ gfx { postProcessingFX = animStyle }
 
 -- Interpreter Logic
 interpretLanguage :: Program -> InterpreterProcess Value

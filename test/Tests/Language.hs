@@ -13,7 +13,6 @@ import           Test.HUnit                     ( Assertion
 
 import           Gfx                            ( Scene(..) )
 import qualified Gfx.Ast                       as GA
-import           Gfx.PostProcessing             ( AnimationStyle(..) )
 
 import qualified Language
 import           Language.Ast
@@ -21,10 +20,9 @@ import           Language.Ast
 languageTests :: Test
 languageTests = testGroup
   "Language Tests"
-  [ testCase "Basic program"           test_basic_program
-  , testCase "Animation Style Setting" test_animation_style
-  , testCase "Loop program"            test_loop_program
-  , testCase "Graphics Creation"       test_create_gfx
+  [ testCase "Basic program"     test_basic_program
+  , testCase "Loop program"      test_loop_program
+  , testCase "Graphics Creation" test_create_gfx
   ]
 
 test_basic_program :: Assertion
@@ -40,17 +38,6 @@ test_basic_program =
     expected = Right [GA.ShapeCommand (GA.Cube 3 2 6)]
   in
     assertEqual "" expected result
-
-test_animation_style :: Assertion
-test_animation_style =
-  let program          = "motionBlur()"
-      interpreterState = Language.initialState []
-      result           = do
-        ast <- Language.simpleParse program
-        let result = fst $ Language.createGfxScene interpreterState ast
-        scenePostProcessingFX <$> result
-      expected = Right MotionBlur
-  in  assertEqual "" expected result
 
 test_loop_program :: Assertion
 test_loop_program =

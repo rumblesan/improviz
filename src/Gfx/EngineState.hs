@@ -15,7 +15,7 @@ import           Gfx.Matrices                   ( projectionMat
                                                 , vec3
                                                 , viewMat
                                                 )
-import           Gfx.PostProcessing             ( AnimationStyle
+import           Gfx.PostProcessing             ( AnimationStyle(NormalStyle)
                                                 , PostProcessing
                                                 )
 import           Gfx.Shaders
@@ -41,11 +41,7 @@ data GFXStrokeStyling
   | GFXNoStroke
   deriving (Eq, Show)
 
-data Scene = Scene
-  { sceneBackground       :: Colour
-  , sceneGfx              :: Block
-  , scenePostProcessingFX :: AnimationStyle
-  }
+newtype Scene = Scene { sceneGfx :: Block }
 
 data EngineState = EngineState
   { fillStyles         :: [GFXFillStyling]
@@ -61,6 +57,8 @@ data EngineState = EngineState
   , textRenderer       :: TextRenderer
   , matrixStack        :: [Mat44 GLfloat]
   , scopeStack         :: [SavableState]
+  , postProcessingFX   :: AnimationStyle
+  , backgroundColor    :: Colour
   } deriving (Show)
 
 data SavableState = SavableState
@@ -100,6 +98,8 @@ createGfxEngineState config width height pprocess trender textLib =
                            , textRenderer       = trender
                            , matrixStack        = [identity]
                            , scopeStack         = []
+                           , postProcessingFX   = NormalStyle
+                           , backgroundColor    = Colour 1 1 1 1
                            }
 
 resizeGfxEngine

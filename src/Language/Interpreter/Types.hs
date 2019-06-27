@@ -8,10 +8,9 @@ module Language.Interpreter.Types
   , globals
   , builtins
   , functions
-  , gfxBackground
   , currentGfx
-  , animationStyle
   , textureInfo
+  , gfxEngine
   , InterpreterProcess
   , runInterpreterM
   )
@@ -25,9 +24,8 @@ import           Lens.Simple                    ( makeLenses )
 import           Language.Ast
 
 import qualified Data.Map.Strict               as M
+import           Gfx.EngineState                ( EngineState )
 import qualified Gfx.Ast                       as GA
-import           Gfx.PostProcessing             ( AnimationStyle(..) )
-import           Gfx.Types                      ( Colour )
 import           Gfx.Textures                   ( TextureInfo(..) )
 import qualified Language.Interpreter.Scope    as LS
 
@@ -50,10 +48,9 @@ data InterpreterState = InterpreterState
   , _globals        :: M.Map Identifier Value
   , _builtins       :: M.Map Identifier BuiltInFunction
   , _functions      :: M.Map Identifier UserFunctionDef
-  , _gfxBackground  :: Colour
   , _currentGfx     :: GA.Block
-  , _animationStyle :: AnimationStyle
   , _textureInfo    :: TextureInfo
+  , _gfxEngine      :: Maybe EngineState
   }
 
 makeLenses ''InterpreterState
