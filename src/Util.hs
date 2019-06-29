@@ -21,4 +21,4 @@ maybeElem 0 (x : xs) = Just x
 maybeElem i (_ : xs) = maybeElem (i - 1) xs
 
 (/.) :: Int -> Int -> Float
-(/.) a b = (fromIntegral a) / (fromIntegral b)
+(/.) a b = fromIntegral a / fromIntegral b

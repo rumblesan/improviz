@@ -35,7 +35,7 @@ type DisplayCallback = Double -> IO ()
 type WindowResizeCallback = Int -> Int -> Int -> Int -> IO ()
 
 errorCallback :: GLFW.Error -> String -> IO ()
-errorCallback _ msg = logError msg
+errorCallback _ = logError
 
 targetMonitor :: Maybe Int -> IO (Maybe GLFW.Monitor)
 targetMonitor target = do
