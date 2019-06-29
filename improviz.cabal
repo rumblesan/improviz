@@ -77,7 +77,7 @@ executable improviz
                      , Gfx.TextRendering
                      , Gfx.Textures
                      , Gfx.Types
-                     , Gfx.Windowing
+                     , Windowing
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers

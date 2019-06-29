@@ -28,7 +28,7 @@ import           Gfx                            ( createGfx
                                                 , textureLibrary
                                                 )
 import           Gfx.Textures                   ( TextureInfo(..) )
-import           Gfx.Windowing                  ( setupWindow )
+import           Windowing                      ( setupWindow )
 import           Language                       ( createGfxScene
                                                 , updateStateVariables
                                                 , setGfxEngine

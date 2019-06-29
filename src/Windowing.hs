@@ -1,4 +1,4 @@
-module Gfx.Windowing
+module Windowing
   ( setupWindow
   )
 where
