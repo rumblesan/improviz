@@ -37,7 +37,7 @@ data UserFunctionDef =
                   [FuncArg]
                   Block
 
-type InterpreterProcessing = State InterpreterState
+type InterpreterProcessing = StateT InterpreterState IO
 
 type InterpreterErrors m = ExceptT String m
 
@@ -58,5 +58,5 @@ makeLenses ''InterpreterState
 runInterpreterM
   :: InterpreterProcess a
   -> InterpreterState
-  -> (Either String a, InterpreterState)
-runInterpreterM op = runState (runExceptT op)
+  -> IO (Either String a, InterpreterState)
+runInterpreterM op = runStateT (runExceptT op)

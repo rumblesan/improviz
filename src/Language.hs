@@ -49,19 +49,19 @@ simpleParse code = case parseProgram code of
   Left  err -> Left $ show err
   Right ast -> Right ast
 
-initialState :: [Program] -> InterpreterState
+initialState :: [Program] -> IO InterpreterState
 initialState userCode =
   let setup = do
         addStdLib
         globals <- getGlobalNames
         mapM (interpretLanguage . transform globals) userCode
-  in  snd $ runInterpreterM setup emptyState
+  in  snd <$> runInterpreterM setup emptyState
 
 updateStateVariables
-  :: [(Identifier, Value)] -> InterpreterState -> InterpreterState
+  :: [(Identifier, Value)] -> InterpreterState -> IO InterpreterState
 updateStateVariables vars oldState =
   let setVars = addInitialVariables vars
-  in  snd $ runInterpreterM setVars oldState
+  in  snd <$> runInterpreterM setVars oldState
 
 setGfxEngine :: EngineState -> InterpreterState -> InterpreterState
 setGfxEngine es = set gfxEngine (Just es)
@@ -69,17 +69,17 @@ setGfxEngine es = set gfxEngine (Just es)
 getGfxEngine :: InterpreterState -> Maybe EngineState
 getGfxEngine = view gfxEngine
 
-interpret :: [(Identifier, Value)] -> Program -> Either String Value
+interpret :: [(Identifier, Value)] -> Program -> IO (Either String Value)
 interpret initialVars program =
   let run = do
         addStdLib
         addInitialVariables initialVars
         globals <- getGlobalNames
         interpretLanguage (transform globals program)
-  in  fst $ runInterpreterM run emptyState
+  in  fst <$> runInterpreterM run emptyState
 
 createGfxScene
-  :: InterpreterState -> Program -> (Either String Scene, InterpreterState)
+  :: InterpreterState -> Program -> IO (Either String Scene, InterpreterState)
 createGfxScene initialState program =
   let run = do
         globals <- getGlobalNames

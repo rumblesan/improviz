@@ -95,10 +95,10 @@ display env time = do
   vars <- readTVarIO (env ^. I.externalVars)
   gs   <- atomically $ takeTMVar (env ^. I.graphics)
   let newVars = initialVars vars (double2Float time)
-      is      = setGfxEngine gs
-        $ updateStateVariables newVars (as ^. IL.initialInterpreter)
-      (result, postIS) = createGfxScene is (as ^. IL.currentAst)
-      updatedGfx       = getGfxEngine postIS
+  is <- setGfxEngine gs
+    <$> updateStateVariables newVars (as ^. IL.initialInterpreter)
+  (result, postIS) <- createGfxScene is (as ^. IL.currentAst)
+  let updatedGfx = getGfxEngine postIS
   case (result, updatedGfx) of
     (Left msg, _) -> do
       logError $ "Could not interpret program: " ++ msg

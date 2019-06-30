@@ -72,7 +72,7 @@ createEnv = do
   externalVars  <- newTVarIO M.empty
   uiState       <- newTVarIO defaultUI
   userCode      <- readExternalCode (config ^. codeFiles)
-  languageState <- newTVarIO (makeLanguageState userCode)
+  languageState <- makeLanguageState userCode >>= newTVarIO
   return
     $ ImprovizEnv languageState uiState gfxState config startTime externalVars
 
