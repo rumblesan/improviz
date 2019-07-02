@@ -3,7 +3,6 @@ module Language
   , parse
   , simpleParse
   , interpret
-  , createGfxScene
   , updateStateVariables
   , setGfxEngine
   , getGfxEngine
@@ -12,14 +11,11 @@ module Language
 where
 
 import           Control.Monad                  ( forM_ )
-import           Lens.Simple                    ( use
-                                                , set
+import           Lens.Simple                    ( set
                                                 , view
                                                 )
 
-import           Gfx                            ( EngineState
-                                                , Scene(..)
-                                                )
+import           Gfx                            ( EngineState )
 
 import           Language.Ast                   ( Identifier
                                                 , Program
@@ -31,9 +27,7 @@ import           Language.Interpreter           ( emptyState
                                                 , interpretLanguage
                                                 , setVariable
                                                 )
-import           Language.Interpreter.Types     ( InterpreterProcess
-                                                , InterpreterState
-                                                , currentGfx
+import           Language.Interpreter.Types     ( InterpreterState
                                                 , gfxEngine
                                                 , runInterpreterM
                                                 )
@@ -60,7 +54,7 @@ initialState userCode =
 updateStateVariables
   :: [(Identifier, Value)] -> InterpreterState -> IO InterpreterState
 updateStateVariables vars oldState =
-  let setVars = addInitialVariables vars
+  let setVars = forM_ vars (uncurry setVariable)
   in  snd <$> runInterpreterM setVars oldState
 
 setGfxEngine :: EngineState -> InterpreterState -> InterpreterState
@@ -69,24 +63,10 @@ setGfxEngine es = set gfxEngine (Just es)
 getGfxEngine :: InterpreterState -> Maybe EngineState
 getGfxEngine = view gfxEngine
 
-interpret :: [(Identifier, Value)] -> Program -> IO (Either String Value)
-interpret initialVars program =
+interpret
+  :: InterpreterState -> Program -> IO (Either String Value, InterpreterState)
+interpret initialState program =
   let run = do
-        addStdLib
-        addInitialVariables initialVars
         globals <- getGlobalNames
         interpretLanguage (transform globals program)
-  in  fst <$> runInterpreterM run emptyState
-
-createGfxScene
-  :: InterpreterState -> Program -> IO (Either String Scene, InterpreterState)
-createGfxScene initialState program =
-  let run = do
-        globals <- getGlobalNames
-        _       <- interpretLanguage (transform globals program)
-        gfxB    <- use currentGfx
-        return Scene { sceneGfx = gfxB }
   in  runInterpreterM run initialState
-
-addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess ()
-addInitialVariables vars = forM_ vars (uncurry setVariable)

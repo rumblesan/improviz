@@ -13,7 +13,7 @@ import           Language.Interpreter.Values
 addUtilStdLib :: InterpreterProcess ()
 addUtilStdLib = setBuiltIn "isNull" isNullFunc
 
-isNullFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-isNullFunc args _ = case args of
+isNullFunc :: [Value] -> InterpreterProcess Value
+isNullFunc args = case args of
   []      -> throwError "Need to provide isNull with argument"
   arg : _ -> return $ if valIsNull arg then Number 1 else Number 0

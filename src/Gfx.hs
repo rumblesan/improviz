@@ -1,6 +1,5 @@
 module Gfx
   ( EngineState
-  , Scene(..)
   , renderGfx
   , createGfx
   , resizeGfx
@@ -10,14 +9,11 @@ module Gfx
   )
 where
 
-import           Control.Monad.State.Strict     ( evalStateT )
-
 import           Lens.Simple                    ( (^.) )
 
 import           Graphics.Rendering.OpenGL
 
 import           Gfx.EngineState                ( EngineState
-                                                , Scene(..)
                                                 , createGfxEngineState
                                                 , resizeGfxEngine
                                                 , backgroundColor
@@ -26,7 +22,6 @@ import           Gfx.EngineState                ( EngineState
                                                 , textRenderer
                                                 , textureLibrary
                                                 )
-import           Gfx.Interpreter                ( interpretGfx )
 import           Gfx.OpenGL                     ( colToGLCol )
 import           Gfx.PostProcessing             ( AnimationStyle(..)
                                                 , createPostProcessing
@@ -66,12 +61,11 @@ resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
   return
     $ resizeGfxEngine config newWidth newHeight newPost newTrender engineState
 
-renderGfx :: EngineState -> Scene -> IO ()
-renderGfx gs scene =
+renderGfx :: IO a -> EngineState -> IO a
+renderGfx program gs =
   let
     post      = gs ^. postFX
     animStyle = gs ^. animationStyle
-    bgColor   = gs ^. backgroundColor
   in
     do
       usePostProcessing post
@@ -85,10 +79,11 @@ renderGfx gs scene =
           blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
         PaintOver ->
           blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
-      clearColor $= colToGLCol bgColor
+      clearColor $= colToGLCol (gs ^. backgroundColor)
       clear [ColorBuffer, DepthBuffer]
-      evalStateT (interpretGfx $ sceneGfx scene) gs
+      result <- program
       renderPostProcessing post animStyle
+      return result
 
 renderCode :: EngineState -> String -> IO ()
 renderCode gfxEngine = renderText 0 0 (gfxEngine ^. textRenderer)

@@ -8,7 +8,6 @@ module Language.Interpreter.Types
   , globals
   , builtins
   , functions
-  , currentGfx
   , textureInfo
   , gfxEngine
   , InterpreterProcess
@@ -25,12 +24,11 @@ import           Language.Ast
 
 import qualified Data.Map.Strict               as M
 import           Gfx.EngineState                ( EngineState )
-import qualified Gfx.Ast                       as GA
 import           Gfx.Textures                   ( TextureInfo(..) )
 import qualified Language.Interpreter.Scope    as LS
 
 newtype BuiltInFunction =
-  BuiltInFunction ([Value] -> Maybe Block -> InterpreterProcess Value)
+  BuiltInFunction ([Value] -> InterpreterProcess Value)
 
 data UserFunctionDef =
   UserFunctionDef Identifier
@@ -48,7 +46,6 @@ data InterpreterState = InterpreterState
   , _globals        :: M.Map Identifier Value
   , _builtins       :: M.Map Identifier BuiltInFunction
   , _functions      :: M.Map Identifier UserFunctionDef
-  , _currentGfx     :: GA.Block
   , _textureInfo    :: TextureInfo
   , _gfxEngine      :: Maybe EngineState
   }

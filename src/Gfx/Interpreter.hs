@@ -1,11 +1,26 @@
 module Gfx.Interpreter
-  ( interpretGfx
+  ( GraphicsEngine
+  , runGfx
+  , drawLine
+  , drawRectangle
+  , drawCube
+  , drawCylinder
+  , drawSphere
+  , rotate
+  , scale
+  , move
+  , textureFill
+  , colourFill
+  , noFill
+  , colourStroke
+  , noStroke
+  , setBackground
+  , setAnimationStyle
+  , pushScope
+  , popScope
   )
 where
 
-import           Control.Monad                  ( mapM
-                                                , void
-                                                )
 import           Control.Monad.State.Strict
 import           Lens.Simple                    ( use
                                                 , assign
@@ -23,9 +38,10 @@ import           Graphics.Rendering.OpenGL
                                                 , Line
                                                 , Sphere
                                                 , get
+                                                , rotate
+                                                , scale
                                                 )
 
-import           Gfx.Ast
 import           Gfx.EngineState               as ES
 import           Gfx.GeometryBuffers
 import           Gfx.Matrices
@@ -34,29 +50,14 @@ import           Gfx.Types                      ( Colour(..) )
 import           Gfx.VertexBuffers              ( VBO
                                                 , drawVBO
                                                 )
+import           Gfx.PostProcessing             ( AnimationStyle(..) )
 
 import           ErrorHandling                  ( printErrors )
 
-type GfxAction = IO
+type GraphicsEngine v = StateT EngineState IO v
 
-type GfxOutput = ()
-
-type GraphicsEngine v = StateT EngineState GfxAction v
-
-interpretGfx :: GfxAst -> GraphicsEngine GfxOutput
-interpretGfx ast = do
-  program <- use colourShaders
-  liftIO (currentProgram $= Just (shaderProgram program))
-  void $ interpretBlock ast
-
-interpretBlock :: Block -> GraphicsEngine [GfxOutput]
-interpretBlock = mapM interpretCommand
-
-interpretCommand :: GfxCommand -> GraphicsEngine GfxOutput
-interpretCommand (ShapeCommand  shapeAst   ) = interpretShape shapeAst
-interpretCommand (MatrixCommand matrixAst  ) = interpretMatrix matrixAst
-interpretCommand (ColourCommand colourAst  ) = interpretColour colourAst
-interpretCommand (ScopeCommand  instruction) = interpretScoping instruction
+runGfx :: EngineState -> GraphicsEngine () -> IO EngineState
+runGfx es action = execStateT action es
 
 getFullMatrix :: GraphicsEngine (Mat44 GLfloat)
 getFullMatrix = do
@@ -65,7 +66,7 @@ getFullMatrix = do
   vMat <- use viewMatrix
   return $ multmm (multmm pMat vMat) mMat
 
-drawShape :: VBO -> GraphicsEngine GfxOutput
+drawShape :: VBO -> GraphicsEngine ()
 drawShape vbo = do
   mvp   <- getFullMatrix
   style <- gets currentFillStyle
@@ -90,7 +91,7 @@ drawShape vbo = do
     ES.GFXNoFill -> return ()
   liftIO printErrors
 
-drawWireframe :: VBO -> GraphicsEngine GfxOutput
+drawWireframe :: VBO -> GraphicsEngine ()
 drawWireframe vbo = do
   style <- gets currentStrokeStyle
   case style of
@@ -104,64 +105,89 @@ drawWireframe vbo = do
     ES.GFXNoStroke -> return ()
   liftIO printErrors
 
-interpretShape :: ShapeGfx -> GraphicsEngine GfxOutput
-interpretShape (Cube x y z) = do
+drawLine :: Float -> GraphicsEngine ()
+drawLine l = do
   gbos <- use geometryBuffers
-  modify' (\es -> pushMatrix es (scaleMat x y z))
-  drawWireframe (cubeWireBuffer gbos)
-  drawShape (cubeBuffer gbos)
+  modify' (\es -> pushMatrix es (scaleMat l 1 1))
+  drawWireframe (lineBuffer gbos)
   modify' popMatrix
-interpretShape (Rectangle x y) = do
+
+drawRectangle :: Float -> Float -> GraphicsEngine ()
+drawRectangle x y = do
   gbos <- use geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y 1))
   drawWireframe (rectWireBuffer gbos)
   drawShape (rectBuffer gbos)
   modify' popMatrix
-interpretShape (Line l) = do
+
+drawCube :: Float -> Float -> Float -> GraphicsEngine ()
+drawCube x y z = do
   gbos <- use geometryBuffers
-  modify' (\es -> pushMatrix es (scaleMat l 1 1))
-  drawWireframe (lineBuffer gbos)
+  modify' (\es -> pushMatrix es (scaleMat x y z))
+  drawWireframe (cubeWireBuffer gbos)
+  drawShape (cubeBuffer gbos)
   modify' popMatrix
-interpretShape (Cylinder x y z) = do
+
+drawCylinder :: Float -> Float -> Float -> GraphicsEngine ()
+drawCylinder x y z = do
   gbos <- use geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y z))
   drawWireframe (cylinderWireBuffer gbos)
   drawShape (cylinderBuffer gbos)
   modify' popMatrix
-interpretShape (Sphere x y z) = do
+
+drawSphere :: Float -> Float -> Float -> GraphicsEngine ()
+drawSphere x y z = do
   gbos <- use geometryBuffers
   modify' (\es -> pushMatrix es (scaleMat x y z))
   drawWireframe (sphereWireBuffer gbos)
   drawShape (sphereBuffer gbos)
   modify' popMatrix
 
-interpretMatrix :: MatrixGfx -> GraphicsEngine GfxOutput
-interpretMatrix (Rotate x y z) =
-  modify' (\es -> ES.multMatrix es $ rotMat x y z)
-interpretMatrix (Scale x y z) =
-  modify' (\es -> ES.multMatrix es $ scaleMat x y z)
-interpretMatrix (Move x y z) =
-  modify' (\es -> ES.multMatrix es $ translateMat x y z)
+rotate :: Float -> Float -> Float -> GraphicsEngine ()
+rotate x y z = modify' (\es -> ES.multMatrix es $ rotMat x y z)
 
-interpretColour :: ColourGfx -> GraphicsEngine GfxOutput
-interpretColour (Fill (TextureStyle name frame)) =
+scale :: Float -> Float -> Float -> GraphicsEngine ()
+scale x y z = modify' (\es -> ES.multMatrix es $ scaleMat x y z)
+
+move :: Float -> Float -> Float -> GraphicsEngine ()
+move x y z = modify' (\es -> ES.multMatrix es $ translateMat x y z)
+
+setBackground :: Float -> Float -> Float -> GraphicsEngine ()
+setBackground r g b = assign ES.backgroundColor (Colour r g b 1)
+
+setAnimationStyle :: AnimationStyle -> GraphicsEngine ()
+setAnimationStyle = assign ES.animationStyle
+
+textureFill :: String -> Float -> GraphicsEngine ()
+textureFill name frame =
   modify' (pushFillStyle $ ES.GFXFillTexture name (floor frame))
-interpretColour (Fill (ColourStyle r g b a)) =
-  modify' (pushFillStyle $ ES.GFXFillColour $ Colour r g b a)
-interpretColour NoFill = modify' (pushFillStyle ES.GFXNoFill)
-interpretColour (Stroke r g b a) =
-  modify' (pushStrokeStyle $ ES.GFXStrokeColour $ Colour r g b a)
-interpretColour NoStroke = modify' (pushStrokeStyle ES.GFXNoStroke)
 
-interpretScoping :: ScopeInstruction -> GraphicsEngine GfxOutput
-interpretScoping PushScope = do
+colourFill :: Float -> Float -> Float -> Float -> GraphicsEngine ()
+colourFill r g b a =
+  modify' (pushFillStyle $ ES.GFXFillColour $ Colour r g b a)
+
+noFill :: GraphicsEngine ()
+noFill = modify' (pushFillStyle ES.GFXNoFill)
+
+colourStroke :: Float -> Float -> Float -> Float -> GraphicsEngine ()
+colourStroke r g b a =
+  modify' (pushStrokeStyle $ ES.GFXStrokeColour $ Colour r g b a)
+
+noStroke :: GraphicsEngine ()
+noStroke = modify' (pushStrokeStyle ES.GFXNoStroke)
+
+pushScope :: GraphicsEngine ()
+pushScope = do
   mStack  <- use matrixStack
   fStyles <- use fillStyles
   sStyles <- use strokeStyles
   stack   <- use scopeStack
   let savable = SavableState mStack fStyles sStyles
   assign scopeStack (savable : stack)
-interpretScoping PopScope = do
+
+popScope :: GraphicsEngine ()
+popScope = do
   stack <- use scopeStack
   let prev = head stack
   assign scopeStack   (tail stack)

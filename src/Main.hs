@@ -29,7 +29,7 @@ import           Gfx                            ( createGfx
                                                 )
 import           Gfx.Textures                   ( TextureInfo(..) )
 import           Windowing                      ( setupWindow )
-import           Language                       ( createGfxScene
+import           Language                       ( interpret
                                                 , updateStateVariables
                                                 , setGfxEngine
                                                 , getGfxEngine
@@ -97,20 +97,23 @@ display env time = do
   let newVars = initialVars vars (double2Float time)
   is <- setGfxEngine gs
     <$> updateStateVariables newVars (as ^. IL.initialInterpreter)
-  (result, postIS) <- createGfxScene is (as ^. IL.currentAst)
+
+
+  ui               <- readTVarIO $ env ^. I.ui
+  (result, postIS) <- renderGfx (interpret is (as ^. IL.currentAst)) gs
+
+
   let updatedGfx = getGfxEngine postIS
   case (result, updatedGfx) of
     (Left msg, _) -> do
       logError $ "Could not interpret program: " ++ msg
       atomically $ modifyTVar (env ^. I.language) IL.resetProgram
-    (_          , Nothing    ) -> logError "No Graphics Engine"
-    (Right scene, Just gfxEng) -> do
-      ui <- readTVarIO $ env ^. I.ui
+    (_, Nothing    ) -> logError "No Graphics Engine"
+    (_, Just gfxEng) -> do
       atomically $ putTMVar (env ^. I.graphics) gfxEng
       when (IL.programHasChanged as) $ do
         logInfo "Saving current ast"
         renderCode gfxEng (ui ^. IUI.currentText)
         atomically $ modifyTVar (env ^. I.language) IL.saveProgram
-      renderGfx gfxEng scene
       when (ui ^. IUI.displayText)
         $ renderCodeToBuffer gfxEng (ui ^. IUI.currentText)

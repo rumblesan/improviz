@@ -14,7 +14,6 @@ import           Lens.Simple                    ( makeLenses
                                                 , (^.)
                                                 )
 
-import           Gfx.Ast                        ( Block )
 import           Gfx.GeometryBuffers            ( GeometryBuffers
                                                 , createAllBuffers
                                                 )
@@ -47,8 +46,6 @@ data GFXStrokeStyling
   = GFXStrokeColour Colour
   | GFXNoStroke
   deriving (Eq, Show)
-
-newtype Scene = Scene { sceneGfx :: Block }
 
 data SavableState = SavableState
   { _savedMatrixStack  :: [Mat44 GLfloat]
