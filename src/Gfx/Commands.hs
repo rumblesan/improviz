@@ -1,6 +1,5 @@
-module Gfx.Interpreter
-  ( GraphicsEngine
-  , runGfx
+module Gfx.Commands
+  ( runGfx
   , drawLine
   , drawRectangle
   , drawCube
@@ -32,17 +31,16 @@ import           Data.Vec                       ( Mat44
                                                 , multmm
                                                 )
 
-import           Graphics.Rendering.OpenGL
-                                         hiding ( Cylinder
-                                                , Fill
-                                                , Line
-                                                , Sphere
-                                                , get
-                                                , rotate
-                                                , scale
+import           Graphics.Rendering.OpenGL      ( ($=)
+                                                , GLfloat
+                                                , TextureUnit(..)
+                                                , TextureTarget2D(Texture2D)
+                                                , activeTexture
+                                                , textureBinding
+                                                , currentProgram
                                                 )
 
-import           Gfx.EngineState               as ES
+import           Gfx.Engine                    as ES
 import           Gfx.GeometryBuffers
 import           Gfx.Matrices
 import           Gfx.Shaders
@@ -54,9 +52,8 @@ import           Gfx.PostProcessing             ( AnimationStyle(..) )
 
 import           ErrorHandling                  ( printErrors )
 
-type GraphicsEngine v = StateT EngineState IO v
 
-runGfx :: EngineState -> GraphicsEngine () -> IO EngineState
+runGfx :: GfxEngine -> GraphicsEngine () -> IO GfxEngine
 runGfx es action = execStateT action es
 
 getFullMatrix :: GraphicsEngine (Mat44 GLfloat)
@@ -66,18 +63,22 @@ getFullMatrix = do
   vMat <- use viewMatrix
   return $ multmm (multmm pMat vMat) mMat
 
+drawColouredVBO :: Colour -> VBO -> GraphicsEngine ()
+drawColouredVBO colour vbo = do
+  mvp     <- getFullMatrix
+  program <- use colourShaders
+  liftIO (currentProgram $= Just (shaderProgram program))
+  lift $ setMVPMatrixUniform program mvp
+  lift $ setColourUniform program colour
+  lift $ drawVBO vbo
+
 drawShape :: VBO -> GraphicsEngine ()
 drawShape vbo = do
-  mvp   <- getFullMatrix
   style <- gets currentFillStyle
   case style of
-    ES.GFXFillColour fillC -> do
-      program <- use colourShaders
-      liftIO (currentProgram $= Just (shaderProgram program))
-      lift $ setMVPMatrixUniform program mvp
-      lift $ setColourUniform program fillC
-      lift $ drawVBO vbo
+    ES.GFXFillColour fillC       -> drawColouredVBO fillC vbo
     ES.GFXFillTexture name frame -> do
+      mvp     <- getFullMatrix
       program <- use textureShaders
       liftIO (currentProgram $= Just (shaderProgram program))
       textureLib <- use textureLibrary
@@ -95,14 +96,8 @@ drawWireframe :: VBO -> GraphicsEngine ()
 drawWireframe vbo = do
   style <- gets currentStrokeStyle
   case style of
-    ES.GFXStrokeColour strokeC -> do
-      mvp     <- getFullMatrix
-      program <- use colourShaders
-      liftIO (currentProgram $= Just (shaderProgram program))
-      lift $ setMVPMatrixUniform program mvp
-      lift $ setColourUniform program strokeC
-      lift $ drawVBO vbo
-    ES.GFXNoStroke -> return ()
+    ES.GFXStrokeColour strokeC -> drawColouredVBO strokeC vbo
+    ES.GFXNoStroke             -> return ()
   liftIO printErrors
 
 drawLine :: Float -> GraphicsEngine ()

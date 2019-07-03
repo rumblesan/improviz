@@ -9,7 +9,7 @@ import           Language.Ast                   ( Value(Symbol, Null) )
 import           Language.Interpreter           ( execGfx
                                                 , setBuiltIn
                                                 )
-import           Gfx.Interpreter                ( setAnimationStyle )
+import           Gfx.Commands                   ( setAnimationStyle )
 import           Language.Interpreter.Types     ( InterpreterProcess )
 
 addPostEffectsStdLib :: InterpreterProcess ()

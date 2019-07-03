@@ -63,8 +63,8 @@ executable improviz
                      , Improviz.UI
                      , Gfx
                      , Gfx.Ast
-                     , Gfx.Interpreter
-                     , Gfx.EngineState
+                     , Gfx.Commands
+                     , Gfx.Engine
                      , Gfx.FontHandling
                      , Gfx.Geometries
                      , Gfx.VertexBuffers
@@ -139,8 +139,8 @@ test-suite improviz-test
                      , Logging
                      , Gfx
                      , Gfx.Ast
-                     , Gfx.Interpreter
-                     , Gfx.EngineState
+                     , Gfx.Commands
+                     , Gfx.Engine
                      , Gfx.FontHandling
                      , Gfx.Geometries
                      , Gfx.VertexBuffers

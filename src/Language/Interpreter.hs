@@ -26,9 +26,8 @@ import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
 
 import           Gfx.Textures                   ( TextureInfo(..) )
-import           Gfx.Interpreter                ( runGfx
-                                                , GraphicsEngine
-                                                )
+import           Gfx.Commands                   ( runGfx )
+import           Gfx.Engine                     ( GraphicsEngine )
 import           Language.Ast
 import qualified Language.Interpreter.Scope    as LS
 

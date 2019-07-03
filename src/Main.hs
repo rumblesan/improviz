@@ -23,6 +23,7 @@ import qualified Improviz.UI                   as IUI
 import           Gfx                            ( createGfx
                                                 , renderGfx
                                                 , resizeGfx
+                                                , updateGfx
                                                 , renderCode
                                                 , renderCodeToBuffer
                                                 , textureLibrary
@@ -102,18 +103,16 @@ display env time = do
   ui               <- readTVarIO $ env ^. I.ui
   (result, postIS) <- renderGfx (interpret is (as ^. IL.currentAst)) gs
 
-
-  let updatedGfx = getGfxEngine postIS
-  case (result, updatedGfx) of
+  case (result, getGfxEngine postIS) of
     (Left msg, _) -> do
       logError $ "Could not interpret program: " ++ msg
       atomically $ modifyTVar (env ^. I.language) IL.resetProgram
     (_, Nothing    ) -> logError "No Graphics Engine"
     (_, Just gfxEng) -> do
-      atomically $ putTMVar (env ^. I.graphics) gfxEng
+      atomically $ putTMVar (env ^. I.graphics) (updateGfx gs gfxEng)
       when (IL.programHasChanged as) $ do
         logInfo "Saving current ast"
-        renderCode gfxEng (ui ^. IUI.currentText)
+        renderCode gs (ui ^. IUI.currentText)
         atomically $ modifyTVar (env ^. I.language) IL.saveProgram
       when (ui ^. IUI.displayText)
-        $ renderCodeToBuffer gfxEng (ui ^. IUI.currentText)
+        $ renderCodeToBuffer gs (ui ^. IUI.currentText)

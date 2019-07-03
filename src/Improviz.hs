@@ -35,7 +35,7 @@ import           Configuration                  ( ImprovizConfig
                                                 , codeFiles
                                                 , getConfig
                                                 )
-import           Gfx.EngineState                ( EngineState )
+import           Gfx.Engine                     ( GfxEngine )
 
 import           Improviz.Language              ( ImprovizLanguage
                                                 , makeLanguageState
@@ -53,7 +53,7 @@ import           Logging                        ( logError
 data ImprovizEnv = ImprovizEnv
   { _language     :: TVar ImprovizLanguage
   , _ui           :: TVar ImprovizUI
-  , _graphics     :: TMVar EngineState
+  , _graphics     :: TMVar GfxEngine
   , _config       :: ImprovizConfig
   , _startTime    :: POSIXTime
   , _externalVars :: TVar (M.Map String LA.Value)

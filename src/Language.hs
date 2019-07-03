@@ -15,7 +15,7 @@ import           Lens.Simple                    ( set
                                                 , view
                                                 )
 
-import           Gfx                            ( EngineState )
+import           Gfx                            ( GfxEngine )
 
 import           Language.Ast                   ( Identifier
                                                 , Program
@@ -57,10 +57,10 @@ updateStateVariables vars oldState =
   let setVars = forM_ vars (uncurry setVariable)
   in  snd <$> runInterpreterM setVars oldState
 
-setGfxEngine :: EngineState -> InterpreterState -> InterpreterState
+setGfxEngine :: GfxEngine -> InterpreterState -> InterpreterState
 setGfxEngine es = set gfxEngine (Just es)
 
-getGfxEngine :: InterpreterState -> Maybe EngineState
+getGfxEngine :: InterpreterState -> Maybe GfxEngine
 getGfxEngine = view gfxEngine
 
 interpret

@@ -5,7 +5,7 @@ where
 
 import           Control.Monad.Except
 
-import           Gfx.Interpreter                ( drawLine
+import           Gfx.Commands                   ( drawLine
                                                 , drawRectangle
                                                 , drawCube
                                                 , drawCylinder

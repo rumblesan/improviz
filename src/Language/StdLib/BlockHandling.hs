@@ -9,7 +9,7 @@ import           Language.Interpreter           ( execGfx
                                                 )
 import           Language.Interpreter.Types
 
-import           Gfx.Interpreter                ( pushScope
+import           Gfx.Commands                   ( pushScope
                                                 , popScope
                                                 )
 

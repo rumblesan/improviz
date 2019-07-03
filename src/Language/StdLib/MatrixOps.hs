@@ -5,7 +5,7 @@ where
 
 import           Control.Monad.Except           ( throwError )
 
-import           Gfx.Interpreter                ( rotate
+import           Gfx.Commands                   ( rotate
                                                 , scale
                                                 , move
                                                 )

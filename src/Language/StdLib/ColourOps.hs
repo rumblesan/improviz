@@ -8,7 +8,7 @@ import           Data.Maybe                     ( maybe
                                                 , listToMaybe
                                                 )
 
-import           Gfx.Interpreter                ( textureFill
+import           Gfx.Commands                   ( textureFill
                                                 , colourFill
                                                 , noFill
                                                 , colourStroke
