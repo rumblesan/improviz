@@ -59,7 +59,6 @@ makeLenses ''SavableState
 data GfxEngine = GfxEngine
   { _fillStyles         :: [GFXFillStyling]
   , _strokeStyles       :: [GFXStrokeStyling]
-  , _drawTransparencies :: Bool
   , _geometryBuffers    :: GeometryBuffers
   , _textureLibrary     :: TextureLibrary
   , _colourShaders      :: Shaders
@@ -70,7 +69,7 @@ data GfxEngine = GfxEngine
   , _textRenderer       :: TextRenderer
   , _matrixStack        :: [Mat44 GLfloat]
   , _scopeStack         :: [SavableState]
-  , _animationStyle   :: AnimationStyle
+  , _animationStyle     :: AnimationStyle
   , _backgroundColor    :: Colour
   } deriving (Show)
 
@@ -96,21 +95,20 @@ createGfxEngine config width height pprocess trender textLib =
         gbos <- createAllBuffers
         cshd <- createColourShaders
         tshd <- createTextureShaders
-        return GfxEngine { _fillStyles = [GFXFillColour $ Colour 1 1 1 1]
+        return GfxEngine { _fillStyles       = [GFXFillColour $ Colour 1 1 1 1]
                          , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
-                         , _drawTransparencies = False
-                         , _geometryBuffers    = gbos
-                         , _textureLibrary     = textLib
-                         , _colourShaders      = cshd
-                         , _textureShaders     = tshd
-                         , _viewMatrix         = view
-                         , _projectionMatrix   = projection
-                         , _postFX             = pprocess
-                         , _textRenderer       = trender
-                         , _matrixStack        = [identity]
-                         , _scopeStack         = []
-                         , _animationStyle     = NormalStyle
-                         , _backgroundColor    = Colour 1 1 1 1
+                         , _geometryBuffers  = gbos
+                         , _textureLibrary   = textLib
+                         , _colourShaders    = cshd
+                         , _textureShaders   = tshd
+                         , _viewMatrix       = view
+                         , _projectionMatrix = projection
+                         , _postFX           = pprocess
+                         , _textRenderer     = trender
+                         , _matrixStack      = [identity]
+                         , _scopeStack       = []
+                         , _animationStyle   = NormalStyle
+                         , _backgroundColor  = Colour 1 1 1 1
                          }
 
 resizeGfxEngine

@@ -19,6 +19,7 @@ import           Improviz                       ( ImprovizEnv )
 import qualified Improviz                      as I
 import qualified Improviz.Language             as IL
 import qualified Improviz.UI                   as IUI
+import qualified Configuration                 as C
 
 import           Gfx                            ( createGfx
                                                 , renderGfx
@@ -26,9 +27,10 @@ import           Gfx                            ( createGfx
                                                 , updateGfx
                                                 , renderCode
                                                 , renderCodeToBuffer
-                                                , textureLibrary
                                                 )
-import           Gfx.Textures                   ( TextureInfo(..) )
+import           Gfx.Textures                   ( TextureInfo(..)
+                                                , createTextureLib
+                                                )
 import           Windowing                      ( setupWindow )
 import           Language                       ( interpret
                                                 , updateStateVariables
@@ -62,8 +64,9 @@ initApp env width height fbWidth fbHeight =
   in  do
         logInfo $ "Running at " ++ show width ++ " by " ++ show height
         logInfo $ "Framebuffer " ++ show fbWidth ++ " by " ++ show fbHeight
-        gfx <- createGfx config width height fbWidth fbHeight
-        let ti = TextureInfo $ M.map M.size (gfx ^. textureLibrary)
+        textureLib <- createTextureLib (config ^. C.textureDirectories)
+        gfx        <- createGfx config textureLib width height fbWidth fbHeight
+        let ti = TextureInfo $ M.map M.size textureLib
         atomically $ do
           putTMVar gfxVar gfx
           modifyTVar language (set (IL.initialInterpreter . textureInfo) ti)

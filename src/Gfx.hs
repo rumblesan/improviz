@@ -6,7 +6,6 @@ module Gfx
   , updateGfx
   , renderCode
   , renderCodeToBuffer
-  , textureLibrary
   )
 where
 
@@ -22,7 +21,6 @@ import           Gfx.Engine                     ( GfxEngine
                                                 , postFX
                                                 , animationStyle
                                                 , textRenderer
-                                                , textureLibrary
                                                 )
 import           Gfx.OpenGL                     ( colToGLCol )
 import           Gfx.PostProcessing             ( AnimationStyle(..)
@@ -38,18 +36,23 @@ import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 , renderText
                                                 , renderTextToBuffer
                                                 )
-import           Gfx.Textures                   ( createTextureLib )
+import           Gfx.Textures                   ( TextureLibrary )
 
 import           Configuration                  ( ImprovizConfig )
-import qualified Configuration                 as C
 
-createGfx :: ImprovizConfig -> Int -> Int -> Int -> Int -> IO GfxEngine
-createGfx config width height fbWidth fbHeight = do
-  post         <- createPostProcessing fbWidth fbHeight
-  textRenderer <- createTextRenderer config fbWidth fbHeight
-  textureLib   <- createTextureLib (config ^. C.textureDirectories)
-  let tLibWithCode = addCodeTextureToLib textRenderer textureLib
-  createGfxEngine config width height post textRenderer tLibWithCode
+createGfx
+  :: ImprovizConfig
+  -> TextureLibrary
+  -> Int
+  -> Int
+  -> Int
+  -> Int
+  -> IO GfxEngine
+createGfx config textureLib width height fbWidth fbHeight = do
+  post    <- createPostProcessing fbWidth fbHeight
+  trender <- createTextRenderer config fbWidth fbHeight
+  let tLibWithCode = addCodeTextureToLib trender textureLib
+  createGfxEngine config width height post trender tLibWithCode
 
 resizeGfx
   :: GfxEngine -> ImprovizConfig -> Int -> Int -> Int -> Int -> IO GfxEngine
