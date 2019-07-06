@@ -7,13 +7,10 @@ import           Test.Framework                 ( Test
                                                 , testGroup
                                                 )
 import           Test.Framework.Providers.HUnit ( testCase )
-import           Test.HUnit                     ( Assertion
-                                                , assertEqual
-                                                )
+import           Test.HUnit                     ( Assertion )
+import           TestHelpers.Util               ( gfxTest )
 
-import           Gfx                            ( Scene(..) )
 import qualified Gfx.Ast                       as GA
-import qualified Language
 
 scopingTests :: Test
 scopingTests = testGroup
@@ -25,18 +22,14 @@ test_basic_default_scoping =
   let
     program
       = "pushScope()\n\
-          \matrix(:rotate, 3, 4, 5)\n\
-          \shape(:cube, 1, 1, 1)\n\
-          \popScope()"
-    result = do
-      ast <- Language.simpleParse program
-      let result = fst $ Language.createGfxScene (Language.initialState []) ast
-      sceneGfx <$> result
-    expected = Right
+         \matrix(:rotate, 3, 4, 5)\n\
+         \shape(:cube, 1, 1, 1)\n\
+         \popScope()"
+    expectedGfx =
       [ GA.ScopeCommand GA.PushScope
       , GA.MatrixCommand (GA.Rotate 3 4 5)
       , GA.ShapeCommand (GA.Cube 1 1 1)
       , GA.ScopeCommand GA.PopScope
       ]
   in
-    assertEqual "" expected result
+    gfxTest program expectedGfx

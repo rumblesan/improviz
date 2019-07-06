@@ -3,23 +3,15 @@ module Language
   , parse
   , simpleParse
   , interpret
-  , createGfxScene
   , updateStateVariables
-  , setGfxEngine
-  , getGfxEngine
   , module Language.Ast
   )
 where
 
 import           Control.Monad                  ( forM_ )
-import           Lens.Simple                    ( use
-                                                , set
-                                                , view
-                                                )
+import           Lens.Simple                    ( set )
 
-import           Gfx                            ( EngineState
-                                                , Scene(..)
-                                                )
+import           Gfx.Context                    ( GfxContext )
 
 import           Language.Ast                   ( Identifier
                                                 , Program
@@ -31,15 +23,14 @@ import           Language.Interpreter           ( emptyState
                                                 , interpretLanguage
                                                 , setVariable
                                                 )
-import           Language.Interpreter.Types     ( InterpreterProcess
-                                                , InterpreterState
-                                                , currentGfx
-                                                , gfxEngine
+import           Language.Interpreter.Types     ( InterpreterState
+                                                , gfxContext
                                                 , runInterpreterM
                                                 )
 import           Language.Parser                ( parseProgram )
 import           Language.Parser.Errors         ( ParserError )
 import           Language.StdLib                ( addStdLib )
+
 
 parse :: String -> Either ParserError Program
 parse = parseProgram
@@ -49,44 +40,25 @@ simpleParse code = case parseProgram code of
   Left  err -> Left $ show err
   Right ast -> Right ast
 
-initialState :: [Program] -> InterpreterState
-initialState userCode =
-  let setup = do
+initialState :: [Program] -> GfxContext -> IO InterpreterState
+initialState userCode ctx =
+  let langState = set gfxContext ctx emptyState
+      setup     = do
         addStdLib
         globals <- getGlobalNames
         mapM (interpretLanguage . transform globals) userCode
-  in  snd $ runInterpreterM setup emptyState
+  in  snd <$> runInterpreterM setup langState
 
 updateStateVariables
-  :: [(Identifier, Value)] -> InterpreterState -> InterpreterState
+  :: [(Identifier, Value)] -> InterpreterState -> IO InterpreterState
 updateStateVariables vars oldState =
-  let setVars = addInitialVariables vars
-  in  snd $ runInterpreterM setVars oldState
+  let setVars = forM_ vars (uncurry setVariable)
+  in  snd <$> runInterpreterM setVars oldState
 
-setGfxEngine :: EngineState -> InterpreterState -> InterpreterState
-setGfxEngine es = set gfxEngine (Just es)
-
-getGfxEngine :: InterpreterState -> Maybe EngineState
-getGfxEngine = view gfxEngine
-
-interpret :: [(Identifier, Value)] -> Program -> Either String Value
-interpret initialVars program =
+interpret
+  :: InterpreterState -> Program -> IO (Either String Value, InterpreterState)
+interpret initialState program =
   let run = do
-        addStdLib
-        addInitialVariables initialVars
         globals <- getGlobalNames
         interpretLanguage (transform globals program)
-  in  fst $ runInterpreterM run emptyState
-
-createGfxScene
-  :: InterpreterState -> Program -> (Either String Scene, InterpreterState)
-createGfxScene initialState program =
-  let run = do
-        globals <- getGlobalNames
-        _       <- interpretLanguage (transform globals program)
-        gfxB    <- use currentGfx
-        return Scene { sceneGfx = gfxB }
   in  runInterpreterM run initialState
-
-addInitialVariables :: [(Identifier, Value)] -> InterpreterProcess ()
-addInitialVariables vars = forM_ vars (uncurry setVariable)

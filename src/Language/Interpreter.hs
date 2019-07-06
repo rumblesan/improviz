@@ -5,21 +5,18 @@ module Language.Interpreter
   , getGlobalNames
   , setVariable
   , getVariable
-  , addGfxCommand
-  , gfxScopedBlock
-  , setGfxBackground
-  , setAnimationStyle
   , interpretLanguage
+  , useGfxCtx
   )
 where
 
 import           Control.Monad                  ( zipWithM_
                                                 , foldM_
                                                 )
+import           Control.Monad.Trans            ( liftIO )
 import           Control.Monad.Except           ( throwError )
 import           Lens.Simple                    ( use
                                                 , assign
-                                                , set
                                                 )
 import           Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
@@ -28,13 +25,10 @@ import qualified Data.Set                      as S
 import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
 
-import           Gfx.EngineState                ( animationStyle
-                                                , backgroundColor
-                                                )
-import qualified Gfx.Ast                       as GA
-import           Gfx.PostProcessing             ( AnimationStyle(..) )
-import           Gfx.Types                      ( Colour(..) )
 import           Gfx.Textures                   ( TextureInfo(..) )
+import           Gfx.Context                    ( GfxContext
+                                                , emptyGfxContext
+                                                )
 import           Language.Ast
 import qualified Language.Interpreter.Scope    as LS
 
@@ -43,9 +37,8 @@ emptyState = InterpreterState { _variables   = LS.empty
                               , _globals     = M.empty
                               , _builtins    = M.empty
                               , _functions   = M.empty
-                              , _currentGfx  = GA.emptyGfx
                               , _textureInfo = TextureInfo M.empty
-                              , _gfxEngine   = Nothing
+                              , _gfxContext  = emptyGfxContext
                               }
 
 getTextureInfo :: String -> InterpreterProcess (Maybe Int)
@@ -67,7 +60,7 @@ getFunction name = do
 
 setBuiltIn
   :: Identifier
-  -> ([Value] -> Maybe Block -> InterpreterProcess Value)
+  -> ([Value] -> InterpreterProcess Value)
   -> InterpreterProcess ()
 setBuiltIn name func = do
   g <- use globals
@@ -111,17 +104,10 @@ getVariable name = do
     Just v  -> return v
     Nothing -> throwError $ "Could not get variable: " ++ name
 
-addGfxCommand :: GA.GfxCommand -> InterpreterProcess ()
-addGfxCommand cmd = do
-  g <- use currentGfx
-  assign currentGfx (GA.addGfx g cmd)
-
-gfxScopedBlock :: GA.GfxCommand -> Block -> InterpreterProcess ()
-gfxScopedBlock scopedCommand block = do
-  addGfxCommand $ GA.ScopeCommand GA.PushScope
-  addGfxCommand scopedCommand
-  interpretBlock block
-  addGfxCommand $ GA.ScopeCommand GA.PopScope
+useGfxCtx :: (GfxContext -> IO ()) -> InterpreterProcess ()
+useGfxCtx action = do
+  ctx <- use gfxContext
+  liftIO $ action ctx
 
 newScope :: InterpreterProcess Value -> InterpreterProcess Value
 newScope childScope = do
@@ -136,21 +122,6 @@ newScope childScope = do
   popScope oldS = case LS.popScope oldS of
     Left  _      -> oldS
     Right popped -> popped
-
-setGfxBackground :: (Float, Float, Float) -> InterpreterProcess ()
-setGfxBackground (r, g, b) = do
-  mbGfx <- use gfxEngine
-  case mbGfx of
-    Nothing -> return ()
-    Just gfx ->
-      assign gfxEngine $ Just $ set backgroundColor (Colour r g b 1) gfx
-
-setAnimationStyle :: AnimationStyle -> InterpreterProcess ()
-setAnimationStyle animStyle = do
-  mbGfx <- use gfxEngine
-  case mbGfx of
-    Nothing  -> return ()
-    Just gfx -> assign gfxEngine $ Just $ set animationStyle animStyle gfx
 
 -- Interpreter Logic
 interpretLanguage :: Program -> InterpreterProcess Value
@@ -185,7 +156,7 @@ interpretApplication f@(Application name args mbBlock) = do
     (BuiltInFunctionRef name) -> newScope $ do
       (BuiltInFunction action) <- getBuiltIn name
       argValues                <- mapM interpretExpression args
-      action argValues mbBlock
+      action argValues
     _ -> return Null
 
 assignApplicationArgs

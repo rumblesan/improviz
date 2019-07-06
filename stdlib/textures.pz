@@ -1,4 +1,15 @@
 
+func texture(name, frame, &blk)
+	frame := 0
+	s = :texture
+	if (isNull(blk))
+		style(s, name, frame)
+	else
+		pushScope()
+		style(s, name, frame)
+		blk()
+		popScope()
+
 func animate(name, speed, &blk)
 	speed := 1
 	f = ((bpm/60) * (time + nudge) * speed) % frames(name)

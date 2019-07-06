@@ -5,9 +5,7 @@ where
 
 import           Control.Monad.Except           ( throwError )
 
-import           Language.Ast                   ( Block
-                                                , Value(Number)
-                                                )
+import           Language.Ast                   ( Value(Number) )
 import           Language.Interpreter           ( setBuiltIn
                                                 , setVariable
                                                 )
@@ -29,63 +27,63 @@ addMathStdLib = do
   setBuiltIn "log"   logFunc
   setBuiltIn "sqrt"  sqrtFunc
 
-sinFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-sinFunc args _ = case args of
+sinFunc :: [Value] -> InterpreterProcess Value
+sinFunc args = case args of
   [rads] -> Number . sin <$> getNumberValue rads
   []     -> throwError "Must give sin function an argument"
 
-cosFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-cosFunc args _ = case args of
+cosFunc :: [Value] -> InterpreterProcess Value
+cosFunc args = case args of
   [rads] -> Number . cos <$> getNumberValue rads
   []     -> throwError "Must give cos function an argument"
 
-tanFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-tanFunc args _ = case args of
+tanFunc :: [Value] -> InterpreterProcess Value
+tanFunc args = case args of
   [rads] -> Number . tan <$> getNumberValue rads
   []     -> throwError "Must give tan function an argument"
 
-absFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-absFunc args _ = case args of
+absFunc :: [Value] -> InterpreterProcess Value
+absFunc args = case args of
   [val] -> Number . abs <$> getNumberValue val
   []    -> throwError "Must give abs function an argument"
 
-ceilFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-ceilFunc args _ = case args of
+ceilFunc :: [Value] -> InterpreterProcess Value
+ceilFunc args = case args of
   [val] -> Number . fromIntegral . ceiling <$> getNumberValue val
   []    -> throwError "Must give ceil function an argument"
 
-floorFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-floorFunc args _ = case args of
+floorFunc :: [Value] -> InterpreterProcess Value
+floorFunc args = case args of
   [val] -> Number . fromIntegral . floor <$> getNumberValue val
   []    -> throwError "Must give floor function an argument"
 
-roundFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-roundFunc args _ = case args of
+roundFunc :: [Value] -> InterpreterProcess Value
+roundFunc args = case args of
   [val] -> Number . fromIntegral . round <$> getNumberValue val
   []    -> throwError "Must give round function an argument"
 
-maxFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-maxFunc args _ = case args of
+maxFunc :: [Value] -> InterpreterProcess Value
+maxFunc args = case args of
   [valA, valB] -> do
     a <- getNumberValue valA
     b <- getNumberValue valB
     return $ Number $ max a b
   [] -> throwError "Must give max function two arguments"
 
-minFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-minFunc args _ = case args of
+minFunc :: [Value] -> InterpreterProcess Value
+minFunc args = case args of
   [valA, valB] -> do
     a <- getNumberValue valA
     b <- getNumberValue valB
     return $ Number $ min a b
   [] -> throwError "Must give min function two arguments"
 
-logFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-logFunc args _ = case args of
+logFunc :: [Value] -> InterpreterProcess Value
+logFunc args = case args of
   [val] -> Number . log <$> getNumberValue val
   []    -> throwError "Must give log function an argument"
 
-sqrtFunc :: [Value] -> Maybe Block -> InterpreterProcess Value
-sqrtFunc args _ = case args of
+sqrtFunc :: [Value] -> InterpreterProcess Value
+sqrtFunc args = case args of
   [val] -> Number . sqrt <$> getNumberValue val
   []    -> throwError "Must give sqrt function an argument"

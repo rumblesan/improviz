@@ -7,6 +7,7 @@ module Improviz
   , ui
   , graphics
   , config
+  , gfxContext
   , startTime
   , externalVars
   , createEnv
@@ -15,8 +16,6 @@ where
 
 import           Control.Concurrent.STM         ( TVar
                                                 , newTVarIO
-                                                , TMVar
-                                                , newEmptyTMVarIO
                                                 )
 import           Control.Monad                  ( mapM )
 import qualified Data.ByteString.Char8         as B
@@ -33,9 +32,11 @@ import           Lens.Simple                    ( makeLenses
 
 import           Configuration                  ( ImprovizConfig
                                                 , codeFiles
-                                                , getConfig
                                                 )
-import           Gfx.EngineState                ( EngineState )
+import           Gfx.Engine                     ( GfxEngine )
+import           Gfx.Context                    ( GfxContext
+                                                , createGfxContext
+                                                )
 
 import           Improviz.Language              ( ImprovizLanguage
                                                 , makeLanguageState
@@ -53,7 +54,8 @@ import           Logging                        ( logError
 data ImprovizEnv = ImprovizEnv
   { _language     :: TVar ImprovizLanguage
   , _ui           :: TVar ImprovizUI
-  , _graphics     :: TMVar EngineState
+  , _graphics     :: TVar GfxEngine
+  , _gfxContext   :: GfxContext
   , _config       :: ImprovizConfig
   , _startTime    :: POSIXTime
   , _externalVars :: TVar (M.Map String LA.Value)
@@ -61,20 +63,25 @@ data ImprovizEnv = ImprovizEnv
 
 makeLenses ''ImprovizEnv
 
-createEnv :: IO ImprovizEnv
-createEnv = do
+createEnv :: ImprovizConfig -> GfxEngine -> IO ImprovizEnv
+createEnv config gfx = do
   logInfo "*****************************"
   logInfo "Creating Improviz Environment"
-  startTime     <- getPOSIXTime
-  uiState       <- newTVarIO defaultUI
-  config        <- getConfig
-  gfxState      <- newEmptyTMVarIO
+  startTime <- getPOSIXTime
+  uiState   <- newTVarIO defaultUI
+  gfxState  <- newTVarIO gfx
+  let gfxContext = createGfxContext gfxState
   externalVars  <- newTVarIO M.empty
   uiState       <- newTVarIO defaultUI
   userCode      <- readExternalCode (config ^. codeFiles)
-  languageState <- newTVarIO (makeLanguageState userCode)
-  return
-    $ ImprovizEnv languageState uiState gfxState config startTime externalVars
+  languageState <- makeLanguageState userCode gfxContext >>= newTVarIO
+  return $ ImprovizEnv languageState
+                       uiState
+                       gfxState
+                       gfxContext
+                       config
+                       startTime
+                       externalVars
 
 readExternalCode :: [FilePath] -> IO [LA.Program]
 readExternalCode files = rights <$> mapM readCode files

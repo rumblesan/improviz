@@ -20,6 +20,7 @@ import           Lens.Simple                    ( (^.)
                                                 , view
                                                 , makeLenses
                                                 )
+import           Gfx.Context                    ( GfxContext )
 
 
 data ImprovizLanguage = ImprovizLanguage
@@ -32,14 +33,15 @@ data ImprovizLanguage = ImprovizLanguage
 
 makeLenses ''ImprovizLanguage
 
-makeLanguageState :: [Program] -> ImprovizLanguage
-makeLanguageState userCode = ImprovizLanguage
-  { _programText        = ""
-  , _lastProgramText    = ""
-  , _currentAst         = Program []
-  , _lastWorkingAst     = Program []
-  , _initialInterpreter = initialState userCode
-  }
+makeLanguageState :: [Program] -> GfxContext -> IO ImprovizLanguage
+makeLanguageState userCode ctx = do
+  initial <- initialState userCode ctx
+  return ImprovizLanguage { _programText        = ""
+                          , _lastProgramText    = ""
+                          , _currentAst         = Program []
+                          , _lastWorkingAst     = Program []
+                          , _initialInterpreter = initial
+                          }
 
 updateProgram :: String -> Program -> ImprovizLanguage -> ImprovizLanguage
 updateProgram newProgram newAst =

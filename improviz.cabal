@@ -63,8 +63,9 @@ executable improviz
                      , Improviz.UI
                      , Gfx
                      , Gfx.Ast
-                     , Gfx.Interpreter
-                     , Gfx.EngineState
+                     , Gfx.Commands
+                     , Gfx.Context
+                     , Gfx.Engine
                      , Gfx.FontHandling
                      , Gfx.Geometries
                      , Gfx.VertexBuffers
@@ -124,6 +125,7 @@ test-suite improviz-test
                      , JuicyPixels
                      , OpenGL
                      , OpenGLRaw
+                     , stm
                      , Vec
                      , yaml
                      , aeson
@@ -139,8 +141,9 @@ test-suite improviz-test
                      , Logging
                      , Gfx
                      , Gfx.Ast
-                     , Gfx.Interpreter
-                     , Gfx.EngineState
+                     , Gfx.Commands
+                     , Gfx.Context
+                     , Gfx.Engine
                      , Gfx.FontHandling
                      , Gfx.Geometries
                      , Gfx.VertexBuffers
@@ -172,6 +175,8 @@ test-suite improviz-test
                      , Language.StdLib.PostEffects
                      , Language.StdLib.Maths
                      , Language.StdLib.Util
+                     , TestHelpers.GfxContext
+                     , TestHelpers.Util
                      , Tests.Language
                      , Tests.Language.Ast.Transformers.Globalise
                      , Tests.Language.Interpreter.Blocks

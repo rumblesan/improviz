@@ -8,9 +8,8 @@ module Language.Interpreter.Types
   , globals
   , builtins
   , functions
-  , currentGfx
   , textureInfo
-  , gfxEngine
+  , gfxContext
   , InterpreterProcess
   , runInterpreterM
   )
@@ -24,33 +23,31 @@ import           Lens.Simple                    ( makeLenses )
 import           Language.Ast
 
 import qualified Data.Map.Strict               as M
-import           Gfx.EngineState                ( EngineState )
-import qualified Gfx.Ast                       as GA
+import           Gfx.Context                    ( GfxContext )
 import           Gfx.Textures                   ( TextureInfo(..) )
 import qualified Language.Interpreter.Scope    as LS
 
 newtype BuiltInFunction =
-  BuiltInFunction ([Value] -> Maybe Block -> InterpreterProcess Value)
+  BuiltInFunction ([Value] -> InterpreterProcess Value)
 
 data UserFunctionDef =
   UserFunctionDef Identifier
                   [FuncArg]
                   Block
 
-type InterpreterProcessing = State InterpreterState
+type InterpreterProcessing = StateT InterpreterState IO
 
 type InterpreterErrors m = ExceptT String m
 
 type InterpreterProcess v = InterpreterErrors InterpreterProcessing v
 
 data InterpreterState = InterpreterState
-  { _variables      :: LS.ScopeStack Identifier Value
-  , _globals        :: M.Map Identifier Value
-  , _builtins       :: M.Map Identifier BuiltInFunction
-  , _functions      :: M.Map Identifier UserFunctionDef
-  , _currentGfx     :: GA.Block
-  , _textureInfo    :: TextureInfo
-  , _gfxEngine      :: Maybe EngineState
+  { _variables   :: LS.ScopeStack Identifier Value
+  , _globals     :: M.Map Identifier Value
+  , _builtins    :: M.Map Identifier BuiltInFunction
+  , _functions   :: M.Map Identifier UserFunctionDef
+  , _textureInfo :: TextureInfo
+  , _gfxContext  ::  GfxContext
   }
 
 makeLenses ''InterpreterState
@@ -58,5 +55,5 @@ makeLenses ''InterpreterState
 runInterpreterM
   :: InterpreterProcess a
   -> InterpreterState
-  -> (Either String a, InterpreterState)
-runInterpreterM op = runState (runExceptT op)
+  -> IO (Either String a, InterpreterState)
+runInterpreterM op = runStateT (runExceptT op)

@@ -7,11 +7,9 @@ import           Test.Framework                 ( Test
                                                 , testGroup
                                                 )
 import           Test.Framework.Providers.HUnit ( testCase )
-import           Test.HUnit                     ( Assertion
-                                                , assertEqual
-                                                )
+import           Test.HUnit                     ( Assertion )
+import           TestHelpers.Util               ( resultTest )
 
-import qualified Language
 import           Language.Ast
 
 interpreterFunctionTests :: Test
@@ -21,15 +19,7 @@ interpreterFunctionTests = testGroup
 
 test_function_creation_and_application :: Assertion
 test_function_creation_and_application =
-  let block =
-          Block
-            [ ElExpression
-                $ BinaryOp "+" (EVar $ LocalVariable "a") (EVal $ Number 1)
-            ]
-      func = StFunc $ Func "foo" [VarArg "a"] block
-      appl = StExpression $ EApp $ Application (LocalVariable "foo")
-                                               [EVal $ Number 3]
-                                               Nothing
-      result   = Language.interpret [] $ Program [func, appl]
-      expected = Right $ Number 4
-  in  assertEqual "" expected result
+  let program  = "func foo (a) => a + 1\n\
+         \foo(3)\n"
+      expected = Number 4
+  in  resultTest program expected "interpreter returns 4"

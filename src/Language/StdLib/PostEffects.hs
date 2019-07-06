@@ -5,12 +5,11 @@ where
 
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 
-import           Language.Ast                   ( Block
-                                                , Value(Symbol, Null)
-                                                )
-import           Language.Interpreter           ( setAnimationStyle
+import           Language.Ast                   ( Value(Symbol, Null) )
+import           Language.Interpreter           ( useGfxCtx
                                                 , setBuiltIn
                                                 )
+import           Gfx.Context                    ( setAnimationStyle )
 import           Language.Interpreter.Types     ( InterpreterProcess )
 
 addPostEffectsStdLib :: InterpreterProcess ()
@@ -19,16 +18,16 @@ addPostEffectsStdLib = do
   setBuiltIn "motionBlur"     motionBlur
   setBuiltIn "animationStyle" animationStyle
 
-motionBlur :: [Value] -> Maybe Block -> InterpreterProcess Value
-motionBlur _ _ = setAnimationStyle MotionBlur >> return Null
+motionBlur :: [Value] -> InterpreterProcess Value
+motionBlur _ = useGfxCtx (`setAnimationStyle` MotionBlur) >> return Null
 
-paintOver :: [Value] -> Maybe Block -> InterpreterProcess Value
-paintOver _ _ = setAnimationStyle PaintOver >> return Null
+paintOver :: [Value] -> InterpreterProcess Value
+paintOver _ = useGfxCtx (`setAnimationStyle` PaintOver) >> return Null
 
-animationStyle :: [Value] -> Maybe Block -> InterpreterProcess Value
-animationStyle args _ = do
+animationStyle :: [Value] -> InterpreterProcess Value
+animationStyle args = do
   case args of
-    [Symbol "paintOver" ] -> setAnimationStyle PaintOver
-    [Symbol "motionBlur"] -> setAnimationStyle MotionBlur
-    _                     -> setAnimationStyle NormalStyle
+    [Symbol "paintOver" ] -> useGfxCtx (`setAnimationStyle` PaintOver)
+    [Symbol "motionBlur"] -> useGfxCtx (`setAnimationStyle` MotionBlur)
+    _                     -> useGfxCtx (`setAnimationStyle` NormalStyle)
   return Null

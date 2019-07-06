@@ -1,32 +1,23 @@
 module Gfx
-  ( EngineState
-  , Scene(..)
+  ( GfxEngine
   , renderGfx
   , createGfx
   , resizeGfx
-  , renderCode
-  , renderCodeToBuffer
-  , textureLibrary
   )
 where
-
-import           Control.Monad.State.Strict     ( evalStateT )
 
 import           Lens.Simple                    ( (^.) )
 
 import           Graphics.Rendering.OpenGL
 
-import           Gfx.EngineState                ( EngineState
-                                                , Scene(..)
-                                                , createGfxEngineState
+import           Gfx.Engine                     ( GfxEngine
+                                                , createGfxEngine
                                                 , resizeGfxEngine
                                                 , backgroundColor
                                                 , postFX
                                                 , animationStyle
                                                 , textRenderer
-                                                , textureLibrary
                                                 )
-import           Gfx.Interpreter                ( interpretGfx )
 import           Gfx.OpenGL                     ( colToGLCol )
 import           Gfx.PostProcessing             ( AnimationStyle(..)
                                                 , createPostProcessing
@@ -38,24 +29,27 @@ import           Gfx.PostProcessing             ( AnimationStyle(..)
 import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 , createTextRenderer
                                                 , resizeTextRendererScreen
-                                                , renderText
-                                                , renderTextToBuffer
                                                 )
-import           Gfx.Textures                   ( createTextureLib )
+import           Gfx.Textures                   ( TextureLibrary )
 
 import           Configuration                  ( ImprovizConfig )
-import qualified Configuration                 as C
 
-createGfx :: ImprovizConfig -> Int -> Int -> Int -> Int -> IO EngineState
-createGfx config width height fbWidth fbHeight = do
-  post         <- createPostProcessing fbWidth fbHeight
-  textRenderer <- createTextRenderer config fbWidth fbHeight
-  textureLib   <- createTextureLib (config ^. C.textureDirectories)
-  let tLibWithCode = addCodeTextureToLib textRenderer textureLib
-  createGfxEngineState config width height post textRenderer tLibWithCode
+createGfx
+  :: ImprovizConfig
+  -> TextureLibrary
+  -> Int
+  -> Int
+  -> Int
+  -> Int
+  -> IO GfxEngine
+createGfx config textureLib width height fbWidth fbHeight = do
+  post    <- createPostProcessing fbWidth fbHeight
+  trender <- createTextRenderer config fbWidth fbHeight
+  let tLibWithCode = addCodeTextureToLib trender textureLib
+  createGfxEngine config width height post trender tLibWithCode
 
 resizeGfx
-  :: EngineState -> ImprovizConfig -> Int -> Int -> Int -> Int -> IO EngineState
+  :: GfxEngine -> ImprovizConfig -> Int -> Int -> Int -> Int -> IO GfxEngine
 resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
   deletePostProcessing $ engineState ^. postFX
   newPost    <- createPostProcessing fbWidth fbHeight
@@ -66,8 +60,8 @@ resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
   return
     $ resizeGfxEngine config newWidth newHeight newPost newTrender engineState
 
-renderGfx :: EngineState -> Scene -> IO ()
-renderGfx gs scene =
+renderGfx :: IO result -> GfxEngine -> IO result
+renderGfx program gs =
   let
     post      = gs ^. postFX
     animStyle = gs ^. animationStyle
@@ -87,13 +81,6 @@ renderGfx gs scene =
           blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
       clearColor $= colToGLCol bgColor
       clear [ColorBuffer, DepthBuffer]
-      evalStateT (interpretGfx $ sceneGfx scene) gs
+      result <- program
       renderPostProcessing post animStyle
-
-renderCode :: EngineState -> String -> IO ()
-renderCode gfxEngine = renderText 0 0 (gfxEngine ^. textRenderer)
-
-renderCodeToBuffer :: EngineState -> String -> IO ()
-renderCodeToBuffer gfxEngine codeText = do
-  renderText 0 0 (gfxEngine ^. textRenderer) codeText
-  renderTextToBuffer (gfxEngine ^. textRenderer)
+      return result

@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell   #-}
 
-module Gfx.EngineState where
+module Gfx.Engine where
 
+import           Control.Monad.State.Strict
 import           Data.Vec                       ( Mat44
                                                 , identity
                                                 , multmm
@@ -14,7 +15,6 @@ import           Lens.Simple                    ( makeLenses
                                                 , (^.)
                                                 )
 
-import           Gfx.Ast                        ( Block )
 import           Gfx.GeometryBuffers            ( GeometryBuffers
                                                 , createAllBuffers
                                                 )
@@ -48,8 +48,6 @@ data GFXStrokeStyling
   | GFXNoStroke
   deriving (Eq, Show)
 
-newtype Scene = Scene { sceneGfx :: Block }
-
 data SavableState = SavableState
   { _savedMatrixStack  :: [Mat44 GLfloat]
   , _savedFillStyles   :: [GFXFillStyling]
@@ -58,10 +56,9 @@ data SavableState = SavableState
 
 makeLenses ''SavableState
 
-data EngineState = EngineState
+data GfxEngine = GfxEngine
   { _fillStyles         :: [GFXFillStyling]
   , _strokeStyles       :: [GFXStrokeStyling]
-  , _drawTransparencies :: Bool
   , _geometryBuffers    :: GeometryBuffers
   , _textureLibrary     :: TextureLibrary
   , _colourShaders      :: Shaders
@@ -72,21 +69,23 @@ data EngineState = EngineState
   , _textRenderer       :: TextRenderer
   , _matrixStack        :: [Mat44 GLfloat]
   , _scopeStack         :: [SavableState]
-  , _animationStyle   :: AnimationStyle
+  , _animationStyle     :: AnimationStyle
   , _backgroundColor    :: Colour
   } deriving (Show)
 
-makeLenses ''EngineState
+makeLenses ''GfxEngine
 
-createGfxEngineState
+type GraphicsEngine v = StateT GfxEngine IO v
+
+createGfxEngine
   :: ImprovizConfig
   -> Int
   -> Int
   -> PostProcessing
   -> TextRenderer
   -> TextureLibrary
-  -> IO EngineState
-createGfxEngineState config width height pprocess trender textLib =
+  -> IO GfxEngine
+createGfxEngine config width height pprocess trender textLib =
   let ratio      = width /. height
       front      = config ^. C.screen . CS.front
       back       = config ^. C.screen . CS.back
@@ -96,22 +95,21 @@ createGfxEngineState config width height pprocess trender textLib =
         gbos <- createAllBuffers
         cshd <- createColourShaders
         tshd <- createTextureShaders
-        return EngineState { _fillStyles = [GFXFillColour $ Colour 1 1 1 1]
-                           , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
-                           , _drawTransparencies = False
-                           , _geometryBuffers    = gbos
-                           , _textureLibrary     = textLib
-                           , _colourShaders      = cshd
-                           , _textureShaders     = tshd
-                           , _viewMatrix         = view
-                           , _projectionMatrix   = projection
-                           , _postFX             = pprocess
-                           , _textRenderer       = trender
-                           , _matrixStack        = [identity]
-                           , _scopeStack         = []
-                           , _animationStyle     = NormalStyle
-                           , _backgroundColor    = Colour 1 1 1 1
-                           }
+        return GfxEngine { _fillStyles       = [GFXFillColour $ Colour 1 1 1 1]
+                         , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
+                         , _geometryBuffers  = gbos
+                         , _textureLibrary   = textLib
+                         , _colourShaders    = cshd
+                         , _textureShaders   = tshd
+                         , _viewMatrix       = view
+                         , _projectionMatrix = projection
+                         , _postFX           = pprocess
+                         , _textRenderer     = trender
+                         , _matrixStack      = [identity]
+                         , _scopeStack       = []
+                         , _animationStyle   = NormalStyle
+                         , _backgroundColor  = Colour 1 1 1 1
+                         }
 
 resizeGfxEngine
   :: ImprovizConfig
@@ -119,8 +117,8 @@ resizeGfxEngine
   -> Int
   -> PostProcessing
   -> TextRenderer
-  -> EngineState
-  -> EngineState
+  -> GfxEngine
+  -> GfxEngine
 resizeGfxEngine config newWidth newHeight newPP newTR =
   let front    = config ^. C.screen . CS.front
       back     = config ^. C.screen . CS.back
@@ -128,31 +126,38 @@ resizeGfxEngine config newWidth newHeight newPP newTR =
       newProj  = projectionMat front back (pi / 4) newRatio
   in  set projectionMatrix newProj . set postFX newPP . set textRenderer newTR
 
-pushFillStyle :: GFXFillStyling -> EngineState -> EngineState
+resetGfxEngine :: GfxEngine -> GfxEngine
+resetGfxEngine ge = ge { _fillStyles   = [GFXFillColour $ Colour 1 1 1 1]
+                       , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
+                       , _matrixStack  = [identity]
+                       , _scopeStack   = []
+                       }
+
+pushFillStyle :: GFXFillStyling -> GfxEngine -> GfxEngine
 pushFillStyle s = over fillStyles (s :)
 
-currentFillStyle :: EngineState -> GFXFillStyling
+currentFillStyle :: GfxEngine -> GFXFillStyling
 currentFillStyle = head . view fillStyles
 
-pushStrokeStyle :: GFXStrokeStyling -> EngineState -> EngineState
+pushStrokeStyle :: GFXStrokeStyling -> GfxEngine -> GfxEngine
 pushStrokeStyle c = over strokeStyles (c :)
 
-currentStrokeStyle :: EngineState -> GFXStrokeStyling
+currentStrokeStyle :: GfxEngine -> GFXStrokeStyling
 currentStrokeStyle = head . view strokeStyles
 
-pushMatrix :: EngineState -> Mat44 Float -> EngineState
+pushMatrix :: GfxEngine -> Mat44 Float -> GfxEngine
 pushMatrix es mat =
   let stack = view matrixStack es
       comp  = multmm (head stack) mat
   in  set matrixStack (comp : stack) es
 
-popMatrix :: EngineState -> EngineState
+popMatrix :: GfxEngine -> GfxEngine
 popMatrix = over matrixStack tail
 
-modelMatrix :: EngineState -> Mat44 Float
+modelMatrix :: GfxEngine -> Mat44 Float
 modelMatrix = head . view matrixStack
 
-multMatrix :: EngineState -> Mat44 Float -> EngineState
+multMatrix :: GfxEngine -> Mat44 Float -> GfxEngine
 multMatrix es mat =
   let stack   = view matrixStack es
       newhead = multmm (head stack) mat

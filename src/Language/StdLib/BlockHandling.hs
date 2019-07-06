@@ -3,23 +3,23 @@ module Language.StdLib.BlockHandling
   )
 where
 
-import           Language.Ast                   ( Block
-                                                , Value(Null)
-                                                )
-import           Language.Interpreter           ( addGfxCommand
+import           Language.Ast                   ( Value(Null) )
+import           Language.Interpreter           ( useGfxCtx
                                                 , setBuiltIn
                                                 )
 import           Language.Interpreter.Types
 
-import qualified Gfx.Ast                       as GA
+import           Gfx.Context                    ( pushScope
+                                                , popScope
+                                                )
 
 addBlockHandlingStdLib :: InterpreterProcess ()
 addBlockHandlingStdLib = do
   setBuiltIn "pushScope" pushGfxScope
   setBuiltIn "popScope"  popGfxScope
 
-pushGfxScope :: [Value] -> Maybe Block -> InterpreterProcess Value
-pushGfxScope _ _ = addGfxCommand (GA.ScopeCommand GA.PushScope) >> return Null
+pushGfxScope :: [Value] -> InterpreterProcess Value
+pushGfxScope _ = useGfxCtx pushScope >> return Null
 
-popGfxScope :: [Value] -> Maybe Block -> InterpreterProcess Value
-popGfxScope _ _ = addGfxCommand (GA.ScopeCommand GA.PopScope) >> return Null
+popGfxScope :: [Value] -> InterpreterProcess Value
+popGfxScope _ = useGfxCtx popScope >> return Null

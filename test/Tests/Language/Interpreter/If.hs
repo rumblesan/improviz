@@ -7,13 +7,10 @@ import           Test.Framework                 ( Test
                                                 , testGroup
                                                 )
 import           Test.Framework.Providers.HUnit ( testCase )
-import           Test.HUnit                     ( Assertion
-                                                , assertEqual
-                                                )
+import           Test.HUnit                     ( Assertion )
+import           TestHelpers.Util               ( gfxTest )
 
-import           Gfx                            ( Scene(..) )
 import qualified Gfx.Ast                       as GA
-import qualified Language
 
 interpreterIfTests :: Test
 interpreterIfTests = testGroup
@@ -26,44 +23,24 @@ interpreterIfTests = testGroup
 
 test_true_if_statement :: Assertion
 test_true_if_statement =
-  let program = "if (1)\n\tshape(:cube, 1, 1, 1)"
-      result  = do
-        ast <- Language.simpleParse program
-        let result =
-              fst $ Language.createGfxScene (Language.initialState []) ast
-        sceneGfx <$> result
-      expected = Right [GA.ShapeCommand (GA.Cube 1 1 1)]
-  in  assertEqual "" expected result
+  let program     = "if (1)\n\tshape(:cube, 1, 1, 1)"
+      expectedGfx = [GA.ShapeCommand (GA.Cube 1 1 1)]
+  in  gfxTest program expectedGfx
 
 test_false_if_statement :: Assertion
 test_false_if_statement =
-  let program = "if (0)\n\tshape(:cube, 1, 1, 1)"
-      result  = do
-        ast <- Language.simpleParse program
-        let result =
-              fst $ Language.createGfxScene (Language.initialState []) ast
-        sceneGfx <$> result
-      expected = Right []
-  in  assertEqual "" expected result
+  let program     = "if (0)\n\tshape(:cube, 1, 1, 1)"
+      expectedGfx = []
+  in  gfxTest program expectedGfx
 
 test_true_if_else_statement :: Assertion
 test_true_if_else_statement =
-  let program = "if (1)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1)"
-      result  = do
-        ast <- Language.simpleParse program
-        let result =
-              fst $ Language.createGfxScene (Language.initialState []) ast
-        sceneGfx <$> result
-      expected = Right [GA.ShapeCommand (GA.Cube 1 1 1)]
-  in  assertEqual "" expected result
+  let program     = "if (1)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1)"
+      expectedGfx = [GA.ShapeCommand (GA.Cube 1 1 1)]
+  in  gfxTest program expectedGfx
 
 test_false_if_else_statement :: Assertion
 test_false_if_else_statement =
-  let program = "if (0)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1)"
-      result  = do
-        ast <- Language.simpleParse program
-        let result =
-              fst $ Language.createGfxScene (Language.initialState []) ast
-        sceneGfx <$> result
-      expected = Right [GA.ShapeCommand (GA.Line 1)]
-  in  assertEqual "" expected result
+  let program     = "if (0)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1)"
+      expectedGfx = [GA.ShapeCommand (GA.Line 1)]
+  in  gfxTest program expectedGfx
