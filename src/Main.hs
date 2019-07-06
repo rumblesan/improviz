@@ -26,13 +26,14 @@ import qualified Configuration                 as C
 import           Gfx                            ( createGfx
                                                 , renderGfx
                                                 , resizeGfx
-                                                , renderCode
-                                                , renderCodeToBuffer
                                                 )
 import           Gfx.Textures                   ( TextureInfo(..)
                                                 , createTextureLib
                                                 )
-import           Gfx.Context                    ( reset )
+import           Gfx.Context                    ( reset
+                                                , renderCode
+                                                , renderCodeToBuffer
+                                                )
 
 import           Windowing                      ( setupWindow )
 import           Language                       ( interpret
@@ -105,7 +106,7 @@ display env time = do
       reset gfxCtx
       when (IL.programHasChanged as) $ do
         logInfo "Saving current ast"
-        renderCode gs (ui ^. IUI.currentText)
+        renderCode gfxCtx (ui ^. IUI.currentText)
         atomically $ modifyTVar (env ^. I.language) IL.saveProgram
       when (ui ^. IUI.displayText)
-        $ renderCodeToBuffer gs (ui ^. IUI.currentText)
+        $ renderCodeToBuffer gfxCtx (ui ^. IUI.currentText)

@@ -16,6 +16,8 @@ module Gfx.Commands
   , setAnimationStyle
   , pushScope
   , popScope
+  , renderCode
+  , renderCodeToBuffer
   )
 where
 
@@ -48,6 +50,9 @@ import           Gfx.VertexBuffers              ( VBO
                                                 , drawVBO
                                                 )
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
+import           Gfx.TextRendering              ( renderText
+                                                , renderTextToBuffer
+                                                )
 
 import           ErrorHandling                  ( printErrors )
 
@@ -185,3 +190,14 @@ popScope = do
   assign fillStyles   (view savedFillStyles prev)
   assign strokeStyles (view savedStrokeStyles prev)
   assign matrixStack  (view savedMatrixStack prev)
+
+renderCode :: String -> GraphicsEngine ()
+renderCode text = do
+  tr <- use textRenderer
+  liftIO $ renderText 0 0 tr text
+
+renderCodeToBuffer :: String -> GraphicsEngine ()
+renderCodeToBuffer text = do
+  tr <- use textRenderer
+  liftIO $ renderText 0 0 tr text
+  liftIO $ renderTextToBuffer tr

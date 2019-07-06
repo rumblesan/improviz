@@ -3,8 +3,6 @@ module Gfx
   , renderGfx
   , createGfx
   , resizeGfx
-  , renderCode
-  , renderCodeToBuffer
   )
 where
 
@@ -31,8 +29,6 @@ import           Gfx.PostProcessing             ( AnimationStyle(..)
 import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 , createTextRenderer
                                                 , resizeTextRendererScreen
-                                                , renderText
-                                                , renderTextToBuffer
                                                 )
 import           Gfx.Textures                   ( TextureLibrary )
 
@@ -88,11 +84,3 @@ renderGfx program gs =
       result <- program
       renderPostProcessing post animStyle
       return result
-
-renderCode :: GfxEngine -> String -> IO ()
-renderCode gfxEngine = renderText 0 0 (gfxEngine ^. textRenderer)
-
-renderCodeToBuffer :: GfxEngine -> String -> IO ()
-renderCodeToBuffer gfxEngine codeText = do
-  renderText 0 0 (gfxEngine ^. textRenderer) codeText
-  renderTextToBuffer (gfxEngine ^. textRenderer)

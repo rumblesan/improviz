@@ -33,50 +33,56 @@ data GfxContext = GfxContext { drawLine :: Float -> IO ()
                              , popScope :: IO ()
                              , setAnimationStyle :: AnimationStyle -> IO ()
                              , reset :: IO ()
+                             , renderCode :: String -> IO ()
+                             , renderCodeToBuffer :: String -> IO ()
 }
 
 createGfxContext :: TVar GfxEngine -> GfxContext
 createGfxContext gfx = GfxContext
-  { drawLine          = wrapOneArg gfx GC.drawLine
-  , drawRectangle     = wrapTwoArg gfx GC.drawRectangle
-  , drawCube          = wrapThreeArg gfx GC.drawCube
-  , drawSphere        = wrapThreeArg gfx GC.drawSphere
-  , drawCylinder      = wrapThreeArg gfx GC.drawCylinder
-  , rotate            = wrapThreeArg gfx GC.rotate
-  , scale             = wrapThreeArg gfx GC.scale
-  , move              = wrapThreeArg gfx GC.move
-  , colourFill        = wrapFourArg gfx GC.colourFill
-  , noFill            = wrapNoArg gfx GC.noFill
-  , textureFill       = wrapTwoArg gfx GC.textureFill
-  , colourStroke      = wrapFourArg gfx GC.colourStroke
-  , noStroke          = wrapNoArg gfx GC.noStroke
-  , setBackground     = wrapThreeArg gfx GC.setBackground
-  , pushScope         = wrapNoArg gfx GC.pushScope
-  , popScope          = wrapNoArg gfx GC.popScope
-  , setAnimationStyle = wrapOneArg gfx GC.setAnimationStyle
-  , reset             = resetGfxCtx gfx
+  { drawLine           = wrapOneArg gfx GC.drawLine
+  , drawRectangle      = wrapTwoArg gfx GC.drawRectangle
+  , drawCube           = wrapThreeArg gfx GC.drawCube
+  , drawSphere         = wrapThreeArg gfx GC.drawSphere
+  , drawCylinder       = wrapThreeArg gfx GC.drawCylinder
+  , rotate             = wrapThreeArg gfx GC.rotate
+  , scale              = wrapThreeArg gfx GC.scale
+  , move               = wrapThreeArg gfx GC.move
+  , colourFill         = wrapFourArg gfx GC.colourFill
+  , noFill             = wrapNoArg gfx GC.noFill
+  , textureFill        = wrapTwoArg gfx GC.textureFill
+  , colourStroke       = wrapFourArg gfx GC.colourStroke
+  , noStroke           = wrapNoArg gfx GC.noStroke
+  , setBackground      = wrapThreeArg gfx GC.setBackground
+  , pushScope          = wrapNoArg gfx GC.pushScope
+  , popScope           = wrapNoArg gfx GC.popScope
+  , setAnimationStyle  = wrapOneArg gfx GC.setAnimationStyle
+  , reset              = resetGfxCtx gfx
+  , renderCode         = wrapOneArg gfx GC.renderCode
+  , renderCodeToBuffer = wrapOneArg gfx GC.renderCodeToBuffer
   }
 
 emptyGfxContext :: GfxContext
 emptyGfxContext = GfxContext
-  { drawLine          = \_ -> print "No GFX Context"
-  , drawRectangle     = \_ _ -> print "No GFX Context"
-  , drawCube          = \_ _ _ -> print "No GFX Context"
-  , drawSphere        = \_ _ _ -> print "No GFX Context"
-  , drawCylinder      = \_ _ _ -> print "No GFX Context"
-  , rotate            = \_ _ _ -> print "No GFX Context"
-  , scale             = \_ _ _ -> print "No GFX Context"
-  , move              = \_ _ _ -> print "No GFX Context"
-  , colourFill        = \_ _ _ _ -> print "No GFX Context"
-  , noFill            = print "No Gfx Context"
-  , textureFill       = \_ _ -> print "No Gfx Context"
-  , colourStroke      = \_ _ _ _ -> print "No GFX Context"
-  , noStroke          = print "No Gfx Context"
-  , setBackground     = \_ _ _ -> print "No Gfx Context"
-  , pushScope         = print "No Gfx Context"
-  , popScope          = print "No Gfx Context"
-  , setAnimationStyle = \_ -> print "No Gfx Context"
-  , reset             = print "No Gfx Context"
+  { drawLine           = \_ -> print "No GFX Context"
+  , drawRectangle      = \_ _ -> print "No GFX Context"
+  , drawCube           = \_ _ _ -> print "No GFX Context"
+  , drawSphere         = \_ _ _ -> print "No GFX Context"
+  , drawCylinder       = \_ _ _ -> print "No GFX Context"
+  , rotate             = \_ _ _ -> print "No GFX Context"
+  , scale              = \_ _ _ -> print "No GFX Context"
+  , move               = \_ _ _ -> print "No GFX Context"
+  , colourFill         = \_ _ _ _ -> print "No GFX Context"
+  , noFill             = print "No Gfx Context"
+  , textureFill        = \_ _ -> print "No Gfx Context"
+  , colourStroke       = \_ _ _ _ -> print "No GFX Context"
+  , noStroke           = print "No Gfx Context"
+  , setBackground      = \_ _ _ -> print "No Gfx Context"
+  , pushScope          = print "No Gfx Context"
+  , popScope           = print "No Gfx Context"
+  , setAnimationStyle  = \_ -> print "No Gfx Context"
+  , reset              = print "No Gfx Context"
+  , renderCode         = \_ -> print "No Gfx Context"
+  , renderCodeToBuffer = \_ -> print "No Gfx Context"
   }
 
 resetGfxCtx :: TVar GfxEngine -> IO ()
