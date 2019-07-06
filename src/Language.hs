@@ -6,6 +6,7 @@ module Language
   , updateStateVariables
   , setGfxEngine
   , getGfxEngine
+  , setGfxContext
   , module Language.Ast
   )
 where
@@ -16,6 +17,7 @@ import           Lens.Simple                    ( set
                                                 )
 
 import           Gfx                            ( GfxEngine )
+import           Gfx.Context                    ( GfxContext )
 
 import           Language.Ast                   ( Identifier
                                                 , Program
@@ -29,6 +31,7 @@ import           Language.Interpreter           ( emptyState
                                                 )
 import           Language.Interpreter.Types     ( InterpreterState
                                                 , gfxEngine
+                                                , gfxContext
                                                 , runInterpreterM
                                                 )
 import           Language.Parser                ( parseProgram )
@@ -62,6 +65,10 @@ setGfxEngine es = set gfxEngine (Just es)
 
 getGfxEngine :: InterpreterState -> Maybe GfxEngine
 getGfxEngine = view gfxEngine
+
+setGfxContext :: GfxContext -> InterpreterState -> InterpreterState
+setGfxContext = set gfxContext
+
 
 interpret
   :: InterpreterState -> Program -> IO (Either String Value, InterpreterState)

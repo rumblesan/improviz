@@ -64,6 +64,7 @@ executable improviz
                      , Gfx
                      , Gfx.Ast
                      , Gfx.Commands
+                     , Gfx.Context
                      , Gfx.Engine
                      , Gfx.FontHandling
                      , Gfx.Geometries

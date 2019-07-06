@@ -8,7 +8,7 @@ import           Data.Maybe                     ( maybe
                                                 , listToMaybe
                                                 )
 
-import           Gfx.Commands                   ( textureFill
+import           Gfx.Context                    ( textureFill
                                                 , colourFill
                                                 , noFill
                                                 , colourStroke
@@ -16,7 +16,7 @@ import           Gfx.Commands                   ( textureFill
                                                 , setBackground
                                                 )
 import           Language.Ast                   ( Value(Number, Null, Symbol) )
-import           Language.Interpreter           ( execGfx
+import           Language.Interpreter           ( useGfxCtx
                                                 , getTextureInfo
                                                 , setBuiltIn
                                                 )
@@ -49,7 +49,7 @@ background args = do
     [Number x, Number y]           -> return (x, y, 0)
     [Number x, Number y, Number z] -> return (x, y, z)
     _ -> throwError "Error with functions to background"
-  execGfx $ setBackground (dToC rVal) (dToC gVal) (dToC bVal)
+  useGfxCtx (\ctx -> setBackground ctx (dToC rVal) (dToC gVal) (dToC bVal))
   return Null
 
 
@@ -57,25 +57,25 @@ style :: [Value] -> InterpreterProcess Value
 style styleArgs = do
   cmd <- case styleArgs of
     Symbol "fill"     : rest -> runFill rest
-    Symbol "noFill"   : rest -> execGfx noFill
+    Symbol "noFill"   : rest -> useGfxCtx noFill
     Symbol "stroke"   : rest -> runStroke rest
-    Symbol "noStroke" : rest -> execGfx noStroke
+    Symbol "noStroke" : rest -> useGfxCtx noStroke
     Symbol "texture"  : rest -> runTexture rest
   return Null
  where
   runFill :: [Value] -> InterpreterProcess ()
   runFill args = case args of
     [Number r, Number g, Number b, Number a] ->
-      execGfx $ colourFill (dToC r) (dToC g) (dToC b) (dToC a)
+      useGfxCtx (\ctx -> colourFill ctx (dToC r) (dToC g) (dToC b) (dToC a))
     _ -> throwError "Error with functions to fill"
   runStroke :: [Value] -> InterpreterProcess ()
   runStroke args = case args of
     [Number r, Number g, Number b, Number a] ->
-      execGfx $ colourStroke (dToC r) (dToC g) (dToC b) (dToC a)
+      useGfxCtx (\ctx -> colourStroke ctx (dToC r) (dToC g) (dToC b) (dToC a))
     _ -> throwError "Error with functions to fill"
   runTexture :: [Value] -> InterpreterProcess ()
   runTexture args = case args of
     Symbol name : rest -> do
       frame <- maybe (return 0) getNumberValue $ listToMaybe rest
-      execGfx $ textureFill name frame
+      useGfxCtx (\ctx -> textureFill ctx name frame)
     _ -> throwError "Error with functions to texture"

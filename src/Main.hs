@@ -26,18 +26,17 @@ import qualified Configuration                 as C
 import           Gfx                            ( createGfx
                                                 , renderGfx
                                                 , resizeGfx
-                                                , updateGfx
                                                 , renderCode
                                                 , renderCodeToBuffer
                                                 )
 import           Gfx.Textures                   ( TextureInfo(..)
                                                 , createTextureLib
                                                 )
+import           Gfx.Context                    ( reset )
+
 import           Windowing                      ( setupWindow )
 import           Language                       ( interpret
                                                 , updateStateVariables
-                                                , setGfxEngine
-                                                , getGfxEngine
                                                 )
 import           Language.Ast                   ( Value(Number) )
 import           Language.Interpreter.Types     ( textureInfo )
@@ -91,21 +90,19 @@ display env time = do
   as   <- readTVarIO (env ^. I.language)
   vars <- readTVarIO (env ^. I.externalVars)
   gs   <- readTVarIO (env ^. I.graphics)
+  let gfxCtx  = env ^. I.gfxContext
   let newVars = initialVars vars (double2Float time)
-  is <- setGfxEngine gs
-    <$> updateStateVariables newVars (as ^. IL.initialInterpreter)
-
+  is               <- updateStateVariables newVars (as ^. IL.initialInterpreter)
 
   ui               <- readTVarIO $ env ^. I.ui
   (result, postIS) <- renderGfx (interpret is (as ^. IL.currentAst)) gs
 
-  case (result, getGfxEngine postIS) of
-    (Left msg, _) -> do
+  case result of
+    Left msg -> do
       logError $ "Could not interpret program: " ++ msg
       atomically $ modifyTVar (env ^. I.language) IL.resetProgram
-    (_, Nothing    ) -> logError "No Graphics Engine"
-    (_, Just gfxEng) -> do
-      atomically $ writeTVar (env ^. I.graphics) (updateGfx gs gfxEng)
+    Right _ -> do
+      reset gfxCtx
       when (IL.programHasChanged as) $ do
         logInfo "Saving current ast"
         renderCode gs (ui ^. IUI.currentText)

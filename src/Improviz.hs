@@ -7,6 +7,7 @@ module Improviz
   , ui
   , graphics
   , config
+  , gfxContext
   , startTime
   , externalVars
   , createEnv
@@ -33,6 +34,9 @@ import           Configuration                  ( ImprovizConfig
                                                 , codeFiles
                                                 )
 import           Gfx.Engine                     ( GfxEngine )
+import           Gfx.Context                    ( GfxContext
+                                                , createGfxContext
+                                                )
 
 import           Improviz.Language              ( ImprovizLanguage
                                                 , makeLanguageState
@@ -51,6 +55,7 @@ data ImprovizEnv = ImprovizEnv
   { _language     :: TVar ImprovizLanguage
   , _ui           :: TVar ImprovizUI
   , _graphics     :: TVar GfxEngine
+  , _gfxContext   :: GfxContext
   , _config       :: ImprovizConfig
   , _startTime    :: POSIXTime
   , _externalVars :: TVar (M.Map String LA.Value)
@@ -62,15 +67,21 @@ createEnv :: ImprovizConfig -> GfxEngine -> IO ImprovizEnv
 createEnv config gfx = do
   logInfo "*****************************"
   logInfo "Creating Improviz Environment"
-  startTime     <- getPOSIXTime
-  uiState       <- newTVarIO defaultUI
-  gfxState      <- newTVarIO gfx
+  startTime <- getPOSIXTime
+  uiState   <- newTVarIO defaultUI
+  gfxState  <- newTVarIO gfx
+  let gfxContext = createGfxContext gfxState
   externalVars  <- newTVarIO M.empty
   uiState       <- newTVarIO defaultUI
   userCode      <- readExternalCode (config ^. codeFiles)
-  languageState <- makeLanguageState userCode >>= newTVarIO
-  return
-    $ ImprovizEnv languageState uiState gfxState config startTime externalVars
+  languageState <- makeLanguageState userCode gfxContext >>= newTVarIO
+  return $ ImprovizEnv languageState
+                       uiState
+                       gfxState
+                       gfxContext
+                       config
+                       startTime
+                       externalVars
 
 readExternalCode :: [FilePath] -> IO [LA.Program]
 readExternalCode files = rights <$> mapM readCode files

@@ -130,6 +130,12 @@ updateGfxEngine :: GfxEngine -> GfxEngine -> GfxEngine
 updateGfxEngine es changed = es { _animationStyle  = _animationStyle changed
                                 , _backgroundColor = _backgroundColor changed
                                 }
+resetGfxEngine :: GfxEngine -> GfxEngine
+resetGfxEngine ge = ge { _fillStyles   = [GFXFillColour $ Colour 1 1 1 1]
+                       , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
+                       , _matrixStack  = [identity]
+                       , _scopeStack   = []
+                       }
 
 pushFillStyle :: GFXFillStyling -> GfxEngine -> GfxEngine
 pushFillStyle s = over fillStyles (s :)

@@ -5,12 +5,12 @@ where
 
 import           Control.Monad.Except           ( throwError )
 
-import           Gfx.Commands                   ( rotate
+import           Gfx.Context                    ( rotate
                                                 , scale
                                                 , move
                                                 )
 import           Language.Ast                   ( Value(Symbol, Null, Number) )
-import           Language.Interpreter           ( execGfx
+import           Language.Interpreter           ( useGfxCtx
                                                 , setBuiltIn
                                                 )
 import           Language.Interpreter.Types     ( InterpreterProcess )
@@ -23,9 +23,9 @@ gfxMatrix :: [Value] -> InterpreterProcess Value
 gfxMatrix args = do
   case args of
     [name, Number x, Number y, Number z] -> case name of
-      (Symbol "rotate") -> execGfx $ rotate x y z
-      (Symbol "scale" ) -> execGfx $ scale x y z
-      (Symbol "move"  ) -> execGfx $ move x y z
+      (Symbol "rotate") -> useGfxCtx (\ctx -> rotate ctx x y z)
+      (Symbol "scale" ) -> useGfxCtx (\ctx -> scale ctx x y z)
+      (Symbol "move"  ) -> useGfxCtx (\ctx -> move ctx x y z)
       (Symbol n       ) -> throwError $ "unrecognised matrix (" ++ n ++ ")"
       _                 -> throwError "invalid matrix command value"
     _ -> throwError "invalid arguments given to matrix"

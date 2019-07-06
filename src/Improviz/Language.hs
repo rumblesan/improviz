@@ -12,7 +12,9 @@ module Improviz.Language
   )
 where
 
-import           Language                       ( initialState )
+import           Language                       ( initialState
+                                                , setGfxContext
+                                                )
 import           Language.Ast                   ( Program(..) )
 import           Language.Interpreter.Types     ( InterpreterState )
 import           Lens.Simple                    ( (^.)
@@ -20,6 +22,7 @@ import           Lens.Simple                    ( (^.)
                                                 , view
                                                 , makeLenses
                                                 )
+import           Gfx.Context                    ( GfxContext )
 
 
 data ImprovizLanguage = ImprovizLanguage
@@ -32,9 +35,9 @@ data ImprovizLanguage = ImprovizLanguage
 
 makeLenses ''ImprovizLanguage
 
-makeLanguageState :: [Program] -> IO ImprovizLanguage
-makeLanguageState userCode = do
-  initial <- initialState userCode
+makeLanguageState :: [Program] -> GfxContext -> IO ImprovizLanguage
+makeLanguageState userCode gfx = do
+  initial <- setGfxContext gfx <$> initialState userCode
   return ImprovizLanguage { _programText        = ""
                           , _lastProgramText    = ""
                           , _currentAst         = Program []

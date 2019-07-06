@@ -7,6 +7,7 @@ module Language.Interpreter
   , getVariable
   , interpretLanguage
   , execGfx
+  , useGfxCtx
   )
 where
 
@@ -28,6 +29,9 @@ import           Language.Interpreter.Types
 import           Gfx.Textures                   ( TextureInfo(..) )
 import           Gfx.Commands                   ( runGfx )
 import           Gfx.Engine                     ( GraphicsEngine )
+import           Gfx.Context                    ( GfxContext
+                                                , emptyGfxContext
+                                                )
 import           Language.Ast
 import qualified Language.Interpreter.Scope    as LS
 
@@ -38,6 +42,7 @@ emptyState = InterpreterState { _variables   = LS.empty
                               , _functions   = M.empty
                               , _textureInfo = TextureInfo M.empty
                               , _gfxEngine   = Nothing
+                              , _gfxContext  = emptyGfxContext
                               }
 
 getTextureInfo :: String -> InterpreterProcess (Maybe Int)
@@ -102,6 +107,11 @@ getVariable name = do
   case LS.getVariable variableDefs name of
     Just v  -> return v
     Nothing -> throwError $ "Could not get variable: " ++ name
+
+useGfxCtx :: (GfxContext -> IO ()) -> InterpreterProcess ()
+useGfxCtx action = do
+  ctx <- use gfxContext
+  liftIO $ action ctx
 
 execGfx :: GraphicsEngine () -> InterpreterProcess ()
 execGfx gfxAction = do
