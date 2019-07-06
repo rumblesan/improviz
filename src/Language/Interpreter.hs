@@ -6,7 +6,6 @@ module Language.Interpreter
   , setVariable
   , getVariable
   , interpretLanguage
-  , execGfx
   , useGfxCtx
   )
 where
@@ -27,8 +26,6 @@ import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
 
 import           Gfx.Textures                   ( TextureInfo(..) )
-import           Gfx.Commands                   ( runGfx )
-import           Gfx.Engine                     ( GraphicsEngine )
 import           Gfx.Context                    ( GfxContext
                                                 , emptyGfxContext
                                                 )
@@ -112,15 +109,6 @@ useGfxCtx :: (GfxContext -> IO ()) -> InterpreterProcess ()
 useGfxCtx action = do
   ctx <- use gfxContext
   liftIO $ action ctx
-
-execGfx :: GraphicsEngine () -> InterpreterProcess ()
-execGfx gfxAction = do
-  g <- use gfxEngine
-  case g of
-    Just es -> do
-      newGfx <- liftIO $ runGfx es gfxAction
-      assign gfxEngine (Just newGfx)
-    Nothing -> throwError "No Graphics Engine"
 
 newScope :: InterpreterProcess Value -> InterpreterProcess Value
 newScope childScope = do

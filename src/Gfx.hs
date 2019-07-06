@@ -3,7 +3,6 @@ module Gfx
   , renderGfx
   , createGfx
   , resizeGfx
-  , updateGfx
   , renderCode
   , renderCodeToBuffer
   )
@@ -16,7 +15,6 @@ import           Graphics.Rendering.OpenGL
 import           Gfx.Engine                     ( GfxEngine
                                                 , createGfxEngine
                                                 , resizeGfxEngine
-                                                , updateGfxEngine
                                                 , backgroundColor
                                                 , postFX
                                                 , animationStyle
@@ -90,8 +88,6 @@ renderGfx program gs =
       result <- program
       renderPostProcessing post animStyle
       return result
-
-updateGfx = updateGfxEngine
 
 renderCode :: GfxEngine -> String -> IO ()
 renderCode gfxEngine = renderText 0 0 (gfxEngine ^. textRenderer)

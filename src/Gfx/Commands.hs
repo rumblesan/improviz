@@ -1,6 +1,5 @@
 module Gfx.Commands
-  ( runGfx
-  , drawLine
+  ( drawLine
   , drawRectangle
   , drawCube
   , drawCylinder
@@ -52,9 +51,6 @@ import           Gfx.PostProcessing             ( AnimationStyle(..) )
 
 import           ErrorHandling                  ( printErrors )
 
-
-runGfx :: GfxEngine -> GraphicsEngine () -> IO GfxEngine
-runGfx es action = execStateT action es
 
 getFullMatrix :: GraphicsEngine (Mat44 GLfloat)
 getFullMatrix = do

@@ -126,10 +126,6 @@ resizeGfxEngine config newWidth newHeight newPP newTR =
       newProj  = projectionMat front back (pi / 4) newRatio
   in  set projectionMatrix newProj . set postFX newPP . set textRenderer newTR
 
-updateGfxEngine :: GfxEngine -> GfxEngine -> GfxEngine
-updateGfxEngine es changed = es { _animationStyle  = _animationStyle changed
-                                , _backgroundColor = _backgroundColor changed
-                                }
 resetGfxEngine :: GfxEngine -> GfxEngine
 resetGfxEngine ge = ge { _fillStyles   = [GFXFillColour $ Colour 1 1 1 1]
                        , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
