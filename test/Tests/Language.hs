@@ -10,11 +10,13 @@ import           Test.Framework.Providers.HUnit ( testCase )
 import           Test.HUnit                     ( Assertion
                                                 , assertEqual
                                                 )
+import           TestHelpers.GfxContext         ( createGfxContextHelpers
+                                                , getOutputGfx
+                                                )
 
-import           Gfx                            ( Scene(..) )
 import qualified Gfx.Ast                       as GA
 
-import qualified Language
+import qualified Language                      as L
 import           Language.Ast
 
 languageTests :: Test
@@ -30,26 +32,24 @@ test_basic_program =
   let
     program =
       "a = 2\nb = 3\nfunc foo (c, d) => c * d\nshape(:cube, b, a, foo(a, b))\n"
-    interpreterState = Language.initialState []
-    result           = do
-      ast <- Language.simpleParse program
-      let result = fst $ Language.createGfxScene interpreterState ast
-      sceneGfx <$> result
-    expected = Right [GA.ShapeCommand (GA.Cube 3 2 6)]
+    (Right ast) = L.simpleParse program
+    expectedGfx = [GA.ShapeCommand (GA.Cube 3 2 6)]
   in
-    assertEqual "" expected result
+    do
+      (out, ctx)       <- createGfxContextHelpers
+      interpreterState <- L.initialState [] ctx
+      result           <- fst <$> L.interpret interpreterState ast
+      assertEqual "interpreter runs" (Right Null) result
+      gfx <- getOutputGfx out
+      assertEqual "correct GFX" gfx expectedGfx
 
 test_loop_program :: Assertion
 test_loop_program =
   let
     program
       = "matrix(:rotate, 0.1, 0.2, 0.3)\n3 times with i\n\tmatrix(:rotate, 0.2, 0.2, 0.2)\n\tshape(:cube, i, i, i)\n\n\n"
-    interpreterState = Language.initialState []
-    result           = do
-      ast <- Language.simpleParse program
-      let result = fst $ Language.createGfxScene interpreterState ast
-      sceneGfx <$> result
-    expected = Right
+    (Right ast) = L.simpleParse program
+    expectedGfx =
       [ GA.MatrixCommand (GA.Rotate 0.1 0.2 0.3)
       , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2)
       , GA.ShapeCommand (GA.Cube 0 0 0)
@@ -59,7 +59,13 @@ test_loop_program =
       , GA.ShapeCommand (GA.Cube 2 2 2)
       ]
   in
-    assertEqual "" expected result
+    do
+      (out, ctx)       <- createGfxContextHelpers
+      interpreterState <- L.initialState [] ctx
+      result           <- fst <$> L.interpret interpreterState ast
+      assertEqual "interpreter runs" (Right Null) result
+      gfx <- getOutputGfx out
+      assertEqual "correct GFX" gfx expectedGfx
 
 test_create_gfx :: Assertion
 test_create_gfx =
@@ -71,9 +77,12 @@ test_create_gfx =
         , EVal $ Number 1
         ]
         Nothing
-      block            = Program [StExpression cube]
-      interpreterState = Language.initialState []
-      result           = fst $ Language.createGfxScene interpreterState block
-      scene            = either (const []) sceneGfx result
-      expected         = [GA.ShapeCommand (GA.Cube 1 2 1)]
-  in  assertEqual "" expected scene
+      block       = Program [StExpression cube]
+      expectedGfx = [GA.ShapeCommand (GA.Cube 1 2 1)]
+  in  do
+        (out, ctx)       <- createGfxContextHelpers
+        interpreterState <- L.initialState [] ctx
+        result           <- fst <$> L.interpret interpreterState block
+        assertEqual "interpreter runs" (Right Null) result
+        gfx <- getOutputGfx out
+        assertEqual "correct GFX" gfx expectedGfx

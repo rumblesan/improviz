@@ -4,7 +4,6 @@ module Language
   , simpleParse
   , interpret
   , updateStateVariables
-  , setGfxContext
   , module Language.Ast
   )
 where
@@ -32,6 +31,7 @@ import           Language.Parser                ( parseProgram )
 import           Language.Parser.Errors         ( ParserError )
 import           Language.StdLib                ( addStdLib )
 
+
 parse :: String -> Either ParserError Program
 parse = parseProgram
 
@@ -40,23 +40,20 @@ simpleParse code = case parseProgram code of
   Left  err -> Left $ show err
   Right ast -> Right ast
 
-initialState :: [Program] -> IO InterpreterState
-initialState userCode =
-  let setup = do
+initialState :: [Program] -> GfxContext -> IO InterpreterState
+initialState userCode ctx =
+  let langState = set gfxContext ctx emptyState
+      setup     = do
         addStdLib
         globals <- getGlobalNames
         mapM (interpretLanguage . transform globals) userCode
-  in  snd <$> runInterpreterM setup emptyState
+  in  snd <$> runInterpreterM setup langState
 
 updateStateVariables
   :: [(Identifier, Value)] -> InterpreterState -> IO InterpreterState
 updateStateVariables vars oldState =
   let setVars = forM_ vars (uncurry setVariable)
   in  snd <$> runInterpreterM setVars oldState
-
-setGfxContext :: GfxContext -> InterpreterState -> InterpreterState
-setGfxContext = set gfxContext
-
 
 interpret
   :: InterpreterState -> Program -> IO (Either String Value, InterpreterState)

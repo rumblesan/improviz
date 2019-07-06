@@ -93,10 +93,9 @@ display env time = do
   gs   <- readTVarIO (env ^. I.graphics)
   let gfxCtx  = env ^. I.gfxContext
   let newVars = initialVars vars (double2Float time)
-  is               <- updateStateVariables newVars (as ^. IL.initialInterpreter)
-
-  ui               <- readTVarIO $ env ^. I.ui
-  (result, postIS) <- renderGfx (interpret is (as ^. IL.currentAst)) gs
+  is          <- updateStateVariables newVars (as ^. IL.initialInterpreter)
+  ui          <- readTVarIO $ env ^. I.ui
+  (result, _) <- renderGfx (interpret is (as ^. IL.currentAst)) gs
 
   case result of
     Left msg -> do

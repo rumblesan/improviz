@@ -1,4 +1,9 @@
-module Gfx.Context where
+module Gfx.Context
+  ( GfxContext(..)
+  , createGfxContext
+  , emptyGfxContext
+  )
+where
 
 import           Control.Monad.State.Strict     ( execStateT )
 import           Control.Concurrent.STM         ( TVar
