@@ -9,7 +9,6 @@ module Language.Interpreter.Types
   , builtins
   , functions
   , textureInfo
-  , gfxEngine
   , gfxContext
   , InterpreterProcess
   , runInterpreterM
@@ -24,7 +23,6 @@ import           Lens.Simple                    ( makeLenses )
 import           Language.Ast
 
 import qualified Data.Map.Strict               as M
-import           Gfx.Engine                     ( GfxEngine )
 import           Gfx.Context                    ( GfxContext )
 import           Gfx.Textures                   ( TextureInfo(..) )
 import qualified Language.Interpreter.Scope    as LS
@@ -49,7 +47,6 @@ data InterpreterState = InterpreterState
   , _builtins    :: M.Map Identifier BuiltInFunction
   , _functions   :: M.Map Identifier UserFunctionDef
   , _textureInfo :: TextureInfo
-  , _gfxEngine   :: Maybe GfxEngine
   , _gfxContext  ::  GfxContext
   }
 

@@ -38,7 +38,6 @@ emptyState = InterpreterState { _variables   = LS.empty
                               , _builtins    = M.empty
                               , _functions   = M.empty
                               , _textureInfo = TextureInfo M.empty
-                              , _gfxEngine   = Nothing
                               , _gfxContext  = emptyGfxContext
                               }
 

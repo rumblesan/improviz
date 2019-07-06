@@ -4,19 +4,14 @@ module Language
   , simpleParse
   , interpret
   , updateStateVariables
-  , setGfxEngine
-  , getGfxEngine
   , setGfxContext
   , module Language.Ast
   )
 where
 
 import           Control.Monad                  ( forM_ )
-import           Lens.Simple                    ( set
-                                                , view
-                                                )
+import           Lens.Simple                    ( set )
 
-import           Gfx                            ( GfxEngine )
 import           Gfx.Context                    ( GfxContext )
 
 import           Language.Ast                   ( Identifier
@@ -30,7 +25,6 @@ import           Language.Interpreter           ( emptyState
                                                 , setVariable
                                                 )
 import           Language.Interpreter.Types     ( InterpreterState
-                                                , gfxEngine
                                                 , gfxContext
                                                 , runInterpreterM
                                                 )
@@ -59,12 +53,6 @@ updateStateVariables
 updateStateVariables vars oldState =
   let setVars = forM_ vars (uncurry setVariable)
   in  snd <$> runInterpreterM setVars oldState
-
-setGfxEngine :: GfxEngine -> InterpreterState -> InterpreterState
-setGfxEngine es = set gfxEngine (Just es)
-
-getGfxEngine :: InterpreterState -> Maybe GfxEngine
-getGfxEngine = view gfxEngine
 
 setGfxContext :: GfxContext -> InterpreterState -> InterpreterState
 setGfxContext = set gfxContext
