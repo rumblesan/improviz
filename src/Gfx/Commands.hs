@@ -21,7 +21,10 @@ module Gfx.Commands
   )
 where
 
-import           Control.Monad.State.Strict
+import           Control.Monad.Trans            ( lift
+                                                , liftIO
+                                                )
+import           Control.Monad.State.Strict     ( modify' )
 import           Lens.Simple                    ( use
                                                 , assign
                                                 , view
@@ -59,14 +62,14 @@ import           ErrorHandling                  ( printErrors )
 
 getFullMatrix :: GraphicsEngine (Mat44 GLfloat)
 getFullMatrix = do
-  mMat <- gets modelMatrix
+  mMat <- head <$> use matrixStack
   pMat <- use projectionMatrix
   vMat <- use viewMatrix
   return $ multmm (multmm pMat vMat) mMat
 
 drawShape :: VBO -> GraphicsEngine ()
 drawShape vbo = do
-  style <- gets currentFillStyle
+  style <- head <$> use fillStyles
   case style of
     ES.GFXFillColour fillC -> do
       mvp     <- getFullMatrix
@@ -92,7 +95,7 @@ drawShape vbo = do
 
 drawWireframe :: VBO -> GraphicsEngine ()
 drawWireframe vbo = do
-  style <- gets currentStrokeStyle
+  style <- head <$> use strokeStyles
   case style of
     ES.GFXStrokeColour strokeC -> do
       mvp     <- getFullMatrix
@@ -107,14 +110,14 @@ drawWireframe vbo = do
 drawLine :: Float -> GraphicsEngine ()
 drawLine l = do
   gbos <- use geometryBuffers
-  modify' (\es -> pushMatrix es (scaleMat l 1 1))
+  modify' (pushMatrix $ scaleMat l 1 1)
   drawWireframe (lineBuffer gbos)
   modify' popMatrix
 
 drawRectangle :: Float -> Float -> GraphicsEngine ()
 drawRectangle x y = do
   gbos <- use geometryBuffers
-  modify' (\es -> pushMatrix es (scaleMat x y 1))
+  modify' (pushMatrix $ scaleMat x y 1)
   drawWireframe (rectWireBuffer gbos)
   drawShape (rectBuffer gbos)
   modify' popMatrix
@@ -122,7 +125,7 @@ drawRectangle x y = do
 drawCube :: Float -> Float -> Float -> GraphicsEngine ()
 drawCube x y z = do
   gbos <- use geometryBuffers
-  modify' (\es -> pushMatrix es (scaleMat x y z))
+  modify' (pushMatrix $ scaleMat x y z)
   drawWireframe (cubeWireBuffer gbos)
   drawShape (cubeBuffer gbos)
   modify' popMatrix
@@ -130,7 +133,7 @@ drawCube x y z = do
 drawCylinder :: Float -> Float -> Float -> GraphicsEngine ()
 drawCylinder x y z = do
   gbos <- use geometryBuffers
-  modify' (\es -> pushMatrix es (scaleMat x y z))
+  modify' (pushMatrix $ scaleMat x y z)
   drawWireframe (cylinderWireBuffer gbos)
   drawShape (cylinderBuffer gbos)
   modify' popMatrix
@@ -138,19 +141,19 @@ drawCylinder x y z = do
 drawSphere :: Float -> Float -> Float -> GraphicsEngine ()
 drawSphere x y z = do
   gbos <- use geometryBuffers
-  modify' (\es -> pushMatrix es (scaleMat x y z))
+  modify' (pushMatrix $ scaleMat x y z)
   drawWireframe (sphereWireBuffer gbos)
   drawShape (sphereBuffer gbos)
   modify' popMatrix
 
 rotate :: Float -> Float -> Float -> GraphicsEngine ()
-rotate x y z = modify' (\es -> ES.multMatrix es $ rotMat x y z)
+rotate x y z = modify' (ES.multMatrix $ rotMat x y z)
 
 scale :: Float -> Float -> Float -> GraphicsEngine ()
-scale x y z = modify' (\es -> ES.multMatrix es $ scaleMat x y z)
+scale x y z = modify' (ES.multMatrix $ scaleMat x y z)
 
 move :: Float -> Float -> Float -> GraphicsEngine ()
-move x y z = modify' (\es -> ES.multMatrix es $ translateMat x y z)
+move x y z = modify' (ES.multMatrix $ translateMat x y z)
 
 setBackground :: Float -> Float -> Float -> GraphicsEngine ()
 setBackground r g b = assign ES.backgroundColor (Colour r g b 1)

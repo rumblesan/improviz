@@ -10,7 +10,6 @@ import           Data.Vec                       ( Mat44
 import           Graphics.Rendering.OpenGL      ( GLfloat )
 import           Lens.Simple                    ( makeLenses
                                                 , over
-                                                , view
                                                 , set
                                                 , (^.)
                                                 )
@@ -139,29 +138,15 @@ resetGfxEngine ge = ge { _fillStyles   = [GFXFillColour $ Colour 1 1 1 1]
 pushFillStyle :: GFXFillStyling -> GfxEngine -> GfxEngine
 pushFillStyle s = over fillStyles (s :)
 
-currentFillStyle :: GfxEngine -> GFXFillStyling
-currentFillStyle = head . view fillStyles
-
 pushStrokeStyle :: GFXStrokeStyling -> GfxEngine -> GfxEngine
 pushStrokeStyle c = over strokeStyles (c :)
 
-currentStrokeStyle :: GfxEngine -> GFXStrokeStyling
-currentStrokeStyle = head . view strokeStyles
-
-pushMatrix :: GfxEngine -> Mat44 Float -> GfxEngine
-pushMatrix es mat =
-  let stack = view matrixStack es
-      comp  = multmm (head stack) mat
-  in  set matrixStack (comp : stack) es
+pushMatrix :: Mat44 Float -> GfxEngine -> GfxEngine
+pushMatrix mat = over matrixStack (\stack -> multmm (head stack) mat : stack)
 
 popMatrix :: GfxEngine -> GfxEngine
 popMatrix = over matrixStack tail
 
-modelMatrix :: GfxEngine -> Mat44 Float
-modelMatrix = head . view matrixStack
-
-multMatrix :: GfxEngine -> Mat44 Float -> GfxEngine
-multMatrix es mat =
-  let stack   = view matrixStack es
-      newhead = multmm (head stack) mat
-  in  set matrixStack (newhead : tail stack) es
+multMatrix :: Mat44 Float -> GfxEngine -> GfxEngine
+multMatrix mat =
+  over matrixStack (\stack -> multmm (head stack) mat : tail stack)
