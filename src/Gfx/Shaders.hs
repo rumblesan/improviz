@@ -51,6 +51,21 @@ createTextureShaders = do
   mvpMatUniform <- GL.get $ uniformLocation program "MVPMat"
   return $ Shaders program mvpMatUniform mvpMatUniform
 
+createStrokeShaders :: IO Shaders
+createStrokeShaders = do
+  program <- loadShaders
+    [ ShaderInfo
+      VertexShader
+      (ByteStringSource $(embedFile "src/assets/shaders/stroke.vert"))
+    , ShaderInfo
+      FragmentShader
+      (ByteStringSource $(embedFile "src/assets/shaders/stroke.frag"))
+    ]
+  GL.currentProgram $= Just program
+  mvpMatUniform <- GL.get $ uniformLocation program "MVPMat"
+  colourU       <- GL.get $ uniformLocation program "vertexColor"
+  return $ Shaders program mvpMatUniform colourU
+
 setMVPMatrixUniform :: Shaders -> Mat44 GLfloat -> IO ()
 setMVPMatrixUniform (Shaders _ (UniformLocation mvpMatUniform) _) mvpMat =
   with mvpMat

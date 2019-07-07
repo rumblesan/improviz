@@ -62,6 +62,7 @@ data GfxEngine = GfxEngine
   , _geometryBuffers    :: GeometryBuffers
   , _textureLibrary     :: TextureLibrary
   , _colourShaders      :: Shaders
+  , _strokeShaders      :: Shaders
   , _textureShaders     :: Shaders
   , _viewMatrix         :: Mat44 GLfloat
   , _projectionMatrix   :: Mat44 GLfloat
@@ -95,11 +96,13 @@ createGfxEngine config width height pprocess trender textLib =
         gbos <- createAllBuffers
         cshd <- createColourShaders
         tshd <- createTextureShaders
+        sshd <- createStrokeShaders
         return GfxEngine { _fillStyles       = [GFXFillColour $ Colour 1 1 1 1]
                          , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
                          , _geometryBuffers  = gbos
                          , _textureLibrary   = textLib
                          , _colourShaders    = cshd
+                         , _strokeShaders    = sshd
                          , _textureShaders   = tshd
                          , _viewMatrix       = view
                          , _projectionMatrix = projection

@@ -64,20 +64,17 @@ getFullMatrix = do
   vMat <- use viewMatrix
   return $ multmm (multmm pMat vMat) mMat
 
-drawColouredVBO :: Colour -> VBO -> GraphicsEngine ()
-drawColouredVBO colour vbo = do
-  mvp     <- getFullMatrix
-  program <- use colourShaders
-  liftIO (currentProgram $= Just (shaderProgram program))
-  lift $ setMVPMatrixUniform program mvp
-  lift $ setColourUniform program colour
-  lift $ drawVBO vbo
-
 drawShape :: VBO -> GraphicsEngine ()
 drawShape vbo = do
   style <- gets currentFillStyle
   case style of
-    ES.GFXFillColour fillC       -> drawColouredVBO fillC vbo
+    ES.GFXFillColour fillC -> do
+      mvp     <- getFullMatrix
+      program <- use colourShaders
+      liftIO (currentProgram $= Just (shaderProgram program))
+      lift $ setMVPMatrixUniform program mvp
+      lift $ setColourUniform program fillC
+      lift $ drawVBO vbo
     ES.GFXFillTexture name frame -> do
       mvp     <- getFullMatrix
       program <- use textureShaders
@@ -97,8 +94,14 @@ drawWireframe :: VBO -> GraphicsEngine ()
 drawWireframe vbo = do
   style <- gets currentStrokeStyle
   case style of
-    ES.GFXStrokeColour strokeC -> drawColouredVBO strokeC vbo
-    ES.GFXNoStroke             -> return ()
+    ES.GFXStrokeColour strokeC -> do
+      mvp     <- getFullMatrix
+      program <- use strokeShaders
+      liftIO (currentProgram $= Just (shaderProgram program))
+      lift $ setMVPMatrixUniform program mvp
+      lift $ setColourUniform program strokeC
+      lift $ drawVBO vbo
+    ES.GFXNoStroke -> return ()
   liftIO printErrors
 
 drawLine :: Float -> GraphicsEngine ()
