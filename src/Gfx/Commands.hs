@@ -21,9 +21,7 @@ module Gfx.Commands
   )
 where
 
-import           Control.Monad.Trans            ( lift
-                                                , liftIO
-                                                )
+import           Control.Monad.Trans            ( liftIO )
 import           Control.Monad.State.Strict     ( modify' )
 import           Lens.Simple                    ( use
                                                 , assign
@@ -44,10 +42,16 @@ import           Graphics.Rendering.OpenGL      ( ($=)
                                                 , currentProgram
                                                 )
 
-import           Gfx.Engine                    as ES
-import           Gfx.GeometryBuffers
-import           Gfx.Matrices
-import           Gfx.Shaders
+import           Gfx.Engine
+import           Gfx.GeometryBuffers            ( GeometryBuffers(..) )
+import           Gfx.Matrices                   ( scaleMat
+                                                , translateMat
+                                                , rotMat
+                                                )
+import           Gfx.Shaders                    ( setMVPMatrixUniform
+                                                , shaderProgram
+                                                , setColourUniform
+                                                )
 import           Gfx.Types                      ( Colour(..) )
 import           Gfx.VertexBuffers              ( VBO
                                                 , drawVBO
@@ -71,14 +75,14 @@ drawShape :: VBO -> GraphicsEngine ()
 drawShape vbo = do
   style <- head <$> use fillStyles
   case style of
-    ES.GFXFillColour fillC -> do
+    GFXFillColour fillC -> do
       mvp     <- getFullMatrix
       program <- use colourShaders
       liftIO (currentProgram $= Just (shaderProgram program))
-      lift $ setMVPMatrixUniform program mvp
-      lift $ setColourUniform program fillC
-      lift $ drawVBO vbo
-    ES.GFXFillTexture name frame -> do
+      liftIO $ setMVPMatrixUniform program mvp
+      liftIO $ setColourUniform program fillC
+      liftIO $ drawVBO vbo
+    GFXFillTexture name frame -> do
       mvp     <- getFullMatrix
       program <- use textureShaders
       liftIO (currentProgram $= Just (shaderProgram program))
@@ -86,25 +90,25 @@ drawShape vbo = do
       case M.lookup name textureLib >>= M.lookup frame of
         Nothing      -> return ()
         Just texture -> do
-          lift $ activeTexture $= TextureUnit 0
-          lift $ textureBinding Texture2D $= Just texture
-          lift $ setMVPMatrixUniform program mvp
-          lift $ drawVBO vbo
-    ES.GFXNoFill -> return ()
+          liftIO $ activeTexture $= TextureUnit 0
+          liftIO $ textureBinding Texture2D $= Just texture
+          liftIO $ setMVPMatrixUniform program mvp
+          liftIO $ drawVBO vbo
+    GFXNoFill -> return ()
   liftIO printErrors
 
 drawWireframe :: VBO -> GraphicsEngine ()
 drawWireframe vbo = do
   style <- head <$> use strokeStyles
   case style of
-    ES.GFXStrokeColour strokeC -> do
+    GFXStrokeColour strokeC -> do
       mvp     <- getFullMatrix
       program <- use strokeShaders
       liftIO (currentProgram $= Just (shaderProgram program))
-      lift $ setMVPMatrixUniform program mvp
-      lift $ setColourUniform program strokeC
-      lift $ drawVBO vbo
-    ES.GFXNoStroke -> return ()
+      liftIO $ setMVPMatrixUniform program mvp
+      liftIO $ setColourUniform program strokeC
+      liftIO $ drawVBO vbo
+    GFXNoStroke -> return ()
   liftIO printErrors
 
 drawLine :: Float -> GraphicsEngine ()
@@ -147,37 +151,36 @@ drawSphere x y z = do
   modify' popMatrix
 
 rotate :: Float -> Float -> Float -> GraphicsEngine ()
-rotate x y z = modify' (ES.multMatrix $ rotMat x y z)
+rotate x y z = modify' (multMatrix $ rotMat x y z)
 
 scale :: Float -> Float -> Float -> GraphicsEngine ()
-scale x y z = modify' (ES.multMatrix $ scaleMat x y z)
+scale x y z = modify' (multMatrix $ scaleMat x y z)
 
 move :: Float -> Float -> Float -> GraphicsEngine ()
-move x y z = modify' (ES.multMatrix $ translateMat x y z)
+move x y z = modify' (multMatrix $ translateMat x y z)
 
 setBackground :: Float -> Float -> Float -> GraphicsEngine ()
-setBackground r g b = assign ES.backgroundColor (Colour r g b 1)
+setBackground r g b = assign backgroundColor (Colour r g b 1)
 
 setAnimationStyle :: AnimationStyle -> GraphicsEngine ()
-setAnimationStyle = assign ES.animationStyle
+setAnimationStyle = assign animationStyle
 
 textureFill :: String -> Float -> GraphicsEngine ()
 textureFill name frame =
-  modify' (pushFillStyle $ ES.GFXFillTexture name (floor frame))
+  modify' (pushFillStyle $ GFXFillTexture name (floor frame))
 
 colourFill :: Float -> Float -> Float -> Float -> GraphicsEngine ()
-colourFill r g b a =
-  modify' (pushFillStyle $ ES.GFXFillColour $ Colour r g b a)
+colourFill r g b a = modify' (pushFillStyle $ GFXFillColour $ Colour r g b a)
 
 noFill :: GraphicsEngine ()
-noFill = modify' (pushFillStyle ES.GFXNoFill)
+noFill = modify' (pushFillStyle GFXNoFill)
 
 colourStroke :: Float -> Float -> Float -> Float -> GraphicsEngine ()
 colourStroke r g b a =
-  modify' (pushStrokeStyle $ ES.GFXStrokeColour $ Colour r g b a)
+  modify' (pushStrokeStyle $ GFXStrokeColour $ Colour r g b a)
 
 noStroke :: GraphicsEngine ()
-noStroke = modify' (pushStrokeStyle ES.GFXNoStroke)
+noStroke = modify' (pushStrokeStyle GFXNoStroke)
 
 pushScope :: GraphicsEngine ()
 pushScope = do
