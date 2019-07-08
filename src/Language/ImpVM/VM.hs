@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Language.ImpVM.VM where
 
 import qualified Data.Vector                   as V
@@ -10,12 +8,10 @@ import           Data.Vector                    ( (!?)
 
 import           Lens.Simple                    ( use
                                                 , assign
-                                                , makeLenses
                                                 )
 
 import           Language.ImpVM.Types
 
-makeLenses ''VMState
 
 cleanVM :: externalState -> M.Map String StackItem -> VMState externalState
 cleanVM es extVars = VMState { _programCounter = 0
@@ -81,7 +77,7 @@ setCallstack :: VM es ()
 setCallstack = do
   cs <- use callstack
   pc <- use programCounter
-  assign callstack $ pc : cs
+  assign callstack $ (pc + 1) : cs
 
 popCallstack :: VM es Int
 popCallstack = do

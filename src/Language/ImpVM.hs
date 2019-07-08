@@ -15,11 +15,13 @@ import           Language.ImpVM.Types
 import           Language.ImpVM.VM
 import           Language.ImpVM.StdLib
 
+import           Gfx.Context                    ( GfxContext )
+
 run
-  :: externalState
+  :: GfxContext
   -> M.Map String StackItem
   -> Vector Instruction
-  -> IO (VMState externalState)
+  -> IO (VMState GfxContext)
 run es extVars prog = execStateT eval (cleanVM es extVars)
  where
   eval = do

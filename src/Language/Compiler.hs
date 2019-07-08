@@ -1,6 +1,7 @@
 module Language.Compiler where
 
 import           Data.Vector                    ( Vector )
+import qualified Data.List                     as L
 import qualified Data.Vector                   as V
 import           Data.Maybe                     ( fromMaybe )
 import           Control.Monad.Trans.State.Strict
@@ -163,7 +164,7 @@ funcArgToBC (BlockArg name) = throwError "Block args not yet supported"
 
 applicationToBC :: Application -> ImpCompiler (Vector Instruction)
 applicationToBC (Application name args block) = do
-  argBC  <- V.concat <$> mapM expressionToBC args
+  argBC  <- V.concat <$> mapM expressionToBC (L.reverse args)
   callOp <- case name of
     LocalVariable n -> do
       addr <- functionAddress n

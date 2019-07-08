@@ -168,6 +168,8 @@ test-suite improviz-test
                      , Language.Ast
                      , Language.Ast.Transformers
                      , Language.Ast.Transformers.Globalise
+                     , Language.Compiler
+                     , Language.Compiler.State
                      , Language.Parser
                      , Language.Parser.Errors
                      , Language.Interpreter
@@ -175,6 +177,10 @@ test-suite improviz-test
                      , Language.Interpreter.Types
                      , Language.Interpreter.Values
                      , Language.Interpreter.Operators
+                     , Language.ImpVM
+                     , Language.ImpVM.StdLib
+                     , Language.ImpVM.Types
+                     , Language.ImpVM.VM
                      , Language.StdLib
                      , Language.StdLib.Shapes
                      , Language.StdLib.MatrixOps
@@ -202,6 +208,7 @@ test-suite improviz-test
                      , Tests.Language.Parser.Operators
                      , Tests.Language.Parser.If
                      , Tests.Language.Parser.ErrorCatching
+                     , Tests.VM
   default-language:    Haskell2010
 
 source-repository head

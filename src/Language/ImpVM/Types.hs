@@ -1,8 +1,12 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Language.ImpVM.Types where
 
 import qualified Data.Map                      as M
 import           Data.Vector                    ( Vector )
 import           Control.Monad.State            ( StateT )
+
+import           Lens.Simple                    ( makeLenses )
 
 data StackItem = SFloat Float | SString String | SNull deriving (Show, Eq)
 
@@ -10,7 +14,7 @@ type VM externalState a = StateT (VMState externalState) IO a
 
 data Op = AddOp | SubOp | MultOp | DivOp | EQOp | NEQOp deriving (Show)
 
-newtype ImpVMError = ImpVMError String deriving (Show)
+newtype ImpVMError = ImpVMError String deriving (Eq, Show)
 
 data Instruction
   = Push StackItem
@@ -40,3 +44,27 @@ data VMState externalState = VMState
   , _externalVars :: M.Map String StackItem
   , _externalState :: externalState
   }
+
+makeLenses ''VMState
+
+instance Show (VMState a) where
+  show (VMState pc _ stk cs _ _ rn err ext _) =
+    "\
+  \VM: counter   -> "
+      ++ show pc
+      ++ "\n\
+  \    stack     -> "
+      ++ show stk
+      ++ "\n\
+  \    callStack -> "
+      ++ show cs
+      ++ "\n\
+  \    running?  -> "
+      ++ show rn
+      ++ "\n\
+  \    error?    -> "
+      ++ show err
+      ++ "\n\
+  \    externals -> "
+      ++ show ext
+      ++ "\n"
