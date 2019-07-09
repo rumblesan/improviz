@@ -2,62 +2,48 @@ module Language.ImpVM.StdLib where
 
 import qualified Data.Map                      as M
 import           Control.Monad.IO.Class         ( liftIO )
-import           Lens.Simple                    ( assign
-                                                , use
+import           Control.Monad                  ( forM_ )
+import           Lens.Simple                    ( assign )
+
+import           Language.ImpVM.Types           ( VM
+                                                , StackItem(..)
+                                                , builtins
                                                 )
+import           Language.ImpVM.VM              ( pushStack )
+import           Gfx.Context                    ( GfxContext )
 
-import           Language.ImpVM.Types
-import           Language.ImpVM.VM
+import           Language.ImpVM.StdLib.Shapes   ( shape )
+import           Language.ImpVM.StdLib.Maths    ( mathBuiltIns )
+import           Language.ImpVM.StdLib.ColourOps
+                                                ( colourBuiltIns )
+import           Language.ImpVM.StdLib.MatrixOps
+                                                ( gfxMatrix )
+import           Language.ImpVM.StdLib.PostEffects
+                                                ( postEffectsBuiltIns )
+import           Language.ImpVM.StdLib.BlockHandling
+                                                ( blockBuiltIns )
 
-import           Gfx.Context
 
-builtInFuncs :: M.Map String (VM GfxContext ())
-builtInFuncs = M.fromList [("print", printValue), ("shape", shape)]
+builtInFuncs :: M.Map String ([StackItem] -> VM GfxContext ())
+builtInFuncs =
+  M.fromList
+    $  [ ("print" , printValue)
+       , ("isNull", isNull)
+       , ("shape" , shape)
+       , ("matrix", gfxMatrix)
+       ]
+    ++ mathBuiltIns
+    ++ colourBuiltIns
+    ++ blockBuiltIns
+    ++ postEffectsBuiltIns
 
 addStdLib :: VM GfxContext ()
 addStdLib = assign builtins builtInFuncs
 
-printValue :: VM es ()
-printValue = do
-  v <- popStack
-  liftIO $ print v
+printValue :: [StackItem] -> VM es ()
+printValue args = forM_ args (liftIO . print)
 
-shape :: VM GfxContext ()
-shape = do
-  liftIO $ print "Running shape"
-  shapeArgs <- popStack
-  case shapeArgs of
-    SString "cube"      -> cubeS
-    SString "sphere"    -> sphereS
-    SString "cylinder"  -> cylinderS
-    SString "rectangle" -> rectangleS
-    SString "line"      -> lineS
-    _                   -> setError "Invalid shape command value"
- where
-  cubeS = do
-    SFloat x <- popStack
-    SFloat y <- popStack
-    SFloat z <- popStack
-    ctx      <- use externalState
-    liftIO $ drawCube ctx x y z
-  sphereS = do
-    SFloat x <- popStack
-    SFloat y <- popStack
-    SFloat z <- popStack
-    ctx      <- use externalState
-    liftIO $ drawSphere ctx x y z
-  cylinderS = do
-    SFloat x <- popStack
-    SFloat y <- popStack
-    SFloat z <- popStack
-    ctx      <- use externalState
-    liftIO $ drawCylinder ctx x y z
-  rectangleS = do
-    SFloat x <- popStack
-    SFloat y <- popStack
-    ctx      <- use externalState
-    liftIO $ drawRectangle ctx x y
-  lineS = do
-    SFloat x <- popStack
-    ctx      <- use externalState
-    liftIO $ drawLine ctx x
+isNull :: [StackItem] -> VM es ()
+isNull args = pushStack $ case args of
+  SNull : _ -> SFloat 1
+  _         -> SFloat 0

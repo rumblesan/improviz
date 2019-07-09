@@ -38,7 +38,7 @@ data VMState externalState = VMState
   , _opstack :: [StackItem]
   , _callstack :: [Int]
   , _memory :: Vector StackItem
-  , _builtins :: M.Map String (VM externalState ())
+  , _builtins :: M.Map String ([StackItem] -> VM externalState ())
   , _running :: Bool
   , _vmError :: Maybe ImpVMError
   , _externalVars :: M.Map String StackItem

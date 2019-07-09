@@ -103,6 +103,12 @@ executable improviz
                      , Language.StdLib.Util
                      , Language.ImpVM
                      , Language.ImpVM.StdLib
+                     , Language.ImpVM.StdLib.BlockHandling
+                     , Language.ImpVM.StdLib.ColourOps
+                     , Language.ImpVM.StdLib.Maths
+                     , Language.ImpVM.StdLib.MatrixOps
+                     , Language.ImpVM.StdLib.PostEffects
+                     , Language.ImpVM.StdLib.Shapes
                      , Language.ImpVM.Types
                      , Language.ImpVM.VM
   default-language:    Haskell2010
@@ -179,6 +185,12 @@ test-suite improviz-test
                      , Language.Interpreter.Operators
                      , Language.ImpVM
                      , Language.ImpVM.StdLib
+                     , Language.ImpVM.StdLib.BlockHandling
+                     , Language.ImpVM.StdLib.ColourOps
+                     , Language.ImpVM.StdLib.Maths
+                     , Language.ImpVM.StdLib.MatrixOps
+                     , Language.ImpVM.StdLib.PostEffects
+                     , Language.ImpVM.StdLib.Shapes
                      , Language.ImpVM.Types
                      , Language.ImpVM.VM
                      , Language.StdLib

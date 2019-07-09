@@ -2,10 +2,10 @@ module Language.ImpVM where
 
 import           Data.Vector                    ( Vector )
 import qualified Data.Map                      as M
-import           Data.Maybe                     ( fromMaybe )
 import           Control.Monad.State            ( execStateT )
 import           Control.Monad                  ( void
                                                 , when
+                                                , replicateM
                                                 )
 import           Lens.Simple                    ( use
                                                 , assign
@@ -66,10 +66,13 @@ runInstruction (Save address) = do
 runInstruction (Call address args) = do
   setCallstack
   setProgramCounter address
-runInstruction (BuiltIn name args) = do
+runInstruction (BuiltIn name numArgs) = do
   bi <- use builtins
-  fromMaybe (setError errMsg) (M.lookup name bi)
-  where errMsg = "no builtin called " ++ name
+  case M.lookup name bi of
+    Nothing   -> setError $ "no builtin called " ++ name
+    Just func -> do
+      args <- replicateM numArgs popStack
+      func args
 runInstruction Return = do
   a <- popCallstack
   setProgramCounter a

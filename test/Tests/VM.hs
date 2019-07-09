@@ -25,6 +25,7 @@ vmTests = testGroup
   "VM Tests"
   [ testCase "Simple addition" test_basic_addition
   , testCase "Simple gfx"      test_vm_gfx
+  , testCase "Complex gfx"     test_complex_gfx
   ]
 
 test_basic_addition :: Assertion
@@ -39,3 +40,22 @@ test_vm_gfx =
   let program     = "shape(:cube, 1, 1, 1)"
       expectedGfx = [GA.ShapeCommand (GA.Cube 1 1 1)]
   in  vmGfxTest program M.empty expectedGfx
+
+test_complex_gfx :: Assertion
+test_complex_gfx =
+  let
+    program
+      = "\
+    \pushScope()\n\
+    \style(:fill, 255, 0, 0, 0)\n\
+    \matrix(:rotate, time, time, 1)\n\
+    \popScope()"
+    extVars = M.fromList [("time", SFloat 7)]
+    expectedGfx =
+      [ GA.ScopeCommand GA.PushScope
+      , GA.ColourCommand $ GA.Fill $ GA.ColourStyle 1 0 0 0
+      , GA.MatrixCommand $ GA.Rotate 7 7 1
+      , GA.ScopeCommand GA.PopScope
+      ]
+  in
+    vmGfxTest program extVars expectedGfx
