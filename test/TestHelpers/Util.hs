@@ -62,8 +62,6 @@ vmGfxTest program extVars expectedGfx =
   in  case C.compile ast of
         Left  err -> assertFailure err
         Right ops -> do
-          print ast
-          print ops
           (out, ctx) <- createGfxContextHelpers
           vmState    <- run ctx extVars ops
           assertEqual "No VM Error" (view vmError vmState) Nothing
