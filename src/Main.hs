@@ -82,17 +82,14 @@ resize env newWidth newHeight fbWidth fbHeight =
         atomically $ writeTVar gfxVar newGfx
         return ()
 
-initialVars :: Float -> [(String, Value)]
-initialVars t = [("time", Number t), ("nudge", Number 0), ("bpm", Number 120)]
-
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
   as      <- readTVarIO (env ^. I.language)
   extVars <- readTVarIO (env ^. I.externalVars)
   gs      <- readTVarIO (env ^. I.graphics)
-  let gfxCtx  = env ^. I.gfxContext
-  let newVars = initialVars (double2Float time)
-  is <- setInterpreterVariables newVars extVars (as ^. IL.initialInterpreter)
+  let gfxCtx     = env ^. I.gfxContext
+  let globalVars = [("time", Number $ double2Float time)]
+  is <- setInterpreterVariables globalVars extVars (as ^. IL.initialInterpreter)
   ui <- readTVarIO $ env ^. I.ui
   (result, _) <- renderGfx (interpret is (as ^. IL.currentAst)) gs
   case result of

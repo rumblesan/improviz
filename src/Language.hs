@@ -21,7 +21,7 @@ import           Language.Ast.Transformers      ( transform )
 import           Language.Interpreter           ( emptyState
                                                 , getGlobalNames
                                                 , interpretLanguage
-                                                , setVariable
+                                                , setGlobal
                                                 )
 import           Language.Interpreter.Types     ( InterpreterState
                                                 , gfxContext
@@ -50,8 +50,8 @@ setInterpreterVariables
   -> M.Map String Value
   -> InterpreterState
   -> IO InterpreterState
-setInterpreterVariables vars externalVars is =
-  let setVars = forM_ vars (uncurry setVariable)
+setInterpreterVariables globals externalVars is =
+  let setVars = forM_ globals (uncurry setGlobal)
   in  do
         (_, newState) <- runInterpreterM setVars is
         return $ set externals externalVars newState

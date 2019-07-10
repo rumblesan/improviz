@@ -4,6 +4,7 @@ module Language.Interpreter
   , setBuiltIn
   , getGlobalNames
   , setVariable
+  , setGlobal
   , getVariable
   , getExternal
   , interpretLanguage
