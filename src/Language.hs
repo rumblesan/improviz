@@ -1,7 +1,6 @@
 module Language
   ( initialState
   , parse
-  , simpleParse
   , interpret
   , updateStateVariables
   , module Language.Ast
@@ -34,11 +33,6 @@ import           Language.StdLib                ( addStdLib )
 
 parse :: String -> Either ParserError Program
 parse = parseProgram
-
-simpleParse :: String -> Either String Program
-simpleParse code = case parseProgram code of
-  Left  err -> Left $ show err
-  Right ast -> Right ast
 
 initialState :: [Program] -> GfxContext -> IO InterpreterState
 initialState userCode ctx =
