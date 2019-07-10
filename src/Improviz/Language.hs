@@ -15,7 +15,7 @@ where
 
 import qualified Data.Map.Strict               as M
 
-import           Language                       ( initialState )
+import           Language                       ( initialInterpreterState )
 import           Language.Ast                   ( Program(..) )
 import           Language.Interpreter.Types     ( InterpreterState )
 import           Language.ImpVM.Types           ( VMState )
@@ -41,7 +41,7 @@ makeLenses ''ImprovizLanguage
 
 makeLanguageState :: [Program] -> GfxContext -> IO (ImprovizLanguage GfxContext)
 makeLanguageState userCode ctx = do
-  initial <- initialState userCode ctx
+  initial <- initialInterpreterState userCode ctx
   return ImprovizLanguage { _programText        = ""
                           , _lastProgramText    = ""
                           , _currentAst         = Program []

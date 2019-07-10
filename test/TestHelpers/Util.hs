@@ -41,7 +41,7 @@ gfxTest program expectedGfx = case L.parse program of
   Left  err -> assertFailure $ prettyPrintErrors err
   Right ast -> do
     (out, ctx)       <- createGfxContextHelpers
-    interpreterState <- L.initialState [] ctx
+    interpreterState <- L.initialInterpreterState [] ctx
     result           <- fst <$> L.interpret interpreterState ast
     assertEqual "interpreter runs" (Right Null) result
     gfx <- getOutputGfx out
@@ -51,7 +51,7 @@ resultTest :: String -> Value -> String -> Assertion
 resultTest program expected message = case L.parse program of
   Left  err -> assertFailure $ prettyPrintErrors err
   Right ast -> do
-    interpreterState <- L.initialState [] emptyGfxContext
+    interpreterState <- L.initialInterpreterState [] emptyGfxContext
     result           <- fst <$> L.interpret interpreterState ast
     assertEqual message (Right expected) result
 

@@ -1,5 +1,5 @@
 module Language
-  ( initialState
+  ( initialInterpreterState
   , parse
   , interpret
   , updateStateVariables
@@ -34,8 +34,8 @@ import           Language.StdLib                ( addStdLib )
 parse :: String -> Either ParserError Program
 parse = parseProgram
 
-initialState :: [Program] -> GfxContext -> IO InterpreterState
-initialState userCode ctx =
+initialInterpreterState :: [Program] -> GfxContext -> IO InterpreterState
+initialInterpreterState userCode ctx =
   let langState = set gfxContext ctx emptyState
       setup     = do
         addStdLib
