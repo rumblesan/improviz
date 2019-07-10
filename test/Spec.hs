@@ -4,7 +4,6 @@ import           Data.Monoid                    ( mempty )
 
 import           Test.Framework
 
-import           Tests.Language                 ( languageTests )
 import           Tests.Language.Ast.Transformers.Globalise
                                                 ( globaliseTransformerTests )
 import           Tests.Language.Interpreter.Blocks
@@ -14,6 +13,8 @@ import           Tests.Language.Interpreter.Expressions
 import           Tests.Language.Interpreter.Functions
                                                 ( interpreterFunctionTests )
 import           Tests.Language.Interpreter.If  ( interpreterIfTests )
+import           Tests.Language.Interpreter.Loops
+                                                ( loopTests )
 import           Tests.Language.Interpreter.Operators
                                                 ( operatorTests )
 import           Tests.Language.Interpreter.Scoping
@@ -32,16 +33,16 @@ import           Tests.Language.Parser.Operators
                                                 ( parserOperatorTests )
 import           Tests.Language.Parser.Symbols  ( parserSymbolTests )
 
-import           Tests.VM                       ( vmTests )
+import           Tests.Language.VM              ( vmTests )
 
 main :: IO ()
 main = defaultMainWithOpts
-  [ languageTests
-  , globaliseTransformerTests
+  [ globaliseTransformerTests
   , operatorTests
   , expressionTests
   , interpreterIfTests
   , interpreterFunctionTests
+  , loopTests
   , blockTests
   , scopingTests
   , parserTests

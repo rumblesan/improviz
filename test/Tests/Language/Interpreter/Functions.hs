@@ -8,14 +8,19 @@ import           Test.Framework                 ( Test
                                                 )
 import           Test.Framework.Providers.HUnit ( testCase )
 import           Test.HUnit                     ( Assertion )
-import           TestHelpers.Util               ( resultTest )
+import           TestHelpers.Util               ( gfxTest
+                                                , resultTest
+                                                )
 
-import           Language.Ast
+import           Language.Ast                   ( Value(Number) )
+import qualified Gfx.Ast                       as GA
 
 interpreterFunctionTests :: Test
 interpreterFunctionTests = testGroup
   "Function Tests"
-  [testCase "Test function creation" test_function_creation_and_application]
+  [ testCase "Test function creation"    test_function_creation_and_application
+  , testCase "Test function as argument" test_function_as_arg
+  ]
 
 test_function_creation_and_application :: Assertion
 test_function_creation_and_application =
@@ -23,3 +28,12 @@ test_function_creation_and_application =
          \foo(3)\n"
       expected = Number 4
   in  resultTest program expected "interpreter returns 4"
+
+test_function_as_arg :: Assertion
+test_function_as_arg =
+  let
+    program =
+      "a = 2\nb = 3\nfunc foo (c, d) => c * d\nshape(:cube, b, a, foo(a, b))\n"
+    expectedGfx = [GA.ShapeCommand (GA.Cube 3 2 6)]
+  in
+    gfxTest program expectedGfx

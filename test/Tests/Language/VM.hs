@@ -1,4 +1,4 @@
-module Tests.VM
+module Tests.Language.VM
   ( vmTests
   )
 where

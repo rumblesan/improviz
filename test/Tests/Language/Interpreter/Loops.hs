@@ -1,5 +1,5 @@
-module Tests.Language
-  ( languageTests
+module Tests.Language.Interpreter.Loops
+  ( loopTests
   )
 where
 
@@ -12,21 +12,9 @@ import           TestHelpers.Util               ( gfxTest )
 
 import qualified Gfx.Ast                       as GA
 
-languageTests :: Test
-languageTests = testGroup
-  "Language Tests"
-  [ testCase "Basic program" test_basic_program
-  , testCase "Loop program"  test_loop_program
-  ]
-
-test_basic_program :: Assertion
-test_basic_program =
-  let
-    program =
-      "a = 2\nb = 3\nfunc foo (c, d) => c * d\nshape(:cube, b, a, foo(a, b))\n"
-    expectedGfx = [GA.ShapeCommand (GA.Cube 3 2 6)]
-  in
-    gfxTest program expectedGfx
+loopTests :: Test
+loopTests =
+  testGroup "Language Tests" [testCase "Loop program" test_loop_program]
 
 test_loop_program :: Assertion
 test_loop_program =
