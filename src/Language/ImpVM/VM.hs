@@ -1,6 +1,5 @@
 module Language.ImpVM.VM where
 
-import qualified Data.Vector                   as V
 import qualified Data.Map                      as M
 import           Data.Vector                    ( (!?)
                                                 , (//)
@@ -12,19 +11,6 @@ import           Lens.Simple                    ( use
 
 import           Language.ImpVM.Types
 
-
-cleanVM :: externalState -> M.Map String StackItem -> VMState externalState
-cleanVM es extVars = VMState { _programCounter = 0
-                             , _program        = V.empty
-                             , _opstack        = []
-                             , _callstack      = []
-                             , _memory         = V.replicate 1000 SNull
-                             , _builtins       = M.empty
-                             , _running        = False
-                             , _vmError        = Nothing
-                             , _externalVars   = extVars
-                             , _externalState  = es
-                             }
 
 readInstruction :: Int -> VM es Instruction
 readInstruction address = do

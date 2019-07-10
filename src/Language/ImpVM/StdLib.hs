@@ -3,11 +3,9 @@ module Language.ImpVM.StdLib where
 import qualified Data.Map                      as M
 import           Control.Monad.IO.Class         ( liftIO )
 import           Control.Monad                  ( forM_ )
-import           Lens.Simple                    ( assign )
 
 import           Language.ImpVM.Types           ( VM
                                                 , StackItem(..)
-                                                , builtins
                                                 )
 import           Language.ImpVM.VM              ( pushStack )
 import           Gfx.Context                    ( GfxContext )
@@ -36,9 +34,6 @@ builtInFuncs =
     ++ colourBuiltIns
     ++ blockBuiltIns
     ++ postEffectsBuiltIns
-
-addStdLib :: VM GfxContext ()
-addStdLib = assign builtins builtInFuncs
 
 printValue :: [StackItem] -> VM es ()
 printValue args = forM_ args (liftIO . print)

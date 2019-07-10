@@ -19,7 +19,7 @@ import           Language                       ( initialState )
 import           Language.Ast                   ( Program(..) )
 import           Language.Interpreter.Types     ( InterpreterState )
 import           Language.ImpVM.Types           ( VMState )
-import           Language.ImpVM.VM              ( cleanVM )
+import           Language.ImpVM                 ( cleanVM )
 import           Lens.Simple                    ( (^.)
                                                 , set
                                                 , view

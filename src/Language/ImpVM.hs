@@ -1,6 +1,7 @@
 module Language.ImpVM where
 
 import           Data.Vector                    ( Vector )
+import qualified Data.Vector                   as V
 import qualified Data.Map                      as M
 import           Control.Monad.State            ( execStateT )
 import           Control.Monad                  ( void
@@ -13,9 +14,22 @@ import           Lens.Simple                    ( use
 
 import           Language.ImpVM.Types
 import           Language.ImpVM.VM
-import           Language.ImpVM.StdLib
+import           Language.ImpVM.StdLib          ( builtInFuncs )
 
 import           Gfx.Context                    ( GfxContext )
+
+cleanVM :: GfxContext -> M.Map String StackItem -> VMState GfxContext
+cleanVM es extVars = VMState { _programCounter = 0
+                             , _program        = V.empty
+                             , _opstack        = []
+                             , _callstack      = []
+                             , _memory         = V.replicate 1000 SNull
+                             , _builtins       = builtInFuncs
+                             , _running        = False
+                             , _vmError        = Nothing
+                             , _externalVars   = extVars
+                             , _externalState  = es
+                             }
 
 run
   :: GfxContext
@@ -28,7 +42,6 @@ run es extVars prog = execStateT eval (cleanVM es extVars)
     assign program prog
     assign running True
     assign vmError Nothing
-    addStdLib
     execute
 
 execute :: VM es ()
