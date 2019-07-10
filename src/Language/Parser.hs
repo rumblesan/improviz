@@ -227,13 +227,7 @@ expression :: Parser Expression
 expression = makeExprParser exprs operators <?> "expression"
 
 variable :: Parser Variable
-variable =
-  ExternalVariable
-    <$> lexeme (string "ext:" *> identifier)
-    <|> ExternalVariable
-    <$> symbol "time"
-    <|> LocalVariable
-    <$> identifier
+variable = GlobalVariable <$> symbol "time" <|> LocalVariable <$> identifier
 
 value :: Parser Value
 value = v_number <|> v_symbol <|> v_null

@@ -195,12 +195,7 @@ variableToBC (LocalVariable name) = do
   return $ case addr of
     Nothing -> Constant SNull
     Just a  -> Load a
-variableToBC (GlobalVariable name) = do
-  addr <- getAddress name
-  return $ case addr of
-    Nothing -> Constant SNull
-    Just a  -> Load a
-variableToBC (ExternalVariable name) = return $ External name
+variableToBC (GlobalVariable name) = return $ External name
 
 valueToBC :: Value -> ImpCompiler Instruction
 valueToBC (Number n)             = return $ Constant (SFloat n)

@@ -86,7 +86,6 @@ data Expression
 data Variable
   = LocalVariable Identifier
   | GlobalVariable Identifier
-  | ExternalVariable Identifier
   deriving (Eq, Show)
 
 data Value
