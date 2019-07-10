@@ -5,6 +5,7 @@ module Language.Interpreter.Types
   , UserFunctionDef(..)
   , InterpreterState(..)
   , variables
+  , externals
   , globals
   , builtins
   , functions
@@ -43,6 +44,7 @@ type InterpreterProcess v = InterpreterErrors InterpreterProcessing v
 
 data InterpreterState = InterpreterState
   { _variables   :: LS.ScopeStack Identifier Value
+  , _externals :: M.Map Identifier Value
   , _globals     :: M.Map Identifier Value
   , _builtins    :: M.Map Identifier BuiltInFunction
   , _functions   :: M.Map Identifier UserFunctionDef

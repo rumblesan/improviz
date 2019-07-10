@@ -2,11 +2,12 @@ module Language
   ( initialInterpreterState
   , parse
   , interpret
-  , updateStateVariables
+  , setInterpreterVariables
   , module Language.Ast
   )
 where
 
+import qualified Data.Map.Strict               as M
 import           Control.Monad                  ( forM_ )
 import           Lens.Simple                    ( set )
 
@@ -25,6 +26,7 @@ import           Language.Interpreter           ( emptyState
 import           Language.Interpreter.Types     ( InterpreterState
                                                 , gfxContext
                                                 , runInterpreterM
+                                                , externals
                                                 )
 import           Language.Parser                ( parseProgram )
 import           Language.Parser.Errors         ( ParserError )
@@ -43,11 +45,16 @@ initialInterpreterState userCode ctx =
         mapM (interpretLanguage . transform globals) userCode
   in  snd <$> runInterpreterM setup langState
 
-updateStateVariables
-  :: [(Identifier, Value)] -> InterpreterState -> IO InterpreterState
-updateStateVariables vars oldState =
+setInterpreterVariables
+  :: [(Identifier, Value)]
+  -> M.Map String Value
+  -> InterpreterState
+  -> IO InterpreterState
+setInterpreterVariables vars externalVars is =
   let setVars = forM_ vars (uncurry setVariable)
-  in  snd <$> runInterpreterM setVars oldState
+  in  do
+        (_, newState) <- runInterpreterM setVars is
+        return $ set externals externalVars newState
 
 interpret
   :: InterpreterState -> Program -> IO (Either String Value, InterpreterState)

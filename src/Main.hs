@@ -37,7 +37,7 @@ import           Gfx.Context                    ( reset
 
 import           Windowing                      ( setupWindow )
 import           Language                       ( interpret
-                                                , updateStateVariables
+                                                , setInterpreterVariables
                                                 )
 import           Language.Ast                   ( Value(Number) )
 import           Language.Interpreter.Types     ( textureInfo )
@@ -82,21 +82,19 @@ resize env newWidth newHeight fbWidth fbHeight =
         atomically $ writeTVar gfxVar newGfx
         return ()
 
-initialVars :: M.Map String Value -> Float -> [(String, Value)]
-initialVars vars t =
-  ("time", Number t) : ("nudge", Number 0) : ("bpm", Number 120) : M.toList vars
+initialVars :: Float -> [(String, Value)]
+initialVars t = [("time", Number t), ("nudge", Number 0), ("bpm", Number 120)]
 
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
-  as   <- readTVarIO (env ^. I.language)
-  vars <- readTVarIO (env ^. I.externalVars)
-  gs   <- readTVarIO (env ^. I.graphics)
+  as      <- readTVarIO (env ^. I.language)
+  extVars <- readTVarIO (env ^. I.externalVars)
+  gs      <- readTVarIO (env ^. I.graphics)
   let gfxCtx  = env ^. I.gfxContext
-  let newVars = initialVars vars (double2Float time)
-  is          <- updateStateVariables newVars (as ^. IL.initialInterpreter)
-  ui          <- readTVarIO $ env ^. I.ui
+  let newVars = initialVars (double2Float time)
+  is <- setInterpreterVariables newVars extVars (as ^. IL.initialInterpreter)
+  ui <- readTVarIO $ env ^. I.ui
   (result, _) <- renderGfx (interpret is (as ^. IL.currentAst)) gs
-
   case result of
     Left msg -> do
       logError $ "Could not interpret program: " ++ msg

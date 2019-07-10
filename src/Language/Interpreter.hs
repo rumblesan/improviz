@@ -5,6 +5,7 @@ module Language.Interpreter
   , getGlobalNames
   , setVariable
   , getVariable
+  , getExternal
   , interpretLanguage
   , useGfxCtx
   )
@@ -34,6 +35,7 @@ import qualified Language.Interpreter.Scope    as LS
 
 emptyState :: InterpreterState
 emptyState = InterpreterState { _variables   = LS.empty
+                              , _externals   = M.empty
                               , _globals     = M.empty
                               , _builtins    = M.empty
                               , _functions   = M.empty
@@ -103,6 +105,11 @@ getVariable name = do
   case LS.getVariable variableDefs name of
     Just v  -> return v
     Nothing -> throwError $ "Could not get variable: " ++ name
+
+getExternal :: Identifier -> Value -> InterpreterProcess Value
+getExternal name defaultValue = do
+  externalVars <- use externals
+  return $ fromMaybe defaultValue (M.lookup name externalVars)
 
 useGfxCtx :: (GfxContext -> IO ()) -> InterpreterProcess ()
 useGfxCtx action = do
