@@ -11,9 +11,9 @@ import           Test.HUnit                     ( Assertion )
 import           TestHelpers.Util               ( gfxTest
                                                 , resultTest
                                                 )
+import qualified TestHelpers.GfxAst            as GA
 
 import           Language.Ast                   ( Value(Number) )
-import qualified Gfx.Ast                       as GA
 
 interpreterFunctionTests :: Test
 interpreterFunctionTests = testGroup

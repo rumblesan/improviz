@@ -10,8 +10,8 @@ import           Test.Framework                 ( Test
 import           Test.Framework.Providers.HUnit ( testCase )
 import           Test.HUnit                     ( Assertion )
 import           TestHelpers.Util               ( gfxTest )
+import qualified TestHelpers.GfxAst            as GA
 
-import qualified Gfx.Ast                       as GA
 
 blockTests :: Test
 blockTests = testGroup

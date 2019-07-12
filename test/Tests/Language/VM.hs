@@ -14,11 +14,11 @@ import           Test.HUnit                     ( Assertion
 import           TestHelpers.Util               ( vmResultTest
                                                 , vmGfxTest
                                                 )
+import qualified TestHelpers.GfxAst            as GA
 
 import           Language.ImpVM.Types           ( VMState(..)
                                                 , StackItem(..)
                                                 )
-import qualified Gfx.Ast                       as GA
 
 vmTests :: Test
 vmTests = testGroup

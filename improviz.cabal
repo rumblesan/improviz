@@ -63,7 +63,6 @@ executable improviz
                      , Improviz.Language
                      , Improviz.UI
                      , Gfx
-                     , Gfx.Ast
                      , Gfx.Commands
                      , Gfx.Context
                      , Gfx.Engine
@@ -154,7 +153,6 @@ test-suite improviz-test
                      , Configuration.Screen
                      , Logging
                      , Gfx
-                     , Gfx.Ast
                      , Gfx.Commands
                      , Gfx.Context
                      , Gfx.Engine
@@ -202,6 +200,7 @@ test-suite improviz-test
                      , Language.StdLib.Maths
                      , Language.StdLib.Util
                      , TestHelpers.GfxContext
+                     , TestHelpers.GfxAst
                      , TestHelpers.Util
                      , Tests.Language.Ast.Transformers.Globalise
                      , Tests.Language.Interpreter.Blocks

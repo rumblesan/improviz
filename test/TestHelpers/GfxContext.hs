@@ -12,7 +12,7 @@ import           Control.Concurrent.STM         ( TVar
                                                 )
 
 import           Gfx.Context                    ( GfxContext(..) )
-import           Gfx.Ast
+import           TestHelpers.GfxAst
 
 createGfxContextHelpers :: IO (TVar [GfxCommand], GfxContext)
 createGfxContextHelpers = do

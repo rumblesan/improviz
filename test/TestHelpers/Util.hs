@@ -18,11 +18,11 @@ import           Test.HUnit                     ( Assertion
 import           TestHelpers.GfxContext         ( createGfxContextHelpers
                                                 , getOutputGfx
                                                 )
+import qualified TestHelpers.GfxAst            as GA
 
 import           Gfx.Context                    ( GfxContext
                                                 , emptyGfxContext
                                                 )
-import qualified Gfx.Ast                       as GA
 import qualified Language                      as L
 import           Language.Ast
 import           Language.Parser.Errors         ( prettyPrintErrors )

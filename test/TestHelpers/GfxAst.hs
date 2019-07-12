@@ -1,4 +1,4 @@
-module Gfx.Ast where
+module TestHelpers.GfxAst where
 
 type Block = [GfxCommand]
 
