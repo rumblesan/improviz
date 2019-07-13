@@ -3,7 +3,7 @@ $BUNDLE_DIR = "$BUILD_DIR/improviz-win"
 mkdir -p $BUILD_DIR
 
 git clone --depth=1 --branch=master https://github.com/rumblesan/improviz-performance.git $BUNDLE_DIR
-rm -rf $BUNDLE_DIR/.git
+rm -r -fo $BUNDLE_DIR/.git
 rm -r $BUNDLE_DIR/README.md
 
 cp -r ./assets $BUNDLE_DIR
