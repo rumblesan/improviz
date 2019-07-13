@@ -31,7 +31,7 @@ stack exec improviz -- -f 0
 
 Zero is the primary display. One would be the next attached display to the machine.
 
-This can also be set by the *fillscreen* key in the confifg file.
+This can also be set by the *fullscreen* key in the confifg file.
 
 ```yaml
 fullscreen: 0
