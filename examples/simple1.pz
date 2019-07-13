@@ -2,5 +2,5 @@ stroke(0, 0, 0)
 fill(255, 0, 0)
 100 times
 	rotate()
-	box(8, 8, 8)
+	cube(8, 8, 8)
 
