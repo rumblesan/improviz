@@ -30,6 +30,7 @@ executable improviz
                      , optparse-applicative
                      , megaparsec >= 7
                      , parser-combinators >= 1
+                     , safe
                      , scotty
                      , split
                      , stm
@@ -125,6 +126,7 @@ test-suite improviz-test
                      , freetype2
                      , lens-simple
                      , mtl
+                     , safe
                      , optparse-applicative
                      , megaparsec >= 7
                      , parser-combinators >= 1
@@ -207,6 +209,7 @@ test-suite improviz-test
                      , Tests.Language.Interpreter.Expressions
                      , Tests.Language.Interpreter.If
                      , Tests.Language.Interpreter.Functions
+                     , Tests.Language.Interpreter.Lists
                      , Tests.Language.Interpreter.Loops
                      , Tests.Language.Interpreter.Operators
                      , Tests.Language.Interpreter.Scoping
@@ -216,6 +219,7 @@ test-suite improviz-test
                      , Tests.Language.Parser.Functions
                      , Tests.Language.Parser.Symbols
                      , Tests.Language.Parser.Loops
+                     , Tests.Language.Parser.Lists
                      , Tests.Language.Parser.Operators
                      , Tests.Language.Parser.If
                      , Tests.Language.Parser.ErrorCatching

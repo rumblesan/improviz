@@ -46,6 +46,9 @@ symbol = L.symbol sc
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
+squares :: Parser a -> Parser a
+squares = between (symbol "[") (symbol "]")
+
 comma :: Parser String
 comma = symbol ","
 
@@ -116,8 +119,15 @@ operators =
 
 exprs :: Parser Expression
 exprs =
-  EApp <$> application <|> EVar <$> try variable <|> EVal <$> try value <|> try
-    (parens expression)
+  EApp
+    <$> application
+    <|> EList
+    <$> list
+    <|> EVar
+    <$> try variable
+    <|> EVal
+    <$> try value
+    <|> try (parens expression)
 
 element :: Parser Element
 element =
@@ -221,7 +231,20 @@ elseBlock = L.indentBlock scn i
       (L.IndentSome (Just (ilevel <> defaultTabWidth)) (return . Block) element)
 
 expression :: Parser Expression
-expression = makeExprParser exprs operators <?> "expression"
+expression = makeExprParser exprs operators >>= recurParsePostExpr
+
+recurParsePostExpr :: Expression -> Parser Expression
+recurParsePostExpr e =
+  optional (postExpr e) >>= maybe (return e) recurParsePostExpr
+
+postExpr :: Expression -> Parser Expression
+postExpr e = EAccess e <$> squares expression
+
+list :: Parser [Expression]
+list = squares (sepBy expression comma)
+
+accessor :: Parser Expression
+accessor = EAccess <$> expression <*> squares expression
 
 variable :: Parser Variable
 variable = GlobalVariable <$> symbol "time" <|> LocalVariable <$> identifier

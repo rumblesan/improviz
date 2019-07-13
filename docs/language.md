@@ -138,6 +138,20 @@ func draw(f)
 draw(cube)
 ```
 
+## Lists
+
+Improviz supports basic lists, though currently they have a fixes size once declared.
+
+```
+sizes = [1,2,3,2+2]
+s = sizes[(time * 4) % length(sizes)]
+
+rotate(time)
+cube(s)
+```
+
+They can be created using square brackets and accessed also using the square brackets. The `length` function is available to return the length of a list as a number.
+
 ## Saving and Loading GFX state
 
 The built in functions **pushScope** and **popScope** can be used to save and load snapshots of the style and transformation state on a stack.

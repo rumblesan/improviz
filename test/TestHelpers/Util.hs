@@ -1,5 +1,6 @@
 module TestHelpers.Util
-  ( gfxTest
+  ( parserTest
+  , gfxTest
   , resultTest
   , vmGfxTest
   , vmResultTest
@@ -35,6 +36,11 @@ import           Language.ImpVM.Types           ( VMState
                                                 )
 import qualified Language.Compiler             as C
 import           Language.Ast.Transformers      ( transform )
+
+parserTest :: String -> Program -> Assertion
+parserTest program expectedAst = case L.parse program of
+  Left  err -> assertFailure $ prettyPrintErrors err
+  Right ast -> assertEqual "correct AST" ast expectedAst
 
 gfxTest :: String -> [GA.GfxCommand] -> Assertion
 gfxTest program expectedGfx = case L.parse program of

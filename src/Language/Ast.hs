@@ -81,6 +81,8 @@ data Expression
             Expression
   | EVar Variable
   | EVal Value
+  | EList [Expression]
+  | EAccess Expression Expression
   deriving (Eq, Show)
 
 data Variable
@@ -93,6 +95,7 @@ data Value
   | Null
   | Symbol String
   | BlockRef Block
+  | VList [Value]
   | UserFunctionRef Identifier
   | BuiltInFunctionRef Identifier
   deriving (Eq, Show)

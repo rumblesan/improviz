@@ -13,6 +13,8 @@ import           Tests.Language.Interpreter.Expressions
 import           Tests.Language.Interpreter.Functions
                                                 ( interpreterFunctionTests )
 import           Tests.Language.Interpreter.If  ( interpreterIfTests )
+import           Tests.Language.Interpreter.Lists
+                                                ( interpreterListTests )
 import           Tests.Language.Interpreter.Loops
                                                 ( loopTests )
 import           Tests.Language.Interpreter.Operators
@@ -29,6 +31,7 @@ import           Tests.Language.Parser.Functions
                                                 ( parserFunctionTests )
 import           Tests.Language.Parser.If       ( parserIfTests )
 import           Tests.Language.Parser.Loops    ( parserLoopTests )
+import           Tests.Language.Parser.Lists    ( parserListTests )
 import           Tests.Language.Parser.Operators
                                                 ( parserOperatorTests )
 import           Tests.Language.Parser.Symbols  ( parserSymbolTests )
@@ -42,6 +45,7 @@ main = defaultMainWithOpts
   , expressionTests
   , interpreterIfTests
   , interpreterFunctionTests
+  , interpreterListTests
   , loopTests
   , blockTests
   , scopingTests
@@ -52,6 +56,7 @@ main = defaultMainWithOpts
   , parserFunctionTests
   , parserErrorCatchingTests
   , parserLoopTests
+  , parserListTests
   , parserOperatorTests
   , parserSymbolTests
   , vmTests

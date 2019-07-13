@@ -375,3 +375,15 @@ sphere(2)
 
 Get the number of frames available for a texture.
 Primarily used when animating textures.
+
+### length
+
+```
+sizes = [1,2,3,2+2]
+s = sizes[(time * 4) % length(sizes)]
+
+rotate(time)
+cube(s)
+```
+
+Get the length of a list.

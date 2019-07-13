@@ -75,8 +75,11 @@ globaliseExpression (BinaryOp op expr1 expr2) =
   BinaryOp op <$> globaliseExpression expr1 <*> globaliseExpression expr2
 globaliseExpression (UnaryOp op expr1) =
   UnaryOp op <$> globaliseExpression expr1
-globaliseExpression (EVar variable) = EVar <$> globaliseVariable variable
-globaliseExpression (EVal value   ) = EVal <$> globaliseValue value
+globaliseExpression (EVar  variable) = EVar <$> globaliseVariable variable
+globaliseExpression (EVal  value   ) = EVal <$> globaliseValue value
+globaliseExpression (EList exprs   ) = EList <$> mapM globaliseExpression exprs
+globaliseExpression (EAccess listExpr accessExpr) =
+  EAccess <$> globaliseExpression listExpr <*> globaliseExpression accessExpr
 
 globaliseIf :: If -> Transformer If
 globaliseIf (If predicate block elseBlock) =

@@ -23,6 +23,7 @@ import           Lens.Simple                    ( use
 import           Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Set                      as S
+import           Safe                           ( atMay )
 
 import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
@@ -235,8 +236,19 @@ interpretExpression (BinaryOp op v1 v2) = do
 interpretExpression (UnaryOp op v) = do
   n <- interpretExpression v
   unaryOp op n
-interpretExpression (EVar var  ) = interpretVariable var
-interpretExpression (EVal value) = return value
+interpretExpression (EVar  var             ) = interpretVariable var
+interpretExpression (EVal  value           ) = return value
+interpretExpression (EList exprs) = VList <$> mapM interpretExpression exprs
+interpretExpression (EAccess lexpr position) = do
+  p <- interpretExpression position
+  l <- interpretExpression lexpr
+  case (l, p) of
+    (VList list, Number v) -> maybe
+      (throwError "Accessor index out of range")
+      return
+      (atMay list $ floor v)
+    (VList _, _) -> throwError "Need to give number expression in accessor"
+    (_, Number _) -> throwError "Need to access list expression"
 
 interpretVariable :: Variable -> InterpreterProcess Value
 interpretVariable (LocalVariable  varName) = getVariable varName
