@@ -1,43 +1,93 @@
-# Language Reference
+# Language
 
-The Improviz language is still changing and being fleshed out. This reference should keep up with it however.
+The Improviz language is still changing somewhat but should be fairly stable at this point. This reference should keep up with it.
 
-There will be many similarities to LiveCodeLab, but plenty of differences as well.
+The most basic part of writing code with Improviz is calling functions that either draw shapes to the screen, or change those shapes in some way, with each of these functions being on their own separate line.
 
-## Global Variables
+The [reference document](./reference.md) lists all of the available, functions what they do, and what values they can be given.
 
-*time* is the major global variable and is used for all animation, whether as default variables for commands or used by the user.
+## Calling Functions
 
-*pi*
-
-## Assignment
-
-There are two types of assignment.
-
-Absolute assignment will set a variable identifier to a value as usual.
-
-`a = 3 + 4`
-
-Conditional assignment will set a variable only if it currently doesn't have a value.
-This is mostly useful when expecting to have values set via OSC messages which may not have arrived yet, and so avoid `variable undefined` errors.
-
-```
-a = 3
-a := 4
-cube(a) // cube will be of size 3
-```
-
-## Function Application
-
-All functions require parentheses, with arguments separated by commas.
+To call a function, you need to have its name, followed by a pair of parentheses `()`. Within these you place any values that will change the way the function behaves, separated by commas.
 
 A blue rectangle rotating on a red background.
 
 ```
 background(255, 0, 0)
 fill(0, 0, 255)
-rotate(time, time/10, 3)
+rotate()
 rectangle(2, 1)
+```
+
+## Loops
+
+Loops allow you to repeatedly call some lines of code. The piece of code that's repeated is called a *block* and it must be indented with a tab.
+
+```
+stroke(0, 0, 0)
+fill(255, 0, 0)
+100 times
+	rotate()
+	cube(8, 8, 8)
+```
+
+Optional `with` variable can be used as well.
+
+```
+stroke(0, 0, 0)
+fill(255, 0, 0)
+n = 100
+n times with i
+	rotate()
+  move(i)
+	cube(8, 8, 8)
+```
+
+## Comments
+
+Any text that comes after two slashes `//` is considered a comment and won't be run
+
+```
+cube() //this is a comment
+//sphere()  this line won't run
+```
+
+## Time
+
+*time* is the major global variable and is used for all animation, whether as default variables for commands or used by the user. It is the only value that actually changes between frames.
+
+```
+rotate(1, 2, 3)
+cube()       // this cube won't move
+rotate(time)
+sphere()     // this sphere will move
+```
+
+## Assignment
+
+If you want to calculate a value and then use it in multiple places, you can assign it to a variable.
+
+```
+a = 3 + 4
+cube(a)
+```
+
+Variables can have their value re-assigned.
+
+```
+a = 3 + 4
+cube(a)
+a = 2
+sphere(a)
+```
+
+Conditional assignment is also available, and will set a variable only if it currently doesn't have a value.
+This is mostly useful when defining functions and setting defaults for the arguments that are passed in.
+
+```
+a = 3
+a := 4
+cube(a) // cube will be of size 3
 ```
 
 ## Function Definition
@@ -55,7 +105,7 @@ func draw(r, g, b)
 draw(255, 0, 0)
 ```
 
-## Function Application Blocks
+## Function Blocks
 
 When a function is called in can be passed an optional block.
 If the function has a **BlockArg** argument then this block is available to be used within the function body.
@@ -88,35 +138,9 @@ func draw(f)
 draw(cube)
 ```
 
-## Loops
-
-Loops in Improviz work the same as in LiveCodeLab
-
-```
-stroke(0, 0, 0)
-fill(255, 0, 0)
-100 times
-	rotate()
-	cube(8, 8, 8)
-```
-
-Optional `with` variable can be used as well.
-
-```
-stroke(0, 0, 0)
-fill(255, 0, 0)
-n = 100
-n times with i
-	rotate()
-  move(i)
-	cube(8, 8, 8)
-```
-
-Tabs are used for indentation.
-
 ## Saving and Loading GFX state
 
-The built in functions **pushScope** and **popScope** can be used to save and load snapshots of the GFX engine state on a stack.
+The built in functions **pushScope** and **popScope** can be used to save and load snapshots of the style and transformation state on a stack.
 
 ```
 pushScope()
@@ -129,7 +153,7 @@ sphere()
 
 This state will include the stroke and fill styling, as well as the matrix manipulations.
 
-This feature is used in conjuction with the function blocks to allow simplified scoping of some commands in much the same way as LiveCodeLab.
+This feature is used in conjuction with the function blocks to allow simplified scoping of some commands.
 
 ```
 fill(255, 0, 0)
@@ -142,7 +166,7 @@ fill(0, 255, 0)
 
 ## Symbols
 
-A symbol is really just a name. Currently it's only used for giving the name of textures to the texture function. They can be assigned to variables if desired.
+A symbol is really just a name and is primarily used for giving the name of textures to the texture function. They can be assigned to variables if desired.
 
 ```
 texture(:crystal)
@@ -153,47 +177,3 @@ t = :another
 texture(t)
   ball()
 ```
-
-### Currently Available Functions
-
-#### Shapes
-*cube* [x, y, z]
-Create a cube with dimensions x, y and z. Default value for any missed is 1.
-*sphere* [x, y, z]
-Create a sphere with dimensions x, y and z. Default value for any missed is 1.
-*cylinder* [x, y, z]
-Create a cylinder with dimensions x, y and z. Default value for any missed is 1.
-*rectangle* [x, y]
-Create a flat rectangle with dimensions x and y. Default value for any missed is 1.
-*line* [length]
-Create a line of the desired length. Default value is 1.
-
-#### Movement
-*rotate* [x, y, z]
-*scale* [x, y, z]
-*move* [x, y, z]
-
-#### Styling
-*fill* [r, g, b, a]
-*texture* [name, frame]
-*noFill* []
-*stroke* [r, g, b, a]
-*noStroke* []
-*background* [r, g, b]
-
-#### Animation Style
-*paintOver* []
-*motionBlur* []
-
-#### Maths
-*sin* [rads]
-*cos* [rads]
-*tan* [rads]
-*abs* [val]
-*ceil* [val]
-*floor* [val]
-*round* [val]
-*max* [val]
-*min* [val]
-*log* [val]
-*sqrt* [val]
