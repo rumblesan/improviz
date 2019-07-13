@@ -1,13 +1,13 @@
 # Getting Started
 
-This document is designed to be a basic intro to Improviz.
+This document is designed to be a basic introduction to Improviz.
 
-Ideally it should get you up and running and introduces to some of the basic concepts.
+Ideally it should get you up and running and familiar with some of the basic concepts.
 
 
 ## Running
 
-If you're reading this then you should have already downloaded and unzipped the release for your system.
+If you're reading this then we'll assume you have downloaded and un-archived the release for your system.
 
 * Open a terminal
 * Browse to the unzipped folder
@@ -15,14 +15,16 @@ If you're reading this then you should have already downloaded and unzipped the 
 
 If you get a white screen appearing in the top-left then things are looking good.
 
-If not, go have a read in the [Troubleshooting](#troubleshooting) section.
+Depending on the system you're running on, you may get a prompt asking `Do you want the application “improviz” to accept incoming network connections?` This is because Improviz runs an HTTP service that's used for communications between the program and the editor, so you need to allow this.
+
+If you don't get a screen appearing, then please [raise an issue](https://github.com/rumblesan/improviz/issues) on the repository and include any error messages that may have been printed out in the console.
 
 
 ## Interacting
 
 Once Improviz is running, you need to send code for it to run. The simplest way to do this to test is to use the (very basic) built in editor.
 
-Open your browser and go to [http://localhost:3000/editor](http://localhost:3000/editor), then try entering the following. Indentation is a single tab.
+Open your browser and go to [http://localhost:3000/editor](http://localhost:3000/editor), then try entering the following. Indentation is done using a single tab.
 
 ```
 background(255, 0, 0)
@@ -33,10 +35,18 @@ fill(0, 255, 255)
 	cube(4)
 ```
 
+You should see ten light-blue cubes rotating on a red background, with the black and yellow text in the top left.
+
+## Editors
+
+The built in editor is fine for quick tests, but it's much nicer to work with one that's a bit more friendly.
+
 There are better clients available for [Vim](https://github.com/rumblesan/improviz-vim) and [Atom](https://github.com/rumblesan/improviz-atom).
-There is a very basic client avaialable for [Emacs](https://github.com/rumblesan/improviz/tree/master/editor/emacs).
+There is a very basic client available for [Emacs](https://github.com/rumblesan/improviz/tree/master/editor/emacs).
 
 
 ## Documentation
 
-Currently the best docs are those that live on the [Improviz website](https://improviz.rumblesan.com).
+If you downloaded the release archive, then you should find there's a *documentation* folder with a number of *.md* files in it. This should cover everything you need to get going.
+
+You can also find the same documents available on the [Improviz website](https://improviz.rumblesan.com).
