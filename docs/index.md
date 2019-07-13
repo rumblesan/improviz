@@ -16,11 +16,15 @@ Once you've downloaded the release and un-archived it to a folder on your system
 The following documents should hopefully explain more of the ins and outs of using it.
 
 * [Language](./language.md)
+* [Interacting](./interacting.md)
 * [Reference](./reference.md)
 * [Textures](./textures.md)
 * [Configuration](./configuration.md)
 
-There's also the [Grammar](./grammar.md) document which tries to detail the grammar of the language, though that's less important if you're not planning to actively develop Improviz.
+## Development
+
+If you want to dig into the code of Improviz then the [Development](./development.md) document may be useful.
+There is also the [Grammar](./grammar.md) document which tries to detail the grammar of the language, though that's less important if you're not planning to extend the language.
 
 ## Troubleshooting
 
