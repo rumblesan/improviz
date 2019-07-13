@@ -1,4 +1,4 @@
-module Language.StdLib.Maths
+module Language.Interpreter.StdLib.Maths
   ( addMathStdLib
   )
 where

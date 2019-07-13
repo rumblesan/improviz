@@ -1,4 +1,4 @@
-module Language.StdLib.PostEffects
+module Language.Interpreter.StdLib.PostEffects
   ( addPostEffectsStdLib
   )
 where

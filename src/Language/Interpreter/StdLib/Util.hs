@@ -1,4 +1,4 @@
-module Language.StdLib.Util
+module Language.Interpreter.StdLib.Util
   ( addUtilStdLib
   )
 where
@@ -27,4 +27,3 @@ getExtFunc args = case args of
   Symbol name : defaultValue : _ -> getExternal name defaultValue
   [Symbol name] -> getExternal name Null
   _ -> throwError "Need to provide ext with a name"
-

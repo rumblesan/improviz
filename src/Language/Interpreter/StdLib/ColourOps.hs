@@ -1,4 +1,4 @@
-module Language.StdLib.ColourOps
+module Language.Interpreter.StdLib.ColourOps
   ( addColourStdLib
   )
 where

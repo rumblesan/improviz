@@ -1,4 +1,4 @@
-module Language.StdLib.MatrixOps
+module Language.Interpreter.StdLib.MatrixOps
   ( addMatrixStdLib
   )
 where

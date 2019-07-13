@@ -28,9 +28,9 @@ import           Language.Interpreter.Types     ( InterpreterState
                                                 , runInterpreterM
                                                 , externals
                                                 )
+import           Language.Interpreter.StdLib    ( addStdLib )
 import           Language.Parser                ( parseProgram )
 import           Language.Parser.Errors         ( ParserError )
-import           Language.StdLib                ( addStdLib )
 
 
 parse :: String -> Either ParserError Program

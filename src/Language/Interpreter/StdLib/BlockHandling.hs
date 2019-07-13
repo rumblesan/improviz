@@ -1,4 +1,4 @@
-module Language.StdLib.BlockHandling
+module Language.Interpreter.StdLib.BlockHandling
   ( addBlockHandlingStdLib
   )
 where

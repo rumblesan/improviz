@@ -88,18 +88,18 @@ executable improviz
                      , Language.Parser
                      , Language.Parser.Errors
                      , Language.Interpreter
+                     , Language.Interpreter.Operators
                      , Language.Interpreter.Scope
+                     , Language.Interpreter.StdLib
+                     , Language.Interpreter.StdLib.Shapes
+                     , Language.Interpreter.StdLib.MatrixOps
+                     , Language.Interpreter.StdLib.ColourOps
+                     , Language.Interpreter.StdLib.BlockHandling
+                     , Language.Interpreter.StdLib.PostEffects
+                     , Language.Interpreter.StdLib.Maths
+                     , Language.Interpreter.StdLib.Util
                      , Language.Interpreter.Types
                      , Language.Interpreter.Values
-                     , Language.Interpreter.Operators
-                     , Language.StdLib
-                     , Language.StdLib.Shapes
-                     , Language.StdLib.MatrixOps
-                     , Language.StdLib.ColourOps
-                     , Language.StdLib.BlockHandling
-                     , Language.StdLib.PostEffects
-                     , Language.StdLib.Maths
-                     , Language.StdLib.Util
                      , Language.ImpVM
                      , Language.ImpVM.StdLib
                      , Language.ImpVM.StdLib.BlockHandling
@@ -177,10 +177,18 @@ test-suite improviz-test
                      , Language.Parser
                      , Language.Parser.Errors
                      , Language.Interpreter
+                     , Language.Interpreter.Operators
                      , Language.Interpreter.Scope
+                     , Language.Interpreter.StdLib
+                     , Language.Interpreter.StdLib.Shapes
+                     , Language.Interpreter.StdLib.MatrixOps
+                     , Language.Interpreter.StdLib.ColourOps
+                     , Language.Interpreter.StdLib.BlockHandling
+                     , Language.Interpreter.StdLib.PostEffects
+                     , Language.Interpreter.StdLib.Maths
+                     , Language.Interpreter.StdLib.Util
                      , Language.Interpreter.Types
                      , Language.Interpreter.Values
-                     , Language.Interpreter.Operators
                      , Language.ImpVM
                      , Language.ImpVM.StdLib
                      , Language.ImpVM.StdLib.BlockHandling
@@ -191,14 +199,6 @@ test-suite improviz-test
                      , Language.ImpVM.StdLib.Shapes
                      , Language.ImpVM.Types
                      , Language.ImpVM.VM
-                     , Language.StdLib
-                     , Language.StdLib.Shapes
-                     , Language.StdLib.MatrixOps
-                     , Language.StdLib.ColourOps
-                     , Language.StdLib.BlockHandling
-                     , Language.StdLib.PostEffects
-                     , Language.StdLib.Maths
-                     , Language.StdLib.Util
                      , TestHelpers.GfxContext
                      , TestHelpers.GfxAst
                      , TestHelpers.Util

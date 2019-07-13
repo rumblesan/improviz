@@ -1,4 +1,4 @@
-module Language.StdLib.Shapes
+module Language.Interpreter.StdLib.Shapes
   ( addShapesStdLib
   )
 where
