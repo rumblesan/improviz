@@ -47,6 +47,6 @@ There is a very basic client available for [Emacs](https://github.com/rumblesan/
 
 ## Documentation
 
-If you downloaded the release archive, then you should find there's a *documentation* folder with a number of *.md* files in it. This should cover everything you need to get going.
+If you downloaded the release archive, then you should find there's a *documentation* folder with a number of files in it. This should cover everything you need to get going.
 
 You can also find the same documents available on the [Improviz website](https://improviz.rumblesan.com).
