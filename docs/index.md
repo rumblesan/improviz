@@ -16,6 +16,7 @@ Once you've downloaded the release and un-archived it to a folder on your system
 The following documents should hopefully explain more of the ins and outs of using it.
 
 * [Language](./language.md)
+* [Reference](./reference.md)
 * [Textures](./textures.md)
 * [Configuration](./configuration.md)
 
@@ -31,5 +32,5 @@ Drop me an email at guy@rumblesan.com
 
 ## License
 
-BSD License.
+Improviz code is licensed under the BSD License.
 
