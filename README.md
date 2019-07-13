@@ -84,7 +84,7 @@ Please check the [configuration](docs/configuration.md) document for details on 
 
 As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://twitter.com/hellocatfood) was commissioned to create a series of animated gifs that can me used as textures with Improviz.
 
-These excellent and unique images can be found in the [Improviz Performance](https://github.com/rumblesan/improviz-performance/) repository, and are under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for performances, projects, and anything else you want.
+These excellent and unique images are bundled in the pre-built binary releases and can also be found in the [Improviz Performance](https://github.com/rumblesan/improviz-performance/) repository. They're licensed under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for performances, projects, and anything else you want.
 
 ## Contact
 
