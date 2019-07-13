@@ -4,6 +4,8 @@ Improviz does not have a user interface, but instead runs a server you can use t
 
 These are really designed to be used via a plugin in a suitable text editor. Check the editors section in the [Getting Started](./getting-started.md#editors) document for examples.
 
+### read
+
 `/read`
 POST request
 Any text sent to this will be compiled and interpreted by Improviz. If there is a failure then it will continue running the last working program.
@@ -12,12 +14,18 @@ In the *examples* folder there is a bash script called **send.sh** which can be 
 `./examples/send.sh ./examples/simple1.pz`
 
 
+### toggle text
+
 `/toggle/text`
 POST request
 Turn the text display on and off
 
+### editor
+
 `/editor`
 Browse to this endpoint in a browser to get a very basic form to submit programs to Improviz. Mainly just useful for testing.
+
+### vars edit
 
 `/vars/edit/:name`
 POST request
