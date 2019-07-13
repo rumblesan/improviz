@@ -11,4 +11,3 @@ codeFiles:
   - "./stdlib/shapes.pz"
   - "./stdlib/style.pz"
   - "./stdlib/textures.pz"
-  - "./usercode/grid.pz"
