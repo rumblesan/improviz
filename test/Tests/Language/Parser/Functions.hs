@@ -13,13 +13,11 @@ import           Test.HUnit                     ( Assertion
 
 import qualified Language
 import           Language.Ast
-import qualified Language.Parser               as LP
 
 parserFunctionTests :: Test
 parserFunctionTests = testGroup
   "Parser Function Tests"
-  [ testCase "Parsing simple function call"      test_simple_application
-  , testCase "Parsing function application list" test_application_list
+  [ testCase "Parsing simple function call" test_simple_application
   , testCase "Parsing function call with variable arg"
              test_application_with_var_arg
   , testCase "Parsing no arguments function call" test_noargs_application
@@ -35,14 +33,6 @@ test_simple_application =
         Nothing
       expected = Right $ Program [StExpression $ EApp cube]
       result   = Language.parse program
-  in  assertEqual "" expected result
-
-test_application_list :: Assertion
-test_application_list =
-  let program = "1, b, 3"
-      expected =
-          Right [EVal $ Number 1, EVar $ LocalVariable "b", EVal $ Number 3]
-      result = LP.simpleParse (LP.argList LP.expression) program
   in  assertEqual "" expected result
 
 test_application_with_var_arg :: Assertion

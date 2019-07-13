@@ -128,9 +128,6 @@ element =
     )
     <?> "element"
 
-argList :: Parser e -> Parser [e]
-argList lp = sepBy lp comma
-
 application :: Parser Application
 application = L.indentBlock scn ap
  where
