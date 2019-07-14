@@ -1,0 +1,5 @@
+fill(0, 200, 255)
+
+100 times
+	rotate()
+	cube(5)

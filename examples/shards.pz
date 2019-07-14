@@ -1,0 +1,10 @@
+scale(16)
+background(255)
+fill(0, 0, 0, 80)
+stroke(255)
+
+5 times
+	rotate(0, 1, (time / 20) + 1)
+	sphere()
+	rotate(time/100, 1, 1)
+	sphere()

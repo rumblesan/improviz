@@ -1,0 +1,12 @@
+fill(128, 0, 255)
+rotate(time)
+sphere(3)
+
+move(1, 2, 1)
+fill(0, 255, 0)
+cube(2)
+
+rotate(time, 0, 0)
+move(2, 1, 0)
+fill(0, 255, 255)
+rectangle(3, 4)

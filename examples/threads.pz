@@ -1,0 +1,8 @@
+stroke(255, 0, 0)
+noFill()
+background(0)
+scale(16)
+
+10 times
+	rotate(time/10)
+	sphere()
