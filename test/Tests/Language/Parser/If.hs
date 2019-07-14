@@ -1,43 +1,44 @@
 module Tests.Language.Parser.If
   ( parserIfTests
-  ) where
+  )
+where
 
-import           Test.Framework                 (Test, testGroup)
-import           Test.Framework.Providers.HUnit (testCase)
-import           Test.HUnit                     (Assertion, assertEqual)
+import           Test.Framework                 ( Test
+                                                , testGroup
+                                                )
+import           Test.Framework.Providers.HUnit ( testCase )
+import           Test.HUnit                     ( Assertion )
+import           TestHelpers.Util               ( parserTest )
 
-import qualified Language
 import           Language.Ast
 
 parserIfTests :: Test
-parserIfTests =
-  testGroup
-    "Parser If Tests"
-    [ testCase "Parse simple if" test_parse_simple_if
-    , testCase "Parse if else" test_parse_if_else
-    ]
+parserIfTests = testGroup
+  "If Tests"
+  [ testCase "parses simple if" test_parses_simple_if
+  , testCase "parses if else"   test_parses_if_else
+  ]
 
-test_parse_simple_if :: Assertion
-test_parse_simple_if =
-  let program = "if (1)\n\tbox()"
-      pred = EVal $ Number 1
-      block =
-        Block
-          [ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing]
-      expected = Right $ Program [StIf $ If pred block Nothing]
-      result = Language.parse program
-   in assertEqual "" expected result
+test_parses_simple_if :: Assertion
+test_parses_simple_if =
+  let
+    program = "if (1)\n\tbox()"
+    pred    = EVal $ Number 1
+    block =
+      Block [ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing]
+    expected = Program [StIf $ If pred block Nothing]
+  in
+    parserTest program expected
 
-test_parse_if_else :: Assertion
-test_parse_if_else =
-  let program = "if (1)\n\tbox()\nelse\n\tball()"
-      pred = EVal $ Number 1
-      block1 =
-        Block
-          [ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing]
-      block2 =
-        Block
-          [ElExpression $ EApp $ Application (LocalVariable "ball") [] Nothing]
-      expected = Right $ Program [StIf $ If pred block1 (Just block2)]
-      result = Language.parse program
-   in assertEqual "" expected result
+test_parses_if_else :: Assertion
+test_parses_if_else =
+  let
+    program = "if (1)\n\tbox()\nelse\n\tball()"
+    pred    = EVal $ Number 1
+    block1 =
+      Block [ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing]
+    block2 = Block
+      [ElExpression $ EApp $ Application (LocalVariable "ball") [] Nothing]
+    expected = Program [StIf $ If pred block1 (Just block2)]
+  in
+    parserTest program expected

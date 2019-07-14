@@ -1,5 +1,5 @@
 module Tests.Language.Interpreter.Expressions
-  ( expressionTests
+  ( interpreterExpressionTests
   )
 where
 
@@ -12,8 +12,8 @@ import           TestHelpers.Util               ( resultTest )
 
 import           Language.Ast
 
-expressionTests :: Test
-expressionTests = testGroup
+interpreterExpressionTests :: Test
+interpreterExpressionTests = testGroup
   "Expression Tests"
   [testCase "Number Expression" test_number_expression]
 

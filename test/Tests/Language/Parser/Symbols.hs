@@ -1,39 +1,38 @@
 module Tests.Language.Parser.Symbols
   ( parserSymbolTests
-  ) where
+  )
+where
 
-import           Test.Framework                 (Test, testGroup)
-import           Test.Framework.Providers.HUnit (testCase)
-import           Test.HUnit                     (Assertion, assertEqual)
+import           Test.Framework                 ( Test
+                                                , testGroup
+                                                )
+import           Test.Framework.Providers.HUnit ( testCase )
+import           Test.HUnit                     ( Assertion )
+import           TestHelpers.Util               ( parserTest )
 
-import qualified Language
 import           Language.Ast
 
 parserSymbolTests :: Test
-parserSymbolTests =
-  testGroup
-    "Parser Symbol Tests"
-    [ testCase
-        "Parse simple symbol usage as function name"
-        test_parse_simple_symbol_usage
-    , testCase
-        "Parse symbol variable assignment"
-        test_parse_symbol_variable_assignment
-    ]
+parserSymbolTests = testGroup
+  "Symbol Tests"
+  [ testCase "parses simple symbol usage as function name"
+             test_parses_simple_symbol_usage
+  , testCase "parses symbol variable assignment"
+             test_parses_symbol_variable_assignment
+  ]
 
-test_parse_simple_symbol_usage :: Assertion
-test_parse_simple_symbol_usage =
+test_parses_simple_symbol_usage :: Assertion
+test_parses_simple_symbol_usage =
   let program = "texture(:crystal)"
-      texture =
-        Application (LocalVariable "texture") [EVal $ Symbol "crystal"] Nothing
-      expected = Right $ Program [StExpression $ EApp texture]
-      result = Language.parse program
-   in assertEqual "" expected result
+      texture = Application (LocalVariable "texture")
+                            [EVal $ Symbol "crystal"]
+                            Nothing
+      expected = Program [StExpression $ EApp texture]
+  in  parserTest program expected
 
-test_parse_symbol_variable_assignment :: Assertion
-test_parse_symbol_variable_assignment =
-  let program = "a = :symbol"
+test_parses_symbol_variable_assignment :: Assertion
+test_parses_symbol_variable_assignment =
+  let program    = "a = :symbol"
       assignment = AbsoluteAssignment "a" (EVal $ Symbol "symbol")
-      expected = Right $ Program [StAssign assignment]
-      result = Language.parse program
-   in assertEqual "" expected result
+      expected   = Program [StAssign assignment]
+  in  parserTest program expected

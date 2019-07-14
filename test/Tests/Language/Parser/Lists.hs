@@ -14,22 +14,22 @@ import           Language.Ast
 
 parserListTests :: Test
 parserListTests = testGroup
-  "Parser List Tests"
-  [ testCase "Parses a list value"     test_list_parsing
-  , testCase "Parses accessing a list" test_accessor_parsing
-  , testCase "Parses nested lists"     test_nested_list_parsing
-  , testCase "Parses nested accessing" test_nested_accessing_parsing
+  "List Tests"
+  [ testCase "parses a list value"     test_parses_list_parsing
+  , testCase "parses accessing a list" test_parses_accessor_parsing
+  , testCase "parses nested lists"     test_parses_nested_list_parsing
+  , testCase "parses nested accessing" test_parses_nested_accessing_parsing
   ]
 
-test_list_parsing :: Assertion
-test_list_parsing =
+test_parses_list_parsing :: Assertion
+test_parses_list_parsing =
   let program  = "a = [1, 2, 3]"
       list     = EList [EVal $ Number 1, EVal $ Number 2, EVal $ Number 3]
       expected = Program [StAssign $ AbsoluteAssignment "a" list]
   in  parserTest program expected
 
-test_accessor_parsing :: Assertion
-test_accessor_parsing =
+test_parses_accessor_parsing :: Assertion
+test_parses_accessor_parsing =
   let program = "a = [1,2,3]\nb = a[2 + 1]"
       list    = EList [EVal $ Number 1, EVal $ Number 2, EVal $ Number 3]
       access  = EAccess (EVar $ LocalVariable "a")
@@ -40,8 +40,8 @@ test_accessor_parsing =
         ]
   in  parserTest program expected
 
-test_nested_list_parsing :: Assertion
-test_nested_list_parsing =
+test_parses_nested_list_parsing :: Assertion
+test_parses_nested_list_parsing =
   let program = "a = [1, [[1, 2], [3, 4]]]"
       list    = EList
         [ EVal $ Number 1
@@ -53,8 +53,8 @@ test_nested_list_parsing =
       expected = Program [StAssign $ AbsoluteAssignment "a" list]
   in  parserTest program expected
 
-test_nested_accessing_parsing :: Assertion
-test_nested_accessing_parsing =
+test_parses_nested_accessing_parsing :: Assertion
+test_parses_nested_accessing_parsing =
   let program = "a = [1, [[1, 2], [3, 4]]][0][1][2]"
       list    = EList
         [ EVal $ Number 1

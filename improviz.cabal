@@ -19,88 +19,65 @@ executable improviz
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
                        -fwarn-unused-binds -fwarn-unused-imports
   build-depends:       base >= 4.8 && < 5
+                     , aeson
                      , bytestring
                      , containers
-                     , filepath
                      , file-embed
+                     , filepath
                      , freetype2
+                     , GLFW-b
+                     , GLURaw
                      , hosc
+                     , JuicyPixels
                      , lens-simple
-                     , mtl
-                     , optparse-applicative
                      , megaparsec >= 7
+                     , mtl
+                     , OpenGL
+                     , OpenGLRaw
+                     , optparse-applicative
                      , parser-combinators >= 1
                      , safe
                      , scotty
                      , split
                      , stm
-                     , transformers
                      , text
                      , time
-                     , vector
-                     , GLFW-b
-                     , GLURaw
-                     , JuicyPixels
-                     , OpenGL
-                     , OpenGLRaw
+                     , transformers
                      , Vec
-                     , yaml
                      , vector
                      , warp
-                     , aeson
-  other-modules:       Server
-                     , Server.Http
-                     , Server.Protocol
-                     , Server.OSC
+                     , yaml
+  other-modules:       Improviz
+                     , Improviz.Language
+                     , Improviz.UI
                      , Configuration
                      , Configuration.CLI
                      , Configuration.Font
                      , Configuration.OSC
                      , Configuration.Screen
                      , ErrorHandling
-                     , Util
-                     , Logging
-                     , Improviz
-                     , Improviz.Language
-                     , Improviz.UI
                      , Gfx
                      , Gfx.Commands
                      , Gfx.Context
                      , Gfx.Engine
                      , Gfx.FontHandling
                      , Gfx.Geometries
-                     , Gfx.VertexBuffers
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
-                     , Gfx.OpenGL
                      , Gfx.Matrices
+                     , Gfx.OpenGL
                      , Gfx.PostProcessing
                      , Gfx.Shaders
                      , Gfx.TextRendering
                      , Gfx.Textures
                      , Gfx.Types
-                     , Windowing
+                     , Gfx.VertexBuffers
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers
                      , Language.Ast.Transformers.Globalise
                      , Language.Compiler
                      , Language.Compiler.State
-                     , Language.Parser
-                     , Language.Parser.Errors
-                     , Language.Interpreter
-                     , Language.Interpreter.Operators
-                     , Language.Interpreter.Scope
-                     , Language.Interpreter.StdLib
-                     , Language.Interpreter.StdLib.Shapes
-                     , Language.Interpreter.StdLib.MatrixOps
-                     , Language.Interpreter.StdLib.ColourOps
-                     , Language.Interpreter.StdLib.BlockHandling
-                     , Language.Interpreter.StdLib.PostEffects
-                     , Language.Interpreter.StdLib.Maths
-                     , Language.Interpreter.StdLib.Util
-                     , Language.Interpreter.Types
-                     , Language.Interpreter.Values
                      , Language.ImpVM
                      , Language.ImpVM.StdLib
                      , Language.ImpVM.StdLib.BlockHandling
@@ -111,6 +88,28 @@ executable improviz
                      , Language.ImpVM.StdLib.Shapes
                      , Language.ImpVM.Types
                      , Language.ImpVM.VM
+                     , Language.Interpreter
+                     , Language.Interpreter.Operators
+                     , Language.Interpreter.Scope
+                     , Language.Interpreter.StdLib
+                     , Language.Interpreter.StdLib.BlockHandling
+                     , Language.Interpreter.StdLib.ColourOps
+                     , Language.Interpreter.StdLib.Maths
+                     , Language.Interpreter.StdLib.MatrixOps
+                     , Language.Interpreter.StdLib.PostEffects
+                     , Language.Interpreter.StdLib.Shapes
+                     , Language.Interpreter.StdLib.Util
+                     , Language.Interpreter.Types
+                     , Language.Interpreter.Values
+                     , Language.Parser
+                     , Language.Parser.Errors
+                     , Logging
+                     , Server
+                     , Server.Http
+                     , Server.Protocol
+                     , Server.OSC
+                     , Util
+                     , Windowing
   default-language:    Haskell2010
 
 test-suite improviz-test
@@ -119,78 +118,60 @@ test-suite improviz-test
                      , src
   main-is:             Spec.hs
   build-depends:       base >= 4.8 && < 5
+                     , aeson
                      , bytestring
                      , containers
-                     , filepath
                      , file-embed
+                     , filepath
                      , freetype2
+                     , HUnit
+                     , JuicyPixels
                      , lens-simple
-                     , mtl
-                     , safe
-                     , optparse-applicative
                      , megaparsec >= 7
+                     , mtl
+                     , OpenGL
+                     , OpenGLRaw
+                     , optparse-applicative
                      , parser-combinators >= 1
-                     , transformers
+                     , safe
+                     , stm
                      , test-framework
                      , test-framework-hunit
                      , time
-                     , vector
-                     , HUnit
-                     , JuicyPixels
-                     , OpenGL
-                     , OpenGLRaw
-                     , stm
+                     , transformers
                      , Vec
-                     , yaml
                      , vector
-                     , aeson
+                     , yaml
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
                        -fwarn-unused-binds -fwarn-unused-imports
-  other-modules:       ErrorHandling
-                     , Util
-                     , Configuration
+  other-modules:       Configuration
                      , Configuration.CLI
                      , Configuration.Font
                      , Configuration.OSC
                      , Configuration.Screen
-                     , Logging
+                     , ErrorHandling
                      , Gfx
                      , Gfx.Commands
                      , Gfx.Context
                      , Gfx.Engine
                      , Gfx.FontHandling
                      , Gfx.Geometries
-                     , Gfx.VertexBuffers
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
+                     , Gfx.Matrices
                      , Gfx.OpenGL
+                     , Gfx.PostProcessing
                      , Gfx.TextRendering
                      , Gfx.Textures
                      , Gfx.Types
-                     , Gfx.Matrices
-                     , Gfx.PostProcessing
                      , Gfx.Shaders
+                     , Gfx.VertexBuffers
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers
                      , Language.Ast.Transformers.Globalise
                      , Language.Compiler
                      , Language.Compiler.State
-                     , Language.Parser
-                     , Language.Parser.Errors
-                     , Language.Interpreter
-                     , Language.Interpreter.Operators
-                     , Language.Interpreter.Scope
-                     , Language.Interpreter.StdLib
-                     , Language.Interpreter.StdLib.Shapes
-                     , Language.Interpreter.StdLib.MatrixOps
-                     , Language.Interpreter.StdLib.ColourOps
-                     , Language.Interpreter.StdLib.BlockHandling
-                     , Language.Interpreter.StdLib.PostEffects
-                     , Language.Interpreter.StdLib.Maths
-                     , Language.Interpreter.StdLib.Util
-                     , Language.Interpreter.Types
-                     , Language.Interpreter.Values
                      , Language.ImpVM
                      , Language.ImpVM.StdLib
                      , Language.ImpVM.StdLib.BlockHandling
@@ -201,14 +182,30 @@ test-suite improviz-test
                      , Language.ImpVM.StdLib.Shapes
                      , Language.ImpVM.Types
                      , Language.ImpVM.VM
+                     , Language.Interpreter
+                     , Language.Interpreter.Operators
+                     , Language.Interpreter.Scope
+                     , Language.Interpreter.StdLib
+                     , Language.Interpreter.StdLib.BlockHandling
+                     , Language.Interpreter.StdLib.ColourOps
+                     , Language.Interpreter.StdLib.Maths
+                     , Language.Interpreter.StdLib.MatrixOps
+                     , Language.Interpreter.StdLib.PostEffects
+                     , Language.Interpreter.StdLib.Shapes
+                     , Language.Interpreter.StdLib.Util
+                     , Language.Interpreter.Types
+                     , Language.Interpreter.Values
+                     , Language.Parser
+                     , Language.Parser.Errors
+                     , Logging
                      , TestHelpers.GfxContext
                      , TestHelpers.GfxAst
                      , TestHelpers.Util
                      , Tests.Language.Ast.Transformers.Globalise
                      , Tests.Language.Interpreter.Blocks
                      , Tests.Language.Interpreter.Expressions
-                     , Tests.Language.Interpreter.If
                      , Tests.Language.Interpreter.Functions
+                     , Tests.Language.Interpreter.If
                      , Tests.Language.Interpreter.Lists
                      , Tests.Language.Interpreter.Loops
                      , Tests.Language.Interpreter.Operators
@@ -216,14 +213,16 @@ test-suite improviz-test
                      , Tests.Language.Parser
                      , Tests.Language.Parser.Assignment
                      , Tests.Language.Parser.Blocks
-                     , Tests.Language.Parser.Functions
-                     , Tests.Language.Parser.Symbols
-                     , Tests.Language.Parser.Loops
-                     , Tests.Language.Parser.Lists
-                     , Tests.Language.Parser.Operators
-                     , Tests.Language.Parser.If
                      , Tests.Language.Parser.ErrorCatching
+                     , Tests.Language.Parser.Functions
+                     , Tests.Language.Parser.General
+                     , Tests.Language.Parser.If
+                     , Tests.Language.Parser.Lists
+                     , Tests.Language.Parser.Loops
+                     , Tests.Language.Parser.Operators
+                     , Tests.Language.Parser.Symbols
                      , Tests.Language.VM
+                     , Util
   default-language:    Haskell2010
 
 source-repository head

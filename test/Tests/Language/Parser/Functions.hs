@@ -7,56 +7,51 @@ import           Test.Framework                 ( Test
                                                 , testGroup
                                                 )
 import           Test.Framework.Providers.HUnit ( testCase )
-import           Test.HUnit                     ( Assertion
-                                                , assertEqual
-                                                )
+import           Test.HUnit                     ( Assertion )
+import           TestHelpers.Util               ( parserTest )
 
-import qualified Language
 import           Language.Ast
 
 parserFunctionTests :: Test
 parserFunctionTests = testGroup
-  "Parser Function Tests"
-  [ testCase "Parsing simple function call" test_simple_application
-  , testCase "Parsing function call with variable arg"
-             test_application_with_var_arg
-  , testCase "Parsing no arguments function call" test_noargs_application
-  , testCase "Parse function with block"          test_parse_function_blocks
+  "Function Tests"
+  [ testCase "parses simple function call" test_parses_simple_application
+  , testCase "parses function call with variable arg"
+             test_parses_application_with_var_arg
+  , testCase "parses no arguments function call" test_parses_noargs_application
+  , testCase "parses function with block"        test_parses_function_blocks
   ]
 
-test_simple_application :: Assertion
-test_simple_application =
+test_parses_simple_application :: Assertion
+test_parses_simple_application =
   let program = "cube(1, 1, i)\n\n"
       cube    = Application
         (LocalVariable "cube")
         [EVal $ Number 1, EVal $ Number 1, EVar $ LocalVariable "i"]
         Nothing
-      expected = Right $ Program [StExpression $ EApp cube]
-      result   = Language.parse program
-  in  assertEqual "" expected result
+      expected = Program [StExpression $ EApp cube]
+  in  parserTest program expected
 
-test_application_with_var_arg :: Assertion
-test_application_with_var_arg =
+test_parses_application_with_var_arg :: Assertion
+test_parses_application_with_var_arg =
   let program = "a = 2\ncube(1, a, 3)\n\n"
       assign  = StAssign $ AbsoluteAssignment "a" $ EVal $ Number 2
       cube    = StExpression $ EApp $ Application
         (LocalVariable "cube")
         [EVal $ Number 1, EVar $ LocalVariable "a", EVal $ Number 3]
         Nothing
-      expected = Right $ Program [assign, cube]
-      result   = Language.parse program
-  in  assertEqual "" expected result
+      expected = Program [assign, cube]
+  in  parserTest program expected
 
-test_noargs_application :: Assertion
-test_noargs_application =
+test_parses_noargs_application :: Assertion
+test_parses_noargs_application =
   let program  = "foo()"
       cube     = Application (LocalVariable "foo") [] Nothing
-      expected = Right $ Program [StExpression $ EApp cube]
-      result   = Language.parse program
-  in  assertEqual "" expected result
+      expected = Program [StExpression $ EApp cube]
+  in  parserTest program expected
 
-test_parse_function_blocks :: Assertion
-test_parse_function_blocks =
+test_parses_function_blocks :: Assertion
+test_parses_function_blocks =
   let program = "box(a, a, 2)\n\tb = 2 * 0.5\n\tbox(a, b, 1)\n"
       ass     = ElAssign $ AbsoluteAssignment "b" $ BinaryOp "*"
                                                              (EVal $ Number 2)
@@ -75,6 +70,5 @@ test_parse_function_blocks =
                 , EVal $ Number 2
                 ]
             $ Just (Block [ass, box2])
-      expected = Right $ Program [box1]
-      result   = Language.parse program
-  in  assertEqual "" expected result
+      expected = Program [box1]
+  in  parserTest program expected

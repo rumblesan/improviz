@@ -1,5 +1,5 @@
 module Tests.Language.Interpreter.Blocks
-  ( blockTests
+  ( interpreterBlockTests
   )
 where
 
@@ -13,8 +13,8 @@ import           TestHelpers.Util               ( gfxTest )
 import qualified TestHelpers.GfxAst            as GA
 
 
-blockTests :: Test
-blockTests = testGroup
+interpreterBlockTests :: Test
+interpreterBlockTests = testGroup
   "Block Tests"
   [testCase "Simple block tests" test_basic_block_calling]
 

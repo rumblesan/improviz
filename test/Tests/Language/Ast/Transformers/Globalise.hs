@@ -1,5 +1,5 @@
 module Tests.Language.Ast.Transformers.Globalise
-  ( globaliseTransformerTests
+  ( transformersGlobaliseTests
   )
 where
 
@@ -16,8 +16,8 @@ import qualified Data.Set                      as S
 import           Language.Ast
 import           Language.Ast.Transformers.Globalise
 
-globaliseTransformerTests :: Test
-globaliseTransformerTests = testGroup
+transformersGlobaliseTests :: Test
+transformersGlobaliseTests = testGroup
   "AST Transformer Variable Globalisation Tests"
   [ testCase "simple variable to global variable" test_var_to_global
   , testCase "func body globalised"               test_func_var_to_global
