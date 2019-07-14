@@ -60,8 +60,7 @@ import           Gfx.PostProcessing             ( AnimationStyle(..) )
 import           Gfx.TextRendering              ( renderText
                                                 , renderTextToBuffer
                                                 )
-
-import           ErrorHandling                  ( printErrors )
+import           Gfx.OpenGL                     ( printErrors )
 
 
 getFullMatrix :: GraphicsEngine (Mat44 GLfloat)

@@ -72,7 +72,8 @@ import           Graphics.Rendering.OpenGL      ( Clamping(ClampToEdge)
                                                 )
 import qualified Graphics.Rendering.OpenGL     as GL
 
-import           ErrorHandling                  ( printErrors )
+import           Gfx.OpenGL                     ( printErrors )
+
 
 data Character =
   Character Char -- char

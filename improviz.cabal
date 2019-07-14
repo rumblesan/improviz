@@ -55,7 +55,6 @@ executable improviz
                      , Configuration.Font
                      , Configuration.OSC
                      , Configuration.Screen
-                     , ErrorHandling
                      , Gfx
                      , Gfx.Commands
                      , Gfx.Context
@@ -149,7 +148,6 @@ test-suite improviz-test
                      , Configuration.Font
                      , Configuration.OSC
                      , Configuration.Screen
-                     , ErrorHandling
                      , Gfx
                      , Gfx.Commands
                      , Gfx.Context

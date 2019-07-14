@@ -23,7 +23,7 @@ import           Gfx.FontHandling          (Character (..), Font (..),
                                             getCharacter, loadFont)
 import           Gfx.LoadShaders           (ShaderInfo (..), ShaderSource (..),
                                             loadShaders)
-import           Gfx.OpenGL                (colToGLCol)
+import           Gfx.OpenGL                (colToGLCol, printErrors)
 import           Gfx.Types                 (Colour (..))
 import           Gfx.VertexBuffers         (VBO (..), createVBO, drawVBO,
                                             setAttribPointer)
@@ -57,7 +57,6 @@ import           Configuration             (ImprovizConfig)
 import qualified Configuration             as C
 import qualified Configuration.Font        as FC
 import qualified Configuration.Screen      as CS
-import           ErrorHandling             (printErrors)
 import           Lens.Simple               ((^.))
 
 data TextRenderer = TextRenderer
