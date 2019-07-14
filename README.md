@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/rumblesan/improviz.svg?branch=master)](https://travis-ci.org/rumblesan/improviz)
 [![Windows build](https://ci.appveyor.com/api/projects/status/sv8a7mosacfsng2l?svg=true)](https://ci.appveyor.com/project/rumblesan/improviz)
 
-An offshoot of LiveCodeLab
+An offshoot of [LiveCodeLab](https://livecodelab.net)
 
 
 ## Description
@@ -13,7 +13,7 @@ Improviz is built in Haskell and interacts directly with OpenGL. It's very much 
 
 ## Installing
 
-Pre-buily binaries are available for OSX, Windows and Linux, and can be found on the [Releases Page](https://github.com/rumblesan/improviz/releases). Download one and then jump straight to the [relevant section in Running](#pre-built-binary).
+Pre-built binaries are available for OSX, Windows and Linux, and can be found on the [Releases Page](https://github.com/rumblesan/improviz/releases). Download one and then jump straight to the [relevant section in Running](#pre-built-binary).
 
 These should **"just work"** but if there are any problems please raise an issue.
 
@@ -39,7 +39,7 @@ Depending on your platform it may be necessary to install some or all of the fol
 
 ## Running
 
-This differs slightyly depending on wether you've built from source or downloaded a binary.
+This differs slightly depending on whether you've built from source or downloaded a binary.
 
 ### Pre-built binary
 
@@ -67,7 +67,7 @@ fill(0, 255, 255)
 ```
 
 There are better clients available for [Vim](https://github.com/rumblesan/improviz-vim) and [Atom](https://github.com/rumblesan/improviz-atom).
-There is a very basic client avaialable for [Emacs](https://github.com/rumblesan/improviz/tree/master/editor/emacs).
+There is a very basic client available for [Emacs](https://github.com/rumblesan/improviz/tree/master/editor/emacs).
 
 
 ## Language
@@ -82,7 +82,7 @@ Please check the [configuration](docs/configuration.md) document for details on 
 
 ## Hellocatfood GIFS
 
-As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://twitter.com/hellocatfood) was commissioned to create a series of animated gifs that can me used as textures with Improviz.
+As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://twitter.com/hellocatfood) was commissioned to create a series of animated GIFs that can be used as textures with Improviz.
 
 These excellent and unique images are bundled in the pre-built binary releases and can also be found in the [Improviz Performance](https://github.com/rumblesan/improviz-performance/) repository. They're licensed under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for performances, projects, and anything else you want.
 
