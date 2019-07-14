@@ -5,7 +5,9 @@ permalink: /
 
 # Improviz
 
-Improviz is a live-coding environment built for creating visual performances of abstract shapes, blurred shades and broken gifs.
+Improviz is a live-coding environment built for creating visual performances of abstract shapes, blurred shades and broken GIFs.
+
+It is fully open source, with the code being fully available at [the repository](https://github.com/rumblesan/improviz) on GitHub, and all contributions are welcome.
 
 ## Installation
 
@@ -24,6 +26,7 @@ The following documents should hopefully explain more of the ins and outs of usi
 ## Development
 
 If you want to dig into the code of Improviz then the [Development](./development.md) document may be useful.
+
 There is also the [Grammar](./grammar.md) document which tries to detail the grammar of the language, though that's less important if you're not planning to extend the language.
 
 ## Performing
@@ -34,7 +37,7 @@ This will continue to be added to over time and should hopefully serve as inspir
 
 ### Hellocatfood GIFs
 
-As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://twitter.com/hellocatfood) was commissioned to create a series of animated gifs that can me used as textures with Improviz.
+As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://twitter.com/hellocatfood) was commissioned to create a series of animated GIFs that can me used as textures with Improviz.
 
 These excellent and unique images are bundled in the pre-built binary releases and can also be found in the [hellogifs](https://github.com/rumblesan/improviz-performance/tree/master/hellogifs) folder of the performance repository. They're licensed under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for your own performances, projects, and anything else you may want.
 

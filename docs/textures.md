@@ -1,6 +1,6 @@
 # Textures
 
-Improviz supports textures on shapes. These can either be single bitmap images, pngs, or gifs with one or more frames.
+Improviz supports textures on shapes. These can either be single bitmap images, pngs, or GIFs with one or more frames.
 
 ```
 texture(:another)
@@ -22,7 +22,7 @@ It may be better for the texture to have a sizing that's a power of 2. e.g. 256*
 
 ## Animation
 
-Animated gifs can be loaded and used. This may be somewhat resource intensive at startup. Individual frames of a gif can then be used by using the second, *frame* argument of the `texture` function.
+Animated GIFs can be loaded and used. This may be somewhat resource intensive at startup. Individual frames of a GIF can then be used by using the second, *frame* argument of the `texture` function.
 
 ```
 texture(:loop1, 1)
