@@ -202,6 +202,7 @@ test-suite improviz-test
                      , TestHelpers.GfxAst
                      , TestHelpers.Util
                      , Tests.Language.Ast.Transformers.Globalise
+                     , Tests.Language.Interpreter
                      , Tests.Language.Interpreter.Blocks
                      , Tests.Language.Interpreter.Expressions
                      , Tests.Language.Interpreter.Functions

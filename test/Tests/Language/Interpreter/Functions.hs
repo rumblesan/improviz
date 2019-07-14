@@ -18,8 +18,9 @@ import           Language.Ast                   ( Value(Number) )
 interpreterFunctionTests :: Test
 interpreterFunctionTests = testGroup
   "Function Tests"
-  [ testCase "Test function creation"    test_function_creation_and_application
-  , testCase "Test function as argument" test_function_as_arg
+  [ testCase "interprets function creation"
+             test_function_creation_and_application
+  , testCase "interprets function as argument" test_function_as_arg
   ]
 
 test_function_creation_and_application :: Assertion

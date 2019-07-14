@@ -14,10 +14,10 @@ import qualified TestHelpers.GfxAst            as GA
 interpreterIfTests :: Test
 interpreterIfTests = testGroup
   "If Tests"
-  [ testCase "True single if statement"  test_true_if_statement
-  , testCase "False single if statement" test_false_if_statement
-  , testCase "True if else statement"    test_true_if_else_statement
-  , testCase "False if else statement"   test_false_if_else_statement
+  [ testCase "interprets true single if statement"  test_true_if_statement
+  , testCase "interprets false single if statement" test_false_if_statement
+  , testCase "interprets true if else statement"    test_true_if_else_statement
+  , testCase "interprets false if else statement"   test_false_if_else_statement
   ]
 
 test_true_if_statement :: Assertion

@@ -15,7 +15,7 @@ import           Language.Ast
 interpreterExpressionTests :: Test
 interpreterExpressionTests = testGroup
   "Expression Tests"
-  [testCase "Number Expression" test_number_expression]
+  [testCase "interprets number expression" test_number_expression]
 
 test_number_expression :: Assertion
 test_number_expression =

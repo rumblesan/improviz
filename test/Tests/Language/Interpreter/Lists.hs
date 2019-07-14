@@ -13,10 +13,9 @@ import           Language.Ast                   ( Value(Number) )
 
 interpreterListTests :: Test
 interpreterListTests = testGroup
-  "Interpreter List Tests"
-  [ testCase "List accessing returns correct value" test_list_accessing_program
-  , testCase "Multiple list accesses returns correct value"
-             test_nested_list_accessing
+  "List Tests"
+  [ testCase "interprets list accessing"         test_list_accessing_program
+  , testCase "interprets multiple list accesses" test_multiple_list_accessing
   ]
 
 test_list_accessing_program :: Assertion
@@ -27,8 +26,8 @@ test_list_accessing_program =
       expected = Number 3
   in  resultTest program expected "returns 3"
 
-test_nested_list_accessing :: Assertion
-test_nested_list_accessing =
+test_multiple_list_accessing :: Assertion
+test_multiple_list_accessing =
   let program  = "[1, [[1, 2], [3, 4]]][1][0][1]"
       expected = Number 2
   in  resultTest program expected "returns 2"

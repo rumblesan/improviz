@@ -16,10 +16,10 @@ import qualified TestHelpers.GfxAst            as GA
 interpreterBlockTests :: Test
 interpreterBlockTests = testGroup
   "Block Tests"
-  [testCase "Simple block tests" test_basic_block_calling]
+  [testCase "interprets application block" test_application_block]
 
-test_basic_block_calling :: Assertion
-test_basic_block_calling =
+test_application_block :: Assertion
+test_application_block =
   let
     program
       = "func a (sizeX, sizeY, &blk)\n\

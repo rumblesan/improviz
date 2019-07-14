@@ -1,5 +1,5 @@
 module Tests.Language.Interpreter.Operators
-  ( operatorTests
+  ( interpreterOperatorTests
   )
 where
 
@@ -12,18 +12,18 @@ import           TestHelpers.Util               ( resultTest )
 
 import           Language.Ast
 
-operatorTests :: Test
-operatorTests = testGroup
+interpreterOperatorTests :: Test
+interpreterOperatorTests = testGroup
   "Operator Tests"
-  [ testCase "Addition operator"       test_addition_operator
-  , testCase "Subtraction operator"    test_subtraction_operator
-  , testCase "Multiplication operator" test_multiplication_operator
-  , testCase "Division operator"       test_division_operator
-  , testCase "Exponent operator"       test_exponent_operator
-  , testCase "Modulo operator"         test_modulo_operator
-  , testCase "Less Than operator"      test_lessthan_operator
-  , testCase "Equal operator"          test_equal_operator
-  , testCase "Logical And operator"    test_logical_and_operator
+  [ testCase "interprets addition operator"       test_addition_operator
+  , testCase "interprets subtraction operator"    test_subtraction_operator
+  , testCase "interprets multiplication operator" test_multiplication_operator
+  , testCase "interprets division operator"       test_division_operator
+  , testCase "interprets exponent operator"       test_exponent_operator
+  , testCase "interprets modulo operator"         test_modulo_operator
+  , testCase "interprets less Than operator"      test_lessthan_operator
+  , testCase "interprets equal operator"          test_equal_operator
+  , testCase "interprets logical and operator"    test_logical_and_operator
   ]
 
 
