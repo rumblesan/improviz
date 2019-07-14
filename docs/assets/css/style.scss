@@ -3,6 +3,12 @@
 
 @import "{{ site.theme }}";
 
+.page-header {
+  background-image: url("/assets/images/improviz-header.jpg");
+  background-position: 20% 30%;
+  background-size: auto;
+}
+
 .page-nav {
   color: $header-heading-color;
   background-color: $header-bg-color;
