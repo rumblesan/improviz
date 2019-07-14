@@ -15,10 +15,5 @@ maybe' m nothingRes f = case m of
   Nothing -> nothingRes
   Just x  -> f x
 
-maybeElem :: Int -> [a] -> Maybe a
-maybeElem _ []       = Nothing
-maybeElem 0 (x : xs) = Just x
-maybeElem i (_ : xs) = maybeElem (i - 1) xs
-
 (/.) :: Int -> Int -> Float
 (/.) a b = fromIntegral a / fromIntegral b

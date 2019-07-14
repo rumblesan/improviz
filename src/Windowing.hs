@@ -12,6 +12,7 @@ import           Graphics.Rendering.OpenGL      ( ComparisonFunction(Less)
 import qualified Graphics.UI.GLFW              as GLFW
 
 import           Lens.Simple                    ( (^.) )
+import           Safe                           ( atMay )
 
 import           System.Exit                    ( exitFailure )
 
@@ -24,7 +25,6 @@ import           Logging                        ( logError
 
 import           Util                           ( bool
                                                 , maybe'
-                                                , maybeElem
                                                 , unless'
                                                 )
 
@@ -43,7 +43,7 @@ targetMonitor target = do
   return $ do
     t <- target
     m <- monitors
-    maybeElem t m
+    atMay m t
 
 screenSize :: GLFW.VideoMode -> (Int, Int)
 screenSize videoMode =
