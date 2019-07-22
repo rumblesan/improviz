@@ -1,7 +1,8 @@
 {-# LANGUAGE TupleSections #-}
 
 module Gfx.GeometryBuffers
-  ( GeometryBuffers(..)
+  ( GeometryBuffers
+  , ShapeBuffer(..)
   , createAllBuffers
   )
 where
@@ -42,17 +43,11 @@ import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , fromFile
                                                 )
 
-data GeometryBuffers = GeometryBuffers
-  { lineBuffer         :: VBO
-  , rectBuffer         :: VBO
-  , rectWireBuffer     :: VBO
-  , cubeBuffer         :: VBO
-  , cubeWireBuffer     :: VBO
-  , cylinderBuffer     :: VBO
-  , cylinderWireBuffer :: VBO
-  , sphereBuffer       :: VBO
-  , sphereWireBuffer   :: VBO
-  } deriving (Show, Eq)
+data ShapeBuffer = ShapeBuffer { triangles :: Maybe VBO
+                               , wireframe :: Maybe VBO
+                               } deriving (Show, Eq)
+
+type GeometryBuffers = M.Map String ShapeBuffer
 
 createBuffer :: [Vertex3 GLfloat] -> IO VBO
 createBuffer verts =
@@ -187,23 +182,20 @@ createWireframeFromObj path = do
 
 
 createAllBuffers :: IO GeometryBuffers
-createAllBuffers =
-  let lwb  = createWireframeFromObj "geometries/line.obj"
-      rb   = createTrianglesFromObj "geometries/rectangle.obj"
-      rwb  = createWireframeFromObj "geometries/rectangle.obj"
-      cb   = createTrianglesFromObj "geometries/cube.obj"
-      cwb  = createWireframeFromObj "geometries/cube.obj"
-      cyb  = createTrianglesFromObj "geometries/cylinder.obj"
-      cywb = createWireframeFromObj "geometries/cylinder.obj"
-      sb   = createTrianglesFromObj "geometries/sphere.obj"
-      swb  = createWireframeFromObj "geometries/sphere.obj"
-  in  GeometryBuffers
-        <$> lwb
-        <*> rb
-        <*> rwb
-        <*> cb
-        <*> cwb
-        <*> cyb
-        <*> cywb
-        <*> sb
-        <*> swb
+createAllBuffers = do
+  lwb  <- createWireframeFromObj "geometries/line.obj"
+  rb   <- createTrianglesFromObj "geometries/rectangle.obj"
+  rwb  <- createWireframeFromObj "geometries/rectangle.obj"
+  cb   <- createTrianglesFromObj "geometries/cube.obj"
+  cwb  <- createWireframeFromObj "geometries/cube.obj"
+  cyb  <- createTrianglesFromObj "geometries/cylinder.obj"
+  cywb <- createWireframeFromObj "geometries/cylinder.obj"
+  sb   <- createTrianglesFromObj "geometries/sphere.obj"
+  swb  <- createWireframeFromObj "geometries/sphere.obj"
+  return $ M.fromList
+    [ ("line"     , ShapeBuffer Nothing (Just lwb))
+    , ("rectangle", ShapeBuffer (Just rb) (Just rwb))
+    , ("cube"     , ShapeBuffer (Just cb) (Just cwb))
+    , ("cylinder" , ShapeBuffer (Just cyb) (Just cywb))
+    , ("sphere"   , ShapeBuffer (Just sb) (Just swb))
+    ]

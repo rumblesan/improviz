@@ -140,6 +140,7 @@ test-suite improviz-test
                      , transformers
                      , Vec
                      , vector
+                     , wavefront
                      , yaml
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
                        -fwarn-unused-binds -fwarn-unused-imports

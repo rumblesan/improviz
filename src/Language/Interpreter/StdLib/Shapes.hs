@@ -5,12 +5,7 @@ where
 
 import           Control.Monad.Except
 
-import           Gfx.Context                    ( drawLine
-                                                , drawCube
-                                                , drawRectangle
-                                                , drawCylinder
-                                                , drawSphere
-                                                )
+import           Gfx.Context                    ( drawShape )
 import           Language.Ast                   ( Value(Symbol, Null, Number) )
 import           Language.Interpreter           ( setBuiltIn
                                                 , useGfxCtx
@@ -33,22 +28,24 @@ shape shapeArgs = do
  where
   cubeS :: [Value] -> InterpreterProcess ()
   cubeS args = case args of
-    [Number x, Number y, Number z] -> useGfxCtx (\ctx -> drawCube ctx x y z)
+    [Number x, Number y, Number z] ->
+      useGfxCtx (\ctx -> drawShape ctx "cube" x y z)
     _ -> throwError "Wrong number of arguments to shape function"
   sphereS :: [Value] -> InterpreterProcess ()
   sphereS args = case args of
-    [Number x, Number y, Number z] -> useGfxCtx (\ctx -> drawSphere ctx x y z)
+    [Number x, Number y, Number z] ->
+      useGfxCtx (\ctx -> drawShape ctx "sphere" x y z)
     _ -> throwError "Wrong number of arguments to shape function"
   cylinderS :: [Value] -> InterpreterProcess ()
   cylinderS args = case args of
     [Number x, Number y, Number z] ->
-      useGfxCtx (\ctx -> drawCylinder ctx x y z)
+      useGfxCtx (\ctx -> drawShape ctx "cylinder" x y z)
     _ -> throwError "Wrong number of arguments to shape function"
   rectangleS :: [Value] -> InterpreterProcess ()
   rectangleS args = case args of
-    [Number x, Number y] -> useGfxCtx (\ctx -> drawRectangle ctx x y)
+    [Number x, Number y] -> useGfxCtx (\ctx -> drawShape ctx "rectangle" x y 1)
     _ -> throwError "Wrong number of arguments to shape function"
   lineS :: [Value] -> InterpreterProcess ()
   lineS args = case args of
-    [Number x] -> useGfxCtx (`drawLine` x)
+    [Number x] -> useGfxCtx (\ctx -> drawShape ctx "line" x 1 1)
     _          -> throwError "Wrong number of arguments to shape function"

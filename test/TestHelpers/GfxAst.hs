@@ -20,18 +20,7 @@ data GfxCommand
   deriving (Show, Eq)
 
 data ShapeGfx
-  = Cube Float
-         Float
-         Float
-  | Sphere Float
-           Float
-           Float
-  | Cylinder Float
-             Float
-             Float
-  | Rectangle Float
-              Float
-  | Line Float
+  = ShapeGfx String Float Float Float
   deriving (Show, Eq)
 
 data MatrixGfx
