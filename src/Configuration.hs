@@ -10,6 +10,7 @@ module Configuration
   , screen
   , fontConfig
   , textureDirectories
+  , geometryDirectories
   , codeFiles
   , assetsDirectory
   , serverPort
@@ -51,6 +52,7 @@ data ImprovizConfig = ImprovizConfig
   , _screen             :: ImprovizScreenConfig
   , _fontConfig         :: ImprovizFontConfig
   , _textureDirectories :: [FilePath]
+  , _geometryDirectories :: [FilePath]
   , _codeFiles          :: [FilePath]
   , _assetsDirectory    :: FilePath
   , _serverPort         :: Int
@@ -65,19 +67,20 @@ defaultConfigFile :: FilePath
 defaultConfigFile = "./improviz.yaml"
 
 defaultConfig :: ImprovizConfig
-defaultConfig = ImprovizConfig { _screenWidth        = 640
-                               , _screenHeight       = 480
-                               , _fullscreenDisplay  = Nothing
-                               , _debug              = False
-                               , _screen             = defaultScreenConfig
-                               , _fontConfig         = defaultFontConfig
-                               , _textureDirectories = ["./textures"]
-                               , _codeFiles          = []
-                               , _assetsDirectory    = "./assets"
-                               , _serverPort         = 3000
-                               , _osc                = defaultOSCConfig
-                               , _apptitle           = "Improviz"
-                               , _decorated          = False
+defaultConfig = ImprovizConfig { _screenWidth         = 640
+                               , _screenHeight        = 480
+                               , _fullscreenDisplay   = Nothing
+                               , _debug               = False
+                               , _screen              = defaultScreenConfig
+                               , _fontConfig          = defaultFontConfig
+                               , _textureDirectories  = ["./textures"]
+                               , _geometryDirectories = ["./geometries"]
+                               , _codeFiles           = []
+                               , _assetsDirectory     = "./assets"
+                               , _serverPort          = 3000
+                               , _osc                 = defaultOSCConfig
+                               , _apptitle            = "Improviz"
+                               , _decorated           = False
                                }
 
 instance FromJSON ImprovizConfig where
@@ -103,6 +106,9 @@ instance FromJSON ImprovizConfig where
       <*> v
       .:? "textureDirectories"
       .!= (defaultConfig ^. textureDirectories)
+      <*> v
+      .:? "geometryDirectories"
+      .!= (defaultConfig ^. geometryDirectories)
       <*> v
       .:? "codeFiles"
       .!= (defaultConfig ^. codeFiles)

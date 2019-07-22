@@ -1,9 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 
 module Gfx.GeometryBuffers
   ( GeometryBuffers
   , ShapeBuffer(..)
-  , createAllBuffers
+  , createAllGeometryBuffers
   )
 where
 
@@ -41,6 +42,14 @@ import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , LineIndex(..)
                                                 , TexCoord(..)
                                                 , fromFile
+                                                )
+import           Data.Yaml                      ( FromJSON(..)
+                                                , (.:)
+                                                )
+import qualified Data.Yaml                     as Y
+import           System.FilePath.Posix          ( (</>) )
+import           Logging                        ( logError
+                                                , logInfo
                                                 )
 
 data ShapeBuffer = ShapeBuffer { triangles :: Maybe VBO
@@ -111,6 +120,10 @@ dedupLines lines = M.keys $ M.fromList $ fmap (, 0) lines
 lineIdxToLine :: (Int, Int) -> Line
 lineIdxToLine (a, b) = Line (LineIndex a Nothing) (LineIndex b Nothing)
 
+defaultTextureCoords :: Int -> [Vertex2 GLfloat]
+defaultTextureCoords num = take num $ L.cycle
+  [Vertex2 1 1, Vertex2 0 1, Vertex2 0 0, Vertex2 0 0, Vertex2 1 0, Vertex2 1 1]
+
 objFaceVerts :: WavefrontOBJ -> Maybe [Vertex3 GLfloat]
 objFaceVerts obj =
   let verts   = objLocations obj
@@ -161,6 +174,9 @@ createTrianglesFromObj :: WavefrontOBJ -> IO (Maybe VBO)
 createTrianglesFromObj obj = case (objFaceVerts obj, objTextureCoords obj) of
   (Just verts, Just texCoords) ->
     Just <$> createBufferWithTexture verts texCoords
+  (Just verts, Nothing) -> Just <$> createBufferWithTexture
+    verts
+    (defaultTextureCoords (3 * L.length verts))
   _ -> return Nothing
 
 createWireframeFromObj :: WavefrontOBJ -> IO (Maybe VBO)
@@ -178,17 +194,35 @@ createShapeBuffer fp = do
     Right obj ->
       ShapeBuffer <$> createTrianglesFromObj obj <*> createWireframeFromObj obj
 
-createAllBuffers :: IO GeometryBuffers
-createAllBuffers = do
-  lb  <- createShapeBuffer "geometries/line.obj"
-  rb  <- createShapeBuffer "geometries/rectangle.obj"
-  cb  <- createShapeBuffer "geometries/cube.obj"
-  cyb <- createShapeBuffer "geometries/cylinder.obj"
-  sb  <- createShapeBuffer "geometries/sphere.obj"
-  return $ M.fromList
-    [ ("line"     , lb)
-    , ("rectangle", rb)
-    , ("cube"     , cb)
-    , ("cylinder" , cyb)
-    , ("sphere"   , sb)
-    ]
+data GeometryConfig = GeometryConfig
+  { geometryName :: String
+  , geometryFile :: FilePath
+  } deriving (Eq, Show)
+
+instance FromJSON GeometryConfig where
+  parseJSON (Y.Object v) = GeometryConfig <$> v .: "name" <*> v .: "file"
+  parseJSON _            = fail "Expected Object for Config value"
+
+newtype GeometryFolderConfig = GeometryFolderConfig
+  { geometries :: [GeometryConfig]
+  } deriving (Eq, Show)
+
+instance FromJSON GeometryFolderConfig where
+  parseJSON (Y.Object v) = GeometryFolderConfig <$> v .: "geometries"
+  parseJSON _            = fail "Expected Object for Config value"
+
+loadGeometryFolder :: FilePath -> IO [(String, ShapeBuffer)]
+loadGeometryFolder folderPath = do
+  yaml <- Y.decodeFileEither $ folderPath </> "config.yaml"
+  case yaml of
+    Left  err -> logError (show err) >> return []
+    Right cfg -> mapM geoLoad (geometries cfg)
+ where
+  geoLoad g =
+    (geometryName g, ) <$> createShapeBuffer (folderPath </> geometryFile g)
+
+createAllGeometryBuffers :: [FilePath] -> IO GeometryBuffers
+createAllGeometryBuffers folders = do
+  geometries <- concat <$> mapM loadGeometryFolder folders
+  logInfo $ "Loaded " ++ show (length geometries) ++ " geometry files"
+  return $ M.fromList geometries
