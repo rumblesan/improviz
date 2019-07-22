@@ -157,45 +157,38 @@ objWireframe obj =
     else V.fromList $ lineIdxToLine <$> dedupLines
       (L.concat $ facesToLineIndexes <$> f)
 
+createTrianglesFromObj :: WavefrontOBJ -> IO (Maybe VBO)
+createTrianglesFromObj obj = case (objFaceVerts obj, objTextureCoords obj) of
+  (Just verts, Just texCoords) ->
+    Just <$> createBufferWithTexture verts texCoords
+  _ -> return Nothing
 
+createWireframeFromObj :: WavefrontOBJ -> IO (Maybe VBO)
+createWireframeFromObj obj = case objWireframe obj of
+  Nothing    -> return Nothing
+  Just verts -> Just <$> createBuffer verts
 
-createTrianglesFromObj :: FilePath -> IO VBO
-createTrianglesFromObj path = do
-  fileInput <- fromFile path
-  obj       <- case fileInput of
-    Left  err -> fail err
-    Right obj -> return obj
-  let vtData = (,) <$> objFaceVerts obj <*> objTextureCoords obj
-  case vtData of
-    Nothing                 -> fail $ "Could not load data from" ++ path
-    Just (verts, texCoords) -> createBufferWithTexture verts texCoords
-
-createWireframeFromObj :: FilePath -> IO VBO
-createWireframeFromObj path = do
-  fileInput <- fromFile path
-  obj       <- case fileInput of
-    Left  err -> fail err
-    Right obj -> return obj
-  case objWireframe obj of
-    Nothing    -> fail $ "Could not load data from" ++ path
-    Just verts -> createBuffer verts
-
+createShapeBuffer :: FilePath -> IO ShapeBuffer
+createShapeBuffer fp = do
+  fileInput <- fromFile fp
+  case fileInput of
+    Left err -> do
+      print err
+      return $ ShapeBuffer Nothing Nothing
+    Right obj ->
+      ShapeBuffer <$> createTrianglesFromObj obj <*> createWireframeFromObj obj
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers = do
-  lwb  <- createWireframeFromObj "geometries/line.obj"
-  rb   <- createTrianglesFromObj "geometries/rectangle.obj"
-  rwb  <- createWireframeFromObj "geometries/rectangle.obj"
-  cb   <- createTrianglesFromObj "geometries/cube.obj"
-  cwb  <- createWireframeFromObj "geometries/cube.obj"
-  cyb  <- createTrianglesFromObj "geometries/cylinder.obj"
-  cywb <- createWireframeFromObj "geometries/cylinder.obj"
-  sb   <- createTrianglesFromObj "geometries/sphere.obj"
-  swb  <- createWireframeFromObj "geometries/sphere.obj"
+  lb  <- createShapeBuffer "geometries/line.obj"
+  rb  <- createShapeBuffer "geometries/rectangle.obj"
+  cb  <- createShapeBuffer "geometries/cube.obj"
+  cyb <- createShapeBuffer "geometries/cylinder.obj"
+  sb  <- createShapeBuffer "geometries/sphere.obj"
   return $ M.fromList
-    [ ("line"     , ShapeBuffer Nothing (Just lwb))
-    , ("rectangle", ShapeBuffer (Just rb) (Just rwb))
-    , ("cube"     , ShapeBuffer (Just cb) (Just cwb))
-    , ("cylinder" , ShapeBuffer (Just cyb) (Just cywb))
-    , ("sphere"   , ShapeBuffer (Just sb) (Just swb))
+    [ ("line"     , lb)
+    , ("rectangle", rb)
+    , ("cube"     , cb)
+    , ("cylinder" , cyb)
+    , ("sphere"   , sb)
     ]
