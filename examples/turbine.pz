@@ -1,5 +1,4 @@
-fill(0, 200, 255)
+texture(:code)
 
-100 times
-	rotate()
-	cube(5)
+rotate()
+cylinder(5)

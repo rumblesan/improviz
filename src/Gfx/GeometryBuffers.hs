@@ -27,8 +27,6 @@ import           Graphics.Rendering.OpenGL      ( Vertex2(..)
                                                   )
                                                 )
 
-import           Gfx.Geometries
-
 import           Gfx.VertexBuffers              ( VBO
                                                 , createVBO
                                                 , setAttribPointer
@@ -190,35 +188,22 @@ createWireframeFromObj path = do
 
 createAllBuffers :: IO GeometryBuffers
 createAllBuffers =
-  let
-    lwb   = createWireframeFromObj "geometries/line.obj"
-    rb    = createTrianglesFromObj "geometries/rectangle.obj"
-    rwb   = createWireframeFromObj "geometries/rectangle.obj"
-    cb    = createTrianglesFromObj "geometries/cube.obj"
-    cwb   = createWireframeFromObj "geometries/cube.obj"
-    ctris = cylinderTriangles 8
-    cyb   = createBufferWithTexture
-      (triVertexArray (cylinderVertices 1 0.5 8) ctris)
-      (take (length ctris * 3) cylinderTextCoords)
-    cywb =
-      createBuffer
-        $ lineVertexArray (cylinderVertices 1 0.5 8)
-        $ cylinderWireframe 8
-    stris = sphereTriangles 12
-    sb    = createBufferWithTexture
-      (triVertexArray (sphereVertices 0.5 12) stris)
-      (take (length stris * 3) sphereTextCoords)
-    swb =
-      createBuffer $ lineVertexArray (sphereVertices 0.5 12) $ sphereWireframe
-        12
-  in
-    GeometryBuffers
-    <$> lwb
-    <*> rb
-    <*> rwb
-    <*> cb
-    <*> cwb
-    <*> cyb
-    <*> cywb
-    <*> sb
-    <*> swb
+  let lwb  = createWireframeFromObj "geometries/line.obj"
+      rb   = createTrianglesFromObj "geometries/rectangle.obj"
+      rwb  = createWireframeFromObj "geometries/rectangle.obj"
+      cb   = createTrianglesFromObj "geometries/cube.obj"
+      cwb  = createWireframeFromObj "geometries/cube.obj"
+      cyb  = createTrianglesFromObj "geometries/cylinder.obj"
+      cywb = createWireframeFromObj "geometries/cylinder.obj"
+      sb   = createTrianglesFromObj "geometries/sphere.obj"
+      swb  = createWireframeFromObj "geometries/sphere.obj"
+  in  GeometryBuffers
+        <$> lwb
+        <*> rb
+        <*> rwb
+        <*> cb
+        <*> cwb
+        <*> cyb
+        <*> cywb
+        <*> sb
+        <*> swb
