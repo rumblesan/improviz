@@ -46,6 +46,7 @@ executable improviz
                      , Vec
                      , vector
                      , warp
+                     , wavefront
                      , yaml
   other-modules:       Improviz
                      , Improviz.Language
