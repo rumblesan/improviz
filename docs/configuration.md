@@ -66,6 +66,15 @@ textureDirectories:
  - ./downloads/textures
 ```
 
+## Geometry Directories
+
+Improviz can be given a list of directories to read geometry files from. The details of how this works can be found in [geometries.md](geometries.md)
+
+```yaml
+geometryDirectories:
+ - ./geometries
+```
+
 ## Pre-loaded Code
 
 It is possible to give Improviz a list of code files that it will load on startup. This makes it possible to have specific functions for performances available without having to modify the source or copying it into the editor window each time.
