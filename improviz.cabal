@@ -54,8 +54,10 @@ executable improviz
                      , Configuration
                      , Configuration.CLI
                      , Configuration.Font
+                     , Configuration.Geometries
                      , Configuration.OSC
                      , Configuration.Screen
+                     , Configuration.Textures
                      , Gfx
                      , Gfx.Commands
                      , Gfx.Context
@@ -147,8 +149,10 @@ test-suite improviz-test
   other-modules:       Configuration
                      , Configuration.CLI
                      , Configuration.Font
+                     , Configuration.Geometries
                      , Configuration.OSC
                      , Configuration.Screen
+                     , Configuration.Textures
                      , Gfx
                      , Gfx.Commands
                      , Gfx.Context

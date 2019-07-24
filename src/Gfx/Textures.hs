@@ -9,23 +9,15 @@ module Gfx.Textures
 where
 
 import qualified Data.ByteString               as B
+import qualified Data.Map.Strict               as M
 import           Data.Either                    ( rights )
 import           Data.List                      ( concat )
-import qualified Data.Map.Strict               as M
 import           Data.Vector.Storable           ( unsafeWith )
+import           System.FilePath.Posix          ( takeExtension
+                                                , (</>)
+                                                )
 
-import           Data.Yaml                      ( FromJSON(..)
-                                                , (.:)
-                                                )
-import qualified Data.Yaml                     as Y
-
-import           Codec.Picture                  ( Pixel
-                                                , decodeImage
-                                                )
-import           Codec.Picture.Gif              ( decodeGifImages )
-import           Codec.Picture.Types            ( DynamicImage(..)
-                                                , Image(..)
-                                                )
+import qualified Graphics.Rendering.OpenGL     as GL
 import           Graphics.Rendering.OpenGL      ( DataType(UnsignedByte)
                                                 , PixelData(..)
                                                 , PixelFormat(..)
@@ -36,33 +28,21 @@ import           Graphics.Rendering.OpenGL      ( DataType(UnsignedByte)
                                                 , TextureTarget2D(Texture2D)
                                                 , ($=)
                                                 )
-import qualified Graphics.Rendering.OpenGL     as GL
-import           System.FilePath.Posix          ( takeExtension
-                                                , (</>)
+import           Codec.Picture                  ( Pixel
+                                                , decodeImage
+                                                )
+import           Codec.Picture.Gif              ( decodeGifImages )
+import           Codec.Picture.Types            ( DynamicImage(..)
+                                                , Image(..)
                                                 )
 
+import           Configuration                  ( loadFolderConfig )
+import           Configuration.Textures
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
 
 type TextureLibrary = M.Map String (M.Map Int TextureObject)
-
-data TextureConfig = TextureConfig
-  { textureName :: String
-  , textureFile :: FilePath
-  } deriving (Eq, Show)
-
-instance FromJSON TextureConfig where
-  parseJSON (Y.Object v) = TextureConfig <$> v .: "name" <*> v .: "file"
-  parseJSON _            = fail "Expected Object for Config value"
-
-newtype TextureFolderConfig = TextureFolderConfig
-  { textures :: [TextureConfig]
-  } deriving (Eq, Show)
-
-instance FromJSON TextureFolderConfig where
-  parseJSON (Y.Object v) = TextureFolderConfig <$> v .: "textures"
-  parseJSON _            = fail "Expected Object for Config value"
 
 newtype TextureInfo = TextureInfo
   { textureFrames :: M.Map String Int
@@ -128,9 +108,9 @@ handleImage img = case img of
 
 loadTextureFolder :: FilePath -> IO [(String, M.Map Int TextureObject)]
 loadTextureFolder folderPath = do
-  yaml <- Y.decodeFileEither $ folderPath </> "config.yaml"
-  case yaml of
-    Left  err -> logError (show err) >> return []
+  folderConfig <- loadFolderConfig folderPath
+  case folderConfig of
+    Left  err -> logError err >> return []
     Right cfg -> mapM tl (textures cfg)
  where
   tl texture =
