@@ -18,12 +18,14 @@ module Configuration
   , apptitle
   , decorated
   , getConfig
+  , loadFolderConfig
   )
 where
 
 import           Control.Applicative            ( (<|>) )
 import           Data.Maybe                     ( fromMaybe )
 import           Options.Applicative            ( execParser )
+import           System.FilePath.Posix          ( (</>) )
 
 import           Lens.Simple
 
@@ -152,3 +154,10 @@ mergeConfigs cfg cliCfg = cfg
                            <|> (cliCfg ^. CLI.fullscreenDisplay)
   , _debug = (cfg ^. debug) || (cliCfg ^. CLI.debug)
   }
+
+loadFolderConfig :: FromJSON a => FilePath -> IO (Either String a)
+loadFolderConfig folderPath = do
+  yaml <- Y.decodeFileEither $ folderPath </> "config.yaml"
+  return $ case yaml of
+    Left  err -> Left $ Y.prettyPrintParseException err
+    Right cfg -> Right cfg

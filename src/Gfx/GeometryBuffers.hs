@@ -14,6 +14,7 @@ import qualified Data.Map.Strict               as M
 import           Data.Vector                    ( (!?) )
 import           Foreign.Marshal.Array          ( withArray )
 import           Foreign.Storable               ( sizeOf )
+import           System.FilePath.Posix          ( (</>) )
 
 import qualified Graphics.Rendering.OpenGL     as GL
 import           Graphics.Rendering.OpenGL      ( Vertex2(..)
@@ -28,11 +29,6 @@ import           Graphics.Rendering.OpenGL      ( Vertex2(..)
                                                   , Triangles
                                                   )
                                                 )
-
-import           Gfx.VertexBuffers              ( VBO
-                                                , createVBO
-                                                , setAttribPointer
-                                                )
 import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , Element(..)
                                                 , Face(..)
@@ -43,11 +39,13 @@ import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , TexCoord(..)
                                                 , fromFile
                                                 )
-import           Data.Yaml                      ( FromJSON(..)
-                                                , (.:)
+
+import           Gfx.VertexBuffers              ( VBO
+                                                , createVBO
+                                                , setAttribPointer
                                                 )
-import qualified Data.Yaml                     as Y
-import           System.FilePath.Posix          ( (</>) )
+import           Configuration                  ( loadFolderConfig )
+import           Configuration.Geometries
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
@@ -188,34 +186,16 @@ createShapeBuffer :: FilePath -> IO ShapeBuffer
 createShapeBuffer fp = do
   fileInput <- fromFile fp
   case fileInput of
-    Left err -> do
-      print err
-      return $ ShapeBuffer Nothing Nothing
+    Left err -> logError err >> return (ShapeBuffer Nothing Nothing)
     Right obj ->
       ShapeBuffer <$> createTrianglesFromObj obj <*> createWireframeFromObj obj
 
-data GeometryConfig = GeometryConfig
-  { geometryName :: String
-  , geometryFile :: FilePath
-  } deriving (Eq, Show)
-
-instance FromJSON GeometryConfig where
-  parseJSON (Y.Object v) = GeometryConfig <$> v .: "name" <*> v .: "file"
-  parseJSON _            = fail "Expected Object for Config value"
-
-newtype GeometryFolderConfig = GeometryFolderConfig
-  { geometries :: [GeometryConfig]
-  } deriving (Eq, Show)
-
-instance FromJSON GeometryFolderConfig where
-  parseJSON (Y.Object v) = GeometryFolderConfig <$> v .: "geometries"
-  parseJSON _            = fail "Expected Object for Config value"
 
 loadGeometryFolder :: FilePath -> IO [(String, ShapeBuffer)]
 loadGeometryFolder folderPath = do
-  yaml <- Y.decodeFileEither $ folderPath </> "config.yaml"
-  case yaml of
-    Left  err -> logError (show err) >> return []
+  folderConfig <- loadFolderConfig folderPath
+  case folderConfig of
+    Left  err -> logError err >> return []
     Right cfg -> mapM geoLoad (geometries cfg)
  where
   geoLoad g =
