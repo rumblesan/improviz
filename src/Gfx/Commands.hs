@@ -40,7 +40,7 @@ import           Graphics.Rendering.OpenGL      ( ($=)
                                                 )
 
 import           Gfx.Engine
-import           Gfx.GeometryBuffers            ( ShapeBuffer(..) )
+import           Gfx.Geometries                 ( ShapeBuffer(..) )
 import           Gfx.Matrices                   ( scaleMat
                                                 , translateMat
                                                 , rotMat

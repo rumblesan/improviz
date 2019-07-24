@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 
-module Gfx.GeometryBuffers
-  ( GeometryBuffers
+module Gfx.Geometries
+  ( Geometries
   , ShapeBuffer(..)
-  , createAllGeometryBuffers
+  , createAllGeometries
   )
 where
 
@@ -54,7 +54,7 @@ data ShapeBuffer = ShapeBuffer { triangles :: Maybe VBO
                                , wireframe :: Maybe VBO
                                } deriving (Show, Eq)
 
-type GeometryBuffers = M.Map String ShapeBuffer
+type Geometries = M.Map String ShapeBuffer
 
 createBuffer :: [Vertex3 GLfloat] -> IO VBO
 createBuffer verts =
@@ -201,8 +201,8 @@ loadGeometryFolder folderPath = do
   geoLoad g =
     (geometryName g, ) <$> createShapeBuffer (folderPath </> geometryFile g)
 
-createAllGeometryBuffers :: [FilePath] -> IO GeometryBuffers
-createAllGeometryBuffers folders = do
+createAllGeometries :: [FilePath] -> IO Geometries
+createAllGeometries folders = do
   geometries <- concat <$> mapM loadGeometryFolder folders
   logInfo $ "Loaded " ++ show (length geometries) ++ " geometry files"
   return $ M.fromList geometries

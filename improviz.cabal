@@ -63,7 +63,7 @@ executable improviz
                      , Gfx.Context
                      , Gfx.Engine
                      , Gfx.FontHandling
-                     , Gfx.GeometryBuffers
+                     , Gfx.Geometries
                      , Gfx.LoadShaders
                      , Gfx.Matrices
                      , Gfx.OpenGL
@@ -158,7 +158,7 @@ test-suite improviz-test
                      , Gfx.Context
                      , Gfx.Engine
                      , Gfx.FontHandling
-                     , Gfx.GeometryBuffers
+                     , Gfx.Geometries
                      , Gfx.LoadShaders
                      , Gfx.Matrices
                      , Gfx.OpenGL
