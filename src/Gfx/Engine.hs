@@ -15,7 +15,7 @@ import           Lens.Simple                    ( makeLenses
                                                 )
 
 import           Gfx.GeometryBuffers            ( GeometryBuffers
-                                                , createAllBuffers
+                                                , createAllGeometryBuffers
                                                 )
 import           Gfx.Matrices                   ( projectionMat
                                                 , vec3
@@ -92,7 +92,7 @@ createGfxEngine config width height pprocess trender textLib =
       projection = projectionMat front back (pi / 4) ratio
       view       = viewMat (vec3 0 0 10) (vec3 0 0 0) (vec3 0 1 0)
   in  do
-        gbos <- createAllBuffers
+        gbos <- createAllGeometryBuffers (config ^. C.geometryDirectories)
         cshd <- createColourShaders
         tshd <- createTextureShaders
         sshd <- createStrokeShaders

@@ -1,0 +1,11 @@
+geometries:
+  - name: line
+    file: line.obj
+  - name: rectangle
+    file: rectangle.obj
+  - name: cube
+    file: cube.obj
+  - name: cylinder
+    file: cylinder.obj
+  - name: sphere
+    file: sphere.obj

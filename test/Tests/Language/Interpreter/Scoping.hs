@@ -27,7 +27,7 @@ test_basic_default_scoping =
     expectedGfx =
       [ GA.ScopeCommand GA.PushScope
       , GA.MatrixCommand (GA.Rotate 3 4 5)
-      , GA.ShapeCommand (GA.Cube 1 1 1)
+      , GA.ShapeCommand (GA.ShapeGfx "cube" 1 1 1)
       , GA.ScopeCommand GA.PopScope
       ]
   in

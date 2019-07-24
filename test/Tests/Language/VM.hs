@@ -38,7 +38,7 @@ test_basic_addition =
 test_vm_gfx :: Assertion
 test_vm_gfx =
   let program     = "shape(:cube, 1, 1, 1)"
-      expectedGfx = [GA.ShapeCommand (GA.Cube 1 1 1)]
+      expectedGfx = [GA.ShapeCommand (GA.ShapeGfx "cube" 1 1 1)]
   in  vmGfxTest program M.empty expectedGfx
 
 test_complex_gfx :: Assertion

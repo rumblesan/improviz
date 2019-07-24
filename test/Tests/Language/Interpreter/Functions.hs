@@ -35,6 +35,6 @@ test_function_as_arg =
   let
     program =
       "a = 2\nb = 3\nfunc foo (c, d) => c * d\nshape(:cube, b, a, foo(a, b))\n"
-    expectedGfx = [GA.ShapeCommand (GA.Cube 3 2 6)]
+    expectedGfx = [GA.ShapeCommand (GA.ShapeGfx "cube" 3 2 6)]
   in
     gfxTest program expectedGfx

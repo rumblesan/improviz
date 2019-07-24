@@ -26,25 +26,25 @@ shape shapeArgs = case shapeArgs of
   cubeS args = case args of
     [SFloat x, SFloat y, SFloat z] -> do
       ctx <- use externalState
-      liftIO $ drawCube ctx x y z
+      liftIO $ drawShape ctx "cube" x y z
     _ -> setError "Invalid cube command"
   sphereS args = case args of
     [SFloat x, SFloat y, SFloat z] -> do
       ctx <- use externalState
-      liftIO $ drawSphere ctx x y z
+      liftIO $ drawShape ctx "sphere" x y z
     _ -> setError "Invalid sphere command"
   cylinderS args = case args of
     [SFloat x, SFloat y, SFloat z] -> do
       ctx <- use externalState
-      liftIO $ drawCylinder ctx x y z
+      liftIO $ drawShape ctx "cylinder" x y z
     _ -> setError "Invalid cylinder command"
   rectangleS args = case args of
     [SFloat x, SFloat y] -> do
       ctx <- use externalState
-      liftIO $ drawRectangle ctx x y
+      liftIO $ drawShape ctx "rectangle" x y 1
     _ -> setError "Invalid rectangle command"
   lineS args = case args of
     [SFloat x] -> do
       ctx <- use externalState
-      liftIO $ drawLine ctx x
+      liftIO $ drawShape ctx "line" x 1 1
     _ -> setError "Invalid line command"

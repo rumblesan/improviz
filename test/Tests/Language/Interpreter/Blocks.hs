@@ -28,6 +28,8 @@ test_application_block =
         \a(2, 1)\n\
         \\tshape(:cube, 1, 1, 1)"
     expectedGfx =
-      [GA.MatrixCommand (GA.Scale 2 1 1), GA.ShapeCommand (GA.Cube 1 1 1)]
+      [ GA.MatrixCommand (GA.Scale 2 1 1)
+      , GA.ShapeCommand (GA.ShapeGfx "cube" 1 1 1)
+      ]
   in
     gfxTest program expectedGfx

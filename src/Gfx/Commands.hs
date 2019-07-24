@@ -1,9 +1,5 @@
 module Gfx.Commands
-  ( drawLine
-  , drawRectangle
-  , drawCube
-  , drawCylinder
-  , drawSphere
+  ( drawShape
   , rotate
   , scale
   , move
@@ -29,6 +25,7 @@ import           Lens.Simple                    ( use
                                                 )
 import qualified Data.Map.Strict               as M
 
+import           Data.Maybe                     ( maybe )
 import           Data.Vec                       ( Mat44
                                                 , multmm
                                                 )
@@ -43,7 +40,7 @@ import           Graphics.Rendering.OpenGL      ( ($=)
                                                 )
 
 import           Gfx.Engine
-import           Gfx.GeometryBuffers            ( GeometryBuffers(..) )
+import           Gfx.GeometryBuffers            ( ShapeBuffer(..) )
 import           Gfx.Matrices                   ( scaleMat
                                                 , translateMat
                                                 , rotMat
@@ -70,8 +67,8 @@ getFullMatrix = do
   vMat <- use viewMatrix
   return $ multmm (multmm pMat vMat) mMat
 
-drawShape :: VBO -> GraphicsEngine ()
-drawShape vbo = do
+drawTriangles :: VBO -> GraphicsEngine ()
+drawTriangles vbo = do
   style <- head <$> use fillStyles
   case style of
     GFXFillColour fillC -> do
@@ -110,44 +107,16 @@ drawWireframe vbo = do
     GFXNoStroke -> return ()
   liftIO printErrors
 
-drawLine :: Float -> GraphicsEngine ()
-drawLine l = do
+drawShape :: String -> Float -> Float -> Float -> GraphicsEngine ()
+drawShape name x y z = do
   gbos <- use geometryBuffers
-  modify' (pushMatrix $ scaleMat l 1 1)
-  drawWireframe (lineBuffer gbos)
-  modify' popMatrix
-
-drawRectangle :: Float -> Float -> GraphicsEngine ()
-drawRectangle x y = do
-  gbos <- use geometryBuffers
-  modify' (pushMatrix $ scaleMat x y 1)
-  drawWireframe (rectWireBuffer gbos)
-  drawShape (rectBuffer gbos)
-  modify' popMatrix
-
-drawCube :: Float -> Float -> Float -> GraphicsEngine ()
-drawCube x y z = do
-  gbos <- use geometryBuffers
-  modify' (pushMatrix $ scaleMat x y z)
-  drawWireframe (cubeWireBuffer gbos)
-  drawShape (cubeBuffer gbos)
-  modify' popMatrix
-
-drawCylinder :: Float -> Float -> Float -> GraphicsEngine ()
-drawCylinder x y z = do
-  gbos <- use geometryBuffers
-  modify' (pushMatrix $ scaleMat x y z)
-  drawWireframe (cylinderWireBuffer gbos)
-  drawShape (cylinderBuffer gbos)
-  modify' popMatrix
-
-drawSphere :: Float -> Float -> Float -> GraphicsEngine ()
-drawSphere x y z = do
-  gbos <- use geometryBuffers
-  modify' (pushMatrix $ scaleMat x y z)
-  drawWireframe (sphereWireBuffer gbos)
-  drawShape (sphereBuffer gbos)
-  modify' popMatrix
+  case M.lookup name gbos of
+    Nothing -> liftIO $ print $ "Could not find shape: " ++ name
+    Just (ShapeBuffer tb wb) -> do
+      modify' (pushMatrix $ scaleMat x y z)
+      maybe (return ()) drawTriangles tb
+      maybe (return ()) drawWireframe wb
+      modify' popMatrix
 
 rotate :: Float -> Float -> Float -> GraphicsEngine ()
 rotate x y z = modify' (multMatrix $ rotMat x y z)

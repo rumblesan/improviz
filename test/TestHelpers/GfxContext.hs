@@ -24,11 +24,7 @@ getOutputGfx gfx = reverse <$> readTVarIO gfx
 
 createTestGfxContext :: TVar [GfxCommand] -> GfxContext
 createTestGfxContext gfx = GfxContext
-  { drawLine           = \x -> addAst gfx (ShapeCommand $ Line x)
-  , drawRectangle      = \x y -> addAst gfx (ShapeCommand $ Rectangle x y)
-  , drawCube           = \x y z -> addAst gfx (ShapeCommand $ Cube x y z)
-  , drawSphere         = \x y z -> addAst gfx (ShapeCommand $ Sphere x y z)
-  , drawCylinder       = \x y z -> addAst gfx (ShapeCommand $ Cylinder x y z)
+  { drawShape = \name x y z -> addAst gfx (ShapeCommand $ ShapeGfx name x y z)
   , rotate             = \x y z -> addAst gfx (MatrixCommand $ Rotate x y z)
   , scale              = \x y z -> addAst gfx (MatrixCommand $ Scale x y z)
   , move               = \x y z -> addAst gfx (MatrixCommand $ Move x y z)

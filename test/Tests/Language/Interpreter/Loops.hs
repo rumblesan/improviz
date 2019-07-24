@@ -26,11 +26,11 @@ test_loop_program =
     expectedGfx =
       [ GA.MatrixCommand (GA.Rotate 0.1 0.2 0.3)
       , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2)
-      , GA.ShapeCommand (GA.Cube 0 0 0)
+      , GA.ShapeCommand (GA.ShapeGfx "cube" 0 0 0)
       , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2)
-      , GA.ShapeCommand (GA.Cube 1 1 1)
+      , GA.ShapeCommand (GA.ShapeGfx "cube" 1 1 1)
       , GA.MatrixCommand (GA.Rotate 0.2 0.2 0.2)
-      , GA.ShapeCommand (GA.Cube 2 2 2)
+      , GA.ShapeCommand (GA.ShapeGfx "cube" 2 2 2)
       ]
   in
     gfxTest program expectedGfx

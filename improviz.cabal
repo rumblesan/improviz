@@ -46,6 +46,7 @@ executable improviz
                      , Vec
                      , vector
                      , warp
+                     , wavefront
                      , yaml
   other-modules:       Improviz
                      , Improviz.Language
@@ -60,7 +61,6 @@ executable improviz
                      , Gfx.Context
                      , Gfx.Engine
                      , Gfx.FontHandling
-                     , Gfx.Geometries
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
                      , Gfx.Matrices
@@ -140,6 +140,7 @@ test-suite improviz-test
                      , transformers
                      , Vec
                      , vector
+                     , wavefront
                      , yaml
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
                        -fwarn-unused-binds -fwarn-unused-imports
@@ -153,7 +154,6 @@ test-suite improviz-test
                      , Gfx.Context
                      , Gfx.Engine
                      , Gfx.FontHandling
-                     , Gfx.Geometries
                      , Gfx.GeometryBuffers
                      , Gfx.LoadShaders
                      , Gfx.Matrices
