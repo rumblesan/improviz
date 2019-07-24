@@ -34,12 +34,14 @@ test_false_if_statement =
 
 test_true_if_else_statement :: Assertion
 test_true_if_else_statement =
-  let program     = "if (1)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1)"
+  let program =
+          "if (1)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1, 1, 1)"
       expectedGfx = [GA.ShapeCommand (GA.ShapeGfx "cube" 1 1 1)]
   in  gfxTest program expectedGfx
 
 test_false_if_else_statement :: Assertion
 test_false_if_else_statement =
-  let program     = "if (0)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1)"
+  let program =
+          "if (0)\n\tshape(:cube, 1, 1, 1)\nelse\n\tshape(:line, 1, 1, 1)"
       expectedGfx = [GA.ShapeCommand (GA.ShapeGfx "line" 1 1 1)]
   in  gfxTest program expectedGfx
