@@ -20,8 +20,9 @@ The following documents should hopefully explain more of the ins and outs of usi
 * [Language](./language.md)
 * [Interacting](./interacting.md)
 * [Reference](./reference.md)
-* [Textures](./textures.md)
 * [Configuration](./configuration.md)
+* [Textures](./textures.md)
+* [Geometries](./geometries.md)
 
 ## Development
 
