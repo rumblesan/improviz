@@ -223,6 +223,7 @@ renderCharacters xpos ypos renderer strings = do
     (\(xp, yp) c ->
        case c of
          '\n' -> return (xpos, yp - fontHeight font)
+         '\t' -> renderCharacterSpace renderer (fontAdvance font) xp yp font
          _ ->
            maybe
              (return (xp, yp - fontAdvance font))
@@ -314,8 +315,12 @@ renderCharacterTextQuad renderer (Character c width height adv xBearing yBearing
          return (x + adv, y)
 
 renderCharacterBGQuad ::
-     TextRenderer -> Character -> Int -> Int -> Font -> IO ()
-renderCharacterBGQuad renderer (Character _ _ _ adv _ _ _) x y font =
+     TextRenderer -> Character -> Int -> Int -> Font -> IO (Int, Int)
+renderCharacterBGQuad renderer (Character _ _ _ adv _ _ _) = renderCharacterSpace renderer adv
+
+renderCharacterSpace ::
+     TextRenderer -> Int -> Int -> Int -> Font -> IO (Int, Int)
+renderCharacterSpace renderer adv x y font =
   let x1 = fromIntegral x
       x2 = fromIntegral $ x + adv
       y1 = fromIntegral y
@@ -325,9 +330,10 @@ renderCharacterBGQuad renderer (Character _ _ _ adv _ _ _) x y font =
         textBGColourU <-
           GL.get $ GL.uniformLocation (bgprogram renderer) "textBGColor"
         GL.uniform textBGColourU $= colToGLCol (textBGColour renderer)
-   in renderCharacterQuad
-        (bgprogram renderer)
-        (pMatrix renderer)
-        (characterBGQuad renderer)
-        charDrawFunc
-        charVerts
+   in do renderCharacterQuad
+           (bgprogram renderer)
+           (pMatrix renderer)
+           (characterBGQuad renderer)
+           charDrawFunc
+           charVerts
+         return (x + adv, y)
