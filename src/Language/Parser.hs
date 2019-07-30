@@ -27,12 +27,10 @@ lineCmnt = L.skipLineComment "//"
 blockCmnt = L.skipBlockComment "/*" "*/"
 
 scn :: Parser ()
-scn = L.space (void $ takeWhile1P Nothing f) lineCmnt blockCmnt
-  where f x = x == '\t' || x == '\n'
+scn = L.space (void $ some (char '\t' <|> char '\n')) lineCmnt blockCmnt
 
 sc :: Parser ()
-sc = L.space (void $ takeWhile1P Nothing f) lineCmnt blockCmnt
-  where f x = x == ' '
+sc = L.space (void $ some (char ' ')) lineCmnt blockCmnt
 
 whitespace :: Parser ()
 whitespace = L.space space1 lineCmnt blockCmnt
@@ -71,11 +69,24 @@ eol = void $ many newline
 
 -- Improviz Language Parser
 
-parseProgram :: String -> Either ParserError Program
-parseProgram = parse program "program"
+tabWidth :: Pos
+tabWidth = mkPos 2
 
-simpleParse :: Parser a -> String -> Either ParserError a
-simpleParse parser = parse parser "program"
+initialParserState :: String -> s -> State s
+initialParserState name s = State
+  { stateInput    = s
+  , stateOffset   = 0
+  , statePosState = PosState { pstateInput      = s
+                             , pstateOffset     = 0
+                             , pstateSourcePos  = initialPos name
+                             , pstateTabWidth   = tabWidth
+                             , pstateLinePrefix = ""
+                             }
+  }
+
+parseProgram :: String -> Either ParserError Program
+parseProgram text =
+  let s = initialParserState "program" text in snd $ runParser' program s
 
 prettyPrintError :: ParserError -> String
 prettyPrintError = errorBundlePretty
@@ -124,18 +135,19 @@ exprs =
     <|> EList
     <$> list
     <|> EVar
-    <$> try variable
+    <$> variable
     <|> EVal
-    <$> try value
-    <|> try (parens expression)
+    <$> value
+    <|> (parens expression)
 
 element :: Parser Element
 element =
   (   (ElIf <$> ifElem)
     <|> (ElAssign <$> assignment)
     <|> (ElLoop <$> loop)
-    <|> (ElExpression <$> try expression)
+    <|> (ElExpression <$> expression)
     )
+    <*  eol
     <?> "element"
 
 application :: Parser Application
@@ -147,7 +159,7 @@ application = L.indentBlock scn ap
     args   <- sepBy expression comma
     void $ symbol ")"
     return
-      (L.IndentMany (Just (ilevel <> defaultTabWidth))
+      (L.IndentMany (Just (ilevel <> tabWidth))
                     (return . (Application apVar args . blk))
                     element
       )
@@ -165,7 +177,7 @@ functionDef = L.indentBlock scn fb
     exprBody <- optional $ symbol "=>" *> expression
     return $ case exprBody of
       Just expr -> L.IndentNone (Func name args $ Block [ElExpression expr])
-      Nothing   -> L.IndentSome (Just (ilevel <> defaultTabWidth))
+      Nothing   -> L.IndentSome (Just (ilevel <> tabWidth))
                                 (return . Func name args . Block)
                                 element
 
@@ -182,7 +194,7 @@ loop = L.indentBlock scn l
     loopExpr <- try (expression <* symbol "times")
     loopVar  <- optional (rword "with" *> identifier)
     return
-      (L.IndentSome (Just (ilevel <> defaultTabWidth))
+      (L.IndentSome (Just (ilevel <> tabWidth))
                     (return . (Loop loopExpr loopVar . Block))
                     element
       )
@@ -215,7 +227,7 @@ ifBlock = L.indentBlock scn i
     rword "if"
     predicate <- parens expression
     return
-      (L.IndentSome (Just (ilevel <> defaultTabWidth))
+      (L.IndentSome (Just (ilevel <> tabWidth))
                     (return . If predicate . Block)
                     element
       )
@@ -227,8 +239,7 @@ elseBlock = L.indentBlock scn i
   i = do
     ilevel <- L.indentLevel
     rword "else"
-    return
-      (L.IndentSome (Just (ilevel <> defaultTabWidth)) (return . Block) element)
+    return (L.IndentSome (Just (ilevel <> tabWidth)) (return . Block) element)
 
 expression :: Parser Expression
 expression = makeExprParser exprs operators >>= recurParsePostExpr
@@ -252,7 +263,7 @@ variable = GlobalVariable <$> symbol "time" <|> LocalVariable <$> identifier
 value :: Parser Value
 value = v_number <|> v_symbol <|> v_null
  where
-  v_symbol = try (char ':') >> Symbol <$> identifier <?> "symbol"
+  v_symbol = char ':' >> Symbol <$> identifier <?> "symbol"
   v_null   = Null <$ rword "null" <?> "null"
   v_number = Number <$> number
 
