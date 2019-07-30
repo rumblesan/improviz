@@ -1,8 +1,12 @@
+{-# LANGUAGE TypeFamilies     #-}
+
 module Language.Parser where
 
 import           Control.Monad                  ( void )
 import           Data.Void
+import           Data.Either                    ( partitionEithers )
 import           Data.Monoid                    ( (<>) )
+import qualified Data.List.NonEmpty            as NE
 
 import           GHC.Float                      ( double2Float )
 
@@ -10,7 +14,7 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Char           ( alphaNumChar
                                                 , space1
                                                 , letterChar
-                                                , newline
+                                                , eol
                                                 , string
                                                 , char
                                                 )
@@ -23,14 +27,17 @@ import           Language.Parser.Errors         ( ParserError )
 
 type Parser = Parsec Void String
 
+type RawData = [Either (ParseError String Void) Statement]
+
 lineCmnt = L.skipLineComment "//"
 blockCmnt = L.skipBlockComment "/*" "*/"
 
 scn :: Parser ()
-scn = L.space (void $ some (char '\t' <|> char '\n')) lineCmnt blockCmnt
+scn = L.space space1 lineCmnt blockCmnt
 
 sc :: Parser ()
-sc = L.space (void $ some (char ' ')) lineCmnt blockCmnt
+sc = L.space (void $ takeWhile1P Nothing f) lineCmnt empty
+  where f x = x == ' ' || x == '\t'
 
 whitespace :: Parser ()
 whitespace = L.space space1 lineCmnt blockCmnt
@@ -64,51 +71,57 @@ identifier = (lexeme . try) (p >>= check)
     then fail $ "keyword " ++ show x ++ " cannot be an identifier"
     else return x
 
-eol :: Parser ()
-eol = void $ many newline
-
 -- Improviz Language Parser
 
 tabWidth :: Pos
 tabWidth = mkPos 2
 
-initialParserState :: String -> s -> State s
-initialParserState name s = State
-  { stateInput    = s
-  , stateOffset   = 0
-  , statePosState = PosState { pstateInput      = s
+mkPosState :: String -> s -> PosState s
+mkPosState name s = PosState { pstateInput      = s
                              , pstateOffset     = 0
                              , pstateSourcePos  = initialPos name
                              , pstateTabWidth   = tabWidth
                              , pstateLinePrefix = ""
                              }
-  }
+
+mkParserState :: String -> s -> PosState s -> State s
+mkParserState name s ps =
+  State { stateInput = s, stateOffset = 0, statePosState = ps }
 
 parseProgram :: String -> Either ParserError Program
 parseProgram text =
-  let s = initialParserState "program" text in snd $ runParser' program s
+  let ps = mkPosState "program" text
+      s  = mkParserState "program" text ps
+  in  do
+        res <- snd $ runParser' program s
+        handleRes (partitionEithers res)
+ where
+  handleRes (errs, stmts) = if length errs > 0
+    then Left $ ParseErrorBundle { bundleErrors   = NE.fromList errs
+                                 , bundlePosState = mkPosState "program" text
+                                 }
+    else Right (Program stmts)
 
 prettyPrintError :: ParserError -> String
 prettyPrintError = errorBundlePretty
 
-program :: Parser Program
-program = between whitespace eof programBlock
-
-programBlock :: Parser Program
-programBlock = Program <$> many statement <?> "program block"
+program :: Parser RawData
+program = between whitespace eof (sepEndBy e scn)
+ where
+  e = withRecovery recover (Right <$> statement)
+  recover err = Left err <$ manyTill anySingle eol
 
 statement :: Parser Statement
-statement = L.nonIndented scn statement' <?> "statement"
-
-statement' :: Parser Statement
-statement' =
-  (   (StIf <$> ifElem)
-    <|> (StAssign <$> assignment)
-    <|> (StFunc <$> functionDef)
-    <|> (StLoop <$> loop)
-    <|> (StExpression <$> expression)
-    )
-    <* eol
+statement =
+  L.nonIndented
+      scn
+      (   (StIf <$> ifElem)
+      <|> (StAssign <$> assignment)
+      <|> (StFunc <$> functionDef)
+      <|> (StLoop <$> loop)
+      <|> (StExpression <$> expression)
+      )
+    <?> "statement"
 
 operators =
   [ [Prefix (UnaryOp <$> symbol "-")]
@@ -147,7 +160,6 @@ element =
     <|> (ElLoop <$> loop)
     <|> (ElExpression <$> expression)
     )
-    <*  eol
     <?> "element"
 
 application :: Parser Application
