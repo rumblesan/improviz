@@ -96,7 +96,7 @@ parseProgram text =
         res <- snd $ runParser' program s
         handleRes (partitionEithers res)
  where
-  handleRes (errs, stmts) = if length errs > 0
+  handleRes (errs, stmts) = if not (null errs)
     then Left $ ParseErrorBundle { bundleErrors   = NE.fromList errs
                                  , bundlePosState = mkPosState "program" text
                                  }
@@ -151,7 +151,7 @@ exprs =
     <$> variable
     <|> EVal
     <$> value
-    <|> (parens expression)
+    <|> parens expression
 
 element :: Parser Element
 element =
