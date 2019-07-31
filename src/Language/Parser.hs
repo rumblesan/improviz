@@ -115,11 +115,13 @@ statement :: Parser Statement
 statement =
   L.nonIndented
       scn
-      (   (StIf <$> ifElem)
-      <|> (StAssign <$> assignment)
-      <|> (StFunc <$> functionDef)
-      <|> (StLoop <$> loop)
-      <|> (StExpression <$> expression)
+      (choice
+        [ StIf <$> ifElem
+        , StAssign <$> assignment
+        , StFunc <$> functionDef
+        , StLoop <$> loop
+        , StExpression <$> expression
+        ]
       )
     <?> "statement"
 
@@ -143,23 +145,23 @@ operators =
 
 exprs :: Parser Expression
 exprs =
-  EApp
-    <$> application
-    <|> EList
-    <$> list
-    <|> EVar
-    <$> variable
-    <|> EVal
-    <$> value
-    <|> parens expression
+  choice
+      [ EApp <$> application
+      , EList <$> list
+      , EVar <$> variable
+      , EVal <$> value
+      , parens expression
+      ]
+    <?> "expression"
 
 element :: Parser Element
 element =
-  (   (ElIf <$> ifElem)
-    <|> (ElAssign <$> assignment)
-    <|> (ElLoop <$> loop)
-    <|> (ElExpression <$> expression)
-    )
+  choice
+      [ ElIf <$> ifElem
+      , ElAssign <$> assignment
+      , ElLoop <$> loop
+      , ElExpression <$> expression
+      ]
     <?> "element"
 
 application :: Parser Application
@@ -281,4 +283,5 @@ value = v_number <|> v_symbol <|> v_null
 
 number :: Parser Float
 number =
-  lexeme $ (double2Float <$> try L.float) <|> (fromIntegral <$> L.decimal)
+  lexeme ((double2Float <$> try L.float) <|> (fromIntegral <$> L.decimal))
+    <?> "number"
