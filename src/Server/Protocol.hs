@@ -16,6 +16,6 @@ instance ToJSON ImprovizResponse where
   toJSON (ImprovizOKResponse payload) =
     object [("status", "ok"), "payload" .= payload]
   toJSON (ImprovizErrorResponse payload) =
-    object [("status", "error"), "payload" .= payload]
+    object [("status", "server-error"), "payload" .= payload]
   toJSON (ImprovizCodeErrorResponse payload) =
     object [("status", "error"), "payload" .= payload]
