@@ -35,6 +35,7 @@ addons:
       - libxcursor-dev
       - freeglut3
       - freeglut3-dev
+      - zlib1g-dev
 
 
 before_install:
