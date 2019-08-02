@@ -8,7 +8,7 @@ import           Graphics.Rendering.OpenGL     as GL
 import           Foreign.Marshal.Utils
 import           Foreign.Ptr
 
-import           Data.Vec
+import           Linear.Matrix                  ( M44 )
 
 import           Data.FileEmbed                 ( embedFile )
 
@@ -66,7 +66,7 @@ createStrokeShaders = do
   colourU       <- GL.get $ uniformLocation program "vertexColor"
   return $ Shaders program mvpMatUniform colourU
 
-setMVPMatrixUniform :: Shaders -> Mat44 GLfloat -> IO ()
+setMVPMatrixUniform :: Shaders -> M44 GLfloat -> IO ()
 setMVPMatrixUniform (Shaders _ (UniformLocation mvpMatUniform) _) mvpMat =
   with mvpMat
     $ GLRaw.glUniformMatrix4fv mvpMatUniform 1 (fromBool True)

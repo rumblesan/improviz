@@ -50,7 +50,9 @@ import           Gfx.PostProcessing        (Savebuffer (..),
                                             deleteSavebuffer)
 import           Gfx.Textures              (TextureLibrary, addTexture)
 
-import           Data.Vec                  (Mat44, multmm)
+import           Linear.Matrix                  ( M44
+                                                , (!*!)
+                                                )
 import           Gfx.Matrices              (orthographicMat, translateMat)
 
 import           Configuration             (ImprovizConfig)
@@ -62,7 +64,7 @@ import           Lens.Simple               ((^.))
 data TextRenderer = TextRenderer
   { textFont        :: Font
   , textAreaHeight  :: Int
-  , pMatrix         :: Mat44 GLfloat
+  , pMatrix         :: M44 GLfloat
   , textprogram     :: Program
   , bgprogram       :: Program
   , characterQuad   :: VBO
@@ -72,11 +74,11 @@ data TextRenderer = TextRenderer
   , outbuffer       :: Savebuffer
   } deriving (Show)
 
-textCoordMatrix :: Floating f => f -> f -> f -> f -> f -> f -> Mat44 f
+textCoordMatrix :: Floating f => f -> f -> f -> f -> f -> f -> M44 f
 textCoordMatrix left right top bottom near far =
   let o = orthographicMat left right top bottom near far
       t = translateMat (-1) 1 0
-   in multmm t o
+   in t !*! o
 
 createCharacterTextQuad :: IO VBO
 createCharacterTextQuad =
@@ -236,7 +238,7 @@ renderCharacters xpos ypos renderer strings = do
       renderCharacterBGQuad renderer char xp yp f
       renderCharacterTextQuad renderer char xp yp f
 
-sendProjectionMatrix :: Program -> Mat44 GLfloat -> IO ()
+sendProjectionMatrix :: Program -> M44 GLfloat -> IO ()
 sendProjectionMatrix program mat = do
   (UniformLocation projU) <- GL.get $ GL.uniformLocation program "projection"
   with mat $ GLRaw.glUniformMatrix4fv projU 1 (fromBool True) . castPtr
@@ -250,7 +252,7 @@ sendVertices verts =
         GL.bufferSubData ArrayBuffer WriteToBuffer 0 size ptr
 
 renderCharacterQuad ::
-     Program -> Mat44 GLfloat -> VBO -> IO () -> [GLfloat] -> IO ()
+     Program -> M44 GLfloat -> VBO -> IO () -> [GLfloat] -> IO ()
 renderCharacterQuad program pMatrix character charDrawFunc charVerts =
   let (VBO arrayObject arrayBuffers primMode firstIndex numTriangles) =
         character

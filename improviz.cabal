@@ -30,6 +30,7 @@ executable improviz
                      , hosc
                      , JuicyPixels
                      , lens-simple
+                     , linear
                      , megaparsec >= 7
                      , mtl
                      , OpenGL
@@ -43,7 +44,6 @@ executable improviz
                      , text
                      , time
                      , transformers
-                     , Vec
                      , vector
                      , warp
                      , wavefront
@@ -128,6 +128,7 @@ test-suite improviz-test
                      , HUnit
                      , JuicyPixels
                      , lens-simple
+                     , linear
                      , megaparsec >= 7
                      , mtl
                      , OpenGL
@@ -140,7 +141,6 @@ test-suite improviz-test
                      , test-framework-hunit
                      , time
                      , transformers
-                     , Vec
                      , vector
                      , wavefront
                      , yaml

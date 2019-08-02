@@ -1,55 +1,67 @@
-{-# LANGUAGE RankNTypes    #-}
-{-# LANGUAGE TypeOperators #-}
-
 module Gfx.Matrices where
 
-import           Data.Vec
+import           Lens.Simple                    ( (^.) )
 
-vec3 :: forall a a1 a2 . a -> a1 -> a2 -> a :. (a1 :. (a2 :. ()))
-vec3 x y z = x :. y :. z :. ()
+import           Linear.Matrix                  ( M44(..)
+                                                , (!*!)
+                                                )
+import           Linear.Vector                  ( (^-^) )
+import           Linear.V3                      ( V3(..) )
+import qualified Linear.V3                     as L3
+import           Linear.V4                      ( V4(..) )
+import           Linear.Epsilon                 ( Epsilon )
+import qualified Linear.Metric                 as LM
+import           Linear.Projection              ( perspective )
 
-projectionMat :: Floating f => f -> f -> f -> f -> Mat44 f
-projectionMat near far fov aspect = perspective near far fov aspect
-
-orthographicMat :: Floating f => f -> f -> f -> f -> f -> f -> Mat44 f
-orthographicMat left right top bottom near far = matFromList
-  [ 2.0 / (right - left)
-  , 0
-  , 0
-  , 0
-  , 0
-  , 2.0 / (top - bottom)
-  , 0
-  , 0
-  , 0
-  , 0
-  , 2.0 / (far - near)
-  , (-(far + near)) / (far - near)
-  , 0
-  , 0
-  , 0
-  , 1
-  ]
-
-viewMat :: Floating f => Vec3 f -> Vec3 f -> Vec3 f -> Mat44 f
-viewMat = lookAt
-
-lookAt :: Floating f => Vec3 f -> Vec3 f -> Vec3 f -> Mat44 f
-lookAt eye target up = x :. y :. z :. h :. ()
+viewMat :: (Floating f, Num f, Epsilon f) => V3 f -> V3 f -> V3 f -> M44 f
+viewMat eye target up = V4 x y z h
  where
-  forward = normalize $ target - eye
-  right   = normalize $ cross forward up
-  up'     = cross right forward
-  x       = snoc right (-(dot right eye))
-  y       = snoc up' (-(dot up' eye))
-  z       = snoc (-forward) (dot forward eye)
-  h       = 0 :. 0 :. 0 :. 1 :. ()
+  forward = LM.normalize $ target ^-^ eye
+  right   = LM.normalize $ L3.cross forward up
+  up'     = L3.cross right forward
+  x =
+    V4 (right ^. L3._x) (right ^. L3._y) (right ^. L3._z) (-(LM.dot right eye))
+  y = V4 (up' ^. L3._x) (up' ^. L3._y) (up' ^. L3._z) (-(LM.dot up' eye))
+  z = V4 (-(forward ^. L3._x))
+         (-(forward ^. L3._y))
+         (-(forward ^. L3._z))
+         (LM.dot forward eye)
+  h = V4 0 0 0 1
 
-rotMat :: Floating f => f -> f -> f -> Mat44 f
-rotMat xRot yRot zRot = rotationEuler $ xRot :. yRot :. zRot :. ()
+projectionMat :: Floating f => f -> f -> f -> f -> M44 f
+projectionMat near far fov aspect = perspective fov aspect near far
 
-scaleMat :: Floating f => f -> f -> f -> Mat44 f
-scaleMat xS yS zS = scaling $ vec3 xS yS zS
+orthographicMat :: Floating f => f -> f -> f -> f -> f -> f -> M44 f
+orthographicMat left right top bottom near far = V4
+  (V4 (2.0 / (right - left)) 0 0 0)
+  (V4 0 (2.0 / (top - bottom)) 0 0)
+  (V4 0 0 (2.0 / (far - near)) ((-(far + near)) / (far - near)))
+  (V4 0 0 0 1)
 
-translateMat :: Floating f => f -> f -> f -> Mat44 f
-translateMat xT yT zT = translation $ vec3 xT yT zT
+rotationX :: Floating f => f -> M44 f
+rotationX f = V4 (V4 1 0 0 0)
+                 (V4 0 (cos f) (-sin f) 0)
+                 (V4 0 (sin f) (cos f) 0)
+                 (V4 0 0 0 1)
+
+rotationY :: Floating f => f -> M44 f
+rotationY f = V4 (V4 (cos f) 0 (sin f) 0)
+                 (V4 0 1 0 0)
+                 (V4 (-sin f) 0 (cos f) 0)
+                 (V4 0 0 0 1)
+
+rotationZ :: Floating f => f -> M44 f
+rotationZ f = V4 (V4 (cos f) (-sin f) 0 0)
+                 (V4 (sin f) (cos f) 0 0)
+                 (V4 0 0 1 0)
+                 (V4 0 0 0 1)
+
+rotMat :: Floating f => f -> f -> f -> M44 f
+rotMat xRot yRot zRot = rotationZ zRot !*! rotationY yRot !*! rotationX xRot
+
+scaleMat :: Floating f => f -> f -> f -> M44 f
+scaleMat xS yS zS = V4 (V4 xS 0 0 0) (V4 0 yS 0 0) (V4 0 0 zS 0) (V4 0 0 0 1)
+
+translateMat :: Floating f => f -> f -> f -> M44 f
+translateMat xT yT zT =
+  V4 (V4 1 0 0 xT) (V4 0 1 0 yT) (V4 0 0 1 zT) (V4 0 0 0 1)

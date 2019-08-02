@@ -26,8 +26,8 @@ import           Lens.Simple                    ( use
 import qualified Data.Map.Strict               as M
 
 import           Data.Maybe                     ( maybe )
-import           Data.Vec                       ( Mat44
-                                                , multmm
+import           Linear.Matrix                  ( M44
+                                                , (!*!)
                                                 )
 
 import           Graphics.Rendering.OpenGL      ( ($=)
@@ -60,12 +60,12 @@ import           Gfx.TextRendering              ( renderText
 import           Gfx.OpenGL                     ( printErrors )
 
 
-getFullMatrix :: GraphicsEngine (Mat44 GLfloat)
+getFullMatrix :: GraphicsEngine (M44 GLfloat)
 getFullMatrix = do
   mMat <- head <$> use matrixStack
   pMat <- use projectionMatrix
   vMat <- use viewMatrix
-  return $ multmm (multmm pMat vMat) mMat
+  return $ (pMat !*! vMat) !*! mMat
 
 drawTriangles :: VBO -> GraphicsEngine ()
 drawTriangles vbo = do

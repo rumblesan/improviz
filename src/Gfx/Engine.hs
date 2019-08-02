@@ -3,9 +3,10 @@
 module Gfx.Engine where
 
 import           Control.Monad.State.Strict
-import           Data.Vec                       ( Mat44
+import           Linear.V3                      ( V3(..) )
+import           Linear.Matrix                  ( M44
                                                 , identity
-                                                , multmm
+                                                , (!*!)
                                                 )
 import           Graphics.Rendering.OpenGL      ( GLfloat )
 import           Lens.Simple                    ( makeLenses
@@ -18,7 +19,6 @@ import           Gfx.Geometries                 ( Geometries
                                                 , createAllGeometries
                                                 )
 import           Gfx.Matrices                   ( projectionMat
-                                                , vec3
                                                 , viewMat
                                                 )
 import           Gfx.PostProcessing             ( AnimationStyle(NormalStyle)
@@ -48,7 +48,7 @@ data GFXStrokeStyling
   deriving (Eq, Show)
 
 data SavableState = SavableState
-  { _savedMatrixStack  :: [Mat44 GLfloat]
+  { _savedMatrixStack  :: [M44 GLfloat]
   , _savedFillStyles   :: [GFXFillStyling]
   , _savedStrokeStyles :: [GFXStrokeStyling]
   } deriving (Show)
@@ -63,11 +63,11 @@ data GfxEngine = GfxEngine
   , _colourShaders      :: Shaders
   , _strokeShaders      :: Shaders
   , _textureShaders     :: Shaders
-  , _viewMatrix         :: Mat44 GLfloat
-  , _projectionMatrix   :: Mat44 GLfloat
+  , _viewMatrix         :: M44 GLfloat
+  , _projectionMatrix   :: M44 GLfloat
   , _postFX             :: PostProcessing
   , _textRenderer       :: TextRenderer
-  , _matrixStack        :: [Mat44 GLfloat]
+  , _matrixStack        :: [M44 GLfloat]
   , _scopeStack         :: [SavableState]
   , _animationStyle     :: AnimationStyle
   , _backgroundColor    :: Colour
@@ -90,7 +90,7 @@ createGfxEngine config width height pprocess trender textLib =
       front      = config ^. C.screen . CS.front
       back       = config ^. C.screen . CS.back
       projection = projectionMat front back (pi / 4) ratio
-      view       = viewMat (vec3 0 0 10) (vec3 0 0 0) (vec3 0 1 0)
+      view       = viewMat (V3 0 0 10) (V3 0 0 0) (V3 0 1 0)
   in  do
         gbos <- createAllGeometries (config ^. C.geometryDirectories)
         cshd <- createColourShaders
@@ -141,12 +141,12 @@ pushFillStyle s = over fillStyles (s :)
 pushStrokeStyle :: GFXStrokeStyling -> GfxEngine -> GfxEngine
 pushStrokeStyle c = over strokeStyles (c :)
 
-pushMatrix :: Mat44 Float -> GfxEngine -> GfxEngine
-pushMatrix mat = over matrixStack (\stack -> multmm (head stack) mat : stack)
+pushMatrix :: M44 Float -> GfxEngine -> GfxEngine
+pushMatrix mat = over matrixStack (\stack -> ((head stack) !*! mat) : stack)
 
 popMatrix :: GfxEngine -> GfxEngine
 popMatrix = over matrixStack tail
 
-multMatrix :: Mat44 Float -> GfxEngine -> GfxEngine
+multMatrix :: M44 Float -> GfxEngine -> GfxEngine
 multMatrix mat =
-  over matrixStack (\stack -> multmm (head stack) mat : tail stack)
+  over matrixStack (\stack -> ((head stack) !*! mat) : tail stack)
