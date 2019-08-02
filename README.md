@@ -35,6 +35,8 @@ Depending on your platform it may be necessary to install some or all of the fol
 * libxi-dev
 * libxinerama-dev
 * libxcursor-dev
+* freeglut3-dev
+* zlib1g-dev
 
 
 ## Running

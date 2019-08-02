@@ -33,7 +33,6 @@ addons:
       - libxi-dev
       - libxinerama-dev
       - libxcursor-dev
-      - freeglut3
       - freeglut3-dev
       - zlib1g-dev
 
