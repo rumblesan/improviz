@@ -1,6 +1,7 @@
 dist
 dist-*
 cabal-dev
+*.tar.gz
 *.o
 *.hi
 *.chi
