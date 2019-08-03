@@ -14,7 +14,9 @@ import qualified Graphics.UI.GLFW              as GLFW
 import           Lens.Simple                    ( (^.) )
 import           Safe                           ( atMay )
 
-import           System.Exit                    ( exitFailure )
+import           System.Exit                    ( exitFailure
+                                                , exitSuccess
+                                                )
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -61,6 +63,9 @@ resizeToGLFWResize cb window newWidth newHeight = do
   (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
   cb newWidth newHeight fbWidth fbHeight
 
+windowCloseCB :: GLFW.Window -> IO ()
+windowCloseCB w = logInfo "Closing" >> exitSuccess
+
 setupWindow
   :: ImprovizConfig
   -> InitCallback
@@ -94,6 +99,7 @@ setupWindow config initCB resizeCB displayCB =
           (fbWidth, fbHeight) <- GLFW.getFramebufferSize window
           depthFunc $= Just Less
           env <- initCB w h fbWidth fbHeight
+          GLFW.setWindowCloseCallback window $ Just windowCloseCB
           GLFW.setWindowSizeCallback window
             $ Just (resizeToGLFWResize $ resizeCB env)
           logInfo $ "Improviz resolution: " ++ show w ++ " by " ++ show h
