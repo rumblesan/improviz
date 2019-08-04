@@ -23,6 +23,7 @@ binaryOp op v1 v2 = do
     "<=" -> return $ if n1 <= n2 then Number 1 else Number 0
     ">=" -> return $ if n1 >= n2 then Number 1 else Number 0
     "==" -> return $ if n1 == n2 then Number 1 else Number 0
+    "!=" -> return $ if n1 /= n2 then Number 1 else Number 0
     "&&" -> return $ if n1 /= 0 && n2 /= 0 then Number 1 else Number 0
     "||" -> return $ if n1 /= 0 || n2 /= 0 then Number 1 else Number 0
     _    -> throwError $ "Unknown operator: " ++ op
@@ -32,4 +33,5 @@ unaryOp op v = do
   n <- getNumberValue v
   case op of
     "-" -> return $ Number (-n)
+    "!" -> return $ Number $ if n == 0 then 1 else 0
     _   -> throwError $ "Unknown operator: " ++ op

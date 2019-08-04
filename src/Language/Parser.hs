@@ -126,7 +126,7 @@ statement =
     <?> "statement"
 
 operators =
-  [ [Prefix (UnaryOp <$> symbol "-")]
+  [ [Prefix (UnaryOp <$> symbol "-"), Prefix (UnaryOp <$> symbol "!")]
   , [ InfixL (BinaryOp <$> symbol "^")
     , InfixL (BinaryOp <$> symbol "*")
     , InfixL (BinaryOp <$> symbol "/")
