@@ -9,6 +9,7 @@ where
 
 import qualified Data.Map.Strict               as M
 import           Control.Monad                  ( forM_ )
+import           Control.Monad.Trans            ( liftIO )
 import           Lens.Simple                    ( set )
 
 import           Gfx.Context                    ( GfxContext )
@@ -31,19 +32,25 @@ import           Language.Interpreter.Types     ( InterpreterState
 import           Language.Interpreter.StdLib    ( addStdLib )
 import           Language.Parser                ( parseProgram )
 import           Language.Parser.Errors         ( ParserError )
+import           Logging                        ( logInfo )
 
 
 parse :: String -> Either ParserError Program
 parse = parseProgram
 
-initialInterpreterState :: [Program] -> GfxContext -> IO InterpreterState
+initialInterpreterState
+  :: [(FilePath, Program)] -> GfxContext -> IO InterpreterState
 initialInterpreterState userCode ctx =
   let langState = set gfxContext ctx emptyState
       setup     = do
         addStdLib
         globals <- getGlobalNames
-        mapM (interpretLanguage . transform globals) userCode
+        mapM (load globals) userCode
   in  snd <$> runInterpreterM setup langState
+ where
+  load globals (fp, code) = do
+    liftIO $ logInfo ("Loading " ++ fp)
+    interpretLanguage $ transform globals code
 
 setInterpreterVariables
   :: [(Identifier, Value)]

@@ -39,7 +39,8 @@ data ImprovizLanguage gfxContext = ImprovizLanguage
 
 makeLenses ''ImprovizLanguage
 
-makeLanguageState :: [Program] -> GfxContext -> IO (ImprovizLanguage GfxContext)
+makeLanguageState
+  :: [(FilePath, Program)] -> GfxContext -> IO (ImprovizLanguage GfxContext)
 makeLanguageState userCode ctx = do
   initial <- initialInterpreterState userCode ctx
   return ImprovizLanguage { _programText        = ""

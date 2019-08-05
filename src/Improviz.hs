@@ -83,14 +83,15 @@ createEnv config gfx = do
                        startTime
                        externalVars
 
-readExternalCode :: [FilePath] -> IO [LA.Program]
+readExternalCode :: [FilePath] -> IO [(FilePath, LA.Program)]
 readExternalCode files = rights <$> mapM readCode files
  where
   readCode path = do
     d <- B.unpack <$> B.readFile path
     let result = L.parse d
     case result of
-      Right _ -> logInfo $ "Loaded " <> path <> " user code file"
-      Left err ->
+      Right prog -> do
+        return $ Right (path, prog)
+      Left err -> do
         logError $ "Could not load " <> path <> "\n" <> prettyPrintErrors err
-    return result
+        return $ Left "error"
