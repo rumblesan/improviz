@@ -17,6 +17,7 @@ import           Control.Monad                  ( zipWithM_
                                                 )
 import           Control.Monad.Trans            ( liftIO )
 import           Control.Monad.Except           ( throwError )
+import           System.Random                  ( mkStdGen )
 import           Lens.Simple                    ( use
                                                 , assign
                                                 )
@@ -43,6 +44,7 @@ emptyState = InterpreterState { _variables   = LS.empty
                               , _functions   = M.empty
                               , _textureInfo = TextureInfo M.empty
                               , _gfxContext  = emptyGfxContext
+                              , _rnGen       = mkStdGen 1234
                               }
 
 getTextureInfo :: String -> InterpreterProcess (Maybe Int)

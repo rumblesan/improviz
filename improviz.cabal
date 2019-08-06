@@ -37,6 +37,7 @@ executable improviz
                      , OpenGLRaw
                      , optparse-applicative
                      , parser-combinators >= 1
+                     , random
                      , safe
                      , scotty
                      , split
@@ -135,6 +136,7 @@ test-suite improviz-test
                      , OpenGLRaw
                      , optparse-applicative
                      , parser-combinators >= 1
+                     , random
                      , safe
                      , stm
                      , test-framework

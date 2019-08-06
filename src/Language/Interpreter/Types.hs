@@ -11,6 +11,7 @@ module Language.Interpreter.Types
   , functions
   , textureInfo
   , gfxContext
+  , rnGen
   , InterpreterProcess
   , runInterpreterM
   )
@@ -27,6 +28,7 @@ import qualified Data.Map.Strict               as M
 import           Gfx.Context                    ( GfxContext )
 import           Gfx.Textures                   ( TextureInfo(..) )
 import qualified Language.Interpreter.Scope    as LS
+import           System.Random                  ( StdGen )
 
 newtype BuiltInFunction =
   BuiltInFunction ([Value] -> InterpreterProcess Value)
@@ -50,6 +52,7 @@ data InterpreterState = InterpreterState
   , _functions   :: M.Map Identifier UserFunctionDef
   , _textureInfo :: TextureInfo
   , _gfxContext  ::  GfxContext
+  , _rnGen :: StdGen
   }
 
 makeLenses ''InterpreterState
