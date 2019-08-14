@@ -17,7 +17,7 @@ binaryOp op v1 v2 = do
     "/"  -> safeDiv n1 n2
     "+"  -> return $ Number (n1 + n2)
     "-"  -> return $ Number (n1 - n2)
-    "%"  -> return $ Number (mod' n1 n2)
+    "%"  -> safeMod n1 n2
     "<"  -> return $ Number (if n1 < n2 then 1 else 0)
     ">"  -> return $ Number (if n1 > n2 then 1 else 0)
     "<=" -> return $ Number (if n1 <= n2 then 1 else 0)
@@ -40,3 +40,8 @@ safeDiv :: Float -> Float -> InterpreterProcess Value
 safeDiv n1 n2 = if n2 == 0
   then throwError "Cannot divide by zero"
   else return $ Number (n1 / n2)
+
+safeMod :: Float -> Float -> InterpreterProcess Value
+safeMod n1 n2 = if n2 == 0
+  then throwError "Cannot modulo by zero"
+  else return $ Number (mod' n1 n2)
