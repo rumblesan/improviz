@@ -58,9 +58,10 @@ test_func_var_to_global =
         ]
       program = Program
         [ StFunc $ Func "myfunc" [VarArg "arg1"] beforeBlock
-        , StExpression $ EApp $ Application (LocalVariable "myfunc")
-                                            [EVal $ Number 4]
-                                            Nothing
+        , StExpression $ EApp $ Application
+          (LocalVariable "myfunc")
+          [ApplicationSingleArg $ EVal $ Number 4]
+          Nothing
         ]
       afterBlock = Block
         [ ElAssign $ AbsoluteAssignment
@@ -77,9 +78,10 @@ test_func_var_to_global =
         ]
       expected = Program
         [ StFunc $ Func "myfunc" [VarArg "arg1"] afterBlock
-        , StExpression $ EApp $ Application (GlobalVariable "myfunc")
-                                            [EVal $ Number 4]
-                                            Nothing
+        , StExpression $ EApp $ Application
+          (GlobalVariable "myfunc")
+          [ApplicationSingleArg $ EVal $ Number 4]
+          Nothing
         ]
       globals = S.singleton "time"
       result  = globalise globals program

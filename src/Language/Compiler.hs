@@ -163,6 +163,8 @@ funcArgToBC (VarArg name) = do
 funcArgToBC (BlockArg name) = throwError "Block args not yet supported"
 
 applicationToBC :: Application -> ImpCompiler (Vector Instruction)
+applicationToBC _ = throwError "Not currently working"
+  {-
 applicationToBC (Application name args block) = do
   argBC  <- V.concat <$> mapM expressionToBC (L.reverse args)
   callOp <- case name of
@@ -171,6 +173,7 @@ applicationToBC (Application name args block) = do
       return $ Call addr (length args)
     GlobalVariable n -> return $ BuiltIn n (length args)
   return $ V.snoc argBC callOp
+  -}
 
 expressionToBC :: Expression -> ImpCompiler (Vector Instruction)
 expressionToBC (EApp application       ) = applicationToBC application

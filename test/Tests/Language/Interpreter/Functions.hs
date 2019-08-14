@@ -21,6 +21,7 @@ interpreterFunctionTests = testGroup
   [ testCase "interprets function creation"
              test_function_creation_and_application
   , testCase "interprets function as argument" test_function_as_arg
+  , testCase "interprets spread arguments"     test_spread_argument
   ]
 
 test_function_creation_and_application :: Assertion
@@ -38,3 +39,14 @@ test_function_as_arg =
     expectedGfx = [GA.ShapeCommand (GA.ShapeGfx "cube" 3 2 6)]
   in
     gfxTest program expectedGfx
+
+test_spread_argument :: Assertion
+test_spread_argument =
+  let
+    program
+      = "list = [1, 2, 3]\n\
+         \func foo (a, b, c) => a + b + c\n\
+         \foo(...list)\n"
+    expected = Number 6
+  in
+    resultTest program expected "interpreter returns 6"

@@ -27,7 +27,10 @@ test_parses_block_with_blank_lines =
       box  = ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing
       fill = StExpression $ EApp $ Application
         (LocalVariable "fill")
-        [EVal (Number 255), EVal (Number 0), EVal (Number 0)]
+        [ ApplicationSingleArg $ EVal (Number 255)
+        , ApplicationSingleArg $ EVal (Number 0)
+        , ApplicationSingleArg $ EVal (Number 0)
+        ]
         (Just $ Block [rotate, box])
       expected = Program [fill]
   in  parserTest program expected

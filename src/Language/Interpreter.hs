@@ -13,6 +13,7 @@ module Language.Interpreter
 where
 
 import           Control.Monad                  ( zipWithM_
+                                                , foldM
                                                 , foldM_
                                                 )
 import           Control.Monad.Trans            ( liftIO )
@@ -157,23 +158,31 @@ interpretElement (ElExpression expression) = interpretExpression expression
 
 interpretApplication :: Application -> InterpreterProcess Value
 interpretApplication f@(Application name args mbBlock) = do
-  v <- interpretVariable name
+  v         <- interpretVariable name
+  argValues <- foldM handleArg [] args
   case v of
     (BlockRef        blk ) -> interpretBlock blk
     (UserFunctionRef name) -> newScope $ do
       (UserFunctionDef _ argNames body) <- getFunction name
-      assignApplicationArgs argNames args mbBlock
+      assignApplicationArgs argNames argValues mbBlock
       interpretBlock body
     (BuiltInFunctionRef name) -> newScope $ do
       (BuiltInFunction action) <- getBuiltIn name
-      argValues                <- mapM interpretExpression args
       action argValues
     _ -> return Null
 
+handleArg :: [Value] -> ApplicationArg -> InterpreterProcess [Value]
+handleArg vals (ApplicationSingleArg expr) =
+  (\v -> vals ++ [v]) <$> interpretExpression expr
+handleArg vals (ApplicationSpreadArg expr) = do
+  val <- interpretExpression expr
+  case val of
+    (VList l) -> return (vals ++ l)
+    _         -> throwError "Must be given a list to use as a spread argument"
+
 assignApplicationArgs
-  :: [FuncArg] -> [Expression] -> Maybe Block -> InterpreterProcess Value
-assignApplicationArgs funcArgs args mbBlock = do
-  argValues <- mapM interpretExpression args
+  :: [FuncArg] -> [Value] -> Maybe Block -> InterpreterProcess Value
+assignApplicationArgs funcArgs argValues mbBlock = do
   zipWithM_ (assignArg mbBlock) funcArgs (argValues ++ repeat Null)
   return Null
  where

@@ -27,7 +27,10 @@ test_parses_simple_application =
   let program = "cube(1, 1, i)\n\n"
       cube    = Application
         (LocalVariable "cube")
-        [EVal $ Number 1, EVal $ Number 1, EVar $ LocalVariable "i"]
+        [ ApplicationSingleArg $ EVal $ Number 1
+        , ApplicationSingleArg $ EVal $ Number 1
+        , ApplicationSingleArg $ EVar $ LocalVariable "i"
+        ]
         Nothing
       expected = Program [StExpression $ EApp cube]
   in  parserTest program expected
@@ -38,7 +41,10 @@ test_parses_application_with_var_arg =
       assign  = StAssign $ AbsoluteAssignment "a" $ EVal $ Number 2
       cube    = StExpression $ EApp $ Application
         (LocalVariable "cube")
-        [EVal $ Number 1, EVar $ LocalVariable "a", EVal $ Number 3]
+        [ ApplicationSingleArg $ EVal $ Number 1
+        , ApplicationSingleArg $ EVar $ LocalVariable "a"
+        , ApplicationSingleArg $ EVal $ Number 3
+        ]
         Nothing
       expected = Program [assign, cube]
   in  parserTest program expected
@@ -58,16 +64,19 @@ test_parses_function_blocks =
                                                              (EVal $ Number 0.5)
       box2 = ElExpression $ EApp $ Application
         (LocalVariable "box")
-        [EVar $ LocalVariable "a", EVar $ LocalVariable "b", EVal $ Number 1]
+        [ ApplicationSingleArg $ EVar $ LocalVariable "a"
+        , ApplicationSingleArg $ EVar $ LocalVariable "b"
+        , ApplicationSingleArg $ EVal $ Number 1
+        ]
         Nothing
       box1 =
           StExpression
             $ EApp
             $ Application
                 (LocalVariable "box")
-                [ EVar $ LocalVariable "a"
-                , EVar $ LocalVariable "a"
-                , EVal $ Number 2
+                [ ApplicationSingleArg $ EVar $ LocalVariable "a"
+                , ApplicationSingleArg $ EVar $ LocalVariable "a"
+                , ApplicationSingleArg $ EVal $ Number 2
                 ]
             $ Just (Block [ass, box2])
       expected = Program [box1]

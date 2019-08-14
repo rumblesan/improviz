@@ -4,6 +4,7 @@ module Language.Ast
   , Block(..)
   , Element(..)
   , Application(..)
+  , ApplicationArg(..)
   , Func(..)
   , FuncArg(..)
   , Loop(..)
@@ -41,8 +42,13 @@ data Element
 
 data Application =
   Application Variable
-              [Expression]
+              [ApplicationArg]
               (Maybe Block)
+  deriving (Eq, Show)
+
+data ApplicationArg
+  = ApplicationSingleArg Expression
+  | ApplicationSpreadArg Expression
   deriving (Eq, Show)
 
 data Loop =

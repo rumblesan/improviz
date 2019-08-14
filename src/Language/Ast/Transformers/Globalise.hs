@@ -103,8 +103,14 @@ globaliseApplication :: Application -> Transformer Application
 globaliseApplication (Application name args mbBlock) =
   Application
     <$> globaliseVariable name
-    <*> mapM globaliseExpression      args
+    <*> mapM globaliseApplicationArg  args
     <*> mapM (globaliseBlock S.empty) mbBlock
+
+globaliseApplicationArg :: ApplicationArg -> Transformer ApplicationArg
+globaliseApplicationArg (ApplicationSingleArg expr) =
+  ApplicationSingleArg <$> globaliseExpression expr
+globaliseApplicationArg (ApplicationSpreadArg expr) =
+  ApplicationSpreadArg <$> globaliseExpression expr
 
 globaliseVariable :: Variable -> Transformer Variable
 globaliseVariable v@(LocalVariable name) =

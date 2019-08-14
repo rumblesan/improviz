@@ -31,9 +31,10 @@ test_parses_program =
       "+"
       (EVar $ LocalVariable "a")
       (EVar $ LocalVariable "b")
-    fooBox = ElExpression $ EApp $ Application (LocalVariable "box")
-                                               [EVar $ LocalVariable "c"]
-                                               Nothing
+    fooBox = ElExpression $ EApp $ Application
+      (LocalVariable "box")
+      [ApplicationSingleArg $ EVar $ LocalVariable "c"]
+      Nothing
     fooLine =
       StFunc $ Func "foo" [VarArg "a", VarArg "b"] (Block [cAss, fooBox])
     nLine = StAssign $ ConditionalAssignment "n" $ BinaryOp
@@ -41,12 +42,16 @@ test_parses_program =
       (BinaryOp "*" (EVal $ Number 3) (EVal $ Number 4))
       (EVal $ Number 1)
     loopBlock = Block
-      [ ElExpression $ EApp $ Application (LocalVariable "rotate")
-                                          [EVal $ Number 0.5]
-                                          Nothing
-      , ElExpression $ EApp $ Application (LocalVariable "foo")
-                                          [EVal $ Number 1, EVal $ Number 2]
-                                          Nothing
+      [ ElExpression $ EApp $ Application
+        (LocalVariable "rotate")
+        [ApplicationSingleArg $ EVal $ Number 0.5]
+        Nothing
+      , ElExpression $ EApp $ Application
+        (LocalVariable "foo")
+        [ ApplicationSingleArg $ EVal $ Number 1
+        , ApplicationSingleArg $ EVal $ Number 2
+        ]
+        Nothing
       ]
     loopLine = StLoop $ Loop (EVar $ LocalVariable "n") Nothing loopBlock
     expected = Program [fooLine, nLine, loopLine]

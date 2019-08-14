@@ -25,7 +25,7 @@ test_parses_simple_symbol_usage :: Assertion
 test_parses_simple_symbol_usage =
   let program = "texture(:crystal)"
       texture = Application (LocalVariable "texture")
-                            [EVal $ Symbol "crystal"]
+                            [ApplicationSingleArg $ EVal $ Symbol "crystal"]
                             Nothing
       expected = Program [StExpression $ EApp texture]
   in  parserTest program expected

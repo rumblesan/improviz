@@ -170,7 +170,7 @@ application = L.indentBlock scn ap
   ap = do
     ilevel <- L.indentLevel
     apVar  <- try (variable <* symbol "(")
-    args   <- sepBy expression comma
+    args   <- sepBy applicationArg comma
     void $ symbol ")"
     return
       (L.IndentMany (Just (ilevel <> tabWidth))
@@ -179,6 +179,12 @@ application = L.indentBlock scn ap
       )
   blk []    = Nothing
   blk elems = Just $ Block elems
+
+applicationArg :: Parser ApplicationArg
+applicationArg = choice
+  [ ApplicationSpreadArg <$> (symbol "..." *> expression)
+  , ApplicationSingleArg <$> expression
+  ]
 
 functionDef :: Parser Func
 functionDef = L.indentBlock scn fb

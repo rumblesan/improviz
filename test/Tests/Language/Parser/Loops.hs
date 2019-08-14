@@ -39,9 +39,9 @@ test_parses_loop_with_var =
     program = "4 times with i\n\trotate()\n\tbox(i, i, i)\n"
     rot = ElExpression $ EApp $ Application (LocalVariable "rotate") [] Nothing
     boxargs =
-      [ EVar $ LocalVariable "i"
-      , EVar $ LocalVariable "i"
-      , EVar $ LocalVariable "i"
+      [ ApplicationSingleArg $ EVar $ LocalVariable "i"
+      , ApplicationSingleArg $ EVar $ LocalVariable "i"
+      , ApplicationSingleArg $ EVar $ LocalVariable "i"
       ]
     box =
       ElExpression $ EApp $ Application (LocalVariable "box") boxargs Nothing
@@ -67,12 +67,13 @@ test_parses_loop_with_expr_number_and_loop_var =
   let
     program = "(5 * 2) times with i\n\trotate(i)\n\tbox(i)\n"
     numExpr = BinaryOp "*" (EVal $ Number 5) (EVal $ Number 2)
-    rotArgs = [EVar $ LocalVariable "i"]
+    rotArgs = [ApplicationSingleArg $ EVar $ LocalVariable "i"]
     rot =
       ElExpression $ EApp $ Application (LocalVariable "rotate") rotArgs Nothing
-    box = ElExpression $ EApp $ Application (LocalVariable "box")
-                                            [EVar $ LocalVariable "i"]
-                                            Nothing
+    box = ElExpression $ EApp $ Application
+      (LocalVariable "box")
+      [ApplicationSingleArg $ EVar $ LocalVariable "i"]
+      Nothing
     loop     = Loop numExpr (Just "i") $ Block [rot, box]
     expected = Program [StLoop loop]
   in
