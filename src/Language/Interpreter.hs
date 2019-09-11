@@ -56,7 +56,7 @@ getTextureInfo name = do
 setFunction :: Identifier -> Func -> InterpreterProcess ()
 setFunction name (Func fname args body) = do
   f <- use functions
-  assign functions (M.insert name (UserFunctionDef fname args body) f)
+  assign functions (M.insert name (UserFunctionDef fname args Nothing body) f)
 
 getFunction :: Identifier -> InterpreterProcess UserFunctionDef
 getFunction name = do
@@ -163,13 +163,27 @@ interpretApplication f@(Application name args mbBlock) = do
   case v of
     (BlockRef        blk ) -> interpretBlock blk
     (UserFunctionRef name) -> newScope $ do
-      (UserFunctionDef _ argNames body) <- getFunction name
-      assignApplicationArgs argNames argValues mbBlock
-      interpretBlock body
+      func <- getFunction name
+      interpretFunctionCall func argValues mbBlock
     (BuiltInFunctionRef name) -> newScope $ do
       (BuiltInFunction action) <- getBuiltIn name
       action argValues
     _ -> return Null
+
+interpretFunctionCall
+  :: UserFunctionDef -> [Value] -> Maybe Block -> InterpreterProcess Value
+interpretFunctionCall (UserFunctionDef _ argNames (Just closureScope) body) argValues mbBlock
+  = do
+    existingScope <- use variables
+    assign variables closureScope
+    assignApplicationArgs argNames argValues mbBlock
+    v <- interpretBlock body
+    assign variables existingScope
+    return v
+interpretFunctionCall (UserFunctionDef _ argNames Nothing body) argValues mbBlock
+  = do
+    assignApplicationArgs argNames argValues mbBlock
+    interpretBlock body
 
 handleArg :: [Value] -> ApplicationArg -> InterpreterProcess [Value]
 handleArg vals (ApplicationSingleArg expr) =

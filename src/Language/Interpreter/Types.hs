@@ -36,6 +36,7 @@ newtype BuiltInFunction =
 data UserFunctionDef =
   UserFunctionDef Identifier
                   [FuncArg]
+                  (Maybe (LS.ScopeStack Identifier Value))
                   Block
 
 type InterpreterProcessing = StateT InterpreterState IO
