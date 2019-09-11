@@ -23,19 +23,10 @@ setVariable scope name value =
   scope { current = M.insert name value (current scope) }
 
 getVariable :: Ord k => ScopeStack k v -> k -> Maybe v
-getVariable scope name = case M.lookup name (current scope) of
-  Just v  -> Just v
-  Nothing -> getVariable' (stack scope) name
-
-getVariable' :: Ord k => [M.Map k v] -> k -> Maybe v
-getVariable' (s : rest) name = case M.lookup name s of
-  Just v  -> Just v
-  Nothing -> getVariable' rest name
-getVariable' [] _ = Nothing
+getVariable scope name = M.lookup name (current scope)
 
 newScope :: Ord k => ScopeStack k v -> ScopeStack k v
-newScope scope =
-  scope { current = M.fromList [], stack = current scope : stack scope }
+newScope scope = scope { stack = current scope : stack scope }
 
 popScope :: ScopeStack k v -> Either String (ScopeStack k v)
 popScope scope = case stack scope of
