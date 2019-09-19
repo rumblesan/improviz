@@ -1,5 +1,6 @@
 module Language.Interpreter.Values
   ( getNumberValue
+  , getValueType
   , valIsNull
   )
 where

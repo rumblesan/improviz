@@ -29,6 +29,7 @@ import           Safe                           ( atMay )
 
 import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
+import           Language.Interpreter.Values    ( getValueType )
 
 import           Gfx.Textures                   ( TextureInfo(..) )
 import           Gfx.Context                    ( GfxContext
@@ -170,7 +171,11 @@ interpretApplication name args mbLmb = do
       (BuiltInFunction action) <- getBuiltIn name
       action argValues
     (LambdaRef lmb) -> interpretFunctionCall lmb argValues mbLmb
-    _               -> return Null
+    ot ->
+      throwError
+        $  (show name)
+        ++ " cannot be applied as it is of type "
+        ++ (getValueType ot)
 
 interpretFunctionCall
   :: Lambda -> [Value] -> Maybe Lambda -> InterpreterProcess Value
