@@ -5,6 +5,7 @@ module Language.Ast
   , Element(..)
   , Application(..)
   , ApplicationArg(..)
+  , Lambda(..)
   , Func(..)
   , FuncArg(..)
   , Loop(..)
@@ -16,6 +17,8 @@ module Language.Ast
   , Identifier
   )
 where
+
+import           Language.Interpreter.Scope     ( ScopeStack )
 
 newtype Program =
   Program [Statement]
@@ -70,6 +73,11 @@ data If =
      (Maybe Block)
   deriving (Eq, Show)
 
+data Lambda =
+  Lambda [FuncArg]
+         (Maybe (ScopeStack Identifier Value))
+         Block deriving (Eq, Show)
+
 data Func =
   Func Identifier
        [FuncArg]
@@ -101,6 +109,7 @@ data Value
   | Null
   | Symbol String
   | BlockRef Block
+  | LambdaRef Lambda
   | VList [Value]
   | UserFunctionRef Identifier
   | BuiltInFunctionRef Identifier

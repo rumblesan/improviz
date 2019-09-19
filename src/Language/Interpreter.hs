@@ -56,9 +56,9 @@ getTextureInfo name = do
 setFunction :: Identifier -> Func -> InterpreterProcess ()
 setFunction name (Func fname args body) = do
   f <- use functions
-  assign functions (M.insert name (UserFunctionDef fname args Nothing body) f)
+  assign functions (M.insert name (Lambda args Nothing body) f)
 
-getFunction :: Identifier -> InterpreterProcess UserFunctionDef
+getFunction :: Identifier -> InterpreterProcess Lambda
 getFunction name = do
   functionDefs <- use functions
   case M.lookup name functionDefs of
@@ -156,34 +156,35 @@ interpretElement (ElAssign     assignment) = interpretAssignment assignment
 interpretElement (ElIf         ifElem    ) = interpretIf ifElem
 interpretElement (ElExpression expression) = interpretExpression expression
 
-interpretApplication :: Application -> InterpreterProcess Value
-interpretApplication f@(Application name args mbBlock) = do
+interpretApplication
+  :: Variable -> [ApplicationArg] -> Maybe Lambda -> InterpreterProcess Value
+interpretApplication name args mbLmb = do
   v         <- interpretVariable name
   argValues <- foldM handleArg [] args
   case v of
     (BlockRef        blk ) -> interpretBlock blk
     (UserFunctionRef name) -> newScope $ do
       func <- getFunction name
-      interpretFunctionCall func argValues mbBlock
+      interpretFunctionCall func argValues mbLmb
     (BuiltInFunctionRef name) -> newScope $ do
       (BuiltInFunction action) <- getBuiltIn name
       action argValues
-    _ -> return Null
+    (LambdaRef lmb) -> interpretFunctionCall lmb argValues mbLmb
+    _               -> return Null
 
 interpretFunctionCall
-  :: UserFunctionDef -> [Value] -> Maybe Block -> InterpreterProcess Value
-interpretFunctionCall (UserFunctionDef _ argNames (Just closureScope) body) argValues mbBlock
+  :: Lambda -> [Value] -> Maybe Lambda -> InterpreterProcess Value
+interpretFunctionCall (Lambda argNames (Just closureScope) body) argValues mbLmb
   = do
     existingScope <- use variables
     assign variables closureScope
-    assignApplicationArgs argNames argValues mbBlock
+    assignApplicationArgs argNames argValues mbLmb
     v <- interpretBlock body
     assign variables existingScope
     return v
-interpretFunctionCall (UserFunctionDef _ argNames Nothing body) argValues mbBlock
-  = do
-    assignApplicationArgs argNames argValues mbBlock
-    interpretBlock body
+interpretFunctionCall (Lambda argNames Nothing body) argValues mbLmb = do
+  assignApplicationArgs argNames argValues mbLmb
+  interpretBlock body
 
 handleArg :: [Value] -> ApplicationArg -> InterpreterProcess [Value]
 handleArg vals (ApplicationSingleArg expr) =
@@ -195,13 +196,13 @@ handleArg vals (ApplicationSpreadArg expr) = do
     _         -> throwError "Must be given a list to use as a spread argument"
 
 assignApplicationArgs
-  :: [FuncArg] -> [Value] -> Maybe Block -> InterpreterProcess Value
-assignApplicationArgs funcArgs argValues mbBlock = do
-  zipWithM_ (assignArg mbBlock) funcArgs (argValues ++ repeat Null)
+  :: [FuncArg] -> [Value] -> Maybe Lambda -> InterpreterProcess Value
+assignApplicationArgs funcArgs argValues mbLmb = do
+  zipWithM_ (assignArg mbLmb) funcArgs (argValues ++ repeat Null)
   return Null
  where
   assignArg _  (VarArg   name) v = setVariable name v
-  assignArg mb (BlockArg name) _ = setVariable name $ maybe Null BlockRef mb
+  assignArg ml (BlockArg name) _ = setVariable name $ maybe Null LambdaRef ml
 
 interpretLoop :: Loop -> InterpreterProcess Value
 interpretLoop (Loop numExpr loopVar block) = do
@@ -253,7 +254,10 @@ interpretAssignment (ConditionalAssignment name expression) = do
     _    -> return var
 
 interpretExpression :: Expression -> InterpreterProcess Value
-interpretExpression (EApp application ) = interpretApplication application
+interpretExpression (EApp (Application name args mbBlock)) = do
+  variableDefs <- use variables
+  let mbLmb = fmap (Lambda [] (Just variableDefs)) mbBlock
+  interpretApplication name args mbLmb
 interpretExpression (BinaryOp op v1 v2) = do
   n1 <- interpretExpression v1
   n2 <- interpretExpression v2

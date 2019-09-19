@@ -2,7 +2,6 @@
 
 module Language.Interpreter.Types
   ( BuiltInFunction(..)
-  , UserFunctionDef(..)
   , InterpreterState(..)
   , variables
   , externals
@@ -33,12 +32,6 @@ import           System.Random                  ( StdGen )
 newtype BuiltInFunction =
   BuiltInFunction ([Value] -> InterpreterProcess Value)
 
-data UserFunctionDef =
-  UserFunctionDef Identifier
-                  [FuncArg]
-                  (Maybe (LS.ScopeStack Identifier Value))
-                  Block
-
 type InterpreterProcessing = StateT InterpreterState IO
 
 type InterpreterErrors m = ExceptT String m
@@ -50,7 +43,7 @@ data InterpreterState = InterpreterState
   , _externals :: M.Map Identifier Value
   , _globals     :: M.Map Identifier Value
   , _builtins    :: M.Map Identifier BuiltInFunction
-  , _functions   :: M.Map Identifier UserFunctionDef
+  , _functions   :: M.Map Identifier Lambda
   , _textureInfo :: TextureInfo
   , _gfxContext  ::  GfxContext
   , _rnGen :: StdGen
