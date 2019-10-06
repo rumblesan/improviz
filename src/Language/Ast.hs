@@ -108,10 +108,8 @@ data Value
   = Number Float
   | Null
   | Symbol String
-  | BlockRef Block
   | LambdaRef Lambda
   | VList [Value]
-  | UserFunctionRef Identifier
   | BuiltInFunctionRef Identifier
   deriving (Eq, Show)
 

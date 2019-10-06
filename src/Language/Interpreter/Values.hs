@@ -14,8 +14,6 @@ getValueType :: Value -> String
 getValueType (Number _)                = "Number"
 getValueType Null                      = "Null"
 getValueType (Symbol             _   ) = "Symbol"
-getValueType (BlockRef           _   ) = "Block"
-getValueType (UserFunctionRef    name) = "Function: " ++ name
 getValueType (BuiltInFunctionRef name) = "BuiltIn: " ++ name
 
 valIsNull :: Value -> Bool

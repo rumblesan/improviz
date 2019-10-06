@@ -54,18 +54,6 @@ getTextureInfo name = do
   ti <- use textureInfo
   return $ M.lookup name $ textureFrames ti
 
-setFunction :: Identifier -> Func -> InterpreterProcess ()
-setFunction name (Func fname args body) = do
-  f <- use functions
-  assign functions (M.insert name (Lambda args Nothing body) f)
-
-getFunction :: Identifier -> InterpreterProcess Lambda
-getFunction name = do
-  functionDefs <- use functions
-  case M.lookup name functionDefs of
-    Just f  -> return f
-    Nothing -> throwError $ "Could not find function: " ++ name
-
 setBuiltIn
   :: Identifier
   -> ([Value] -> InterpreterProcess Value)
@@ -163,19 +151,15 @@ interpretApplication name args mbLmb = do
   v         <- interpretVariable name
   argValues <- foldM handleArg [] args
   case v of
-    (BlockRef        blk ) -> interpretBlock blk
-    (UserFunctionRef name) -> newScope $ do
-      func <- getFunction name
-      interpretFunctionCall func argValues mbLmb
     (BuiltInFunctionRef name) -> newScope $ do
       (BuiltInFunction action) <- getBuiltIn name
       action argValues
     (LambdaRef lmb) -> interpretFunctionCall lmb argValues mbLmb
     ot ->
       throwError
-        $  (show name)
+        $  show name
         ++ " cannot be applied as it is of type "
-        ++ (getValueType ot)
+        ++ getValueType ot
 
 interpretFunctionCall
   :: Lambda -> [Value] -> Maybe Lambda -> InterpreterProcess Value
@@ -220,9 +204,9 @@ interpretLoop (Loop numExpr loopVar block) = do
     interpretBlock block
 
 interpretFunc :: Func -> InterpreterProcess Value
-interpretFunc f@(Func name argNames lBlock) = do
-  setFunction name f
-  setGlobal name (UserFunctionRef name)
+interpretFunc f@(Func name args lBlock) = do
+  scope <- use variables
+  setVariable name (LambdaRef $ Lambda args (Just scope) lBlock)
 
 interpretIf :: If -> InterpreterProcess Value
 interpretIf (If pred block1 block2) = do
@@ -240,11 +224,9 @@ loopNums :: Expression -> InterpreterProcess [Float]
 loopNums numExpr = do
   loopV <- interpretExpression numExpr
   case loopV of
-    Number v          -> return [0 .. (v - 1)]
-    Null              -> throwError "Null given as loop number expression"
-    Symbol          _ -> throwError "Symbol given as loop number expression"
-    BlockRef        _ -> throwError "Block given as loop number expression"
-    UserFunctionRef _ -> throwError "Function given as loop number expression"
+    Number v -> return [0 .. (v - 1)]
+    Null     -> throwError "Null given as loop number expression"
+    Symbol _ -> throwError "Symbol given as loop number expression"
     BuiltInFunctionRef _ ->
       throwError "Function given as loop number expression"
 

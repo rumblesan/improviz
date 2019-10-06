@@ -89,8 +89,7 @@ globaliseIf (If predicate block elseBlock) =
     <*> mapM (globaliseBlock S.empty) elseBlock
 
 globaliseFunc :: Func -> Transformer Func
-globaliseFunc (Func name args block) = do
-  modify (\st -> st { globalVars = S.insert name (globalVars st) })
+globaliseFunc (Func name args block) =
   Func name args <$> globaliseBlock (argNames args) block
 
 argNames :: [FuncArg] -> S.Set String

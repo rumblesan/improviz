@@ -203,14 +203,9 @@ variableToBC (LocalVariable name) = do
 variableToBC (GlobalVariable name) = return $ External name
 
 valueToBC :: Value -> ImpCompiler Instruction
-valueToBC (Number n)             = return $ Constant (SFloat n)
-valueToBC Null                   = return $ Constant SNull
-valueToBC (Symbol          v   ) = return $ Constant (SString v)
-valueToBC (UserFunctionRef name) = do
-  addr <- getAddress name
-  case addr of
-    Nothing -> throwError $ "Unknown function: " ++ name
-    Just a  -> return $ Load a
+valueToBC (Number n)                = return $ Constant (SFloat n)
+valueToBC Null                      = return $ Constant SNull
+valueToBC (Symbol             v   ) = return $ Constant (SString v)
 valueToBC (BuiltInFunctionRef name) = do
   addr <- getAddress name
   case addr of

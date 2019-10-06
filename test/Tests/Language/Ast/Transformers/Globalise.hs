@@ -79,7 +79,7 @@ test_func_var_to_global =
       expected = Program
         [ StFunc $ Func "myfunc" [VarArg "arg1"] afterBlock
         , StExpression $ EApp $ Application
-          (GlobalVariable "myfunc")
+          (LocalVariable "myfunc")
           [ApplicationSingleArg $ EVal $ Number 4]
           Nothing
         ]
