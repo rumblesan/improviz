@@ -26,7 +26,7 @@ test_parses_simple_if =
     pred    = EVal $ Number 1
     block =
       Block [ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing]
-    expected = Program [StIf $ If pred block Nothing]
+    expected = Program [StIf $ If [(pred, block)]]
   in
     parserTest program expected
 
@@ -39,6 +39,6 @@ test_parses_if_else =
       Block [ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing]
     block2 = Block
       [ElExpression $ EApp $ Application (LocalVariable "ball") [] Nothing]
-    expected = Program [StIf $ If pred block1 (Just block2)]
+    expected = Program [StIf $ If [(pred, block1), (EVal $ Number 1, block2)]]
   in
     parserTest program expected

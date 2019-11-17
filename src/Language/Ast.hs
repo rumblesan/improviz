@@ -67,10 +67,8 @@ data Assignment
                           Expression
   deriving (Eq, Show)
 
-data If =
-  If Expression
-     Block
-     (Maybe Block)
+newtype If =
+  If [(Expression, Block)]
   deriving (Eq, Show)
 
 data Lambda =

@@ -3,7 +3,7 @@ module Language.Compiler where
 import           Data.Vector                    ( Vector )
 import qualified Data.List                     as L
 import qualified Data.Vector                   as V
-import           Data.Maybe                     ( fromMaybe )
+-- import           Data.Maybe                     ( fromMaybe )
 import           Control.Monad.Trans.State.Strict
 import           Control.Monad.Except           ( runExceptT
                                                 , throwError
@@ -133,7 +133,8 @@ simpleAssignmentBC name expr = do
   return $ V.snoc exprOps (Save addr)
 
 ifToBC :: If -> ImpCompiler (Vector Instruction)
-ifToBC (If predicate ifBlock elseBlock) = do
+ifToBC (If predBlocks) = undefined
+  {--
   predOps <- expressionToBC predicate
   ifOps   <- blockToBC ifBlock
   elseOps <- blockToBC $ fromMaybe (Block []) elseBlock
@@ -141,6 +142,7 @@ ifToBC (If predicate ifBlock elseBlock) = do
     $    V.snoc predOps (Branch $ V.length elseOps + 1)
     V.++ V.snoc elseOps (RelJump $ V.length ifOps + 1)
     V.++ ifOps
+    --}
 
 
 funcToBC :: Func -> ImpCompiler (Vector Instruction)

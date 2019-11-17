@@ -82,11 +82,10 @@ globaliseExpression (EAccess listExpr accessExpr) =
   EAccess <$> globaliseExpression listExpr <*> globaliseExpression accessExpr
 
 globaliseIf :: If -> Transformer If
-globaliseIf (If predicate block elseBlock) =
-  If
-    <$> globaliseExpression predicate
-    <*> globaliseBlock S.empty block
-    <*> mapM (globaliseBlock S.empty) elseBlock
+globaliseIf (If blocks) = If <$> mapM globaliseIfBlock blocks
+ where
+  globaliseIfBlock (pred, blk) =
+    (,) <$> globaliseExpression pred <*> globaliseBlock S.empty blk
 
 globaliseFunc :: Func -> Transformer Func
 globaliseFunc (Func name args block) =

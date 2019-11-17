@@ -4,6 +4,7 @@ module Language.Parser where
 
 import           Control.Monad                  ( void )
 import           Data.Void
+import           Data.Maybe                     ( maybeToList )
 import           Data.Either                    ( partitionEithers )
 import           Data.Monoid                    ( (<>) )
 import qualified Data.List.NonEmpty            as NE
@@ -61,7 +62,7 @@ rword :: String -> Parser ()
 rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
 
 rws :: [String]
-rws = ["if", "else", "null", "func", "times", "with", "time"]
+rws = ["if", "elif", "else", "null", "func", "times", "with", "time"]
 
 identifier :: Parser String
 identifier = (lexeme . try) (p >>= check)
@@ -235,11 +236,12 @@ assignment = absAssignment <|> condAssignment
 
 ifElem :: Parser If
 ifElem = do
-  i  <- ifBlock
-  el <- optional elseBlock
-  return $ i el
+  ifBlk <- ifBlock
+  elifs <- many elseIfBlock
+  el    <- maybeToList <$> optional elseBlock
+  return $ If ((ifBlk : elifs) ++ el)
 
-ifBlock :: Parser (Maybe Block -> If)
+ifBlock :: Parser (Expression, Block)
 ifBlock = L.indentBlock scn i
  where
   i = do
@@ -248,18 +250,34 @@ ifBlock = L.indentBlock scn i
     predicate <- parens expression
     return
       (L.IndentSome (Just (ilevel <> tabWidth))
-                    (return . If predicate . Block)
+                    (\blk -> return (predicate, Block blk))
                     element
       )
 
+elseIfBlock :: Parser (Expression, Block)
+elseIfBlock = L.indentBlock scn i
+ where
+  i = do
+    ilevel <- L.indentLevel
+    rword "elif"
+    predicate <- parens expression
+    return
+      (L.IndentSome (Just (ilevel <> tabWidth))
+                    (\blk -> return (predicate, Block blk))
+                    element
+      )
 
-elseBlock :: Parser Block
+elseBlock :: Parser (Expression, Block)
 elseBlock = L.indentBlock scn i
  where
   i = do
     ilevel <- L.indentLevel
     rword "else"
-    return (L.IndentSome (Just (ilevel <> tabWidth)) (return . Block) element)
+    return
+      (L.IndentSome (Just (ilevel <> tabWidth))
+                    (\blk -> return (EVal $ Number 1, Block blk))
+                    element
+      )
 
 expression :: Parser Expression
 expression = makeExprParser exprs operators >>= recurParsePostExpr
