@@ -3,7 +3,6 @@ module Language.Interpreter.StdLib.Util
   )
 where
 
-import           Control.Monad.Trans            ( liftIO )
 import           Control.Monad.Except           ( throwError )
 import           System.Random                  ( random
                                                 , mkStdGen
@@ -47,7 +46,6 @@ randomFunc :: [Value] -> InterpreterProcess Value
 randomFunc _ = do
   (v, newRng) <- random <$> use rnGen
   assign rnGen newRng
-  liftIO $ print v
   return $ Number v
 
 randomSeedFunc :: [Value] -> InterpreterProcess Value
