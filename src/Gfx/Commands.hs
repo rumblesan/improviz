@@ -176,5 +176,4 @@ renderCode text = do
 renderCodeToBuffer :: String -> GraphicsEngine ()
 renderCodeToBuffer text = do
   tr <- use textRenderer
-  liftIO $ renderText 0 0 tr text
   liftIO $ renderTextToBuffer tr
