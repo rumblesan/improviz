@@ -387,3 +387,23 @@ cube(s)
 ```
 
 Get the length of a list.
+
+### random
+
+```
+rotate(time)
+cube(random())
+```
+
+Generate a random number between zero and one. The seed value is set at the beginning of every frame, meaning that multiple calls to random within a frame will give different numbers, but the series of calls in different frames will give the same series of numbers.
+
+### randomSeed
+
+```
+randomSeed 234
+
+rotate(time)
+cube(random())
+```
+
+Set the seed used to generate all the random numbers in a frame. The local time is used to set this when Improviz starts up.
