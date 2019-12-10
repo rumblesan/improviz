@@ -1,6 +1,8 @@
 geometries:
   - name: line
     file: line.obj
+  - name: triangle
+    file: triangle.obj
   - name: rectangle
     file: rectangle.obj
   - name: cube
