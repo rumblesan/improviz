@@ -1,4 +1,4 @@
-func triangle(x, y, r)
+func triangle(x, y)
 	x := 1
 	y := x*0.866
 	shape(:triangle, x, y, 1)
