@@ -90,6 +90,22 @@ a := 4
 cube(a) // cube will be of size 3
 ```
 
+## If
+
+Control flow can be done using `if`, `elif` and `else`. The number 0 is considered False, with anything else being considered True.
+
+```
+10 times with x
+  if (x % 3 < 1)
+    fill(255, 0, 0)
+  elif (x % 3 < 2)
+    fill(0, 255, 0)
+  else
+    fill(0, 255, 0)
+  rotate()
+  rectangle(8)
+```
+
 ## Function Definition
 
 Functions are defined using the `func` keyword, followed by a name, argument list and then either an indented block or an arrow and single line expression
