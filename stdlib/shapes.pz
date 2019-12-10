@@ -1,3 +1,7 @@
+func triangle(x, y, r)
+	x := 1
+	y := x*0.866
+	shape(:triangle, x, y, 1)
 
 func cube(x, y, z)
 	x := 1
