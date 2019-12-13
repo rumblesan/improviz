@@ -82,9 +82,9 @@ Please check the [language](docs/language.md) document for details of the langua
 Please check the [configuration](docs/configuration.md) document for details on how to configure Improviz.
 
 
-## Hellocatfood GIFS
+## hellocatfood GIFS
 
-As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://twitter.com/hellocatfood) was commissioned to create a series of animated GIFs that can be used as textures with Improviz.
+As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://hellocatfood.com) was commissioned to create a series of animated GIFs that can be used as textures with Improviz.
 
 These excellent and unique images are bundled in the pre-built binary releases and can also be found in the [Improviz Performance](https://github.com/rumblesan/improviz-performance/) repository. They're licensed under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for performances, projects, and anything else you want.
 
