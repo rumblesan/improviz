@@ -36,9 +36,9 @@ The [Improviz Performance](https://github.com/rumblesan/improviz-performance/) r
 
 This will continue to be added to over time and should hopefully serve as inspiration of some sort.
 
-### Hellocatfood GIFs
+### hellocatfood GIFs
 
-As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://twitter.com/hellocatfood) was commissioned to create a series of animated GIFs that can me used as textures with Improviz.
+As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://hellocatfood.com) was commissioned to create a series of animated GIFs that can be used as textures with Improviz.
 
 These excellent and unique images are bundled in the pre-built binary releases and can also be found in the [hellogifs](https://github.com/rumblesan/improviz-performance/tree/master/hellogifs) folder of the performance repository. They're licensed under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for your own performances, projects, and anything else you may want.
 
