@@ -7,7 +7,9 @@ Ideally it should get you up and running and familiar with some of the basic con
 
 ## Running
 
-If you're reading this then we'll assume you have downloaded and un-archived the release for your system.
+### Pre-built Binary
+
+The simplest way to start is to downloaded and un-archive the pre-built release for your system from the [GitHub Releases](https://github.com/rumblesan/improviz/releases) page.
 
 * Open a terminal
 * Browse to the unzipped folder
@@ -19,6 +21,9 @@ Depending on the system you're running on, you may get a prompt asking `Do you w
 
 If you don't get a screen appearing, then please [raise an issue](https://github.com/rumblesan/improviz/issues) on the repository and include any error messages that may have been printed out in the console.
 
+### Building from Source
+
+If you'd prefer to build from source, then the [development](./development.md) documentation should cover all the details.
 
 ## Interacting
 

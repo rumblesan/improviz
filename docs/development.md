@@ -8,7 +8,11 @@ The [main repository](https://github.com/rumblesan/improviz) contains all the co
 
 ## Building
 
-Improviz uses the [stack](https://www.haskellstack.org/) tool to build the project. Once you have that installed, it should be possible to just browse to the cloned repository directory, and run `stack build`
+Improviz uses the [stack](https://www.haskellstack.org/) tool to build the project. Once you have that installed, it should be possible to just browse to the cloned repository directory, and run
+
+```bash
+stack build
+```
 
 ## Running
 
