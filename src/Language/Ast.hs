@@ -46,7 +46,7 @@ data Element
 data Application =
   Application Variable
               [ApplicationArg]
-              (Maybe Block)
+              (Maybe Lambda)
   deriving (Eq, Show)
 
 data ApplicationArg

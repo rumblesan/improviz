@@ -165,6 +165,7 @@ element =
       ]
     <?> "element"
 
+
 application :: Parser Application
 application = L.indentBlock scn ap
  where
@@ -179,7 +180,20 @@ application = L.indentBlock scn ap
                     element
       )
   blk []    = Nothing
-  blk elems = Just $ Block elems
+  blk elems = Just $ Lambda [] Nothing (Block elems)
+
+applicationLambda :: Parser Lambda
+applicationLambda = do
+  ilevel <- L.indentLevel
+  args   <- optional applicationLambdaArgs
+  elems  <- L.indentBlock scn $ return $ L.IndentSome (Just ilevel)
+                                                      return
+                                                      element
+  return $ Lambda [] Nothing $ Block elems
+
+applicationLambdaArgs :: Parser [FuncArg]
+applicationLambdaArgs = symbol "|" *> sepBy la comma <* symbol "|"
+  where la = VarArg <$> identifier <* symbol ":" <* value
 
 applicationArg :: Parser ApplicationArg
 applicationArg = choice

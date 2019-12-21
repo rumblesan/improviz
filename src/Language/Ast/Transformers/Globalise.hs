@@ -91,6 +91,10 @@ globaliseFunc :: Func -> Transformer Func
 globaliseFunc (Func name args block) =
   Func name args <$> globaliseBlock (argNames args) block
 
+globaliseLambda :: Set String -> Lambda -> Transformer Lambda
+globaliseLambda newVars (Lambda args scope block) =
+  Lambda args scope <$> globaliseBlock newVars block
+
 argNames :: [FuncArg] -> S.Set String
 argNames args = S.fromList $ an <$> args
  where
@@ -98,11 +102,11 @@ argNames args = S.fromList $ an <$> args
   an (BlockArg n) = n
 
 globaliseApplication :: Application -> Transformer Application
-globaliseApplication (Application name args mbBlock) =
+globaliseApplication (Application name args mbLambda) =
   Application
     <$> globaliseVariable name
-    <*> mapM globaliseApplicationArg  args
-    <*> mapM (globaliseBlock S.empty) mbBlock
+    <*> mapM globaliseApplicationArg   args
+    <*> mapM (globaliseLambda S.empty) mbLambda
 
 globaliseApplicationArg :: ApplicationArg -> Transformer ApplicationArg
 globaliseApplicationArg (ApplicationSingleArg expr) =

@@ -78,6 +78,6 @@ test_parses_function_blocks =
                 , ApplicationSingleArg $ EVar $ LocalVariable "a"
                 , ApplicationSingleArg $ EVal $ Number 2
                 ]
-            $ Just (Block [ass, box2])
+            $ Just (Lambda [] Nothing $ Block [ass, box2])
       expected = Program [box1]
   in  parserTest program expected

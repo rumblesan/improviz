@@ -188,6 +188,7 @@ assignApplicationArgs
   :: [FuncArg] -> [Value] -> Maybe Lambda -> InterpreterProcess Value
 assignApplicationArgs funcArgs argValues mbLmb = do
   zipWithM_ (assignArg mbLmb) funcArgs (argValues ++ repeat Null)
+  setVariable "args" $ VList argValues
   return Null
  where
   assignArg _  (VarArg   name) v = setVariable name v
@@ -239,11 +240,14 @@ interpretAssignment (ConditionalAssignment name expression) = do
     Null -> interpretExpression expression >>= setVariable name
     _    -> return var
 
+setLambdaScope :: Maybe (LS.ScopeStack Identifier Value) -> Lambda -> Lambda
+setLambdaScope scope (Lambda argNames _ block) = Lambda argNames scope block
+
 interpretExpression :: Expression -> InterpreterProcess Value
-interpretExpression (EApp (Application name args mbBlock)) = do
+interpretExpression (EApp (Application name args mbLambda)) = do
   variableDefs <- use variables
-  let mbLmb = fmap (Lambda [] (Just variableDefs)) mbBlock
-  interpretApplication name args mbLmb
+  let mbScopedLambda = fmap (setLambdaScope (Just variableDefs)) mbLambda
+  interpretApplication name args mbScopedLambda
 interpretExpression (BinaryOp op v1 v2) = do
   n1 <- interpretExpression v1
   n2 <- interpretExpression v2

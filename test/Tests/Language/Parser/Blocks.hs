@@ -31,7 +31,7 @@ test_parses_block_with_blank_lines =
         , ApplicationSingleArg $ EVal (Number 0)
         , ApplicationSingleArg $ EVal (Number 0)
         ]
-        (Just $ Block [rotate, box])
+        (Just $ Lambda [] Nothing $ Block [rotate, box])
       expected = Program [fill]
   in  parserTest program expected
 
