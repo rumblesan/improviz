@@ -121,6 +121,18 @@ func draw(r, g, b)
 draw(255, 0, 0)
 ```
 
+## Default Arguments
+
+Functions can have default values for their arguments that will be used if a value isn't passed in.
+
+```
+func defEx(rot:2, size:3)
+  rotate(rot)
+  cube(size)
+
+defEx()
+```
+
 ## Function Blocks
 
 When a function is called in can be passed an optional block.
@@ -137,6 +149,25 @@ func myf(x, y, &blk)
 myf(1, 1)
 	rotate()
 	cube()
+```
+
+These blocks can also have arguments defined so that values can be passed from the wrapping function to the block.
+
+```
+func gridit(x, y, &blk)
+  x times with xVal
+    y times with yVal
+      move(xVal, yVal, 0)
+        &blk(xVal, yVal)
+
+gridit(3, 3)
+  |x: 0, y: 0|
+  rotate()
+  if ((x + y) % 2 < 1)
+    fill(255, 0, 0)
+  else
+    fill(0, 255, 0)
+  cube()
 ```
 
 The **BlockArg** must start with an ampersand *(&)* symbol.
