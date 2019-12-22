@@ -176,24 +176,33 @@ application = L.indentBlock scn ap
     void $ symbol ")"
     return
       (L.IndentMany (Just (ilevel <> tabWidth))
-                    (return . (Application apVar args . blk))
-                    element
+                    (blk apVar args)
+                    applicationLambdaElement
       )
-  blk []    = Nothing
-  blk elems = Just $ Lambda [] Nothing (Block elems)
+  blk apVar args [] = return $ Application apVar args Nothing
+  blk apVar args elems =
+    Application apVar args . Just <$> lambdaElementsToLambda elems
 
-applicationLambda :: Parser Lambda
-applicationLambda = do
-  ilevel <- L.indentLevel
-  args   <- optional applicationLambdaArgs
-  elems  <- L.indentBlock scn $ return $ L.IndentSome (Just ilevel)
-                                                      return
-                                                      element
-  return $ Lambda [] Nothing $ Block elems
+lambdaElementsToLambda :: [LambdaBodyElement] -> Parser Lambda
+lambdaElementsToLambda ((LambdaArgs args) : xs) =
+  Lambda args Nothing <$> bodyElementsToBlock xs
+lambdaElementsToLambda xs = Lambda [] Nothing <$> bodyElementsToBlock xs
+
+bodyElementsToBlock :: [LambdaBodyElement] -> Parser Block
+bodyElementsToBlock elems = if any isArgs elems
+  then fail "Found block arguments"
+  else return $ Block $ fmap (\(LambdaElement el) -> el) elems
+ where
+  isArgs (LambdaArgs _) = True
+  isArgs _              = False
+
+applicationLambdaElement :: Parser LambdaBodyElement
+applicationLambdaElement =
+  (LambdaArgs <$> applicationLambdaArgs) <|> (LambdaElement <$> element)
 
 applicationLambdaArgs :: Parser [FuncArg]
 applicationLambdaArgs = symbol "|" *> sepBy la comma <* symbol "|"
-  where la = VarArg <$> identifier <* symbol ":" <* value
+  where la = VarArg <$> identifier <* symbol ":" <*> option Null value
 
 applicationArg :: Parser ApplicationArg
 applicationArg = choice

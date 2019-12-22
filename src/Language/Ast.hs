@@ -6,6 +6,7 @@ module Language.Ast
   , Application(..)
   , ApplicationArg(..)
   , Lambda(..)
+  , LambdaBodyElement(..)
   , Func(..)
   , FuncArg(..)
   , Loop(..)
@@ -75,6 +76,8 @@ data Lambda =
   Lambda [FuncArg]
          (Maybe (ScopeStack Identifier Value))
          Block deriving (Eq, Show)
+
+data LambdaBodyElement = LambdaArgs [FuncArg] | LambdaElement Element deriving (Eq, Show)
 
 data Func =
   Func Identifier

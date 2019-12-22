@@ -1,0 +1,9 @@
+
+
+func defcheck(a:2, b:3)
+	rotate(a)
+	cube(b)
+
+defcheck()
+
+
