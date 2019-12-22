@@ -199,6 +199,19 @@ cube(s)
 
 They can be created using square brackets and accessed also using the square brackets. The `length` function is available to return the length of a list as a number.
 
+## Function Spread Arguments
+
+The spread operator can be used to send multiple values in a list to a function as arguments.
+
+```
+lblue = [100, 100, 255]
+
+// These two calls to fill will do the same thing
+fill(...lblue)
+
+fill(100, 100, 255)
+
+```
 ## Saving and Loading GFX state
 
 The built in functions **pushScope** and **popScope** can be used to save and load snapshots of the style and transformation state on a stack.
