@@ -191,7 +191,9 @@ assignApplicationArgs funcArgs argValues mbLmb = do
   setVariable "args" $ VList argValues
   return Null
  where
-  assignArg _  (VarArg   name) v = setVariable name v
+  assignArg _ (VarArg name defaultValue) v = case v of
+    Null -> setVariable name defaultValue
+    _    -> setVariable name v
   assignArg ml (BlockArg name) _ = setVariable name $ maybe Null LambdaRef ml
 
 interpretLoop :: Loop -> InterpreterProcess Value

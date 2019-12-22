@@ -98,7 +98,7 @@ globaliseLambda newVars (Lambda args scope block) =
 argNames :: [FuncArg] -> S.Set String
 argNames args = S.fromList $ an <$> args
  where
-  an (VarArg   n) = n
+  an (VarArg n _) = n
   an (BlockArg n) = n
 
 globaliseApplication :: Application -> Transformer Application

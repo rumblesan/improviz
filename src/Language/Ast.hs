@@ -82,7 +82,7 @@ data Func =
        Block
   deriving (Eq, Show)
 
-data FuncArg = VarArg Identifier | BlockArg Identifier deriving (Eq, Show)
+data FuncArg = VarArg Identifier Value | BlockArg Identifier deriving (Eq, Show)
 
 data Expression
   = EApp Application

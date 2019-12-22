@@ -35,8 +35,8 @@ test_parses_program =
       (LocalVariable "box")
       [ApplicationSingleArg $ EVar $ LocalVariable "c"]
       Nothing
-    fooLine =
-      StFunc $ Func "foo" [VarArg "a", VarArg "b"] (Block [cAss, fooBox])
+    fooLine = StFunc
+      $ Func "foo" [VarArg "a" Null, VarArg "b" Null] (Block [cAss, fooBox])
     nLine = StAssign $ ConditionalAssignment "n" $ BinaryOp
       "+"
       (BinaryOp "*" (EVal $ Number 3) (EVal $ Number 4))

@@ -57,7 +57,7 @@ test_func_var_to_global =
           $ BinaryOp "+" (EVar $ LocalVariable "b") (EVar $ LocalVariable "c")
         ]
       program = Program
-        [ StFunc $ Func "myfunc" [VarArg "arg1"] beforeBlock
+        [ StFunc $ Func "myfunc" [VarArg "arg1" Null] beforeBlock
         , StExpression $ EApp $ Application
           (LocalVariable "myfunc")
           [ApplicationSingleArg $ EVal $ Number 4]
@@ -77,7 +77,7 @@ test_func_var_to_global =
           $ BinaryOp "+" (EVar $ LocalVariable "b") (EVar $ LocalVariable "c")
         ]
       expected = Program
-        [ StFunc $ Func "myfunc" [VarArg "arg1"] afterBlock
+        [ StFunc $ Func "myfunc" [VarArg "arg1" Null] afterBlock
         , StExpression $ EApp $ Application
           (LocalVariable "myfunc")
           [ApplicationSingleArg $ EVal $ Number 4]

@@ -159,7 +159,7 @@ funcToBC (Func name args block) = do
   return $ V.cons jmp bodyBC
 
 funcArgToBC :: FuncArg -> ImpCompiler (Vector Instruction)
-funcArgToBC (VarArg name) = do
+funcArgToBC (VarArg name _) = do
   addr <- assignAddress name
   return $ V.singleton $ Save addr
 funcArgToBC (BlockArg name) = throwError "Block args not yet supported"

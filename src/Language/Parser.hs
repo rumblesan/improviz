@@ -219,7 +219,8 @@ functionDef = L.indentBlock scn fb
 
 functionArg :: Parser FuncArg
 functionArg =
-  (VarArg <$> identifier) <|> (BlockArg <$> (char '&' *> identifier))
+  (VarArg <$> identifier <*> option Null (char ':' *> value))
+    <|> (BlockArg <$> (char '&' *> identifier))
 
 loop :: Parser Loop
 loop = L.indentBlock scn l
