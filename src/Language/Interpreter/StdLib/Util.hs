@@ -3,11 +3,14 @@ module Language.Interpreter.StdLib.Util
   )
 where
 
+import           Control.Monad                  ( mapM_ )
 import           Control.Monad.Except           ( throwError )
+import           Control.Monad.Trans            ( liftIO )
 import           System.Random                  ( random
                                                 , mkStdGen
                                                 )
 
+import           Logging                        ( logInfo )
 import           Lens.Simple                    ( use
                                                 , assign
                                                 )
@@ -25,6 +28,7 @@ addUtilStdLib = do
   setBuiltIn "length"     lengthFunc
   setBuiltIn "random"     randomFunc
   setBuiltIn "randomSeed" randomSeedFunc
+  setBuiltIn "debug"      debugFunc
 
 isNullFunc :: [Value] -> InterpreterProcess Value
 isNullFunc args = case args of
@@ -54,3 +58,6 @@ randomSeedFunc args = case args of
     assign rnGen (mkStdGen $ round seed)
     return Null
   _ -> throwError "Must give a number argument for seed function"
+
+debugFunc :: [Value] -> InterpreterProcess Value
+debugFunc args = mapM_ (liftIO . logInfo . show) args >> return Null
