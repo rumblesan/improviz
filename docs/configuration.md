@@ -97,3 +97,11 @@ stack exec improviz -- -d
 ```yaml
 debug: true
 ```
+
+## Window TitleBar
+
+By default the Improviz window hides the app titlebar. This can be enabled using th34 config file.
+
+```yaml
+decorated: true
+```
