@@ -1,13 +1,26 @@
-decorated: true
+screenwidth: 640
+screenheight: 480
+debug: false
+# fullscreen: 0
+screen:
+  front: 0.1
+  back: 100
 font:
   size: 36
-osc:
-  enabled: true
 textureDirectories:
   - "./textures"
+geometryDirectories:
+  - "./geometries"
 codeFiles:
   - "./stdlib/variables.pz"
   - "./stdlib/transformations.pz"
   - "./stdlib/shapes.pz"
   - "./stdlib/style.pz"
   - "./stdlib/textures.pz"
+assetsDirectory: "./assets"
+serverPort: 3000
+osc:
+  enabled: true
+  port: 5510
+apptitle: "Improviz"
+decorated: true
