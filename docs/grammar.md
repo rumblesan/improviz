@@ -5,7 +5,7 @@ This is a very rough grammar for the Improviz language. Highly likely to change 
 ```
 program = statement*
 
-statement = (loop | assignment | functionDef | if) eol
+statement = (loop | assignment | functionDef | if | expression) eol
 
 loop = expression "times" ("with" identifier)? "newline" block
 
@@ -28,10 +28,10 @@ block = (<indent> element)+
 element = (loop | assignment | if | expression) eol
 
 if = "if" "(" expression ")" block else?
- 
+
 else = "else" block
 
-expression = application | variable | value | "(" expression ")"
+expression = application | list | variable | value | "(" expression ")"
 
 application = identifier "(" expressionList? ")" block?
 

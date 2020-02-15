@@ -1,12 +1,11 @@
 screenwidth: 640
 screenheight: 480
-debug: false
 # fullscreen: 0
-screen:
-  front: 0.1
-  back: 100
 font:
   size: 36
+  foregroundColour: [0, 0, 0, 255]
+  backgroundColour: [255, 200, 0, 255]
+assetsDirectory: "./assets"
 textureDirectories:
   - "./textures"
 #  - "./hellocatfood/gifs"
@@ -21,10 +20,13 @@ codeFiles:
   - "./stdlib/textures.pz"
   - "./usercode/grid.pz"
   - "./usercode/seq.pz"
-assetsDirectory: "./assets"
+debug: false
+decorated: true
+apptitle: "Improviz"
 serverPort: 3000
 osc:
   enabled: true
   port: 5510
-apptitle: "Improviz"
-decorated: true
+screen:
+  front: 0.1
+  back: 100

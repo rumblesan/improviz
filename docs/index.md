@@ -32,9 +32,7 @@ There is also the [Grammar](./grammar.md) document which tries to detail the gra
 
 ## Performing
 
-The [Improviz Performance](https://github.com/rumblesan/improviz-performance/) repository contains a large number of animated and static textures, as well as example patches that I have used and created as part of performances I've done. This is all included in the release bundles as well.
-
-This will continue to be added to over time and should hopefully serve as inspiration of some sort.
+The [Improviz Performance](https://github.com/rumblesan/improviz-performance/) repository contains a large number of animated and static textures, as well as example patches that I have used and created as part of performances I've done.  This will continue to be added to over time and will hopefully serve as inspiration of some sort.
 
 ### hellocatfood GIFs
 
@@ -53,4 +51,3 @@ Drop me an email at guy@rumblesan.com
 ## License
 
 Improviz code is licensed under the BSD License.
-

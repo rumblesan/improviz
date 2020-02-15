@@ -407,3 +407,12 @@ cube(random())
 ```
 
 Set the seed used to generate all the random numbers in a frame. The local time is used to set this when Improviz starts up.
+
+### debug
+
+```
+myvar = 56
+debug(1, myvar, :symbol, time)
+```
+
+The debug function will print out to the terminal the value of all the arguments it's been given. This will result in a lot of text, as it's likely the function will be called every frame, but this may still be useful for figuring out what's happening in some of your code.

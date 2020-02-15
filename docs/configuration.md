@@ -1,35 +1,35 @@
 # Configuration
 
-Some configuration can be set via command line flags with those and further options also being configurable through a file.
+The configuration for Improviz is mainly set in the config file that it loads at startup.  By default, Improviz will attempt to load the *improviz.yaml* file in the same directory it's run from. This file can be changed by using the `-c <filepath>` command line option.
+The default *improviz.yaml* file should have all the available settings visible (though fullscreen is commented out).
 
-By default, Improviz will attempt to load the *improviz.yaml* file in the same directory it's run from. This file can be changed by using the `-c <filepath>` command line option.
+Some configuration can be set via flags given to Improviz when it is run from the command line.
+
 
 ## Screen size
 
-Command line arguments are used to specify the size of the screen with default being 640px wide by 480px high. This can be changed using the `-w` and `-h` command line flags.
+The *screenwidth* and *screenheight* keys in the confifg file are used to specify the size of the screen, with the default values being 640px wide by 480px high.
+This can be set via the command line using the `-w` and `-h` command line flags.
 
 ```bash
-stack exec improviz -- -w 1024 -h 768
+improviz -w 1024 -h 768
 ```
-
-The `--` in the above is to make it clear to the *stack* tool that these arguments are for the improviz executable.
-
-These can also be set by the *screenwidth* and *screenheight* keys in the confifg file.
 
 ```yaml
 screenwidth: 1024
 screenheight: 768
 ```
 
+
 ## Full Screen
 
 When making Improviz fullscreen, it's also necessary to pass in the number of the display it should be on.
 
 ```bash
-stack exec improviz -- -f 0
+improviz -f 0
 ```
 
-Zero is the primary display. One would be the next attached display to the machine.
+0 is the primary display. 1 would be the next attached display to the machine.
 
 This can also be set by the *fullscreen* key in the confifg file.
 
@@ -37,9 +37,10 @@ This can also be set by the *fullscreen* key in the confifg file.
 fullscreen: 0
 ```
 
+
 ## Font File
 
-The font used by default is arial. An alternative can be used by specifying a path to the true text file in the config file.
+The font used by default is arial but an alternative can be used by specifying a path to the .ttf file.
 
 ```yaml
 font:
@@ -55,6 +56,16 @@ font:
   backgroundColour: [0, 0, 0, 0]
 ```
 
+
+## Assets Directory
+
+Improviz has a very basic built in editor that can be used by browsing to [http://localhost:3000/editor](http://localhost:3000/editor) once it's running. The asset directory is currently just a path to the folder containing the HTML used for serving this editor.
+
+```yaml
+assetsDirectory: "./assets"
+```
+
+
 ## Texture Directories
 
 Improviz can be given a list of directories to read texture files from. The details of how this works can be found in [textures.md](textures.md)
@@ -66,6 +77,7 @@ textureDirectories:
  - ./downloads/textures
 ```
 
+
 ## Geometry Directories
 
 Improviz can be given a list of directories to read geometry files from. The details of how this works can be found in [geometries.md](geometries.md)
@@ -75,33 +87,68 @@ geometryDirectories:
  - ./geometries
 ```
 
-## Pre-loaded Code
 
-It is possible to give Improviz a list of code files that it will load on startup. This makes it possible to have specific functions for performances available without having to modify the source or copying it into the editor window each time.
+## Code Files
+
+Most of the generally used functions Improviz provides are written on top of the slightly lower level functions in the language. So code for `rotate`, `move`, `cube` and `fill` for example is actually all in files contained in the **stdlib** folder which is loaded when Improviz starts up. This is specified with the *codeFiles* setting in the config file.
+
+There is also the **usercode** directory which contains a few other useful functions, and is meant to show how you can also create your own functions that further expand on what you can do with Improviz. This makes it possible to have specific functions for performances available without having to modify the source or copying it into the editor window each time.
+
+All these files can be loaded at startup just by specifying the list of *codeFiles*.
 
 ```yaml
 codeFiles:
+  - "./stdlib/variables.pz"
+  - "./stdlib/transformations.pz"
+  - "./stdlib/shapes.pz"
+  - "./stdlib/style.pz"
+  - "./stdlib/textures.pz"
   - "./usercode/grid.pz"
+  - "./usercode/seq.pz"
 ```
 
-Much of the standard library of functions is now implemented like this.
 
 ## Debug
 
-The debug setting can be turned on via the cli or the config file.
+The debug setting can be turned on via the cli or the config file. This is mainly meant to be used when developing features on Improviz, and it's unlikely to be useful for performing.
 
 ```bash
-stack exec improviz -- -d
+improviz -d
 ```
 
 ```yaml
 debug: true
 ```
 
-## Window TitleBar
 
-By default the Improviz window hides the app titlebar. This can be enabled using th34 config file.
+## Window Title Bar
+
+By default the Improviz window hides the title bar but this can be enabled using the *decorated* setting in the config file. It's also possible to change the title displayed there with the *apptitle* setting.
 
 ```yaml
 decorated: true
+apptitle: "My Performance"
+```
+
+
+## Server Ports
+
+Improviz runs two servers, one for HTTP connections and one for OSC messages. By default the OSC server is disabled unless enabled in the config file. The HTTP server is always enabled because this is how editors communicate with the process. The ports that these run on can also be configued, with the HTTP server running on port 3000 and the OSC server running on port 5510 by default.
+
+```yaml
+serverPort: 3000
+osc:
+  enabled: true
+  port: 5510
+```
+
+
+# Screen Settings
+
+The screen settings allow changes to be made to the OpenGL clipping planes. It's unlikely that these will need to be changed, but the option is there to do so. This document on [Depth Buffer Precision](https://www.khronos.org/opengl/wiki/Depth_Buffer_Precision) may be useful for more information on why you might want to do this. The default values are 0.1 for zNear and 100 for zFar.
+
+```yaml
+screen:
+  front: 0.1
+  back: 100
 ```
