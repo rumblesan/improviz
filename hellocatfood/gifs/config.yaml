@@ -1,0 +1,35 @@
+textures:
+  - name: hello1
+    file: 1.gif
+  - name: hello2
+    file: 2.gif
+  - name: hello3
+    file: 3a.gif
+  - name: hello3b
+    file: 3b.gif
+  - name: hello3c
+    file: 3c.gif
+  - name: hello4
+    file: 4.gif
+  - name: hello5
+    file: 5.gif
+  - name: hello7
+    file: 6a.gif
+  - name: hello6
+    file: 6b.gif
+  - name: hello6b
+    file: 7.gif
+  - name: hello8
+    file: 8a.gif
+  - name: hello8b
+    file: 8b.gif
+  - name: hello9
+    file: 9a.gif
+  - name: hello9b
+    file: 9b.gif
+  - name: hello10
+    file: 10.gif
+  - name: hello11
+    file: 11.gif
+  - name: hello12
+    file: 12.gif

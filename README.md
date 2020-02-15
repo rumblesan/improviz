@@ -86,7 +86,9 @@ Please check the [configuration](docs/configuration.md) document for details on 
 
 As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://hellocatfood.com) was commissioned to create a series of animated GIFs that can be used as textures with Improviz.
 
-These excellent and unique images are bundled in the pre-built binary releases and can also be found in the [Improviz Performance](https://github.com/rumblesan/improviz-performance/) repository. They're licensed under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for performances, projects, and anything else you want.
+These excellent and unique images are bundled in the pre-built binary releases and can be found in the **hellocatfood/gifs** folder in this repo. The **hellocatfood/geometries** folder contains the *.obj* files used to make some of them which can also be loaded by Improviz. They're all licensed under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for performances, projects, and anything else you want.
+
+By default they're not loaded by improviz when using the default configuration as they're quite large and slow startup a bit, but just uncomment the relevant lines in the **improviz.yaml** config file and you're ready to go.
 
 ## Contact
 
@@ -96,4 +98,3 @@ Drop me an email at guy@rumblesan.com
 ## License
 
 BSD License.
-

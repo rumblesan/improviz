@@ -1,0 +1,5 @@
+
+func seq(elems, speed)
+	speed := 1
+	elems[(time * speed) % length(elems)]
+

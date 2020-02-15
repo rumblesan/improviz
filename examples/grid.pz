@@ -1,0 +1,6 @@
+
+
+
+grid(4, 4)
+	rotate(time)
+		cube()

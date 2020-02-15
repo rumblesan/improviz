@@ -9,14 +9,18 @@ font:
   size: 36
 textureDirectories:
   - "./textures"
+#  - "./hellocatfood/gifs"
 geometryDirectories:
   - "./geometries"
+#  - "./hellocatfood/geometries"
 codeFiles:
   - "./stdlib/variables.pz"
   - "./stdlib/transformations.pz"
   - "./stdlib/shapes.pz"
   - "./stdlib/style.pz"
   - "./stdlib/textures.pz"
+  - "./usercode/grid.pz"
+  - "./usercode/seq.pz"
 assetsDirectory: "./assets"
 serverPort: 3000
 osc:
