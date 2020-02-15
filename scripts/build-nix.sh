@@ -2,14 +2,16 @@
 
 BUILD_DIR="./dist"
 BUNDLE_DIR="$BUILD_DIR/improviz-nix"
-mkdir -p $BUILD_DIR
-
-git clone --depth=1 --branch=master https://github.com/rumblesan/improviz-performance.git $BUNDLE_DIR
-rm -rf $BUNDLE_DIR/.git
-rm -r $BUNDLE_DIR/README.md
+mkdir -p $BUNDLE_DIR
 
 cp -r ./assets $BUNDLE_DIR
 cp -r ./examples $BUNDLE_DIR
+cp -r ./geometries $BUNDLE_DIR
+cp -r ./hellocatfood $BUNDLE_DIR
+cp -r ./stdlib $BUNDLE_DIR
+cp -r ./textures $BUNDLE_DIR
+cp -r ./usercode $BUNDLE_DIR
+cp -r ./improviz.yaml $BUNDLE_DIR
 
 DOCUMENTATION_DIR="$BUNDLE_DIR/documentation"
 mkdir -p $DOCUMENTATION_DIR
