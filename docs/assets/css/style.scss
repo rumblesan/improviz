@@ -70,3 +70,12 @@
 .page-nav .nav-link {
   color: #fff;
 }
+
+figure.gallery {
+  text-align: center;
+
+  figcaption {
+    font-size: 0.8em;
+    font-style: italic;
+  }
+}
