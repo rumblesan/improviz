@@ -32,8 +32,10 @@ import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 , resizeTextRendererScreen
                                                 )
 import           Gfx.Textures                   ( TextureLibrary )
+import           Gfx.Materials                  ( createMaterialLib )
 
 import           Configuration                  ( ImprovizConfig )
+import qualified Configuration                 as C
 
 createGfx
   :: ImprovizConfig
@@ -44,10 +46,11 @@ createGfx
   -> Int
   -> IO GfxEngine
 createGfx config textureLib width height fbWidth fbHeight = do
-  post    <- createPostProcessing fbWidth fbHeight
-  trender <- createTextRenderer config fbWidth fbHeight
+  post        <- createPostProcessing fbWidth fbHeight
+  trender     <- createTextRenderer config fbWidth fbHeight
+  materialLib <- createMaterialLib (config ^. C.materialDirectories)
   let tLibWithCode = addCodeTextureToLib trender textureLib
-  createGfxEngine config width height post trender tLibWithCode
+  createGfxEngine config width height post trender tLibWithCode materialLib
 
 resizeGfx
   :: GfxEngine -> ImprovizConfig -> Int -> Int -> Int -> Int -> IO GfxEngine

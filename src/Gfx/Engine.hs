@@ -29,6 +29,7 @@ import           Gfx.PostProcessing             ( AnimationStyle(NormalStyle)
 import           Gfx.Shaders
 import           Gfx.TextRendering              ( TextRenderer )
 import           Gfx.Textures                   ( TextureLibrary )
+import           Gfx.Materials                  ( MaterialLibrary )
 import           Gfx.Types                      ( Colour(..) )
 import qualified Gfx.Setting                   as GS
 
@@ -63,6 +64,7 @@ data GfxEngine = GfxEngine
   , _strokeStyles       :: [GFXStrokeStyling]
   , _geometryBuffers    :: Geometries
   , _textureLibrary     :: TextureLibrary
+  , _materialLibrary    :: MaterialLibrary
   , _colourShaders      :: Shaders
   , _strokeShaders      :: Shaders
   , _textureShaders     :: Shaders
@@ -81,6 +83,7 @@ makeLensesFor [ ("_fillStyles", "fillStyles")
               , ("_strokeStyles", "strokeStyles")
               , ("_geometryBuffers", "geometryBuffers")
               , ("_textureLibrary", "textureLibrary")
+              , ("_materialLibrary", "materialLibrary")
               , ("_colourShaders", "colourShaders")
               , ("_strokeShaders", "strokeShaders")
               , ("_textureShaders", "textureShaders")
@@ -113,8 +116,9 @@ createGfxEngine
   -> PostProcessing
   -> TextRenderer
   -> TextureLibrary
+  -> MaterialLibrary
   -> IO GfxEngine
-createGfxEngine config width height pprocess trender textLib =
+createGfxEngine config width height pprocess trender textLib matLib =
   let ratio      = width /. height
       front      = config ^. C.screen . CS.front
       back       = config ^. C.screen . CS.back
@@ -129,6 +133,7 @@ createGfxEngine config width height pprocess trender textLib =
                          , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
                          , _geometryBuffers  = gbos
                          , _textureLibrary   = textLib
+                         , _materialLibrary  = matLib
                          , _colourShaders    = cshd
                          , _strokeShaders    = sshd
                          , _textureShaders   = tshd

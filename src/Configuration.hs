@@ -12,6 +12,7 @@ module Configuration
   , textureDirectories
   , geometryDirectories
   , codeFiles
+  , materialDirectories
   , assetsDirectory
   , serverPort
   , osc
@@ -55,6 +56,7 @@ data ImprovizConfig = ImprovizConfig
   , _fontConfig         :: ImprovizFontConfig
   , _textureDirectories :: [FilePath]
   , _geometryDirectories :: [FilePath]
+  , _materialDirectories :: [FilePath]
   , _codeFiles          :: [FilePath]
   , _assetsDirectory    :: FilePath
   , _serverPort         :: Int
@@ -77,6 +79,7 @@ defaultConfig = ImprovizConfig { _screenWidth         = 640
                                , _fontConfig          = defaultFontConfig
                                , _textureDirectories  = ["./textures"]
                                , _geometryDirectories = ["./geometries"]
+                               , _materialDirectories = ["./materials"]
                                , _codeFiles           = []
                                , _assetsDirectory     = "./assets"
                                , _serverPort          = 3000
@@ -111,6 +114,9 @@ instance FromJSON ImprovizConfig where
       <*> v
       .:? "geometryDirectories"
       .!= (defaultConfig ^. geometryDirectories)
+      <*> v
+      .:? "materialDirectories"
+      .!= (defaultConfig ^. materialDirectories)
       <*> v
       .:? "codeFiles"
       .!= (defaultConfig ^. codeFiles)
