@@ -18,7 +18,7 @@ import           Improviz                       ( ImprovizEnv
                                                 , createEnv
                                                 )
 import qualified Improviz                      as I
-import qualified Improviz.Language             as IL
+import qualified Improviz.Runtime              as IR
 import qualified Improviz.UI                   as IUI
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -61,8 +61,8 @@ initApp config width height fbWidth fbHeight = do
   env        <- createEnv config gfx
   serveComs env
   let ti = TextureInfo $ M.map M.size textureLib
-  atomically $ modifyTVar (env ^. I.language)
-                          (set (IL.initialInterpreter . textureInfo) ti)
+  atomically $ modifyTVar (env ^. I.runtime)
+                          (set (IR.initialInterpreter . textureInfo) ti)
   return env
 
 resize :: ImprovizEnv -> Int -> Int -> Int -> Int -> IO ()
@@ -84,23 +84,23 @@ resize env newWidth newHeight fbWidth fbHeight =
 
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
-  as      <- readTVarIO (env ^. I.language)
+  as      <- readTVarIO (env ^. I.runtime)
   extVars <- readTVarIO (env ^. I.externalVars)
   gs      <- readTVarIO (env ^. I.graphics)
   let gfxCtx     = env ^. I.gfxContext
   let globalVars = [("time", Number $ double2Float time)]
-  is <- setInterpreterVariables globalVars extVars (as ^. IL.initialInterpreter)
+  is <- setInterpreterVariables globalVars extVars (as ^. IR.initialInterpreter)
   ui <- readTVarIO $ env ^. I.ui
-  (result, _) <- renderGfx (interpret is (as ^. IL.currentAst)) gs
+  (result, _) <- renderGfx (interpret is (as ^. IR.currentAst)) gs
   case result of
     Left msg -> do
       logError $ "Could not interpret program: " ++ msg
-      atomically $ modifyTVar (env ^. I.language) IL.resetProgram
+      atomically $ modifyTVar (env ^. I.runtime) IR.resetProgram
     Right _ -> do
       reset gfxCtx
-      when (IL.programHasChanged as) $ do
+      when (IR.programHasChanged as) $ do
         logInfo "Saving current ast"
         renderCode gfxCtx (ui ^. IUI.currentText)
-        atomically $ modifyTVar (env ^. I.language) IL.saveProgram
+        atomically $ modifyTVar (env ^. I.runtime) IR.saveProgram
       when (ui ^. IUI.displayText)
         $ renderCodeToBuffer gfxCtx (ui ^. IUI.currentText)

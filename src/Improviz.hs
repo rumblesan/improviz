@@ -3,7 +3,7 @@
 
 module Improviz
   ( ImprovizEnv
-  , language
+  , runtime
   , ui
   , graphics
   , config
@@ -38,8 +38,8 @@ import           Gfx.Context                    ( GfxContext
                                                 , createGfxContext
                                                 )
 
-import           Improviz.Language              ( ImprovizLanguage
-                                                , makeLanguageState
+import           Improviz.Runtime               ( ImprovizRuntime
+                                                , makeRuntimeState
                                                 )
 import           Improviz.UI                    ( ImprovizUI
                                                 , defaultUI
@@ -52,7 +52,7 @@ import           Logging                        ( logError
                                                 )
 
 data ImprovizEnv = ImprovizEnv
-  { _language     :: TVar (ImprovizLanguage GfxContext)
+  { _runtime      :: TVar (ImprovizRuntime GfxContext)
   , _ui           :: TVar ImprovizUI
   , _graphics     :: TVar GfxEngine
   , _gfxContext   :: GfxContext
@@ -71,11 +71,11 @@ createEnv config gfx = do
   uiState   <- newTVarIO defaultUI
   gfxState  <- newTVarIO gfx
   let gfxContext = createGfxContext gfxState
-  externalVars  <- newTVarIO M.empty
-  uiState       <- newTVarIO defaultUI
-  userCode      <- readExternalCode (config ^. codeFiles)
-  languageState <- makeLanguageState userCode gfxContext >>= newTVarIO
-  return $ ImprovizEnv languageState
+  externalVars <- newTVarIO M.empty
+  uiState      <- newTVarIO defaultUI
+  userCode     <- readExternalCode (config ^. codeFiles)
+  runtimeState <- makeRuntimeState userCode gfxContext >>= newTVarIO
+  return $ ImprovizEnv runtimeState
                        uiState
                        gfxState
                        gfxContext
@@ -90,8 +90,7 @@ readExternalCode files = rights <$> mapM readCode files
     d <- B.unpack <$> B.readFile path
     let result = L.parse d
     case result of
-      Right prog -> do
-        return $ Right (path, prog)
-      Left err -> do
+      Right prog -> return $ Right (path, prog)
+      Left  err  -> do
         logError $ "Could not load " <> path <> "\n" <> prettyPrintErrors err
         return $ Left "error"

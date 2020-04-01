@@ -50,7 +50,7 @@ executable improviz
                      , wavefront
                      , yaml
   other-modules:       Improviz
-                     , Improviz.Language
+                     , Improviz.Runtime
                      , Improviz.UI
                      , Configuration
                      , Configuration.CLI
