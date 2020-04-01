@@ -73,7 +73,7 @@ data GfxEngine = GfxEngine
   , _matrixStack        :: [M44 GLfloat]
   , _scopeStack         :: [SavableState]
   , _animationStyle     :: GS.Setting AnimationStyle
-  , _backgroundColor    :: Colour
+  , _backgroundColor    :: GS.Setting Colour
   } deriving (Show)
 
 makeLensesFor [ ("_fillStyles", "fillStyles")
@@ -90,11 +90,14 @@ makeLensesFor [ ("_fillStyles", "fillStyles")
               , ("_matrixStack", "matrixStack")
               , ("_scopeStack", "scopeStack")
               , ("_animationStyle", "animationStyleSetting")
-              , ("_backgroundColor", "backgroundColor")
+              , ("_backgroundColor", "backgroundColorSetting")
               ] ''GfxEngine
 
 animationStyle :: Lens GfxEngine GfxEngine AnimationStyle AnimationStyle
 animationStyle = animationStyleSetting . GS.setting
+
+backgroundColor :: Lens GfxEngine GfxEngine Colour Colour
+backgroundColor = backgroundColorSetting . GS.setting
 
 type GraphicsEngine v = StateT GfxEngine IO v
 
@@ -131,7 +134,7 @@ createGfxEngine config width height pprocess trender textLib =
                          , _matrixStack      = [identity]
                          , _scopeStack       = []
                          , _animationStyle   = GS.create NormalStyle
-                         , _backgroundColor  = Colour 1 1 1 1
+                         , _backgroundColor  = GS.create (Colour 1 1 1 1)
                          }
 
 resizeGfxEngine
@@ -150,11 +153,12 @@ resizeGfxEngine config newWidth newHeight newPP newTR =
   in  set projectionMatrix newProj . set postFX newPP . set textRenderer newTR
 
 resetGfxEngine :: GfxEngine -> GfxEngine
-resetGfxEngine ge = ge { _fillStyles     = [GFXFillColour $ Colour 1 1 1 1]
-                       , _strokeStyles   = [GFXStrokeColour $ Colour 0 0 0 1]
-                       , _matrixStack    = [identity]
-                       , _scopeStack     = []
-                       , _animationStyle = GS.reset (_animationStyle ge)
+resetGfxEngine ge = ge { _fillStyles      = [GFXFillColour $ Colour 1 1 1 1]
+                       , _strokeStyles    = [GFXStrokeColour $ Colour 0 0 0 1]
+                       , _matrixStack     = [identity]
+                       , _scopeStack      = []
+                       , _animationStyle  = GS.reset (_animationStyle ge)
+                       , _backgroundColor = GS.reset (_backgroundColor ge)
                        }
 
 pushFillStyle :: GFXFillStyling -> GfxEngine -> GfxEngine
