@@ -9,7 +9,9 @@ import           Linear.Matrix                  ( M44
                                                 , (!*!)
                                                 )
 import           Graphics.Rendering.OpenGL      ( GLfloat )
-import           Lens.Simple                    ( makeLenses
+import           Lens.Simple                    ( Lens
+                                                , makeLenses
+                                                , makeLensesFor
                                                 , over
                                                 , set
                                                 , (^.)
@@ -28,6 +30,7 @@ import           Gfx.Shaders
 import           Gfx.TextRendering              ( TextRenderer )
 import           Gfx.Textures                   ( TextureLibrary )
 import           Gfx.Types                      ( Colour(..) )
+import qualified Gfx.Setting                   as GS
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -69,11 +72,29 @@ data GfxEngine = GfxEngine
   , _textRenderer       :: TextRenderer
   , _matrixStack        :: [M44 GLfloat]
   , _scopeStack         :: [SavableState]
-  , _animationStyle     :: AnimationStyle
+  , _animationStyle     :: GS.Setting AnimationStyle
   , _backgroundColor    :: Colour
   } deriving (Show)
 
-makeLenses ''GfxEngine
+makeLensesFor [ ("_fillStyles", "fillStyles")
+              , ("_strokeStyles", "strokeStyles")
+              , ("_geometryBuffers", "geometryBuffers")
+              , ("_textureLibrary", "textureLibrary")
+              , ("_colourShaders", "colourShaders")
+              , ("_strokeShaders", "strokeShaders")
+              , ("_textureShaders", "textureShaders")
+              , ("_viewMatrix", "viewMatrix")
+              , ("_projectionMatrix", "projectionMatrix")
+              , ("_postFX", "postFX")
+              , ("_textRenderer", "textRenderer")
+              , ("_matrixStack", "matrixStack")
+              , ("_scopeStack", "scopeStack")
+              , ("_animationStyle", "animationStyleSetting")
+              , ("_backgroundColor", "backgroundColor")
+              ] ''GfxEngine
+
+animationStyle :: Lens GfxEngine GfxEngine AnimationStyle AnimationStyle
+animationStyle = animationStyleSetting . GS.setting
 
 type GraphicsEngine v = StateT GfxEngine IO v
 
@@ -109,7 +130,7 @@ createGfxEngine config width height pprocess trender textLib =
                          , _textRenderer     = trender
                          , _matrixStack      = [identity]
                          , _scopeStack       = []
-                         , _animationStyle   = NormalStyle
+                         , _animationStyle   = GS.create NormalStyle
                          , _backgroundColor  = Colour 1 1 1 1
                          }
 
@@ -129,10 +150,11 @@ resizeGfxEngine config newWidth newHeight newPP newTR =
   in  set projectionMatrix newProj . set postFX newPP . set textRenderer newTR
 
 resetGfxEngine :: GfxEngine -> GfxEngine
-resetGfxEngine ge = ge { _fillStyles   = [GFXFillColour $ Colour 1 1 1 1]
-                       , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
-                       , _matrixStack  = [identity]
-                       , _scopeStack   = []
+resetGfxEngine ge = ge { _fillStyles     = [GFXFillColour $ Colour 1 1 1 1]
+                       , _strokeStyles   = [GFXStrokeColour $ Colour 0 0 0 1]
+                       , _matrixStack    = [identity]
+                       , _scopeStack     = []
+                       , _animationStyle = GS.reset (_animationStyle ge)
                        }
 
 pushFillStyle :: GFXFillStyling -> GfxEngine -> GfxEngine
@@ -142,11 +164,10 @@ pushStrokeStyle :: GFXStrokeStyling -> GfxEngine -> GfxEngine
 pushStrokeStyle c = over strokeStyles (c :)
 
 pushMatrix :: M44 Float -> GfxEngine -> GfxEngine
-pushMatrix mat = over matrixStack (\stack -> ((head stack) !*! mat) : stack)
+pushMatrix mat = over matrixStack (\stack -> (head stack !*! mat) : stack)
 
 popMatrix :: GfxEngine -> GfxEngine
 popMatrix = over matrixStack tail
 
 multMatrix :: M44 Float -> GfxEngine -> GfxEngine
-multMatrix mat =
-  over matrixStack (\stack -> ((head stack) !*! mat) : tail stack)
+multMatrix mat = over matrixStack (\stack -> (head stack !*! mat) : tail stack)

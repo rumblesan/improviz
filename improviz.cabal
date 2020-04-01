@@ -69,6 +69,7 @@ executable improviz
                      , Gfx.Matrices
                      , Gfx.OpenGL
                      , Gfx.PostProcessing
+                     , Gfx.Setting
                      , Gfx.Shaders
                      , Gfx.TextRendering
                      , Gfx.Textures
@@ -168,6 +169,7 @@ test-suite improviz-test
                      , Gfx.TextRendering
                      , Gfx.Textures
                      , Gfx.Types
+                     , Gfx.Setting
                      , Gfx.Shaders
                      , Gfx.VertexBuffers
                      , Language
