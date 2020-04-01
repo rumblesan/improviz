@@ -40,6 +40,7 @@ createTestGfxContext gfx = GfxContext
   , pushScope          = addAst gfx (ScopeCommand PushScope)
   , popScope           = addAst gfx (ScopeCommand PopScope)
   , setAnimationStyle  = \_ -> print "No animation style command"
+  , setDepthChecking   = \_ -> print "No depth checking command"
   , reset              = print "No reset command"
   , renderCode         = \_ -> print "No renderCode command"
   , renderCodeToBuffer = \_ -> print "No renderCodeToBuffer command"

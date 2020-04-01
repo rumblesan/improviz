@@ -17,7 +17,9 @@ import           Lens.Simple                    ( use
 import           Language.Ast
 import           Language.Interpreter           ( getExternal
                                                 , setBuiltIn
+                                                , useGfxCtx
                                                 )
+import           Gfx.Context                    ( setDepthChecking )
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values
 
@@ -29,6 +31,7 @@ addUtilStdLib = do
   setBuiltIn "random"     randomFunc
   setBuiltIn "randomSeed" randomSeedFunc
   setBuiltIn "debug"      debugFunc
+  setBuiltIn "depthCheck" depthCheck
 
 isNullFunc :: [Value] -> InterpreterProcess Value
 isNullFunc args = case args of
@@ -61,3 +64,9 @@ randomSeedFunc args = case args of
 
 debugFunc :: [Value] -> InterpreterProcess Value
 debugFunc args = mapM_ (liftIO . logInfo . show) args >> return Null
+
+depthCheck :: [Value] -> InterpreterProcess Value
+depthCheck args = case args of
+  v : _ -> useGfxCtx (`setDepthChecking` (v /= Number 0)) >> return Null
+  _     -> throwError "Must give a value argument to depth checking"
+

@@ -37,7 +37,7 @@ import           Server.Protocol
 import qualified Configuration                 as C
 import           Improviz                       ( ImprovizEnv )
 import qualified Improviz                      as I
-import qualified Improviz.Language             as IL
+import qualified Improviz.Runtime              as IR
 import           Improviz.UI                    ( ImprovizUI )
 import qualified Improviz.UI                   as IUI
 
@@ -52,8 +52,8 @@ updateProgram :: ImprovizEnv -> String -> IO ImprovizResponse
 updateProgram env newProgram = case L.parse newProgram of
   Right newAst -> do
     atomically $ do
-      modifyTVar (env ^. I.language) (IL.updateProgram newProgram newAst)
-      modifyTVar (env ^. I.ui)       (set IUI.currentText newProgram)
+      modifyTVar (env ^. I.runtime) (IR.updateProgram newProgram newAst)
+      modifyTVar (env ^. I.ui)      (set IUI.currentText newProgram)
     let msg = "Parsed Successfully"
     logInfo msg
     return $ ImprovizOKResponse msg

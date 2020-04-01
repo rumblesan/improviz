@@ -14,6 +14,7 @@ import           Gfx.Engine                     ( GfxEngine
                                                 , createGfxEngine
                                                 , resizeGfxEngine
                                                 , backgroundColor
+                                                , depthChecking
                                                 , postFX
                                                 , animationStyle
                                                 , textRenderer
@@ -63,13 +64,14 @@ resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
 renderGfx :: IO result -> GfxEngine -> IO result
 renderGfx program gs =
   let
-    post      = gs ^. postFX
-    animStyle = gs ^. animationStyle
-    bgColor   = gs ^. backgroundColor
+    post       = gs ^. postFX
+    animStyle  = gs ^. animationStyle
+    bgColor    = gs ^. backgroundColor
+    depthCheck = gs ^. depthChecking
   in
     do
       usePostProcessing post
-      depthFunc $= Just Less
+      depthFunc $= if depthCheck then Just Less else Nothing
       blend $= Enabled
       blendEquationSeparate $= (FuncAdd, FuncAdd)
       case animStyle of
