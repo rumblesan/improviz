@@ -10,6 +10,7 @@ module Gfx.Commands
   , noStroke
   , setBackground
   , setAnimationStyle
+  , setDepthChecking
   , pushScope
   , popScope
   , renderCode
@@ -132,6 +133,9 @@ setBackground r g b = assign backgroundColor (Colour r g b 1)
 
 setAnimationStyle :: AnimationStyle -> GraphicsEngine ()
 setAnimationStyle = assign animationStyle
+
+setDepthChecking :: Bool -> GraphicsEngine ()
+setDepthChecking = assign depthChecking
 
 textureFill :: String -> Float -> GraphicsEngine ()
 textureFill name frame =

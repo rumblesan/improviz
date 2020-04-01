@@ -74,6 +74,7 @@ data GfxEngine = GfxEngine
   , _scopeStack         :: [SavableState]
   , _animationStyle     :: GS.Setting AnimationStyle
   , _backgroundColor    :: GS.Setting Colour
+  , _depthChecking    :: GS.Setting Bool
   } deriving (Show)
 
 makeLensesFor [ ("_fillStyles", "fillStyles")
@@ -91,6 +92,7 @@ makeLensesFor [ ("_fillStyles", "fillStyles")
               , ("_scopeStack", "scopeStack")
               , ("_animationStyle", "animationStyleSetting")
               , ("_backgroundColor", "backgroundColorSetting")
+              , ("_depthChecking", "depthCheckingSetting")
               ] ''GfxEngine
 
 animationStyle :: Lens GfxEngine GfxEngine AnimationStyle AnimationStyle
@@ -98,6 +100,9 @@ animationStyle = animationStyleSetting . GS.setting
 
 backgroundColor :: Lens GfxEngine GfxEngine Colour Colour
 backgroundColor = backgroundColorSetting . GS.setting
+
+depthChecking :: Lens GfxEngine GfxEngine Bool Bool
+depthChecking = depthCheckingSetting . GS.setting
 
 type GraphicsEngine v = StateT GfxEngine IO v
 
@@ -135,6 +140,7 @@ createGfxEngine config width height pprocess trender textLib =
                          , _scopeStack       = []
                          , _animationStyle   = GS.create NormalStyle
                          , _backgroundColor  = GS.create (Colour 1 1 1 1)
+                         , _depthChecking    = GS.create True
                          }
 
 resizeGfxEngine
@@ -159,6 +165,7 @@ resetGfxEngine ge = ge { _fillStyles      = [GFXFillColour $ Colour 1 1 1 1]
                        , _scopeStack      = []
                        , _animationStyle  = GS.reset (_animationStyle ge)
                        , _backgroundColor = GS.reset (_backgroundColor ge)
+                       , _depthChecking   = GS.reset (_depthChecking ge)
                        }
 
 pushFillStyle :: GFXFillStyling -> GfxEngine -> GfxEngine

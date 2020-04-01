@@ -33,6 +33,7 @@ data GfxContext = GfxContext { drawShape :: String -> Float -> Float -> Float ->
                              , pushScope :: IO ()
                              , popScope :: IO ()
                              , setAnimationStyle :: AnimationStyle -> IO ()
+                             , setDepthChecking :: Bool -> IO ()
                              , reset :: IO ()
                              , renderCode :: String -> IO ()
                              , renderCodeToBuffer :: String -> IO ()
@@ -53,6 +54,7 @@ createGfxContext gfx = GfxContext
   , pushScope          = wrapNoArg gfx GC.pushScope
   , popScope           = wrapNoArg gfx GC.popScope
   , setAnimationStyle  = wrapOneArg gfx GC.setAnimationStyle
+  , setDepthChecking   = wrapOneArg gfx GC.setDepthChecking
   , reset              = resetGfxCtx gfx
   , renderCode         = wrapOneArg gfx GC.renderCode
   , renderCodeToBuffer = wrapOneArg gfx GC.renderCodeToBuffer
@@ -73,6 +75,7 @@ emptyGfxContext = GfxContext
   , pushScope          = print "No Gfx Context"
   , popScope           = print "No Gfx Context"
   , setAnimationStyle  = \_ -> print "No Gfx Context"
+  , setDepthChecking   = \_ -> print "No Gfx Context"
   , reset              = print "No Gfx Context"
   , renderCode         = \_ -> print "No Gfx Context"
   , renderCodeToBuffer = \_ -> print "No Gfx Context"
