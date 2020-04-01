@@ -408,6 +408,18 @@ cube(random())
 
 Set the seed used to generate all the random numbers in a frame. The local time is used to set this when Improviz starts up.
 
+### depthCheck
+
+```
+depthCheck(0)
+
+10 times
+	rotate(time/3)
+	cube(4)
+```
+
+Disable depth checking.
+
 ### debug
 
 ```
