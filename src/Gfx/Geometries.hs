@@ -52,16 +52,49 @@ import           Logging                        ( logError
 
 data ShapeBuffer = ShapeBuffer { triangles :: Maybe VBO
                                , wireframe :: Maybe VBO
+                               , positionCoordBuffer :: Maybe GL.BufferObject
+                               , textureCoodBuffer :: Maybe GL.BufferObject
                                } deriving (Show, Eq)
 
 type Geometries = M.Map String ShapeBuffer
 
+createV3Buffer :: [Vertex3 GLfloat] -> IO GL.BufferObject
+createV3Buffer verts =
+  let
+    numVertices = fromIntegral $ length verts
+    vertexSize  = fromIntegral $ sizeOf (head verts)
+    size        = fromIntegral (numVertices * vertexSize)
+  in
+    do
+      arrayBuffer <- GL.genObjectName
+      GL.bindBuffer ArrayBuffer $= Just arrayBuffer
+      withArray verts
+        $ \ptr -> GL.bufferData ArrayBuffer $= (size, ptr, StaticDraw)
+      GL.bindBuffer ArrayBuffer $= Nothing
+      return arrayBuffer
+
+createV2Buffer :: [Vertex2 GLfloat] -> IO GL.BufferObject
+createV2Buffer verts =
+  let
+    numVertices = fromIntegral $ length verts
+    vertexSize  = fromIntegral $ sizeOf (head verts)
+    size        = fromIntegral (numVertices * vertexSize)
+  in
+    do
+      arrayBuffer <- GL.genObjectName
+      GL.bindBuffer ArrayBuffer $= Just arrayBuffer
+      withArray verts
+        $ \ptr -> GL.bufferData ArrayBuffer $= (size, ptr, StaticDraw)
+      GL.bindBuffer ArrayBuffer $= Nothing
+      return arrayBuffer
+
+
 createBuffer :: [Vertex3 GLfloat] -> IO VBO
 createBuffer verts =
-  let firstIndex  = 0
+  let vPosition   = AttribLocation 0
       posVSize    = 3
-      vPosition   = AttribLocation 0
       stride      = 0
+      firstIndex  = 0
       numVertices = fromIntegral $ length verts
       vertexSize  = fromIntegral $ sizeOf (head verts)
       size        = fromIntegral (numVertices * vertexSize)
@@ -177,6 +210,16 @@ createTrianglesFromObj obj = case (objFaceVerts obj, objTextureCoords obj) of
     (defaultTextureCoords (3 * L.length verts))
   _ -> return Nothing
 
+createTrianglesBuffer :: WavefrontOBJ -> IO (Maybe GL.BufferObject)
+createTrianglesBuffer obj = case objFaceVerts obj of
+  Nothing    -> return Nothing
+  Just verts -> Just <$> createV3Buffer verts
+
+createTextureBuffer :: WavefrontOBJ -> IO (Maybe GL.BufferObject)
+createTextureBuffer obj = case objTextureCoords obj of
+  Nothing    -> return Nothing
+  Just verts -> Just <$> createV2Buffer verts
+
 createWireframeFromObj :: WavefrontOBJ -> IO (Maybe VBO)
 createWireframeFromObj obj = case objWireframe obj of
   Nothing    -> return Nothing
@@ -186,9 +229,14 @@ createShapeBuffer :: FilePath -> IO ShapeBuffer
 createShapeBuffer fp = do
   fileInput <- fromFile fp
   case fileInput of
-    Left err -> logError err >> return (ShapeBuffer Nothing Nothing)
+    Left err ->
+      logError err >> return (ShapeBuffer Nothing Nothing Nothing Nothing)
     Right obj ->
-      ShapeBuffer <$> createTrianglesFromObj obj <*> createWireframeFromObj obj
+      ShapeBuffer
+        <$> createTrianglesFromObj obj
+        <*> createWireframeFromObj obj
+        <*> createTrianglesBuffer obj
+        <*> createTextureBuffer obj
 
 
 loadGeometryFolder :: FilePath -> IO [(String, ShapeBuffer)]

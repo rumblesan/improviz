@@ -113,7 +113,7 @@ drawShape name x y z = do
   gbos <- use geometryBuffers
   case M.lookup name gbos of
     Nothing -> liftIO $ print $ "Could not find shape: " ++ name
-    Just (ShapeBuffer tb wb) -> do
+    Just (ShapeBuffer tb wb _ _) -> do
       modify' (pushMatrix $ scaleMat x y z)
       maybe (return ()) drawTriangles tb
       maybe (return ()) drawWireframe wb
