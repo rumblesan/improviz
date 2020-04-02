@@ -8,6 +8,7 @@ module Gfx.Commands
   , noFill
   , colourStroke
   , noStroke
+  , setMaterial
   , setBackground
   , setAnimationStyle
   , setDepthChecking
@@ -128,6 +129,9 @@ scale x y z = modify' (multMatrix $ scaleMat x y z)
 move :: Float -> Float -> Float -> GraphicsEngine ()
 move x y z = modify' (multMatrix $ translateMat x y z)
 
+setMaterial :: String -> GraphicsEngine ()
+setMaterial mName = assign material mName
+
 setBackground :: Float -> Float -> Float -> GraphicsEngine ()
 setBackground r g b = assign backgroundColor (Colour r g b 1)
 
@@ -160,17 +164,19 @@ pushScope = do
   fStyles <- use fillStyles
   sStyles <- use strokeStyles
   stack   <- use scopeStack
-  let savable = SavableState mStack fStyles sStyles
+  mat     <- use materialSnapshot
+  let savable = SavableState mStack fStyles sStyles mat
   assign scopeStack (savable : stack)
 
 popScope :: GraphicsEngine ()
 popScope = do
   stack <- use scopeStack
   let prev = head stack
-  assign scopeStack   (tail stack)
-  assign fillStyles   (view savedFillStyles prev)
-  assign strokeStyles (view savedStrokeStyles prev)
-  assign matrixStack  (view savedMatrixStack prev)
+  assign scopeStack       (tail stack)
+  assign fillStyles       (view savedFillStyles prev)
+  assign strokeStyles     (view savedStrokeStyles prev)
+  assign matrixStack      (view savedMatrixStack prev)
+  assign materialSnapshot (view savedMaterials prev)
 
 renderCode :: String -> GraphicsEngine ()
 renderCode text = do

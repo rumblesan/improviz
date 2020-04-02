@@ -39,6 +39,7 @@ style styleArgs = do
     SString "stroke"   : rest -> runStroke rest
     SString "noStroke" : _    -> liftIO $ noStroke ctx
     SString "texture"  : rest -> runTexture rest
+    SString "material" : rest -> runMaterial rest
  where
   runFill args = case args of
     [SFloat r, SFloat g, SFloat b, SFloat a] -> do
@@ -58,3 +59,8 @@ style styleArgs = do
       ctx <- use externalState
       liftIO $ textureFill ctx name 0
     _ -> setError "Error with functions to texture"
+  runMaterial args = case args of
+    SString name : _ -> do
+      ctx <- use externalState
+      liftIO $ setMaterial ctx name
+    _ -> setError "Error with functions to material"

@@ -3,6 +3,7 @@ module Gfx.SettingStack
   , create
   , value
   , reset
+  , snapshot
   )
 where
 
@@ -29,5 +30,15 @@ set setting value = setting { stack = value : stack setting }
 value :: Lens (SettingStack v) (SettingStack v) v v
 value = lens get set
 
+save :: SettingStack k -> [k]
+save setting = stack setting
+
+load :: SettingStack k -> [k] -> SettingStack k
+load setting st = setting { stack = st }
+
+snapshot :: Lens (SettingStack v) (SettingStack v) [v] [v]
+snapshot = lens save load
+
 reset :: SettingStack k -> SettingStack k
 reset setting = setting { stack = [defaultValue setting] }
+

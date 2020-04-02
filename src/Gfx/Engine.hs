@@ -32,6 +32,7 @@ import           Gfx.Textures                   ( TextureLibrary )
 import           Gfx.Materials                  ( MaterialLibrary )
 import           Gfx.Types                      ( Colour(..) )
 import qualified Gfx.Setting                   as GS
+import qualified Gfx.SettingStack              as GSS
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -55,6 +56,7 @@ data SavableState = SavableState
   { _savedMatrixStack  :: [M44 GLfloat]
   , _savedFillStyles   :: [GFXFillStyling]
   , _savedStrokeStyles :: [GFXStrokeStyling]
+  , _savedMaterials    :: [String]
   } deriving (Show)
 
 makeLenses ''SavableState
@@ -62,6 +64,7 @@ makeLenses ''SavableState
 data GfxEngine = GfxEngine
   { _fillStyles         :: [GFXFillStyling]
   , _strokeStyles       :: [GFXStrokeStyling]
+  , _material           :: GSS.SettingStack String
   , _geometryBuffers    :: Geometries
   , _textureLibrary     :: TextureLibrary
   , _materialLibrary    :: MaterialLibrary
@@ -81,6 +84,7 @@ data GfxEngine = GfxEngine
 
 makeLensesFor [ ("_fillStyles", "fillStyles")
               , ("_strokeStyles", "strokeStyles")
+              , ("_material", "materialSetting")
               , ("_geometryBuffers", "geometryBuffers")
               , ("_textureLibrary", "textureLibrary")
               , ("_materialLibrary", "materialLibrary")
@@ -97,6 +101,12 @@ makeLensesFor [ ("_fillStyles", "fillStyles")
               , ("_backgroundColor", "backgroundColorSetting")
               , ("_depthChecking", "depthCheckingSetting")
               ] ''GfxEngine
+
+material :: Lens GfxEngine GfxEngine String String
+material = materialSetting . GSS.value
+
+materialSnapshot :: Lens GfxEngine GfxEngine [String] [String]
+materialSnapshot = materialSetting . GSS.snapshot
 
 animationStyle :: Lens GfxEngine GfxEngine AnimationStyle AnimationStyle
 animationStyle = animationStyleSetting . GS.value
@@ -131,6 +141,7 @@ createGfxEngine config width height pprocess trender textLib matLib =
         sshd <- createStrokeShaders
         return GfxEngine { _fillStyles       = [GFXFillColour $ Colour 1 1 1 1]
                          , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
+                         , _material         = GSS.create "basic"
                          , _geometryBuffers  = gbos
                          , _textureLibrary   = textLib
                          , _materialLibrary  = matLib
@@ -166,6 +177,7 @@ resizeGfxEngine config newWidth newHeight newPP newTR =
 resetGfxEngine :: GfxEngine -> GfxEngine
 resetGfxEngine ge = ge { _fillStyles      = [GFXFillColour $ Colour 1 1 1 1]
                        , _strokeStyles    = [GFXStrokeColour $ Colour 0 0 0 1]
+                       , _material        = GSS.reset (_material ge)
                        , _matrixStack     = [identity]
                        , _scopeStack      = []
                        , _animationStyle  = GS.reset (_animationStyle ge)

@@ -29,6 +29,7 @@ data GfxContext = GfxContext { drawShape :: String -> Float -> Float -> Float ->
                              , textureFill :: String -> Float -> IO ()
                              , colourStroke :: Float -> Float -> Float -> Float -> IO ()
                              , noStroke :: IO ()
+                             , setMaterial :: String -> IO ()
                              , setBackground :: Float -> Float -> Float -> IO ()
                              , pushScope :: IO ()
                              , popScope :: IO ()
@@ -50,6 +51,7 @@ createGfxContext gfx = GfxContext
   , textureFill        = wrapTwoArg gfx GC.textureFill
   , colourStroke       = wrapFourArg gfx GC.colourStroke
   , noStroke           = wrapNoArg gfx GC.noStroke
+  , setMaterial        = wrapOneArg gfx GC.setMaterial
   , setBackground      = wrapThreeArg gfx GC.setBackground
   , pushScope          = wrapNoArg gfx GC.pushScope
   , popScope           = wrapNoArg gfx GC.popScope
@@ -71,6 +73,7 @@ emptyGfxContext = GfxContext
   , textureFill        = \_ _ -> print "No Gfx Context"
   , colourStroke       = \_ _ _ _ -> print "No GFX Context"
   , noStroke           = print "No Gfx Context"
+  , setMaterial        = \_ -> print "No Gfx Context"
   , setBackground      = \_ _ _ -> print "No Gfx Context"
   , pushScope          = print "No Gfx Context"
   , popScope           = print "No Gfx Context"
