@@ -1,0 +1,5 @@
+materials:
+  - name: basic
+    file: basic.yaml
+  - name: stroke
+    file: stroke.yaml

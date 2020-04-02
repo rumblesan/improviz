@@ -1,0 +1,28 @@
+name: stroke
+attributes:
+  - position
+uniforms:
+  - MVPMat
+  - Color
+vertexShader: |
+  #version 330 core
+
+  layout(location = 0) in vec4 position;
+  uniform vec4 Color;
+
+  uniform mat4 MVPMat;
+  out vec4 fragmentColor;
+
+  void main() {
+    fragmentColor = Color;
+    gl_Position = MVPMat * position;
+  }
+fragmentShader: |
+  #version 330 core
+
+  in vec4 fragmentColor;
+  out vec4 finalColor;
+
+  void main() {
+     finalColor = fragmentColor;
+  }
