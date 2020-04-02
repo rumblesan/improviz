@@ -53,9 +53,9 @@ instance FromJSON MaterialData where
       <*> v
       .:  "fragmentShader"
       <*> v
-      .:  "uniformNames"
+      .:  "uniforms"
       <*> v
-      .:  "attributeNames"
+      .:  "attributes"
   parseJSON _ = fail "Expected Object for Material Data"
 
 data Material = Material
