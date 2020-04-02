@@ -99,13 +99,13 @@ makeLensesFor [ ("_fillStyles", "fillStyles")
               ] ''GfxEngine
 
 animationStyle :: Lens GfxEngine GfxEngine AnimationStyle AnimationStyle
-animationStyle = animationStyleSetting . GS.setting
+animationStyle = animationStyleSetting . GS.value
 
 backgroundColor :: Lens GfxEngine GfxEngine Colour Colour
-backgroundColor = backgroundColorSetting . GS.setting
+backgroundColor = backgroundColorSetting . GS.value
 
 depthChecking :: Lens GfxEngine GfxEngine Bool Bool
-depthChecking = depthCheckingSetting . GS.setting
+depthChecking = depthCheckingSetting . GS.value
 
 type GraphicsEngine v = StateT GfxEngine IO v
 
