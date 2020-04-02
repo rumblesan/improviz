@@ -71,7 +71,7 @@ getFullMatrix = do
 
 drawTriangles :: VBO -> GraphicsEngine ()
 drawTriangles vbo = do
-  style <- head <$> use fillStyles
+  style <- use fillStyle
   case style of
     GFXFillColour fillC -> do
       mvp     <- getFullMatrix
@@ -97,7 +97,7 @@ drawTriangles vbo = do
 
 drawWireframe :: VBO -> GraphicsEngine ()
 drawWireframe vbo = do
-  style <- head <$> use strokeStyles
+  style <- use strokeStyle
   case style of
     GFXStrokeColour strokeC -> do
       mvp     <- getFullMatrix
@@ -142,29 +142,27 @@ setDepthChecking :: Bool -> GraphicsEngine ()
 setDepthChecking = assign depthChecking
 
 textureFill :: String -> Float -> GraphicsEngine ()
-textureFill name frame =
-  modify' (pushFillStyle $ GFXFillTexture name (floor frame))
+textureFill name frame = assign fillStyle $ GFXFillTexture name (floor frame)
 
 colourFill :: Float -> Float -> Float -> Float -> GraphicsEngine ()
-colourFill r g b a = modify' (pushFillStyle $ GFXFillColour $ Colour r g b a)
+colourFill r g b a = assign fillStyle $ GFXFillColour $ Colour r g b a
 
 noFill :: GraphicsEngine ()
-noFill = modify' (pushFillStyle GFXNoFill)
+noFill = assign fillStyle GFXNoFill
 
 colourStroke :: Float -> Float -> Float -> Float -> GraphicsEngine ()
-colourStroke r g b a =
-  modify' (pushStrokeStyle $ GFXStrokeColour $ Colour r g b a)
+colourStroke r g b a = assign strokeStyle $ GFXStrokeColour $ Colour r g b a
 
 noStroke :: GraphicsEngine ()
-noStroke = modify' (pushStrokeStyle GFXNoStroke)
+noStroke = assign strokeStyle GFXNoStroke
 
 pushScope :: GraphicsEngine ()
 pushScope = do
   mStack  <- use matrixStack
-  fStyles <- use fillStyles
-  sStyles <- use strokeStyles
-  stack   <- use scopeStack
+  fStyles <- use fillStyleSnapshot
+  sStyles <- use strokeStyleSnapshot
   mat     <- use materialSnapshot
+  stack   <- use scopeStack
   let savable = SavableState mStack fStyles sStyles mat
   assign scopeStack (savable : stack)
 
@@ -172,11 +170,11 @@ popScope :: GraphicsEngine ()
 popScope = do
   stack <- use scopeStack
   let prev = head stack
-  assign scopeStack       (tail stack)
-  assign fillStyles       (view savedFillStyles prev)
-  assign strokeStyles     (view savedStrokeStyles prev)
-  assign matrixStack      (view savedMatrixStack prev)
-  assign materialSnapshot (view savedMaterials prev)
+  assign scopeStack          (tail stack)
+  assign fillStyleSnapshot   (view savedFillStyles prev)
+  assign strokeStyleSnapshot (view savedStrokeStyles prev)
+  assign matrixStack         (view savedMatrixStack prev)
+  assign materialSnapshot    (view savedMaterials prev)
 
 renderCode :: String -> GraphicsEngine ()
 renderCode text = do

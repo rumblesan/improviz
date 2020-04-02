@@ -62,8 +62,8 @@ data SavableState = SavableState
 makeLenses ''SavableState
 
 data GfxEngine = GfxEngine
-  { _fillStyles         :: [GFXFillStyling]
-  , _strokeStyles       :: [GFXStrokeStyling]
+  { _fillStyle          :: GSS.SettingStack GFXFillStyling
+  , _strokeStyle        :: GSS.SettingStack GFXStrokeStyling
   , _material           :: GSS.SettingStack String
   , _geometryBuffers    :: Geometries
   , _textureLibrary     :: TextureLibrary
@@ -82,8 +82,8 @@ data GfxEngine = GfxEngine
   , _depthChecking    :: GS.Setting Bool
   } deriving (Show)
 
-makeLensesFor [ ("_fillStyles", "fillStyles")
-              , ("_strokeStyles", "strokeStyles")
+makeLensesFor [ ("_fillStyle", "fillStyleSetting")
+              , ("_strokeStyle", "strokeStyleSetting")
               , ("_material", "materialSetting")
               , ("_geometryBuffers", "geometryBuffers")
               , ("_textureLibrary", "textureLibrary")
@@ -107,6 +107,20 @@ material = materialSetting . GSS.value
 
 materialSnapshot :: Lens GfxEngine GfxEngine [String] [String]
 materialSnapshot = materialSetting . GSS.snapshot
+
+fillStyle :: Lens GfxEngine GfxEngine GFXFillStyling GFXFillStyling
+fillStyle = fillStyleSetting . GSS.value
+
+fillStyleSnapshot :: Lens GfxEngine GfxEngine [GFXFillStyling] [GFXFillStyling]
+fillStyleSnapshot = fillStyleSetting . GSS.snapshot
+
+strokeStyle :: Lens GfxEngine GfxEngine GFXStrokeStyling GFXStrokeStyling
+strokeStyle = strokeStyleSetting . GSS.value
+
+strokeStyleSnapshot
+  :: Lens GfxEngine GfxEngine [GFXStrokeStyling] [GFXStrokeStyling]
+strokeStyleSnapshot = strokeStyleSetting . GSS.snapshot
+
 
 animationStyle :: Lens GfxEngine GfxEngine AnimationStyle AnimationStyle
 animationStyle = animationStyleSetting . GS.value
@@ -139,25 +153,26 @@ createGfxEngine config width height pprocess trender textLib matLib =
         cshd <- createColourShaders
         tshd <- createTextureShaders
         sshd <- createStrokeShaders
-        return GfxEngine { _fillStyles       = [GFXFillColour $ Colour 1 1 1 1]
-                         , _strokeStyles = [GFXStrokeColour $ Colour 0 0 0 1]
-                         , _material         = GSS.create "basic"
-                         , _geometryBuffers  = gbos
-                         , _textureLibrary   = textLib
-                         , _materialLibrary  = matLib
-                         , _colourShaders    = cshd
-                         , _strokeShaders    = sshd
-                         , _textureShaders   = tshd
-                         , _viewMatrix       = view
-                         , _projectionMatrix = projection
-                         , _postFX           = pprocess
-                         , _textRenderer     = trender
-                         , _matrixStack      = [identity]
-                         , _scopeStack       = []
-                         , _animationStyle   = GS.create NormalStyle
-                         , _backgroundColor  = GS.create (Colour 1 1 1 1)
-                         , _depthChecking    = GS.create True
-                         }
+        return GfxEngine
+          { _fillStyle        = GSS.create $ GFXFillColour $ Colour 1 1 1 1
+          , _strokeStyle      = GSS.create $ GFXStrokeColour $ Colour 0 0 0 1
+          , _material         = GSS.create "basic"
+          , _geometryBuffers  = gbos
+          , _textureLibrary   = textLib
+          , _materialLibrary  = matLib
+          , _colourShaders    = cshd
+          , _strokeShaders    = sshd
+          , _textureShaders   = tshd
+          , _viewMatrix       = view
+          , _projectionMatrix = projection
+          , _postFX           = pprocess
+          , _textRenderer     = trender
+          , _matrixStack      = [identity]
+          , _scopeStack       = []
+          , _animationStyle   = GS.create NormalStyle
+          , _backgroundColor  = GS.create (Colour 1 1 1 1)
+          , _depthChecking    = GS.create True
+          }
 
 resizeGfxEngine
   :: ImprovizConfig
@@ -175,8 +190,8 @@ resizeGfxEngine config newWidth newHeight newPP newTR =
   in  set projectionMatrix newProj . set postFX newPP . set textRenderer newTR
 
 resetGfxEngine :: GfxEngine -> GfxEngine
-resetGfxEngine ge = ge { _fillStyles      = [GFXFillColour $ Colour 1 1 1 1]
-                       , _strokeStyles    = [GFXStrokeColour $ Colour 0 0 0 1]
+resetGfxEngine ge = ge { _fillStyle       = GSS.reset (_fillStyle ge)
+                       , _strokeStyle     = GSS.reset (_strokeStyle ge)
                        , _material        = GSS.reset (_material ge)
                        , _matrixStack     = [identity]
                        , _scopeStack      = []
@@ -184,12 +199,6 @@ resetGfxEngine ge = ge { _fillStyles      = [GFXFillColour $ Colour 1 1 1 1]
                        , _backgroundColor = GS.reset (_backgroundColor ge)
                        , _depthChecking   = GS.reset (_depthChecking ge)
                        }
-
-pushFillStyle :: GFXFillStyling -> GfxEngine -> GfxEngine
-pushFillStyle s = over fillStyles (s :)
-
-pushStrokeStyle :: GFXStrokeStyling -> GfxEngine -> GfxEngine
-pushStrokeStyle c = over strokeStyles (c :)
 
 pushMatrix :: M44 Float -> GfxEngine -> GfxEngine
 pushMatrix mat = over matrixStack (\stack -> (head stack !*! mat) : stack)
