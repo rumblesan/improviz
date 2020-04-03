@@ -88,7 +88,7 @@ setAttribute _ (name, _) =
   liftIO $ logError $ name ++ " is not a known attribute"
 
 setUniform :: (String, UniformLocation) -> GraphicsEngine ()
-setUniform ("MVPMat", (UniformLocation uniformLoc)) = do
+setUniform ("MVPMat", UniformLocation uniformLoc) = do
   mvpMat <- getFullMatrix
   liftIO
     $ with mvpMat
