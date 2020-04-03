@@ -41,12 +41,10 @@ import qualified Graphics.GL                   as GLRaw
 import qualified Graphics.Rendering.OpenGL     as GL
 import           Graphics.Rendering.OpenGL      ( ($=)
                                                 , GLfloat
-                                                --, TextureUnit(..)
-                                                --, TextureTarget2D(Texture2D)
+                                                , TextureUnit(..)
+                                                , TextureTarget2D(Texture2D)
                                                 , AttribLocation
                                                 , UniformLocation(..)
-                                                --, activeTexture
-                                                --, textureBinding
                                                 , currentProgram
                                                 )
 
@@ -81,6 +79,11 @@ setAttribute shapeBuffer ("position", posLoc) = liftIO $ do
   GL.vertexAttribPointer posLoc
     $= (GL.ToFloat, GL.VertexArrayDescriptor 3 GL.Float 0 nullPtr)
   GL.vertexAttribArray posLoc $= GL.Enabled
+setAttribute shapeBuffer ("texcoord", texCLoc) = liftIO $ do
+  GL.bindBuffer GL.ArrayBuffer $= Just (textureCoordBuffer shapeBuffer)
+  GL.vertexAttribPointer texCLoc
+    $= (GL.ToFloat, GL.VertexArrayDescriptor 3 GL.Float 0 nullPtr)
+  GL.vertexAttribArray texCLoc $= GL.Enabled
 setAttribute _ (name, _) =
   liftIO $ logError $ name ++ " is not a known attribute"
 
@@ -96,6 +99,17 @@ setUniform ("Color", uniformLoc) = do
   case fillStyle of
     GFXFillColour fillColour ->
       liftIO (GL.uniform uniformLoc $= colToGLCol fillColour)
+    _ -> return ()
+setUniform ("Texture", uniformLoc) = do
+  fillStyle <- use fillStyle
+  case fillStyle of
+    GFXFillTexture name frame -> do
+      textureLib <- use textureLibrary
+      case M.lookup name textureLib >>= M.lookup frame of
+        Nothing      -> return ()
+        Just texture -> liftIO $ do
+          GL.activeTexture $= TextureUnit 0
+          GL.textureBinding Texture2D $= Just texture
     _ -> return ()
 setUniform (name, _) = liftIO $ logError $ name ++ " is not a known uniform"
 
