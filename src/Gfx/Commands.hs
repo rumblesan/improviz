@@ -65,9 +65,7 @@ import           Gfx.TextRendering              ( renderText
 import           Gfx.OpenGL                     ( printErrors
                                                 , colToGLCol
                                                 )
-import           Logging                        ( logError
-                                                , logInfo
-                                                )
+import           Logging                        ( logError )
 
 
 getFullMatrix :: GraphicsEngine (M44 GLfloat)

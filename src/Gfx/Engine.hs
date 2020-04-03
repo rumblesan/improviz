@@ -26,7 +26,6 @@ import           Gfx.Matrices                   ( projectionMat
 import           Gfx.PostProcessing             ( AnimationStyle(NormalStyle)
                                                 , PostProcessing
                                                 )
-import           Gfx.Shaders
 import           Gfx.TextRendering              ( TextRenderer )
 import           Gfx.Textures                   ( TextureLibrary )
 import           Gfx.Materials                  ( MaterialLibrary )
@@ -68,9 +67,6 @@ data GfxEngine = GfxEngine
   , _geometryBuffers    :: Geometries
   , _textureLibrary     :: TextureLibrary
   , _materialLibrary    :: MaterialLibrary
-  , _colourShaders      :: Shaders
-  , _strokeShaders      :: Shaders
-  , _textureShaders     :: Shaders
   , _viewMatrix         :: M44 GLfloat
   , _projectionMatrix   :: M44 GLfloat
   , _postFX             :: PostProcessing
@@ -88,9 +84,6 @@ makeLensesFor [ ("_fillStyle", "fillStyleSetting")
               , ("_geometryBuffers", "geometryBuffers")
               , ("_textureLibrary", "textureLibrary")
               , ("_materialLibrary", "materialLibrary")
-              , ("_colourShaders", "colourShaders")
-              , ("_strokeShaders", "strokeShaders")
-              , ("_textureShaders", "textureShaders")
               , ("_viewMatrix", "viewMatrix")
               , ("_projectionMatrix", "projectionMatrix")
               , ("_postFX", "postFX")
@@ -150,9 +143,6 @@ createGfxEngine config width height pprocess trender textLib matLib =
       view       = viewMat (V3 0 0 10) (V3 0 0 0) (V3 0 1 0)
   in  do
         gbos <- createAllGeometries (config ^. C.geometryDirectories)
-        cshd <- createColourShaders
-        tshd <- createTextureShaders
-        sshd <- createStrokeShaders
         return GfxEngine
           { _fillStyle        = GSS.create $ GFXFillColour $ Colour 1 1 1 1
           , _strokeStyle      = GSS.create $ GFXStrokeColour $ Colour 0 0 0 1
@@ -160,9 +150,6 @@ createGfxEngine config width height pprocess trender textLib matLib =
           , _geometryBuffers  = gbos
           , _textureLibrary   = textLib
           , _materialLibrary  = matLib
-          , _colourShaders    = cshd
-          , _strokeShaders    = sshd
-          , _textureShaders   = tshd
           , _viewMatrix       = view
           , _projectionMatrix = projection
           , _postFX           = pprocess

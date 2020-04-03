@@ -72,7 +72,6 @@ executable improviz
                      , Gfx.PostProcessing
                      , Gfx.Setting
                      , Gfx.SettingStack
-                     , Gfx.Shaders
                      , Gfx.Materials
                      , Gfx.TextRendering
                      , Gfx.Textures
@@ -176,7 +175,6 @@ test-suite improviz-test
                      , Gfx.Types
                      , Gfx.Setting
                      , Gfx.SettingStack
-                     , Gfx.Shaders
                      , Gfx.Materials
                      , Gfx.VertexBuffers
                      , Gfx.ShapeBuffer
