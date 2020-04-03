@@ -77,7 +77,7 @@ executable improviz
                      , Gfx.Textures
                      , Gfx.Types
                      , Gfx.VertexBuffers
-                     , Gfx.ShapeBuffer
+                     , Gfx.VertexDataBuffer
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers
@@ -177,7 +177,7 @@ test-suite improviz-test
                      , Gfx.SettingStack
                      , Gfx.Materials
                      , Gfx.VertexBuffers
-                     , Gfx.ShapeBuffer
+                     , Gfx.VertexDataBuffer
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers

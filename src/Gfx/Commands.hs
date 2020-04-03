@@ -49,12 +49,13 @@ import           Graphics.Rendering.OpenGL      ( ($=)
                                                 )
 
 import           Gfx.Engine
-import           Gfx.Geometries                 ( ShapeBuffer(..) )
+import           Gfx.Geometries                 ( GeometryData(..) )
 import           Gfx.Matrices                   ( scaleMat
                                                 , translateMat
                                                 , rotMat
                                                 )
 import qualified Gfx.Materials                 as GM
+import qualified Gfx.VertexDataBuffer          as VDB
 import           Gfx.Types                      ( Colour(..) )
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 import           Gfx.TextRendering              ( renderText
@@ -73,16 +74,16 @@ getFullMatrix = do
   vMat <- use viewMatrix
   return $ (pMat !*! vMat) !*! mMat
 
-setAttribute :: ShapeBuffer -> (String, AttribLocation) -> GraphicsEngine ()
-setAttribute shapeBuffer ("position", posLoc) = liftIO $ do
-  GL.bindBuffer GL.ArrayBuffer $= Just (positionCoordBuffer shapeBuffer)
+setAttribute :: GeometryData -> (String, AttribLocation) -> GraphicsEngine ()
+setAttribute geoData ("position", posLoc) = liftIO $ do
+  GL.bindBuffer GL.ArrayBuffer $= Just (VDB.buffer $ positionVerts geoData)
   GL.vertexAttribPointer posLoc
     $= (GL.ToFloat, GL.VertexArrayDescriptor 3 GL.Float 0 nullPtr)
   GL.vertexAttribArray posLoc $= GL.Enabled
-setAttribute shapeBuffer ("texcoord", texCLoc) = liftIO $ do
-  GL.bindBuffer GL.ArrayBuffer $= Just (textureCoordBuffer shapeBuffer)
+setAttribute geoData ("texcoord", texCLoc) = liftIO $ do
+  GL.bindBuffer GL.ArrayBuffer $= Just (VDB.buffer $ textureCoords geoData)
   GL.vertexAttribPointer texCLoc
-    $= (GL.ToFloat, GL.VertexArrayDescriptor 3 GL.Float 0 nullPtr)
+    $= (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 0 nullPtr)
   GL.vertexAttribArray texCLoc $= GL.Enabled
 setAttribute _ (name, _) =
   liftIO $ logError $ name ++ " is not a known attribute"
@@ -107,15 +108,15 @@ setUniform ("Texture", uniformLoc) = do
       GL.textureBinding Texture2D $= Just texture
 setUniform (name, _) = liftIO $ logError $ name ++ " is not a known uniform"
 
-drawTriangles :: ShapeBuffer -> GraphicsEngine ()
-drawTriangles shapeBuffer = do
+drawTriangles :: GeometryData -> GraphicsEngine ()
+drawTriangles geoData = do
   matName <- use material
   matLib  <- use materialLibrary
   case M.lookup matName matLib of
     Just mat -> do
       liftIO (currentProgram $= Just (GM.program mat))
-      mapM_ setUniform                 (GM.uniforms mat)
-      mapM_ (setAttribute shapeBuffer) (GM.attributes mat)
+      mapM_ setUniform             (GM.uniforms mat)
+      mapM_ (setAttribute geoData) (GM.attributes mat)
     _ -> return ()
   liftIO printErrors
 
@@ -123,12 +124,13 @@ drawShape :: String -> Float -> Float -> Float -> GraphicsEngine ()
 drawShape name x y z = do
   gbos <- use geometryBuffers
   case M.lookup name gbos of
-    Nothing -> liftIO $ print $ "Could not find shape: " ++ name
-    Just sb -> do
+    Nothing      -> liftIO $ print $ "Could not find shape: " ++ name
+    Just geoData -> do
       modify' (pushMatrix $ scaleMat x y z)
-      drawTriangles sb
-      liftIO
-        $ GL.drawArrays GL.Triangles 0 (fromIntegral $ positionCoordLength sb)
+      drawTriangles geoData
+      liftIO $ GL.drawArrays GL.Triangles
+                             0
+                             (VDB.bufferLength $ positionVerts geoData)
       modify' popMatrix
 
 rotate :: Float -> Float -> Float -> GraphicsEngine ()

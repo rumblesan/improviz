@@ -1,9 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
 
 module Gfx.Geometries
   ( Geometries
-  , ShapeBuffer(..)
+  , GeometryData(..)
   , createAllGeometries
   )
 where
@@ -11,6 +10,7 @@ where
 import qualified Data.Vector                   as V
 import qualified Data.List                     as L
 import qualified Data.Map.Strict               as M
+import           Data.Maybe                     ( catMaybes )
 import           Data.Vector                    ( (!?) )
 import           System.FilePath.Posix          ( (</>) )
 
@@ -27,16 +27,19 @@ import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , fromFile
                                                 )
 
-import           Gfx.ShapeBuffer                ( ShapeBuffer )
-import qualified Gfx.ShapeBuffer               as SB
+import           Gfx.VertexDataBuffer           ( VertexDataBuffer )
+import qualified Gfx.VertexDataBuffer          as VDB
 import           Configuration                  ( loadFolderConfig )
 import           Configuration.Geometries
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
 
+data GeometryData = GeometryData { positionVerts :: VertexDataBuffer
+                                 , textureCoords :: VertexDataBuffer
+                                 } deriving (Show, Eq)
 
-type Geometries = M.Map String ShapeBuffer
+type Geometries = M.Map String GeometryData
 
 loc2Vert3 :: Location -> Vertex3 GLfloat
 loc2Vert3 (Location x y z _) = Vertex3 x y z
@@ -77,30 +80,32 @@ objTextureCoords obj =
     z         <- vertList !? (zCoordIdx - 1)
     return [tex2Vert2 x, tex2Vert2 y, tex2Vert2 z]
 
-createShapeBuffer :: FilePath -> IO ShapeBuffer
-createShapeBuffer fp = do
-  fileInput <- fromFile fp
+createGeometryData
+  :: FilePath -> GeometryConfig -> IO (Maybe (String, GeometryData))
+createGeometryData folderPath cfg = do
+  fileInput <- fromFile $ folderPath </> geometryFile cfg
   case fileInput of
-    Left  err -> logError err >> SB.create [] []
+    Left  err -> logError err >> return Nothing
     Right obj -> case (objFaceVerts obj, objTextureCoords obj) of
-      (Just verts, Just texCoords) -> SB.create verts texCoords
-      (Just verts, Nothing) ->
-        SB.create verts (defaultTextureCoords (3 * L.length verts))
-      _ -> SB.create [] []
+      (Just verts, Just texCoords) -> do
+        geoData <- GeometryData <$> VDB.create verts <*> VDB.create texCoords
+        return $ Just (geometryName cfg, geoData)
+      (Just verts, Nothing) -> do
+        geoData <- GeometryData <$> VDB.create verts <*> VDB.create
+          (defaultTextureCoords (3 * L.length verts))
+        return $ Just (geometryName cfg, geoData)
+      _ -> return Nothing
 
 
-loadGeometryFolder :: FilePath -> IO [(String, ShapeBuffer)]
+loadGeometryFolder :: FilePath -> IO [Maybe (String, GeometryData)]
 loadGeometryFolder folderPath = do
   folderConfig <- loadFolderConfig folderPath
   case folderConfig of
     Left  err -> logError err >> return []
-    Right cfg -> mapM geoLoad (geometries cfg)
- where
-  geoLoad g =
-    (geometryName g, ) <$> createShapeBuffer (folderPath </> geometryFile g)
+    Right cfg -> mapM (createGeometryData folderPath) (geometries cfg)
 
 createAllGeometries :: [FilePath] -> IO Geometries
 createAllGeometries folders = do
-  geometries <- concat <$> mapM loadGeometryFolder folders
+  geometries <- catMaybes . concat <$> mapM loadGeometryFolder folders
   logInfo $ "Loaded " ++ show (length geometries) ++ " geometry files"
   return $ M.fromList geometries
