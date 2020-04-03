@@ -13,6 +13,7 @@ import           Gfx.Context                    ( textureFill
                                                 , noFill
                                                 , colourStroke
                                                 , noStroke
+                                                , setMaterial
                                                 , setBackground
                                                 )
 import           Language.Ast                   ( Value(Number, Null, Symbol) )
@@ -61,6 +62,7 @@ style styleArgs = do
     Symbol "stroke"   : rest -> runStroke rest
     Symbol "noStroke" : rest -> useGfxCtx noStroke
     Symbol "texture"  : rest -> runTexture rest
+    Symbol "material" : rest -> runMaterial rest
   return Null
  where
   runFill :: [Value] -> InterpreterProcess ()
@@ -79,3 +81,8 @@ style styleArgs = do
       frame <- maybe (return 0) getNumberValue $ listToMaybe rest
       useGfxCtx (\ctx -> textureFill ctx name frame)
     _ -> throwError "Error with functions to texture"
+  runMaterial :: [Value] -> InterpreterProcess ()
+  runMaterial args = case args of
+    [Symbol name] -> do
+      useGfxCtx (\ctx -> setMaterial ctx name)
+    _ -> throwError "Error with functions to material"

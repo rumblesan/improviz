@@ -39,23 +39,22 @@ import qualified Configuration.Screen          as CS
 
 import           Util                           ( (/.) )
 
-data GFXFillStyling
+newtype GFXFillStyling
   = GFXFillColour Colour
-  | GFXFillTexture String
-                   Int
-  | GFXNoFill
   deriving (Eq, Show)
 
-data GFXStrokeStyling
+data GFXTextureStyling = GFXTextureStyling String Int deriving (Eq, Show)
+
+newtype GFXStrokeStyling
   = GFXStrokeColour Colour
-  | GFXNoStroke
   deriving (Eq, Show)
 
 data SavableState = SavableState
-  { _savedMatrixStack  :: [M44 GLfloat]
-  , _savedFillStyles   :: [GFXFillStyling]
-  , _savedStrokeStyles :: [GFXStrokeStyling]
-  , _savedMaterials    :: [String]
+  { _savedMatrixStack   :: [M44 GLfloat]
+  , _savedFillStyles    :: [GFXFillStyling]
+  , _savedStrokeStyles  :: [GFXStrokeStyling]
+  , _savedTextureStyles :: [GFXTextureStyling]
+  , _savedMaterials     :: [String]
   } deriving (Show)
 
 makeLenses ''SavableState
@@ -63,6 +62,7 @@ makeLenses ''SavableState
 data GfxEngine = GfxEngine
   { _fillStyle          :: GSS.SettingStack GFXFillStyling
   , _strokeStyle        :: GSS.SettingStack GFXStrokeStyling
+  , _textureStyle       :: GSS.SettingStack GFXTextureStyling
   , _material           :: GSS.SettingStack String
   , _geometryBuffers    :: Geometries
   , _textureLibrary     :: TextureLibrary
@@ -80,6 +80,7 @@ data GfxEngine = GfxEngine
 
 makeLensesFor [ ("_fillStyle", "fillStyleSetting")
               , ("_strokeStyle", "strokeStyleSetting")
+              , ("_textureStyle", "textureStyleSetting")
               , ("_material", "materialSetting")
               , ("_geometryBuffers", "geometryBuffers")
               , ("_textureLibrary", "textureLibrary")
@@ -114,6 +115,13 @@ strokeStyleSnapshot
   :: Lens GfxEngine GfxEngine [GFXStrokeStyling] [GFXStrokeStyling]
 strokeStyleSnapshot = strokeStyleSetting . GSS.snapshot
 
+textureStyle :: Lens GfxEngine GfxEngine GFXTextureStyling GFXTextureStyling
+textureStyle = textureStyleSetting . GSS.value
+
+textureStyleSnapshot
+  :: Lens GfxEngine GfxEngine [GFXTextureStyling] [GFXTextureStyling]
+textureStyleSnapshot = textureStyleSetting . GSS.snapshot
+
 
 animationStyle :: Lens GfxEngine GfxEngine AnimationStyle AnimationStyle
 animationStyle = animationStyleSetting . GS.value
@@ -146,6 +154,7 @@ createGfxEngine config width height pprocess trender textLib matLib =
         return GfxEngine
           { _fillStyle        = GSS.create $ GFXFillColour $ Colour 1 1 1 1
           , _strokeStyle      = GSS.create $ GFXStrokeColour $ Colour 0 0 0 1
+          , _textureStyle     = GSS.create $ GFXTextureStyling "" 0
           , _material         = GSS.create "basic"
           , _geometryBuffers  = gbos
           , _textureLibrary   = textLib

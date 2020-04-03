@@ -95,22 +95,16 @@ setUniform ("MVPMat", UniformLocation uniformLoc) = do
     $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
     . castPtr
 setUniform ("Color", uniformLoc) = do
-  fillStyle <- use fillStyle
-  case fillStyle of
-    GFXFillColour fillColour ->
-      liftIO (GL.uniform uniformLoc $= colToGLCol fillColour)
-    _ -> return ()
+  (GFXFillColour fillColour) <- use fillStyle
+  liftIO (GL.uniform uniformLoc $= colToGLCol fillColour)
 setUniform ("Texture", uniformLoc) = do
-  fillStyle <- use fillStyle
-  case fillStyle of
-    GFXFillTexture name frame -> do
-      textureLib <- use textureLibrary
-      case M.lookup name textureLib >>= M.lookup frame of
-        Nothing      -> return ()
-        Just texture -> liftIO $ do
-          GL.activeTexture $= TextureUnit 0
-          GL.textureBinding Texture2D $= Just texture
-    _ -> return ()
+  (GFXTextureStyling textName textFrame) <- use textureStyle
+  textureLib                             <- use textureLibrary
+  case M.lookup textName textureLib >>= M.lookup textFrame of
+    Nothing      -> return ()
+    Just texture -> liftIO $ do
+      GL.activeTexture $= TextureUnit 0
+      GL.textureBinding Texture2D $= Just texture
 setUniform (name, _) = liftIO $ logError $ name ++ " is not a known uniform"
 
 drawTriangles :: ShapeBuffer -> GraphicsEngine ()
@@ -159,39 +153,42 @@ setDepthChecking :: Bool -> GraphicsEngine ()
 setDepthChecking = assign depthChecking
 
 textureFill :: String -> Float -> GraphicsEngine ()
-textureFill name frame = assign fillStyle $ GFXFillTexture name (floor frame)
+textureFill name frame =
+  assign textureStyle $ GFXTextureStyling name (floor frame)
 
 colourFill :: Float -> Float -> Float -> Float -> GraphicsEngine ()
 colourFill r g b a = assign fillStyle $ GFXFillColour $ Colour r g b a
 
 noFill :: GraphicsEngine ()
-noFill = assign fillStyle GFXNoFill
+noFill = assign fillStyle $ GFXFillColour $ Colour 0.0 0.0 0.0 0.0
 
 colourStroke :: Float -> Float -> Float -> Float -> GraphicsEngine ()
 colourStroke r g b a = assign strokeStyle $ GFXStrokeColour $ Colour r g b a
 
 noStroke :: GraphicsEngine ()
-noStroke = assign strokeStyle GFXNoStroke
+noStroke = assign strokeStyle $ GFXStrokeColour $ Colour 0.0 0.0 0.0 0.0
 
 pushScope :: GraphicsEngine ()
 pushScope = do
   mStack  <- use matrixStack
   fStyles <- use fillStyleSnapshot
   sStyles <- use strokeStyleSnapshot
+  texts   <- use textureStyleSnapshot
   mat     <- use materialSnapshot
   stack   <- use scopeStack
-  let savable = SavableState mStack fStyles sStyles mat
+  let savable = SavableState mStack fStyles sStyles texts mat
   assign scopeStack (savable : stack)
 
 popScope :: GraphicsEngine ()
 popScope = do
   stack <- use scopeStack
   let prev = head stack
-  assign scopeStack          (tail stack)
-  assign fillStyleSnapshot   (view savedFillStyles prev)
-  assign strokeStyleSnapshot (view savedStrokeStyles prev)
-  assign matrixStack         (view savedMatrixStack prev)
-  assign materialSnapshot    (view savedMaterials prev)
+  assign scopeStack           (tail stack)
+  assign fillStyleSnapshot    (view savedFillStyles prev)
+  assign strokeStyleSnapshot  (view savedStrokeStyles prev)
+  assign textureStyleSnapshot (view savedTextureStyles prev)
+  assign matrixStack          (view savedMatrixStack prev)
+  assign materialSnapshot     (view savedMaterials prev)
 
 renderCode :: String -> GraphicsEngine ()
 renderCode text = do
