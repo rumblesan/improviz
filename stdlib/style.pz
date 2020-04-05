@@ -1,4 +1,14 @@
 
+func material(name, &blk)
+	s = :material
+	if (isNull(blk))
+		style(s, name)
+	else
+		pushScope()
+		style(s, name)
+		blk()
+		popScope()
+
 func fill(r, g, b, a, &blk)
 	r := 255
 	g := r
@@ -47,3 +57,12 @@ func noStroke(&blk)
 		blk()
 		popScope()
 
+func strokeSize(size, &blk)
+	s = :strokeSize
+	if (isNull(blk))
+		style(s, size)
+	else
+		pushScope()
+		style(s, size)
+		blk()
+		popScope()
