@@ -55,7 +55,7 @@ import           Gfx.Matrices                   ( scaleMat
                                                 , rotMat
                                                 )
 import qualified Gfx.Materials                 as GM
-import qualified Gfx.VertexDataBuffer          as VDB
+import qualified Gfx.VAO                       as VAO
 import           Gfx.Types                      ( Colour(..) )
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 import           Gfx.TextRendering              ( renderText
@@ -73,20 +73,6 @@ getFullMatrix = do
   pMat <- use projectionMatrix
   vMat <- use viewMatrix
   return $ (pMat !*! vMat) !*! mMat
-
-setAttribute :: GeometryData -> (String, AttribLocation) -> GraphicsEngine ()
-setAttribute geoData ("position", posLoc) = liftIO $ do
-  GL.bindBuffer GL.ArrayBuffer $= Just (VDB.buffer $ positionVerts geoData)
-  GL.vertexAttribPointer posLoc
-    $= (GL.ToFloat, GL.VertexArrayDescriptor 3 GL.Float 0 nullPtr)
-  GL.vertexAttribArray posLoc $= GL.Enabled
-setAttribute geoData ("texcoord", texCLoc) = liftIO $ do
-  GL.bindBuffer GL.ArrayBuffer $= Just (VDB.buffer $ textureCoords geoData)
-  GL.vertexAttribPointer texCLoc
-    $= (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 0 nullPtr)
-  GL.vertexAttribArray texCLoc $= GL.Enabled
-setAttribute _ (name, _) =
-  liftIO $ logError $ name ++ " is not a known attribute"
 
 setUniform :: (String, UniformLocation) -> GraphicsEngine ()
 setUniform ("MVPMat", UniformLocation uniformLoc) = do
@@ -114,9 +100,10 @@ drawTriangles geoData = do
   matLib  <- use materialLibrary
   case M.lookup matName matLib of
     Just mat -> do
+      liftIO $ VAO.bind (vao geoData)
       liftIO (currentProgram $= Just (GM.program mat))
-      mapM_ setUniform             (GM.uniforms mat)
-      mapM_ (setAttribute geoData) (GM.attributes mat)
+      mapM_ setUniform (GM.uniforms mat)
+      liftIO $ GL.drawArrays GL.Triangles 0 (vertCount geoData)
     _ -> return ()
   liftIO printErrors
 
@@ -128,9 +115,6 @@ drawShape name x y z = do
     Just geoData -> do
       modify' (pushMatrix $ scaleMat x y z)
       drawTriangles geoData
-      liftIO $ GL.drawArrays GL.Triangles
-                             0
-                             (VDB.bufferLength $ positionVerts geoData)
       modify' popMatrix
 
 rotate :: Float -> Float -> Float -> GraphicsEngine ()

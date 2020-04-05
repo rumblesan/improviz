@@ -14,22 +14,22 @@ import           Foreign.Storable               ( Storable
 import           Graphics.Rendering.OpenGL     as GL
 
 data VertexDataBuffer = VertexDataBuffer { buffer :: GL.BufferObject
-                                         , bufferLength :: GLsizei
-                                         , elementSize :: GLsizeiptr
+                                         , vertexCount :: GLsizei
+                                         , vertexComponents :: NumComponents
                                          } deriving (Show, Eq)
 
-create :: Storable a => [a] -> IO VertexDataBuffer
-create verts =
-  let numVertices = fromIntegral $ length verts
-      vertexSize  = fromIntegral $ maybe 0 sizeOf (listToMaybe verts)
-      elementSize = fromIntegral (numVertices * vertexSize)
+create :: Storable a => [a] -> NumComponents -> IO VertexDataBuffer
+create verts vertComponentCount =
+  let vCount     = fromIntegral $ length verts
+      vSize      = fromIntegral $ maybe 0 sizeOf (listToMaybe verts)
+      bufferSize = fromIntegral (vCount * vSize)
   in  do
         arrayBuffer <- GL.genObjectName
         GL.bindBuffer ArrayBuffer $= Just arrayBuffer
-        withArray verts $ \ptr ->
-          GL.bufferData ArrayBuffer $= (elementSize, ptr, StaticDraw)
+        withArray verts
+          $ \ptr -> GL.bufferData ArrayBuffer $= (bufferSize, ptr, StaticDraw)
         GL.bindBuffer ArrayBuffer $= Nothing
-        return $ VertexDataBuffer arrayBuffer numVertices elementSize
+        return $ VertexDataBuffer arrayBuffer vCount vertComponentCount
 
 delete :: VertexDataBuffer -> IO ()
 delete vdb = GL.deleteObjectName $ buffer vdb

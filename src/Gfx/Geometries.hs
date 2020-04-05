@@ -17,6 +17,8 @@ import           System.FilePath.Posix          ( (</>) )
 import           Graphics.Rendering.OpenGL      ( Vertex2(..)
                                                 , GLfloat
                                                 , Vertex3(..)
+                                                , AttribLocation(..)
+                                                , GLsizei
                                                 )
 import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , Element(..)
@@ -27,7 +29,8 @@ import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , fromFile
                                                 )
 
-import           Gfx.VertexDataBuffer           ( VertexDataBuffer )
+import           Gfx.VAO                        ( VAO )
+import qualified Gfx.VAO                       as VAO
 import qualified Gfx.VertexDataBuffer          as VDB
 import           Configuration                  ( loadFolderConfig )
 import           Configuration.Geometries
@@ -35,8 +38,8 @@ import           Logging                        ( logError
                                                 , logInfo
                                                 )
 
-data GeometryData = GeometryData { positionVerts :: VertexDataBuffer
-                                 , textureCoords :: VertexDataBuffer
+data GeometryData = GeometryData { vao :: VAO
+                                 , vertCount :: GLsizei
                                  } deriving (Show, Eq)
 
 type Geometries = M.Map String GeometryData
@@ -88,12 +91,20 @@ createGeometryData folderPath cfg = do
     Left  err -> logError err >> return Nothing
     Right obj -> case (objFaceVerts obj, objTextureCoords obj) of
       (Just verts, Just texCoords) -> do
-        geoData <- GeometryData <$> VDB.create verts <*> VDB.create texCoords
-        return $ Just (geometryName cfg, geoData)
+        vertBuffer <- VDB.create verts 3
+        texCBuffer <- VDB.create texCoords 2
+        vao        <- VAO.create
+          [(AttribLocation 0, vertBuffer), (AttribLocation 1, texCBuffer)]
+        return $ Just
+          (geometryName cfg, GeometryData vao (VDB.vertexCount vertBuffer))
       (Just verts, Nothing) -> do
-        geoData <- GeometryData <$> VDB.create verts <*> VDB.create
-          (defaultTextureCoords (3 * L.length verts))
-        return $ Just (geometryName cfg, geoData)
+        vertBuffer <- VDB.create verts 3
+        let texCoords = (defaultTextureCoords (3 * L.length verts))
+        texCBuffer <- VDB.create texCoords 2
+        vao        <- VAO.create
+          [(AttribLocation 0, vertBuffer), (AttribLocation 1, texCBuffer)]
+        return $ Just
+          (geometryName cfg, GeometryData vao (VDB.vertexCount vertBuffer))
       _ -> return Nothing
 
 

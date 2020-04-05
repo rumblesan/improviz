@@ -16,3 +16,7 @@ colToGLCol (Colour r g b a) = Color4 r g b a
 
 printErrors :: IO ()
 printErrors = get errors >>= mapM_ (hPutStrLn stderr . ("GL: " ++) . show)
+
+printErrorsDBG :: String -> IO ()
+printErrorsDBG msg =
+  print msg >> get errors >>= mapM_ (hPutStrLn stderr . ("GL: " ++) . show)
