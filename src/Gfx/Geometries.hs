@@ -54,15 +54,17 @@ defaultTextureCoords :: Int -> [Vertex2 GLfloat]
 defaultTextureCoords num = take num $ L.cycle
   [Vertex2 1 1, Vertex2 0 1, Vertex2 0 0, Vertex2 0 0, Vertex2 1 0, Vertex2 1 1]
 
-defaultBarycentricCoords :: Int -> [Vertex3 GLfloat]
-defaultBarycentricCoords num = take num $ L.cycle
-  [ Vertex3 0 1 1
-  , Vertex3 0 1 0
-  , Vertex3 1 0 0
-  , Vertex3 0 1 1
-  , Vertex3 1 0 0
-  , Vertex3 0 1 0
-  ]
+defaultBarycentricCoords :: Int -> Bool -> [Vertex3 GLfloat]
+defaultBarycentricCoords num removeCrossbar =
+  let v = if removeCrossbar then 1 else 0
+  in  take num $ L.cycle
+        [ Vertex3 0 v 1
+        , Vertex3 0 1 0
+        , Vertex3 1 0 0
+        , Vertex3 0 v 1
+        , Vertex3 1 0 0
+        , Vertex3 0 1 0
+        ]
 
 objFaceVerts :: WavefrontOBJ -> Maybe [Vertex3 GLfloat]
 objFaceVerts obj =
@@ -103,8 +105,10 @@ createGeometryData folderPath cfg = do
       (Just verts, Just texCoords) -> do
         vertBuffer  <- VDB.create verts 3
         texCBuffer  <- VDB.create texCoords 2
-        barycBuffer <- VDB.create (defaultBarycentricCoords $ L.length verts) 3
-        vao         <- VAO.create
+        barycBuffer <- VDB.create
+          (defaultBarycentricCoords (L.length verts) (removeCrossbar cfg))
+          3
+        vao <- VAO.create
           [ (AttribLocation 0, vertBuffer)
           , (AttribLocation 1, texCBuffer)
           , (AttribLocation 2, barycBuffer)
@@ -114,8 +118,10 @@ createGeometryData folderPath cfg = do
       (Just verts, Nothing) -> do
         vertBuffer  <- VDB.create verts 3
         texCBuffer  <- VDB.create (defaultTextureCoords (3 * L.length verts)) 2
-        barycBuffer <- VDB.create (defaultBarycentricCoords $ L.length verts) 3
-        vao         <- VAO.create
+        barycBuffer <- VDB.create
+          (defaultBarycentricCoords (L.length verts) (removeCrossbar cfg))
+          3
+        vao <- VAO.create
           [ (AttribLocation 0, vertBuffer)
           , (AttribLocation 1, texCBuffer)
           , (AttribLocation 2, barycBuffer)
