@@ -8,6 +8,7 @@ module Gfx.Commands
   , noFill
   , colourStroke
   , noStroke
+  , setStrokeSize
   , setMaterial
   , setBackground
   , setAnimationStyle
@@ -102,8 +103,9 @@ setUniform ("Color", uniformLoc) = do
 setUniform ("WireColor", uniformLoc) = do
   (GFXStrokeColour strokeColour) <- use strokeStyle
   liftIO (GL.uniform uniformLoc $= colToGLCol strokeColour)
-setUniform ("StrokeSize", uniformLoc) =
-  liftIO (GL.uniform uniformLoc $= (0.1 :: GLfloat))
+setUniform ("StrokeSize", uniformLoc) = do
+  sSize <- use strokeSize
+  liftIO (GL.uniform uniformLoc $= sSize)
 setUniform ("Texture", uniformLoc) = do
   (GFXTextureStyling textName textFrame) <- use textureStyle
   textureLib                             <- use textureLibrary
@@ -178,15 +180,19 @@ colourStroke r g b a = assign strokeStyle $ GFXStrokeColour $ Colour r g b a
 noStroke :: GraphicsEngine ()
 noStroke = assign strokeStyle $ GFXStrokeColour $ Colour 0.0 0.0 0.0 0.0
 
+setStrokeSize :: Float -> GraphicsEngine ()
+setStrokeSize = assign strokeSize
+
 pushScope :: GraphicsEngine ()
 pushScope = do
   mStack  <- use matrixStack
   fStyles <- use fillStyleSnapshot
   sStyles <- use strokeStyleSnapshot
+  sSize   <- use strokeSizeSnapshot
   texts   <- use textureStyleSnapshot
   mat     <- use materialSnapshot
   stack   <- use scopeStack
-  let savable = SavableState mStack fStyles sStyles texts mat
+  let savable = SavableState mStack fStyles sStyles sSize texts mat
   assign scopeStack (savable : stack)
 
 popScope :: GraphicsEngine ()
@@ -196,6 +202,7 @@ popScope = do
   assign scopeStack           (tail stack)
   assign fillStyleSnapshot    (view savedFillStyles prev)
   assign strokeStyleSnapshot  (view savedStrokeStyles prev)
+  assign strokeSizeSnapshot   (view savedStrokeSize prev)
   assign textureStyleSnapshot (view savedTextureStyles prev)
   assign matrixStack          (view savedMatrixStack prev)
   assign materialSnapshot     (view savedMaterials prev)

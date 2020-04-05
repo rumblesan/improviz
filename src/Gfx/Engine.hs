@@ -53,6 +53,7 @@ data SavableState = SavableState
   { _savedMatrixStack   :: [M44 GLfloat]
   , _savedFillStyles    :: [GFXFillStyling]
   , _savedStrokeStyles  :: [GFXStrokeStyling]
+  , _savedStrokeSize    :: [Float]
   , _savedTextureStyles :: [GFXTextureStyling]
   , _savedMaterials     :: [String]
   } deriving (Show)
@@ -62,6 +63,7 @@ makeLenses ''SavableState
 data GfxEngine = GfxEngine
   { _fillStyle          :: GSS.SettingStack GFXFillStyling
   , _strokeStyle        :: GSS.SettingStack GFXStrokeStyling
+  , _strokeSize         :: GSS.SettingStack Float
   , _textureStyle       :: GSS.SettingStack GFXTextureStyling
   , _material           :: GSS.SettingStack String
   , _geometryBuffers    :: Geometries
@@ -80,6 +82,7 @@ data GfxEngine = GfxEngine
 
 makeLensesFor [ ("_fillStyle", "fillStyleSetting")
               , ("_strokeStyle", "strokeStyleSetting")
+              , ("_strokeSize", "strokeSizeSetting")
               , ("_textureStyle", "textureStyleSetting")
               , ("_material", "materialSetting")
               , ("_geometryBuffers", "geometryBuffers")
@@ -114,6 +117,12 @@ strokeStyle = strokeStyleSetting . GSS.value
 strokeStyleSnapshot
   :: Lens GfxEngine GfxEngine [GFXStrokeStyling] [GFXStrokeStyling]
 strokeStyleSnapshot = strokeStyleSetting . GSS.snapshot
+
+strokeSize :: Lens GfxEngine GfxEngine Float Float
+strokeSize = strokeSizeSetting . GSS.value
+
+strokeSizeSnapshot :: Lens GfxEngine GfxEngine [Float] [Float]
+strokeSizeSnapshot = strokeSizeSetting . GSS.snapshot
 
 textureStyle :: Lens GfxEngine GfxEngine GFXTextureStyling GFXTextureStyling
 textureStyle = textureStyleSetting . GSS.value
@@ -154,6 +163,7 @@ createGfxEngine config width height pprocess trender textLib matLib =
         return GfxEngine
           { _fillStyle        = GSS.create $ GFXFillColour $ Colour 1 1 1 1
           , _strokeStyle      = GSS.create $ GFXStrokeColour $ Colour 0 0 0 1
+          , _strokeSize       = GSS.create 0.02
           , _textureStyle     = GSS.create $ GFXTextureStyling "" 0
           , _material         = GSS.create "basic"
           , _geometryBuffers  = gbos
@@ -188,6 +198,7 @@ resizeGfxEngine config newWidth newHeight newPP newTR =
 resetGfxEngine :: GfxEngine -> GfxEngine
 resetGfxEngine ge = ge { _fillStyle       = GSS.reset (_fillStyle ge)
                        , _strokeStyle     = GSS.reset (_strokeStyle ge)
+                       , _strokeSize      = GSS.reset (_strokeSize ge)
                        , _material        = GSS.reset (_material ge)
                        , _matrixStack     = [identity]
                        , _scopeStack      = []
