@@ -103,6 +103,7 @@ drawTriangles geoData = do
       liftIO $ VAO.bind (vao geoData)
       liftIO (currentProgram $= Just (GM.program mat))
       mapM_ setUniform (GM.uniforms mat)
+      liftIO (GL.polygonMode $= (GL.Fill, GL.Fill))
       liftIO $ GL.drawArrays GL.Triangles 0 (vertCount geoData)
     _ -> return ()
   liftIO printErrors

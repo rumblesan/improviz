@@ -56,6 +56,7 @@ createVBO arrayConfigFuncs primMode arrIdx numVertices = do
 drawVBO :: VBO -> IO ()
 drawVBO (VBO bufferObject arrayBuffers primMode arrayIndex numVertices) = do
   GL.bindVertexArrayObject $= Just bufferObject
+  GL.polygonMode $= (GL.Fill, GL.Fill)
   GL.drawArrays primMode arrayIndex numVertices
 
 deleteVBO :: VBO -> IO ()
