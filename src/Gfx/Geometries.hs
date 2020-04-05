@@ -54,6 +54,16 @@ defaultTextureCoords :: Int -> [Vertex2 GLfloat]
 defaultTextureCoords num = take num $ L.cycle
   [Vertex2 1 1, Vertex2 0 1, Vertex2 0 0, Vertex2 0 0, Vertex2 1 0, Vertex2 1 1]
 
+defaultBarycentricCoords :: Int -> [Vertex3 GLfloat]
+defaultBarycentricCoords num = take num $ L.cycle
+  [ Vertex3 0 1 1
+  , Vertex3 0 1 0
+  , Vertex3 1 0 0
+  , Vertex3 0 1 1
+  , Vertex3 1 0 0
+  , Vertex3 0 1 0
+  ]
+
 objFaceVerts :: WavefrontOBJ -> Maybe [Vertex3 GLfloat]
 objFaceVerts obj =
   let verts   = objLocations obj
@@ -91,18 +101,25 @@ createGeometryData folderPath cfg = do
     Left  err -> logError err >> return Nothing
     Right obj -> case (objFaceVerts obj, objTextureCoords obj) of
       (Just verts, Just texCoords) -> do
-        vertBuffer <- VDB.create verts 3
-        texCBuffer <- VDB.create texCoords 2
-        vao        <- VAO.create
-          [(AttribLocation 0, vertBuffer), (AttribLocation 1, texCBuffer)]
+        vertBuffer  <- VDB.create verts 3
+        texCBuffer  <- VDB.create texCoords 2
+        barycBuffer <- VDB.create (defaultBarycentricCoords $ L.length verts) 3
+        vao         <- VAO.create
+          [ (AttribLocation 0, vertBuffer)
+          , (AttribLocation 1, texCBuffer)
+          , (AttribLocation 2, barycBuffer)
+          ]
         return $ Just
           (geometryName cfg, GeometryData vao (VDB.vertexCount vertBuffer))
       (Just verts, Nothing) -> do
-        vertBuffer <- VDB.create verts 3
-        let texCoords = (defaultTextureCoords (3 * L.length verts))
-        texCBuffer <- VDB.create texCoords 2
-        vao        <- VAO.create
-          [(AttribLocation 0, vertBuffer), (AttribLocation 1, texCBuffer)]
+        vertBuffer  <- VDB.create verts 3
+        texCBuffer  <- VDB.create (defaultTextureCoords (3 * L.length verts)) 2
+        barycBuffer <- VDB.create (defaultBarycentricCoords $ L.length verts) 3
+        vao         <- VAO.create
+          [ (AttribLocation 0, vertBuffer)
+          , (AttribLocation 1, texCBuffer)
+          , (AttribLocation 2, barycBuffer)
+          ]
         return $ Just
           (geometryName cfg, GeometryData vao (VDB.vertexCount vertBuffer))
       _ -> return Nothing

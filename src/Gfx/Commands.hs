@@ -78,9 +78,32 @@ setUniform ("MVPMat", UniformLocation uniformLoc) = do
     $ with mvpMat
     $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
     . castPtr
+setUniform ("Mmatrix", UniformLocation uniformLoc) = do
+  modelMatrix <- head <$> use matrixStack
+  liftIO
+    $ with modelMatrix
+    $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
+    . castPtr
+setUniform ("Vmatrix", UniformLocation uniformLoc) = do
+  viewMat <- use viewMatrix
+  liftIO
+    $ with viewMat
+    $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
+    . castPtr
+setUniform ("Pmatrix", UniformLocation uniformLoc) = do
+  projMat <- use projectionMatrix
+  liftIO
+    $ with projMat
+    $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
+    . castPtr
 setUniform ("Color", uniformLoc) = do
   (GFXFillColour fillColour) <- use fillStyle
   liftIO (GL.uniform uniformLoc $= colToGLCol fillColour)
+setUniform ("WireColor", uniformLoc) = do
+  (GFXStrokeColour strokeColour) <- use strokeStyle
+  liftIO (GL.uniform uniformLoc $= colToGLCol strokeColour)
+setUniform ("StrokeSize", uniformLoc) =
+  liftIO (GL.uniform uniformLoc $= (0.1 :: GLfloat))
 setUniform ("Texture", uniformLoc) = do
   (GFXTextureStyling textName textFrame) <- use textureStyle
   textureLib                             <- use textureLibrary
