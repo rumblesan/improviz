@@ -19,9 +19,7 @@ module Gfx.Commands
   )
 where
 
-import           Foreign.Ptr                    ( nullPtr
-                                                , castPtr
-                                                )
+import           Foreign.Ptr                    ( castPtr )
 import           Foreign.Marshal.Utils          ( with
                                                 , fromBool
                                                 )
@@ -43,7 +41,6 @@ import           Graphics.Rendering.OpenGL      ( ($=)
                                                 , GLfloat
                                                 , TextureUnit(..)
                                                 , TextureTarget2D(Texture2D)
-                                                , AttribLocation
                                                 , UniformLocation(..)
                                                 , currentProgram
                                                 )
@@ -104,6 +101,9 @@ drawTriangles geoData = do
       liftIO (currentProgram $= Just (GM.program mat))
       mapM_ setUniform (GM.uniforms mat)
       liftIO (GL.polygonMode $= (GL.Fill, GL.Fill))
+      liftIO (GL.cullFace $= Just GL.Front)
+      liftIO $ GL.drawArrays GL.Triangles 0 (vertCount geoData)
+      liftIO (GL.cullFace $= Just GL.Back)
       liftIO $ GL.drawArrays GL.Triangles 0 (vertCount geoData)
     _ -> return ()
   liftIO printErrors

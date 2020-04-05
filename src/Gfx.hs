@@ -77,6 +77,7 @@ renderGfx program gs =
       depthFunc $= if depthCheck then Just Less else Nothing
       blend $= Enabled
       blendEquationSeparate $= (FuncAdd, FuncAdd)
+      frontFace $= CW
       case animStyle of
         NormalStyle ->
           blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, One))
