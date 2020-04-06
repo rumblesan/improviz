@@ -25,10 +25,6 @@ create indices =
     bufferSize = fromIntegral (vCount * vSize)
   in
     do
-      print "creating VIB"
-      print vCount
-      print vSize
-      print bufferSize
       arrayBuffer <- GL.genObjectName
       GL.bindBuffer ElementArrayBuffer $= Just arrayBuffer
       withArray indices $ \ptr ->
