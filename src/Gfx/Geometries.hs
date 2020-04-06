@@ -8,14 +8,17 @@ module Gfx.Geometries
 where
 
 import qualified Data.Vector                   as V
+import           Data.Vector                    ( (!?) )
 import qualified Data.List                     as L
 import qualified Data.Map.Strict               as M
-import           Data.Maybe                     ( catMaybes )
-import           Data.Vector                    ( (!?) )
+import           Data.Maybe                     ( catMaybes
+                                                , fromMaybe
+                                                )
 import           System.FilePath.Posix          ( (</>) )
 
 import           Graphics.Rendering.OpenGL      ( Vertex2(..)
                                                 , GLfloat
+                                                , GLuint
                                                 , Vertex3(..)
                                                 , AttribLocation(..)
                                                 , GLsizei
@@ -32,6 +35,7 @@ import           Codec.Wavefront                ( WavefrontOBJ(..)
 import           Gfx.VAO                        ( VAO )
 import qualified Gfx.VAO                       as VAO
 import qualified Gfx.VertexDataBuffer          as VDB
+import qualified Gfx.VertexIndexBuffer         as VIB
 import           Configuration                  ( loadFolderConfig )
 import           Configuration.Geometries
 import           Logging                        ( logError
@@ -66,34 +70,63 @@ defaultBarycentricCoords num removeCrossbar =
         , Vertex3 0 1 0
         ]
 
-objFaceVerts :: WavefrontOBJ -> Maybe [Vertex3 GLfloat]
-objFaceVerts obj =
-  let verts   = objLocations obj
-      locList = V.toList $ faceToVerts verts <$> objFaces obj
-  in  L.concat <$> sequence locList
+
+objVerts :: WavefrontOBJ -> [Vertex3 GLfloat]
+objVerts obj =
+  let verts   = loc2Vert3 <$> objLocations obj
+      locList = catMaybes $ V.toList $ faceToVerts verts <$> objFaces obj
+  in  L.concat locList
  where
   faceToVerts vertList element = do
     let (Face xIdx yIdx zIdx _) = elValue element
     x <- vertList !? (faceLocIndex xIdx - 1)
     y <- vertList !? (faceLocIndex yIdx - 1)
     z <- vertList !? (faceLocIndex zIdx - 1)
-    return [loc2Vert3 x, loc2Vert3 y, loc2Vert3 z]
+    return [x, y, z]
 
-objTextureCoords :: WavefrontOBJ -> Maybe [Vertex2 GLfloat]
-objTextureCoords obj =
-  let textCoords = objTexCoords obj
-      locList    = V.toList $ faceToVerts textCoords <$> objFaces obj
-  in  L.concat <$> sequence locList
+objTextCoords :: WavefrontOBJ -> Maybe [Vertex2 GLfloat]
+objTextCoords obj =
+  let coords = tex2Vert2 <$> objTexCoords obj
+      texCoords =
+          L.concat $ catMaybes $ V.toList $ faceToTexC coords <$> objFaces obj
+  in  if null texCoords then Nothing else Just texCoords
  where
-  faceToVerts vertList element = do
+  faceToTexC texClist element = do
     let (Face xIdx yIdx zIdx _) = elValue element
     xCoordIdx <- faceTexCoordIndex xIdx
-    x         <- vertList !? (xCoordIdx - 1)
+    x         <- texClist !? (xCoordIdx - 1)
     yCoordIdx <- faceTexCoordIndex yIdx
-    y         <- vertList !? (yCoordIdx - 1)
+    y         <- texClist !? (yCoordIdx - 1)
     zCoordIdx <- faceTexCoordIndex zIdx
-    z         <- vertList !? (zCoordIdx - 1)
-    return [tex2Vert2 x, tex2Vert2 y, tex2Vert2 z]
+    z         <- texClist !? (zCoordIdx - 1)
+    return [x, y, z]
+
+calcIndices :: Int -> [GLuint]
+calcIndices count = take count [0 ..]
+
+objToGeoData
+  :: GeometryConfig -> WavefrontOBJ -> IO (Maybe (String, GeometryData))
+objToGeoData cfg obj =
+  let
+    verts   = objVerts obj
+    indices = calcIndices (length verts)
+    texCoords =
+      fromMaybe (defaultTextureCoords (length verts)) (objTextCoords obj)
+    baryCoords = defaultBarycentricCoords (L.length verts) (removeCrossbar cfg)
+  in
+    do
+      indicesBuffer <- VIB.create indices
+      vertBuffer    <- VDB.create verts 3
+      texCBuffer    <- VDB.create texCoords 2
+      baryCBuffer   <- VDB.create baryCoords 3
+      vao           <- VAO.create
+        indicesBuffer
+        [ (AttribLocation 0, vertBuffer)
+        , (AttribLocation 1, texCBuffer)
+        , (AttribLocation 2, baryCBuffer)
+        ]
+      return $ Just
+        (geometryName cfg, GeometryData vao (VDB.vertexCount vertBuffer))
 
 createGeometryData
   :: FilePath -> GeometryConfig -> IO (Maybe (String, GeometryData))
@@ -101,34 +134,7 @@ createGeometryData folderPath cfg = do
   fileInput <- fromFile $ folderPath </> geometryFile cfg
   case fileInput of
     Left  err -> logError err >> return Nothing
-    Right obj -> case (objFaceVerts obj, objTextureCoords obj) of
-      (Just verts, Just texCoords) -> do
-        vertBuffer  <- VDB.create verts 3
-        texCBuffer  <- VDB.create texCoords 2
-        barycBuffer <- VDB.create
-          (defaultBarycentricCoords (L.length verts) (removeCrossbar cfg))
-          3
-        vao <- VAO.create
-          [ (AttribLocation 0, vertBuffer)
-          , (AttribLocation 1, texCBuffer)
-          , (AttribLocation 2, barycBuffer)
-          ]
-        return $ Just
-          (geometryName cfg, GeometryData vao (VDB.vertexCount vertBuffer))
-      (Just verts, Nothing) -> do
-        vertBuffer  <- VDB.create verts 3
-        texCBuffer  <- VDB.create (defaultTextureCoords (3 * L.length verts)) 2
-        barycBuffer <- VDB.create
-          (defaultBarycentricCoords (L.length verts) (removeCrossbar cfg))
-          3
-        vao <- VAO.create
-          [ (AttribLocation 0, vertBuffer)
-          , (AttribLocation 1, texCBuffer)
-          , (AttribLocation 2, barycBuffer)
-          ]
-        return $ Just
-          (geometryName cfg, GeometryData vao (VDB.vertexCount vertBuffer))
-      _ -> return Nothing
+    Right obj -> objToGeoData cfg obj
 
 
 loadGeometryFolder :: FilePath -> IO [Maybe (String, GeometryData)]

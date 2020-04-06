@@ -79,6 +79,7 @@ executable improviz
                      , Gfx.VertexBuffers
                      , Gfx.VAO
                      , Gfx.VertexDataBuffer
+                     , Gfx.VertexIndexBuffer
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers
@@ -180,6 +181,7 @@ test-suite improviz-test
                      , Gfx.VertexBuffers
                      , Gfx.VAO
                      , Gfx.VertexDataBuffer
+                     , Gfx.VertexIndexBuffer
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers

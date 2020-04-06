@@ -127,9 +127,9 @@ drawTriangles geoData = do
       mapM_ setUniform (GM.uniforms mat)
       liftIO (GL.polygonMode $= (GL.Fill, GL.Fill))
       liftIO (GL.cullFace $= Just GL.Front)
-      liftIO $ GL.drawArrays GL.Triangles 0 (vertCount geoData)
+      liftIO $ VAO.draw $ vao geoData
       liftIO (GL.cullFace $= Just GL.Back)
-      liftIO $ GL.drawArrays GL.Triangles 0 (vertCount geoData)
+      liftIO $ VAO.draw $ vao geoData
     _ -> return ()
   liftIO printErrors
 
