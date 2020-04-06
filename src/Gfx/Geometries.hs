@@ -14,15 +14,13 @@ import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( catMaybes
                                                 , fromMaybe
                                                 )
+import           Data.Int                       ( Int32 )
+import           Data.Word                      ( Word32 )
 import           System.FilePath.Posix          ( (</>) )
 
-import           Graphics.Rendering.OpenGL      ( Vertex2(..)
-                                                , GLfloat
-                                                , GLuint
-                                                , Vertex3(..)
-                                                , AttribLocation(..)
-                                                , GLsizei
-                                                )
+import           Linear.V2                      ( V2(..) )
+import           Linear.V3                      ( V3(..) )
+import           Graphics.Rendering.OpenGL      ( AttribLocation(..) )
 import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , Element(..)
                                                 , Face(..)
@@ -43,35 +41,29 @@ import           Logging                        ( logError
                                                 )
 
 data GeometryData = GeometryData { vao :: VAO
-                                 , vertCount :: GLsizei
+                                 , vertCount :: Int32
                                  } deriving (Show, Eq)
 
 type Geometries = M.Map String GeometryData
 
-loc2Vert3 :: Location -> Vertex3 GLfloat
-loc2Vert3 (Location x y z _) = Vertex3 x y z
+loc2Vert3 :: Location -> V3 Float
+loc2Vert3 (Location x y z _) = V3 x y z
 
-tex2Vert2 :: TexCoord -> Vertex2 GLfloat
-tex2Vert2 (TexCoord x y _) = Vertex2 x y
+tex2Vert2 :: TexCoord -> V2 Float
+tex2Vert2 (TexCoord x y _) = V2 x y
 
-defaultTextureCoords :: Int -> [Vertex2 GLfloat]
-defaultTextureCoords num = take num $ L.cycle
-  [Vertex2 1 1, Vertex2 0 1, Vertex2 0 0, Vertex2 0 0, Vertex2 1 0, Vertex2 1 1]
+defaultTextureCoords :: Int -> [V2 Float]
+defaultTextureCoords num =
+  take num $ L.cycle [V2 1 1, V2 0 1, V2 0 0, V2 0 0, V2 1 0, V2 1 1]
 
-defaultBarycentricCoords :: Int -> Bool -> [Vertex3 GLfloat]
+defaultBarycentricCoords :: Int -> Bool -> [V3 Float]
 defaultBarycentricCoords num removeCrossbar =
   let v = if removeCrossbar then 1 else 0
-  in  take num $ L.cycle
-        [ Vertex3 0 v 1
-        , Vertex3 0 1 0
-        , Vertex3 1 0 0
-        , Vertex3 0 v 1
-        , Vertex3 1 0 0
-        , Vertex3 0 1 0
-        ]
+  in  take num
+        $ L.cycle [V3 0 v 1, V3 0 1 0, V3 1 0 0, V3 0 v 1, V3 1 0 0, V3 0 1 0]
 
 
-objVerts :: WavefrontOBJ -> [Vertex3 GLfloat]
+objVerts :: WavefrontOBJ -> [V3 Float]
 objVerts obj =
   let verts   = loc2Vert3 <$> objLocations obj
       locList = catMaybes $ V.toList $ faceToVerts verts <$> objFaces obj
@@ -84,7 +76,7 @@ objVerts obj =
     z <- vertList !? (faceLocIndex zIdx - 1)
     return [x, y, z]
 
-objTextCoords :: WavefrontOBJ -> Maybe [Vertex2 GLfloat]
+objTextCoords :: WavefrontOBJ -> Maybe [V2 Float]
 objTextCoords obj =
   let coords = tex2Vert2 <$> objTexCoords obj
       texCoords =
@@ -101,7 +93,7 @@ objTextCoords obj =
     z         <- texClist !? (zCoordIdx - 1)
     return [x, y, z]
 
-calcIndices :: Int -> [GLuint]
+calcIndices :: Int -> [Word32]
 calcIndices count = take count [0 ..]
 
 objToGeoData
