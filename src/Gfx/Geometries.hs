@@ -21,6 +21,8 @@ import           Data.Word                      ( Word32 )
 
 import           Linear.V2                      ( V2(..) )
 import           Linear.V3                      ( V3(..) )
+import qualified Linear.V3                     as L3
+import           Linear.Vector                  ( (^-^) )
 import           Graphics.Rendering.OpenGL      ( AttribLocation(..) )
 import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , Element(..)
@@ -81,7 +83,7 @@ objFaceToGeoFace
 objFaceToGeoFace verts texCoords normals rmCrossbar idx face = do
   fv <- objFaceVerts verts face
   let ftc = fromMaybe (calcTexCoords idx) (objFaceTexCoords texCoords face)
-  let ftn = fromMaybe [] (objFaceNormals normals face)
+  let ftn = fromMaybe (calculateNormals fv) (objFaceNormals normals face)
   let fbc = calcBaryCoords idx rmCrossbar
   return $ GeometryFace fv ftc ftn fbc
 
@@ -124,8 +126,6 @@ objGeometryFaces cfg =
         $ uncurry (objFaceToGeoFace verts texCoords norms (removeCrossbar cfg))
         <$> zip [0 ..] faces
 
-
-
 calcIndices :: Int -> [Word32]
 calcIndices count = take count [0 ..]
 
@@ -141,6 +141,11 @@ calcBaryCoords idx rmCrossbar =
         then [V3 0 v 1, V3 0 1 0, V3 1 0 0]
         else [V3 0 v 1, V3 1 0 0, V3 0 1 0]
 
+calculateNormals :: [V3 Float] -> [V3 Float]
+calculateNormals [v1, v2, v3] =
+  let n = L3.cross (v1 ^-^ v2) (v2 ^-^ v3) in [n, n, n]
+calculateNormals _ = []
+
 objToGeoData :: OBJGeometryConfig -> IO (String, GeometryBuffers)
 objToGeoData cfg =
   let
@@ -149,17 +154,20 @@ objToGeoData cfg =
     indices    = calcIndices (length verts)
     texCoords  = L.concat $ faceTextCoords <$> faces
     baryCoords = L.concat $ faceBaryCoords <$> faces
+    normals    = L.concat $ faceNormals <$> faces
   in
     do
       indicesBuffer <- VIB.create indices
       vertBuffer    <- VDB.create verts 3
       texCBuffer    <- VDB.create texCoords 2
       baryCBuffer   <- VDB.create baryCoords 3
+      normalBuffer  <- VDB.create normals 3
       vao           <- VAO.create
         indicesBuffer
         [ (AttribLocation 0, vertBuffer)
         , (AttribLocation 1, texCBuffer)
         , (AttribLocation 2, baryCBuffer)
+        , (AttribLocation 3, normalBuffer)
         ]
       return
         (geometryName cfg, GeometryBuffers vao (VDB.vertexCount vertBuffer))
