@@ -2,7 +2,7 @@
 
 module Gfx.Geometries
   ( Geometries
-  , GeometryData(..)
+  , GeometryBuffers(..)
   , createAllGeometries
   )
 where
@@ -16,7 +16,6 @@ import           Data.Maybe                     ( catMaybes
                                                 )
 import           Data.Int                       ( Int32 )
 import           Data.Word                      ( Word32 )
-import           System.FilePath.Posix          ( (</>) )
 
 import           Linear.V2                      ( V2(..) )
 import           Linear.V3                      ( V3(..) )
@@ -27,24 +26,31 @@ import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , FaceIndex(..)
                                                 , Location(..)
                                                 , TexCoord(..)
-                                                , fromFile
                                                 )
 
 import           Gfx.VAO                        ( VAO )
 import qualified Gfx.VAO                       as VAO
 import qualified Gfx.VertexDataBuffer          as VDB
 import qualified Gfx.VertexIndexBuffer         as VIB
-import           Configuration                  ( loadFolderConfig )
-import           Configuration.Geometries
-import           Logging                        ( logError
-                                                , logInfo
+import           Configuration.Geometries       ( OBJGeometryConfig(..)
+                                                , loadGeometryFolders
                                                 )
+import           Logging                        ( logInfo )
 
-data GeometryData = GeometryData { vao :: VAO
-                                 , vertCount :: Int32
-                                 } deriving (Show, Eq)
+  {-
+data GeometryData = GeometryData { vertices :: V3 Float
+                                 , textureCoords :: V2 Float
+                                 , normals :: V3 Float
+                                 , barycentrics :: V3 Float
+                                 , indices :: Word32
+                                 }
+                                 -}
 
-type Geometries = M.Map String GeometryData
+data GeometryBuffers = GeometryBuffers { vao :: VAO
+                                       , vertCount :: Int32
+                                       } deriving (Show, Eq)
+
+type Geometries = M.Map String GeometryBuffers
 
 loc2Vert3 :: Location -> V3 Float
 loc2Vert3 (Location x y z _) = V3 x y z
@@ -96,10 +102,10 @@ objTextCoords obj =
 calcIndices :: Int -> [Word32]
 calcIndices count = take count [0 ..]
 
-objToGeoData
-  :: GeometryConfig -> WavefrontOBJ -> IO (Maybe (String, GeometryData))
-objToGeoData cfg obj =
+objToGeoData :: OBJGeometryConfig -> IO (String, GeometryBuffers)
+objToGeoData cfg =
   let
+    obj     = objData cfg
     verts   = objVerts obj
     indices = calcIndices (length verts)
     texCoords =
@@ -117,27 +123,12 @@ objToGeoData cfg obj =
         , (AttribLocation 1, texCBuffer)
         , (AttribLocation 2, baryCBuffer)
         ]
-      return $ Just
-        (geometryName cfg, GeometryData vao (VDB.vertexCount vertBuffer))
-
-createGeometryData
-  :: FilePath -> GeometryConfig -> IO (Maybe (String, GeometryData))
-createGeometryData folderPath cfg = do
-  fileInput <- fromFile $ folderPath </> geometryFile cfg
-  case fileInput of
-    Left  err -> logError err >> return Nothing
-    Right obj -> objToGeoData cfg obj
-
-
-loadGeometryFolder :: FilePath -> IO [Maybe (String, GeometryData)]
-loadGeometryFolder folderPath = do
-  folderConfig <- loadFolderConfig folderPath
-  case folderConfig of
-    Left  err -> logError err >> return []
-    Right cfg -> mapM (createGeometryData folderPath) (geometries cfg)
+      return
+        (geometryName cfg, GeometryBuffers vao (VDB.vertexCount vertBuffer))
 
 createAllGeometries :: [FilePath] -> IO Geometries
 createAllGeometries folders = do
-  geometries <- catMaybes . concat <$> mapM loadGeometryFolder folders
+  objGeoConfig <- loadGeometryFolders folders
+  geometries   <- mapM objToGeoData objGeoConfig
   logInfo $ "Loaded " ++ show (length geometries) ++ " geometry files"
   return $ M.fromList geometries

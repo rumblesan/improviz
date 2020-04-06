@@ -47,7 +47,7 @@ import           Graphics.Rendering.OpenGL      ( ($=)
                                                 )
 
 import           Gfx.Engine
-import           Gfx.Geometries                 ( GeometryData(..) )
+import           Gfx.Geometries                 ( GeometryBuffers(..) )
 import           Gfx.Matrices                   ( scaleMat
                                                 , translateMat
                                                 , rotMat
@@ -116,7 +116,7 @@ setUniform ("Texture", uniformLoc) = do
       GL.textureBinding Texture2D $= Just texture
 setUniform (name, _) = liftIO $ logError $ name ++ " is not a known uniform"
 
-drawTriangles :: GeometryData -> GraphicsEngine ()
+drawTriangles :: GeometryBuffers -> GraphicsEngine ()
 drawTriangles geoData = do
   matName <- use material
   matLib  <- use materialLibrary
