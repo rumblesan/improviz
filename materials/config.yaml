@@ -3,5 +3,9 @@ materials:
     file: basic.yaml
   - name: texture
     file: texture.yaml
-  - name: stroke
-    file: stroke.yaml
+  - name: normalised
+    file: normalised.yaml
+  - name: ceed
+    file: ceed.yaml
+  - name: weird
+    file: weird.yaml
