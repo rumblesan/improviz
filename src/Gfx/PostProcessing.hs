@@ -66,61 +66,25 @@ data Mixbuffer =
             VBO
 
 -- 2D positions and texture coordinates
+-- brittany-disable-next-binding
 ordinaryQuadVertices :: [GLfloat]
-ordinaryQuadVertices =
-  [ -1
-  , 1
-  , 0
-  , 1 -- v1
-  , -1
-  , -1
-  , 0
-  , 0 -- v2
-  , 1
-  , 1
-  , 1
-  , 1 -- v3
-  , 1
-  , 1
-  , 1
-  , 1 -- v4
-  , -1
-  , -1
-  , 0
-  , 0 -- v5
-  , 1
-  , -1
-  , 1
-  , 0 -- v6
-  ]
+ordinaryQuadVertices = [ -1,  1, 0, 1 -- v1
+                       ,  1,  1, 1, 1 -- v2
+                       , -1, -1, 0, 0 -- v3
+                       , -1, -1, 0, 0 -- v4
+                       ,  1,  1, 1, 1 -- v5
+                       ,  1, -1, 1, 0 -- v6
+                       ]
 
+-- brittany-disable-next-binding
 textQuadVertices :: [GLfloat]
-textQuadVertices =
-  [ -1
-  , 1
-  , 0
-  , 0 -- v1
-  , -1
-  , -1
-  , 0
-  , 1 -- v2
-  , 1
-  , 1
-  , 1
-  , 0 -- v3
-  , 1
-  , 1
-  , 1
-  , 0 -- v4
-  , -1
-  , -1
-  , 0
-  , 1 -- v5
-  , 1
-  , -1
-  , 1
-  , 1 -- v6
-  ]
+textQuadVertices = [ -1,  1, 0, 0 -- v1
+                   ,  1,  1, 1, 0 -- v2
+                   , -1, -1, 0, 1 -- v3
+                   , -1, -1, 0, 1 -- v4
+                   ,  1,  1, 1, 0 -- v5
+                   ,  1, -1, 1, 1 -- v6
+                   ]
 
 createQuadVBO :: [GLfloat] -> IO VBO
 createQuadVBO quadVertices =

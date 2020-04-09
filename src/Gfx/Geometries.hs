@@ -1,208 +1,180 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
 
 module Gfx.Geometries
   ( Geometries
-  , ShapeBuffer(..)
+  , GeometryBuffers(..)
   , createAllGeometries
   )
 where
 
 import qualified Data.Vector                   as V
+import           Data.Vector                    ( Vector
+                                                , (!?)
+                                                )
 import qualified Data.List                     as L
 import qualified Data.Map.Strict               as M
-import           Data.Vector                    ( (!?) )
-import           Foreign.Marshal.Array          ( withArray )
-import           Foreign.Storable               ( sizeOf )
-import           System.FilePath.Posix          ( (</>) )
-
-import qualified Graphics.Rendering.OpenGL     as GL
-import           Graphics.Rendering.OpenGL      ( Vertex2(..)
-                                                , GLfloat
-                                                , Vertex3(..)
-                                                , AttribLocation(..)
-                                                , BufferTarget(ArrayBuffer)
-                                                , ($=)
-                                                , BufferUsage(StaticDraw)
-                                                , PrimitiveMode
-                                                  ( Lines
-                                                  , Triangles
-                                                  )
+import           Data.Maybe                     ( catMaybes
+                                                , fromMaybe
                                                 )
+import           Data.Int                       ( Int32 )
+import           Data.Word                      ( Word32 )
+
+import           Linear.V2                      ( V2(..) )
+import           Linear.V3                      ( V3(..) )
+import qualified Linear.V3                     as L3
+import           Linear.Vector                  ( (^-^) )
+import           Graphics.Rendering.OpenGL      ( AttribLocation(..) )
 import           Codec.Wavefront                ( WavefrontOBJ(..)
                                                 , Element(..)
                                                 , Face(..)
                                                 , FaceIndex(..)
                                                 , Location(..)
-                                                , Line(..)
-                                                , LineIndex(..)
                                                 , TexCoord(..)
-                                                , fromFile
+                                                , Normal(..)
                                                 )
 
-import           Gfx.VertexBuffers              ( VBO
-                                                , createVBO
-                                                , setAttribPointer
+import           Gfx.VAO                        ( VAO )
+import qualified Gfx.VAO                       as VAO
+import qualified Gfx.VertexDataBuffer          as VDB
+import qualified Gfx.VertexIndexBuffer         as VIB
+import           Configuration.Geometries       ( OBJGeometryConfig(..)
+                                                , loadGeometryFolders
                                                 )
-import           Configuration                  ( loadFolderConfig )
-import           Configuration.Geometries
-import           Logging                        ( logError
-                                                , logInfo
-                                                )
+import           Logging                        ( logInfo )
 
-data ShapeBuffer = ShapeBuffer { triangles :: Maybe VBO
-                               , wireframe :: Maybe VBO
-                               } deriving (Show, Eq)
+  {-
+data GeometryData = GeometryData { vertices :: V3 Float
+                                 , textureCoords :: V2 Float
+                                 , normals :: V3 Float
+                                 , barycentrics :: V3 Float
+                                 , indices :: Word32
+                                 }
+                                 -}
 
-type Geometries = M.Map String ShapeBuffer
+data GeometryFace = GeometryFace { faceVerts :: [V3 Float]
+                                 , faceTextCoords :: [V2 Float]
+                                 , faceNormals :: [V3 Float]
+                                 , faceBaryCoords :: [V3 Float]
+                                 } deriving (Show, Eq)
 
-createBuffer :: [Vertex3 GLfloat] -> IO VBO
-createBuffer verts =
-  let firstIndex  = 0
-      posVSize    = 3
-      vPosition   = AttribLocation 0
-      stride      = 0
-      numVertices = fromIntegral $ length verts
-      vertexSize  = fromIntegral $ sizeOf (head verts)
-      size        = fromIntegral (numVertices * vertexSize)
-      quadConfig  = do
-        withArray verts
-          $ \ptr -> GL.bufferData ArrayBuffer $= (size, ptr, StaticDraw)
-        setAttribPointer vPosition posVSize stride firstIndex
-  in  createVBO [quadConfig] Lines firstIndex numVertices
+data GeometryBuffers = GeometryBuffers { vao :: VAO
+                                       , vertCount :: Int32
+                                       } deriving (Show, Eq)
 
-createBufferWithTexture :: [Vertex3 GLfloat] -> [Vertex2 GLfloat] -> IO VBO
-createBufferWithTexture verts textCoords =
-  let firstVIndex  = 0
-      posVSize     = 3
-      texVSize     = 2
-      firstTIndex  = 0
-      vPosition    = AttribLocation 0
-      texcoord     = AttribLocation 1
-      numVVertices = fromIntegral $ length verts
-      numTVertices = fromIntegral $ length textCoords
-      vVertexSize  = fromIntegral $ sizeOf (head verts)
-      tVertexSize  = fromIntegral $ sizeOf (head textCoords)
-      vsize        = fromIntegral (numVVertices * vVertexSize)
-      tsize        = fromIntegral (numTVertices * tVertexSize)
-      stride       = 0
-      vArrayConfig = do
-        withArray verts
-          $ \ptr -> GL.bufferData ArrayBuffer $= (vsize, ptr, StaticDraw)
-        setAttribPointer vPosition posVSize stride firstVIndex
-      tArrayConfig = do
-        withArray textCoords
-          $ \ptr -> GL.bufferData ArrayBuffer $= (tsize, ptr, StaticDraw)
-        setAttribPointer texcoord texVSize stride firstTIndex
-  in  createVBO [vArrayConfig, tArrayConfig] Triangles firstVIndex numVVertices
+type Geometries = M.Map String GeometryBuffers
 
-loc2Vert3 :: Location -> Vertex3 GLfloat
-loc2Vert3 (Location x y z _) = Vertex3 x y z
+loc2Vert3 :: Location -> V3 Float
+loc2Vert3 (Location x y z _) = V3 x y z
 
-tex2Vert2 :: TexCoord -> Vertex2 GLfloat
-tex2Vert2 (TexCoord x y _) = Vertex2 x y
+tex2Vert2 :: TexCoord -> V2 Float
+tex2Vert2 (TexCoord x y _) = V2 x y
 
-facesToLineIndexes :: Face -> [(Int, Int)]
-facesToLineIndexes (Face xIdx yIdx zIdx rest) =
-  let indexes =
-          faceLocIndex xIdx
-            : faceLocIndex yIdx
-            : faceLocIndex zIdx
-            : (faceLocIndex <$> rest)
-      shifted = tail indexes ++ [head indexes]
-  in  zip indexes shifted
+norm2Vert3 :: Normal -> V3 Float
+norm2Vert3 (Normal x y z) = V3 x y z
 
-dedupLines :: [(Int, Int)] -> [(Int, Int)]
-dedupLines lines = M.keys $ M.fromList $ fmap (, 0) lines
-
-lineIdxToLine :: (Int, Int) -> Line
-lineIdxToLine (a, b) = Line (LineIndex a Nothing) (LineIndex b Nothing)
-
-defaultTextureCoords :: Int -> [Vertex2 GLfloat]
-defaultTextureCoords num = take num $ L.cycle
-  [Vertex2 1 1, Vertex2 0 1, Vertex2 0 0, Vertex2 0 0, Vertex2 1 0, Vertex2 1 1]
-
-objFaceVerts :: WavefrontOBJ -> Maybe [Vertex3 GLfloat]
-objFaceVerts obj =
-  let verts   = objLocations obj
-      locList = V.toList $ faceToVerts verts <$> objFaces obj
-  in  L.concat <$> sequence locList
- where
-  faceToVerts vertList element = do
-    let (Face xIdx yIdx zIdx _) = elValue element
-    x <- vertList !? (faceLocIndex xIdx - 1)
-    y <- vertList !? (faceLocIndex yIdx - 1)
-    z <- vertList !? (faceLocIndex zIdx - 1)
-    return [loc2Vert3 x, loc2Vert3 y, loc2Vert3 z]
-
-objTextureCoords :: WavefrontOBJ -> Maybe [Vertex2 GLfloat]
-objTextureCoords obj =
-  let textCoords = objTexCoords obj
-      locList    = V.toList $ faceToVerts textCoords <$> objFaces obj
-  in  L.concat <$> sequence locList
- where
-  faceToVerts vertList element = do
-    let (Face xIdx yIdx zIdx _) = elValue element
-    xCoordIdx <- faceTexCoordIndex xIdx
-    x         <- vertList !? (xCoordIdx - 1)
-    yCoordIdx <- faceTexCoordIndex yIdx
-    y         <- vertList !? (yCoordIdx - 1)
-    zCoordIdx <- faceTexCoordIndex zIdx
-    z         <- vertList !? (zCoordIdx - 1)
-    return [tex2Vert2 x, tex2Vert2 y, tex2Vert2 z]
-
-objWireframe :: WavefrontOBJ -> Maybe [Vertex3 GLfloat]
-objWireframe obj =
-  let verts   = objLocations obj
-      faces   = elValue <$> objFaces obj
-      lines   = objectLines obj faces
-      locList = V.toList $ lineToVerts verts <$> lines
-  in  L.concat <$> sequence locList
- where
-  lineToVerts vertList (Line xIdx yIdx) = do
-    x <- vertList !? (lineLocIndex xIdx - 1)
-    y <- vertList !? (lineLocIndex yIdx - 1)
-    return [loc2Vert3 x, loc2Vert3 y]
-  objectLines obj f = if V.length (objLines obj) > 0
-    then elValue <$> objLines obj
-    else V.fromList $ lineIdxToLine <$> dedupLines
-      (L.concat $ facesToLineIndexes <$> f)
-
-createTrianglesFromObj :: WavefrontOBJ -> IO (Maybe VBO)
-createTrianglesFromObj obj = case (objFaceVerts obj, objTextureCoords obj) of
-  (Just verts, Just texCoords) ->
-    Just <$> createBufferWithTexture verts texCoords
-  (Just verts, Nothing) -> Just <$> createBufferWithTexture
-    verts
-    (defaultTextureCoords (3 * L.length verts))
-  _ -> return Nothing
-
-createWireframeFromObj :: WavefrontOBJ -> IO (Maybe VBO)
-createWireframeFromObj obj = case objWireframe obj of
-  Nothing    -> return Nothing
-  Just verts -> Just <$> createBuffer verts
-
-createShapeBuffer :: FilePath -> IO ShapeBuffer
-createShapeBuffer fp = do
-  fileInput <- fromFile fp
-  case fileInput of
-    Left err -> logError err >> return (ShapeBuffer Nothing Nothing)
-    Right obj ->
-      ShapeBuffer <$> createTrianglesFromObj obj <*> createWireframeFromObj obj
+objFaceToGeoFace
+  :: Vector (V3 Float)
+  -> Vector (V2 Float)
+  -> Vector (V3 Float)
+  -> Bool
+  -> Int
+  -> Face
+  -> Maybe GeometryFace
+objFaceToGeoFace verts texCoords normals rmCrossbar idx face = do
+  fv <- objFaceVerts verts face
+  let ftc = fromMaybe (calcTexCoords idx) (objFaceTexCoords texCoords face)
+  let ftn = fromMaybe (calculateNormals fv) (objFaceNormals normals face)
+  let fbc = calcBaryCoords idx rmCrossbar
+  return $ GeometryFace fv ftc ftn fbc
 
 
-loadGeometryFolder :: FilePath -> IO [(String, ShapeBuffer)]
-loadGeometryFolder folderPath = do
-  folderConfig <- loadFolderConfig folderPath
-  case folderConfig of
-    Left  err -> logError err >> return []
-    Right cfg -> mapM geoLoad (geometries cfg)
- where
-  geoLoad g =
-    (geometryName g, ) <$> createShapeBuffer (folderPath </> geometryFile g)
+objFaceVerts :: Vector (V3 Float) -> Face -> Maybe [V3 Float]
+objFaceVerts vertList (Face xIdx yIdx zIdx _) = do
+  x <- vertList !? (faceLocIndex xIdx - 1)
+  y <- vertList !? (faceLocIndex yIdx - 1)
+  z <- vertList !? (faceLocIndex zIdx - 1)
+  return [x, y, z]
+
+objFaceTexCoords :: Vector (V2 Float) -> Face -> Maybe [V2 Float]
+objFaceTexCoords texCList (Face xIdx yIdx zIdx _) = do
+  xCoordIdx <- faceTexCoordIndex xIdx
+  x         <- texCList !? (xCoordIdx - 1)
+  yCoordIdx <- faceTexCoordIndex yIdx
+  y         <- texCList !? (yCoordIdx - 1)
+  zCoordIdx <- faceTexCoordIndex zIdx
+  z         <- texCList !? (zCoordIdx - 1)
+  return [x, y, z]
+
+objFaceNormals :: Vector (V3 Float) -> Face -> Maybe [V3 Float]
+objFaceNormals normList (Face xIdx yIdx zIdx _) = do
+  xCoordIdx <- faceTexCoordIndex xIdx
+  x         <- normList !? (xCoordIdx - 1)
+  yCoordIdx <- faceTexCoordIndex yIdx
+  y         <- normList !? (yCoordIdx - 1)
+  zCoordIdx <- faceTexCoordIndex zIdx
+  z         <- normList !? (zCoordIdx - 1)
+  return [x, y, z]
+
+objGeometryFaces :: OBJGeometryConfig -> [GeometryFace]
+objGeometryFaces cfg =
+  let obj       = objData cfg
+      verts     = loc2Vert3 <$> objLocations obj
+      texCoords = tex2Vert2 <$> objTexCoords obj
+      norms     = norm2Vert3 <$> objNormals obj
+      faces     = V.toList $ elValue <$> objFaces obj
+  in  catMaybes
+        $ uncurry (objFaceToGeoFace verts texCoords norms (removeCrossbar cfg))
+        <$> zip [0 ..] faces
+
+calcIndices :: Int -> [Word32]
+calcIndices count = take count [0 ..]
+
+calcTexCoords :: Int -> [V2 Float]
+calcTexCoords idx = if idx `mod` 2 == 0
+  then [V2 1 1, V2 0 1, V2 0 0]
+  else [V2 0 0, V2 1 0, V2 1 1]
+
+calcBaryCoords :: Int -> Bool -> [V3 Float]
+calcBaryCoords idx rmCrossbar =
+  let v = if rmCrossbar then 1 else 0
+  in  if idx `mod` 2 == 0
+        then [V3 0 v 1, V3 0 1 0, V3 1 0 0]
+        else [V3 0 v 1, V3 1 0 0, V3 0 1 0]
+
+calculateNormals :: [V3 Float] -> [V3 Float]
+calculateNormals [v1, v2, v3] =
+  let n = L3.cross (v1 ^-^ v2) (v2 ^-^ v3) in [n, n, n]
+calculateNormals _ = []
+
+objToGeoData :: OBJGeometryConfig -> IO (String, GeometryBuffers)
+objToGeoData cfg =
+  let
+    faces      = objGeometryFaces cfg
+    verts      = L.concat $ faceVerts <$> faces
+    indices    = calcIndices (length verts)
+    texCoords  = L.concat $ faceTextCoords <$> faces
+    baryCoords = L.concat $ faceBaryCoords <$> faces
+    normals    = L.concat $ faceNormals <$> faces
+  in
+    do
+      indicesBuffer <- VIB.create indices
+      vertBuffer    <- VDB.create verts 3
+      texCBuffer    <- VDB.create texCoords 2
+      baryCBuffer   <- VDB.create baryCoords 3
+      normalBuffer  <- VDB.create normals 3
+      vao           <- VAO.create
+        indicesBuffer
+        [ (AttribLocation 0, vertBuffer)
+        , (AttribLocation 1, texCBuffer)
+        , (AttribLocation 2, baryCBuffer)
+        , (AttribLocation 3, normalBuffer)
+        ]
+      return
+        (geometryName cfg, GeometryBuffers vao (VDB.vertexCount vertBuffer))
 
 createAllGeometries :: [FilePath] -> IO Geometries
 createAllGeometries folders = do
-  geometries <- concat <$> mapM loadGeometryFolder folders
+  objGeoConfig <- loadGeometryFolders folders
+  geometries   <- mapM objToGeoData objGeoConfig
   logInfo $ "Loaded " ++ show (length geometries) ++ " geometry files"
   return $ M.fromList geometries

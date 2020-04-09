@@ -1,0 +1,53 @@
+name: basic
+attributes:
+  - position
+  - barycentric
+uniforms:
+  - Pmatrix
+  - Vmatrix
+  - Mmatrix
+  - Color
+  - WireColor
+  - StrokeSize
+vertexShader: |
+  #version 330 core
+  layout (location = 0) in vec3 position;
+  layout (location = 2) in vec3 barycentric;
+
+  uniform mat4 Pmatrix;
+  uniform mat4 Vmatrix;
+  uniform mat4 Mmatrix;
+  uniform vec4 Color;
+  uniform vec4 WireColor;
+  uniform float StrokeSize;
+
+  out vec4 vColor;
+  out vec4 vWireColor;
+  out vec3 vbc;
+  out float vStrokeSize;
+
+  void main(void) {
+    gl_Position = ((Pmatrix * Vmatrix) * Mmatrix) * vec4(position, 1.);
+    vColor = Color;
+    vWireColor = WireColor;
+    vbc = barycentric;
+    vStrokeSize = StrokeSize;
+  }
+fragmentShader: |
+  #version 330 core
+  precision mediump float;
+
+  in vec4 vColor;
+  in vec4 vWireColor;
+  in vec3 vbc;
+  in float vStrokeSize;
+
+  out vec4 finalColor;
+
+  void main(void) {
+    if(vbc.x < vStrokeSize || vbc.y < vStrokeSize || vbc.z < vStrokeSize) {
+      finalColor = vWireColor;
+    } else {
+      finalColor = vColor;
+    }
+  }

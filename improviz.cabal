@@ -56,6 +56,7 @@ executable improviz
                      , Configuration.CLI
                      , Configuration.Font
                      , Configuration.Geometries
+                     , Configuration.Materials
                      , Configuration.OSC
                      , Configuration.Screen
                      , Configuration.Textures
@@ -70,11 +71,15 @@ executable improviz
                      , Gfx.OpenGL
                      , Gfx.PostProcessing
                      , Gfx.Setting
-                     , Gfx.Shaders
+                     , Gfx.SettingStack
+                     , Gfx.Materials
                      , Gfx.TextRendering
                      , Gfx.Textures
                      , Gfx.Types
                      , Gfx.VertexBuffers
+                     , Gfx.VAO
+                     , Gfx.VertexDataBuffer
+                     , Gfx.VertexIndexBuffer
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers
@@ -153,6 +158,7 @@ test-suite improviz-test
                      , Configuration.CLI
                      , Configuration.Font
                      , Configuration.Geometries
+                     , Configuration.Materials
                      , Configuration.OSC
                      , Configuration.Screen
                      , Configuration.Textures
@@ -170,8 +176,12 @@ test-suite improviz-test
                      , Gfx.Textures
                      , Gfx.Types
                      , Gfx.Setting
-                     , Gfx.Shaders
+                     , Gfx.SettingStack
+                     , Gfx.Materials
                      , Gfx.VertexBuffers
+                     , Gfx.VAO
+                     , Gfx.VertexDataBuffer
+                     , Gfx.VertexIndexBuffer
                      , Language
                      , Language.Ast
                      , Language.Ast.Transformers

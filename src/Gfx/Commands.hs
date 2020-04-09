@@ -8,6 +8,8 @@ module Gfx.Commands
   , noFill
   , colourStroke
   , noStroke
+  , setStrokeSize
+  , setMaterial
   , setBackground
   , setAnimationStyle
   , setDepthChecking
@@ -18,6 +20,10 @@ module Gfx.Commands
   )
 where
 
+import           Foreign.Ptr                    ( castPtr )
+import           Foreign.Marshal.Utils          ( with
+                                                , fromBool
+                                                )
 import           Control.Monad.Trans            ( liftIO )
 import           Control.Monad.State.Strict     ( modify' )
 import           Lens.Simple                    ( use
@@ -26,39 +32,37 @@ import           Lens.Simple                    ( use
                                                 )
 import qualified Data.Map.Strict               as M
 
-import           Data.Maybe                     ( maybe )
 import           Linear.Matrix                  ( M44
                                                 , (!*!)
                                                 )
 
+import qualified Graphics.GL                   as GLRaw
+import qualified Graphics.Rendering.OpenGL     as GL
 import           Graphics.Rendering.OpenGL      ( ($=)
                                                 , GLfloat
                                                 , TextureUnit(..)
                                                 , TextureTarget2D(Texture2D)
-                                                , activeTexture
-                                                , textureBinding
+                                                , UniformLocation(..)
                                                 , currentProgram
                                                 )
 
 import           Gfx.Engine
-import           Gfx.Geometries                 ( ShapeBuffer(..) )
+import           Gfx.Geometries                 ( GeometryBuffers(..) )
 import           Gfx.Matrices                   ( scaleMat
                                                 , translateMat
                                                 , rotMat
                                                 )
-import           Gfx.Shaders                    ( setMVPMatrixUniform
-                                                , shaderProgram
-                                                , setColourUniform
-                                                )
+import qualified Gfx.Materials                 as GM
+import qualified Gfx.VAO                       as VAO
 import           Gfx.Types                      ( Colour(..) )
-import           Gfx.VertexBuffers              ( VBO
-                                                , drawVBO
-                                                )
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 import           Gfx.TextRendering              ( renderText
                                                 , renderTextToBuffer
                                                 )
-import           Gfx.OpenGL                     ( printErrors )
+import           Gfx.OpenGL                     ( printErrors
+                                                , colToGLCol
+                                                )
+import           Logging                        ( logError )
 
 
 getFullMatrix :: GraphicsEngine (M44 GLfloat)
@@ -68,55 +72,75 @@ getFullMatrix = do
   vMat <- use viewMatrix
   return $ (pMat !*! vMat) !*! mMat
 
-drawTriangles :: VBO -> GraphicsEngine ()
-drawTriangles vbo = do
-  style <- head <$> use fillStyles
-  case style of
-    GFXFillColour fillC -> do
-      mvp     <- getFullMatrix
-      program <- use colourShaders
-      liftIO (currentProgram $= Just (shaderProgram program))
-      liftIO $ setMVPMatrixUniform program mvp
-      liftIO $ setColourUniform program fillC
-      liftIO $ drawVBO vbo
-    GFXFillTexture name frame -> do
-      mvp     <- getFullMatrix
-      program <- use textureShaders
-      liftIO (currentProgram $= Just (shaderProgram program))
-      textureLib <- use textureLibrary
-      case M.lookup name textureLib >>= M.lookup frame of
-        Nothing      -> return ()
-        Just texture -> do
-          liftIO $ activeTexture $= TextureUnit 0
-          liftIO $ textureBinding Texture2D $= Just texture
-          liftIO $ setMVPMatrixUniform program mvp
-          liftIO $ drawVBO vbo
-    GFXNoFill -> return ()
-  liftIO printErrors
+setUniform :: (String, UniformLocation) -> GraphicsEngine ()
+setUniform ("MVPMat", UniformLocation uniformLoc) = do
+  mvpMat <- getFullMatrix
+  liftIO
+    $ with mvpMat
+    $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
+    . castPtr
+setUniform ("Mmatrix", UniformLocation uniformLoc) = do
+  modelMatrix <- head <$> use matrixStack
+  liftIO
+    $ with modelMatrix
+    $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
+    . castPtr
+setUniform ("Vmatrix", UniformLocation uniformLoc) = do
+  viewMat <- use viewMatrix
+  liftIO
+    $ with viewMat
+    $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
+    . castPtr
+setUniform ("Pmatrix", UniformLocation uniformLoc) = do
+  projMat <- use projectionMatrix
+  liftIO
+    $ with projMat
+    $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
+    . castPtr
+setUniform ("Color", uniformLoc) = do
+  (GFXFillColour fillColour) <- use fillStyle
+  liftIO (GL.uniform uniformLoc $= colToGLCol fillColour)
+setUniform ("WireColor", uniformLoc) = do
+  (GFXStrokeColour strokeColour) <- use strokeStyle
+  liftIO (GL.uniform uniformLoc $= colToGLCol strokeColour)
+setUniform ("StrokeSize", uniformLoc) = do
+  sSize <- use strokeSize
+  liftIO (GL.uniform uniformLoc $= sSize)
+setUniform ("Texture", uniformLoc) = do
+  (GFXTextureStyling textName textFrame) <- use textureStyle
+  textureLib                             <- use textureLibrary
+  case M.lookup textName textureLib >>= M.lookup textFrame of
+    Nothing      -> return ()
+    Just texture -> liftIO $ do
+      GL.activeTexture $= TextureUnit 0
+      GL.textureBinding Texture2D $= Just texture
+setUniform (name, _) = liftIO $ logError $ name ++ " is not a known uniform"
 
-drawWireframe :: VBO -> GraphicsEngine ()
-drawWireframe vbo = do
-  style <- head <$> use strokeStyles
-  case style of
-    GFXStrokeColour strokeC -> do
-      mvp     <- getFullMatrix
-      program <- use strokeShaders
-      liftIO (currentProgram $= Just (shaderProgram program))
-      liftIO $ setMVPMatrixUniform program mvp
-      liftIO $ setColourUniform program strokeC
-      liftIO $ drawVBO vbo
-    GFXNoStroke -> return ()
+drawTriangles :: GeometryBuffers -> GraphicsEngine ()
+drawTriangles geoData = do
+  matName <- use material
+  matLib  <- use materialLibrary
+  case M.lookup matName matLib of
+    Just mat -> do
+      liftIO $ VAO.bind (vao geoData)
+      liftIO (currentProgram $= Just (GM.program mat))
+      mapM_ setUniform (GM.uniforms mat)
+      liftIO (GL.polygonMode $= (GL.Fill, GL.Fill))
+      liftIO (GL.cullFace $= Just GL.Front)
+      liftIO $ VAO.draw $ vao geoData
+      liftIO (GL.cullFace $= Just GL.Back)
+      liftIO $ VAO.draw $ vao geoData
+    _ -> return ()
   liftIO printErrors
 
 drawShape :: String -> Float -> Float -> Float -> GraphicsEngine ()
 drawShape name x y z = do
   gbos <- use geometryBuffers
   case M.lookup name gbos of
-    Nothing -> liftIO $ print $ "Could not find shape: " ++ name
-    Just (ShapeBuffer tb wb) -> do
+    Nothing      -> liftIO $ print $ "Could not find shape: " ++ name
+    Just geoData -> do
       modify' (pushMatrix $ scaleMat x y z)
-      maybe (return ()) drawTriangles tb
-      maybe (return ()) drawWireframe wb
+      drawTriangles geoData
       modify' popMatrix
 
 rotate :: Float -> Float -> Float -> GraphicsEngine ()
@@ -127,6 +151,9 @@ scale x y z = modify' (multMatrix $ scaleMat x y z)
 
 move :: Float -> Float -> Float -> GraphicsEngine ()
 move x y z = modify' (multMatrix $ translateMat x y z)
+
+setMaterial :: String -> GraphicsEngine ()
+setMaterial = assign material
 
 setBackground :: Float -> Float -> Float -> GraphicsEngine ()
 setBackground r g b = assign backgroundColor (Colour r g b 1)
@@ -139,38 +166,46 @@ setDepthChecking = assign depthChecking
 
 textureFill :: String -> Float -> GraphicsEngine ()
 textureFill name frame =
-  modify' (pushFillStyle $ GFXFillTexture name (floor frame))
+  assign textureStyle $ GFXTextureStyling name (floor frame)
 
 colourFill :: Float -> Float -> Float -> Float -> GraphicsEngine ()
-colourFill r g b a = modify' (pushFillStyle $ GFXFillColour $ Colour r g b a)
+colourFill r g b a = assign fillStyle $ GFXFillColour $ Colour r g b a
 
 noFill :: GraphicsEngine ()
-noFill = modify' (pushFillStyle GFXNoFill)
+noFill = assign fillStyle $ GFXFillColour $ Colour 0.0 0.0 0.0 0.0
 
 colourStroke :: Float -> Float -> Float -> Float -> GraphicsEngine ()
-colourStroke r g b a =
-  modify' (pushStrokeStyle $ GFXStrokeColour $ Colour r g b a)
+colourStroke r g b a = assign strokeStyle $ GFXStrokeColour $ Colour r g b a
 
 noStroke :: GraphicsEngine ()
-noStroke = modify' (pushStrokeStyle GFXNoStroke)
+noStroke = assign strokeStyle $ GFXStrokeColour $ Colour 0.0 0.0 0.0 0.0
+
+setStrokeSize :: Float -> GraphicsEngine ()
+setStrokeSize = assign strokeSize
 
 pushScope :: GraphicsEngine ()
 pushScope = do
   mStack  <- use matrixStack
-  fStyles <- use fillStyles
-  sStyles <- use strokeStyles
+  fStyles <- use fillStyleSnapshot
+  sStyles <- use strokeStyleSnapshot
+  sSize   <- use strokeSizeSnapshot
+  texts   <- use textureStyleSnapshot
+  mat     <- use materialSnapshot
   stack   <- use scopeStack
-  let savable = SavableState mStack fStyles sStyles
+  let savable = SavableState mStack fStyles sStyles sSize texts mat
   assign scopeStack (savable : stack)
 
 popScope :: GraphicsEngine ()
 popScope = do
   stack <- use scopeStack
   let prev = head stack
-  assign scopeStack   (tail stack)
-  assign fillStyles   (view savedFillStyles prev)
-  assign strokeStyles (view savedStrokeStyles prev)
-  assign matrixStack  (view savedMatrixStack prev)
+  assign scopeStack           (tail stack)
+  assign fillStyleSnapshot    (view savedFillStyles prev)
+  assign strokeStyleSnapshot  (view savedStrokeStyles prev)
+  assign strokeSizeSnapshot   (view savedStrokeSize prev)
+  assign textureStyleSnapshot (view savedTextureStyles prev)
+  assign matrixStack          (view savedMatrixStack prev)
+  assign materialSnapshot     (view savedMaterials prev)
 
 renderCode :: String -> GraphicsEngine ()
 renderCode text = do

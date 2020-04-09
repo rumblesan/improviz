@@ -1,0 +1,49 @@
+name: ceed
+attributes:
+  - position
+  - barycentric
+  - normals
+uniforms:
+  - Pmatrix
+  - Vmatrix
+  - Mmatrix
+  - StrokeSize
+vertexShader: |
+  #version 330 core
+  layout (location = 0) in vec3 position;
+  layout (location = 2) in vec3 barycentric;
+  layout (location = 3) in vec3 normals;
+
+  uniform mat4 Pmatrix;
+  uniform mat4 Vmatrix;
+  uniform mat4 Mmatrix;
+  uniform float StrokeSize;
+
+  out vec3 vbc;
+  out float vStrokeSize;
+  out vec3 vNormal;
+
+  void main(void) {
+    mat4 mvp = (Pmatrix * Vmatrix) * Mmatrix;
+    gl_Position = mvp * vec4(position, 1.);
+    vbc = barycentric;
+    vStrokeSize = StrokeSize;
+    vNormal = (mvp * vec4(normals, 1)).xyz;
+  }
+fragmentShader: |
+  #version 330 core
+  precision mediump float;
+
+  in vec3 vNormal;
+  in vec3 vbc;
+  in float vStrokeSize;
+
+  out vec4 finalColor;
+
+  void main(void) {
+    if(vbc.x < vStrokeSize || vbc.y < vStrokeSize || vbc.z < vStrokeSize) {
+      finalColor = vec4( 0.5 * normalize( vNormal ) + 0.5, 1.0 );
+    } else {
+      discard;
+    }
+  }

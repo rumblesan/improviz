@@ -1,7 +1,7 @@
 module Gfx.Setting
   ( Setting(..)
   , create
-  , setting
+  , value
   , reset
   )
 where
@@ -32,8 +32,8 @@ set :: Setting k -> k -> Setting k
 set setting value =
   setting { currentValue = value, useCurrent = True, setLastFrame = True }
 
-setting :: Lens (Setting v) (Setting v) v v
-setting = lens get set
+value :: Lens (Setting v) (Setting v) v v
+value = lens get set
 
 reset :: Setting k -> Setting k
 reset setting =
