@@ -126,6 +126,15 @@ If a single value is given then this will be used for the red, green and blue co
 If two arguments are given then the first will be used for the red and blue components, with the second being the green component, and alpha being `255`.
 If three arguments are given then these will be used for the red, green, and blue components and alpha being `255`.
 
+### strokeSize
+
+```
+strokeSize(0.3)
+sphere(3)
+```
+
+Sets the line thickness of the stroke when drawing a shape. The default is 0.02. Currently a value of 0.5 will cause the stroke to cover the entire face of a shape.
+
 ### noFill
 
 ```
@@ -150,6 +159,15 @@ Sets an image to be used as a texture on the shape.
 The first value must be a symbol that either matches the name of a texture or is the special named `:code`.
 If the `:code` symbol is used, then the text of the current code that Improviz is running will be rendered to the shape as a texture and will update as the code changes.
 The optional second value selects a given frame from an animated texture to be used. If the second value given is greater than the number of frames then no texture will be displayed.
+
+### material
+
+```
+material(:ceed)
+	cube(3)
+```
+
+Selects the material to use when rendering shapes.
 
 ### animate
 

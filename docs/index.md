@@ -22,6 +22,7 @@ The following documents should hopefully explain more of the ins and outs of usi
 * [Reference](./reference.md)
 * [Configuration](./configuration.md)
 * [Textures](./textures.md)
+* [Materials](./materials.md)
 * [Geometries](./geometries.md)
 * [Gallery](./gallery.html)
 

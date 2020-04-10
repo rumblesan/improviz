@@ -21,6 +21,7 @@ cp ./docs/language.md $DOCUMENTATION_DIR/language.txt
 cp ./docs/interacting.md $DOCUMENTATION_DIR/interacting.txt
 cp ./docs/reference.md $DOCUMENTATION_DIR/reference.txt
 cp ./docs/textures.md $DOCUMENTATION_DIR/textures.txt
+cp ./docs/materials.md $DOCUMENTATION_DIR/materials.txt
 cp ./docs/configuration.md $DOCUMENTATION_DIR/configuration.txt
 
 cp $(stack exec -- which improviz) $BUNDLE_DIR
