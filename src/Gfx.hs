@@ -46,8 +46,9 @@ createGfx
   -> Int
   -> IO GfxEngine
 createGfx config textureLib width height fbWidth fbHeight = do
-  post        <- createPostProcessing fbWidth fbHeight
-  trender     <- createTextRenderer config fbWidth fbHeight
+  post <- createPostProcessing fbWidth fbHeight
+  let scaling = fromIntegral width / fromIntegral fbWidth
+  trender     <- createTextRenderer config fbWidth fbHeight scaling
   materialLib <- createMaterialLib (config ^. C.materialDirectories)
   let tLibWithCode = addCodeTextureToLib trender textureLib
   createGfxEngine config width height post trender tLibWithCode materialLib

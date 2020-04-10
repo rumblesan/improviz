@@ -114,8 +114,8 @@ createCharacterBGQuad =
         setAttribPointer vPosition posVSize stride firstPosIndex
    in createVBO [quadConfig] Triangles firstPosIndex numVertices
 
-createTextRenderer :: ImprovizConfig -> Int -> Int -> IO TextRenderer
-createTextRenderer config width height =
+createTextRenderer :: ImprovizConfig -> Int -> Int -> Float -> IO TextRenderer
+createTextRenderer config width height scaling =
   let front = config ^. C.screen . CS.front
       back = config ^. C.screen . CS.back
    in do cq <- createCharacterTextQuad
@@ -145,7 +145,7 @@ createTextRenderer config width height =
          font <-
            loadFont
              (config ^. C.fontConfig . FC.filepath)
-             (config ^. C.fontConfig . FC.size)
+             (round (fromIntegral (config ^. C.fontConfig . FC.size) / scaling))
          let projectionMatrix =
                textCoordMatrix
                  0
