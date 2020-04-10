@@ -11,6 +11,7 @@ cp -r ./hellocatfood $BUNDLE_DIR
 cp -r ./stdlib $BUNDLE_DIR
 cp -r ./textures $BUNDLE_DIR
 cp -r ./usercode $BUNDLE_DIR
+cp -r ./materials $BUNDLE_DIR
 cp -r ./improviz.yaml $BUNDLE_DIR
 
 DOCUMENTATION_DIR="$BUNDLE_DIR/documentation"
