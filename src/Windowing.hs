@@ -83,7 +83,7 @@ setupWindow config initCB resizeCB displayCB =
       successfulInit <- GLFW.init
       bool successfulInit exitFailure $ do
         GLFW.windowHint $ GLFW.WindowHint'ContextVersionMajor 3
-        GLFW.windowHint $ GLFW.WindowHint'ContextVersionMinor 2
+        GLFW.windowHint $ GLFW.WindowHint'ContextVersionMinor 3
         GLFW.windowHint $ GLFW.WindowHint'OpenGLForwardCompat True
         GLFW.windowHint $ GLFW.WindowHint'OpenGLProfile GLFW.OpenGLProfile'Core
         GLFW.windowHint $ GLFW.WindowHint'DepthBits (Just 16)
