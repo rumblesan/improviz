@@ -84,18 +84,6 @@ executable improviz
                      , Language.Ast
                      , Language.Ast.Transformers
                      , Language.Ast.Transformers.Globalise
-                     , Language.Compiler
-                     , Language.Compiler.State
-                     , Language.ImpVM
-                     , Language.ImpVM.StdLib
-                     , Language.ImpVM.StdLib.BlockHandling
-                     , Language.ImpVM.StdLib.ColourOps
-                     , Language.ImpVM.StdLib.Maths
-                     , Language.ImpVM.StdLib.MatrixOps
-                     , Language.ImpVM.StdLib.PostEffects
-                     , Language.ImpVM.StdLib.Shapes
-                     , Language.ImpVM.Types
-                     , Language.ImpVM.VM
                      , Language.Interpreter
                      , Language.Interpreter.Operators
                      , Language.Interpreter.Scope
@@ -186,18 +174,6 @@ test-suite improviz-test
                      , Language.Ast
                      , Language.Ast.Transformers
                      , Language.Ast.Transformers.Globalise
-                     , Language.Compiler
-                     , Language.Compiler.State
-                     , Language.ImpVM
-                     , Language.ImpVM.StdLib
-                     , Language.ImpVM.StdLib.BlockHandling
-                     , Language.ImpVM.StdLib.ColourOps
-                     , Language.ImpVM.StdLib.Maths
-                     , Language.ImpVM.StdLib.MatrixOps
-                     , Language.ImpVM.StdLib.PostEffects
-                     , Language.ImpVM.StdLib.Shapes
-                     , Language.ImpVM.Types
-                     , Language.ImpVM.VM
                      , Language.Interpreter
                      , Language.Interpreter.Operators
                      , Language.Interpreter.Scope
@@ -238,7 +214,6 @@ test-suite improviz-test
                      , Tests.Language.Parser.Loops
                      , Tests.Language.Parser.Operators
                      , Tests.Language.Parser.Symbols
-                     , Tests.Language.VM
                      , Util
   default-language:    Haskell2010
 

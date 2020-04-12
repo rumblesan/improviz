@@ -4,7 +4,6 @@ module Improviz.Runtime
   ( ImprovizRuntime
   , makeRuntimeState
   , initialInterpreter
-  , impVMState
   , currentAst
   , updateProgram
   , resetProgram
@@ -13,13 +12,9 @@ module Improviz.Runtime
   )
 where
 
-import qualified Data.Map.Strict               as M
-
 import           Language                       ( initialInterpreterState )
 import           Language.Ast                   ( Program(..) )
 import           Language.Interpreter.Types     ( InterpreterState )
-import           Language.ImpVM.Types           ( VMState )
-import           Language.ImpVM                 ( cleanVM )
 import           Lens.Simple                    ( (^.)
                                                 , set
                                                 , view
@@ -34,7 +29,6 @@ data ImprovizRuntime gfxContext = ImprovizRuntime
   , _currentAst         :: Program
   , _lastWorkingAst     :: Program
   , _initialInterpreter :: InterpreterState
-  , _impVMState :: VMState gfxContext
   }
 
 makeLenses ''ImprovizRuntime
@@ -48,7 +42,6 @@ makeRuntimeState userCode ctx = do
                          , _currentAst         = Program []
                          , _lastWorkingAst     = Program []
                          , _initialInterpreter = initial
-                         , _impVMState         = cleanVM ctx M.empty
                          }
 
 updateProgram :: String -> Program -> ImprovizRuntime eg -> ImprovizRuntime eg

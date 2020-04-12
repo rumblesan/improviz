@@ -9,9 +9,7 @@ import           Tests.Language.Ast.Transformers.Globalise
 import           Tests.Language.Interpreter     ( interpreterTests )
 import           Tests.Language.Parser          ( parserTests )
 
-import           Tests.Language.VM              ( vmTests )
-
 main :: IO ()
 main = defaultMainWithOpts
-  [transformersGlobaliseTests, interpreterTests, parserTests, vmTests]
+  [transformersGlobaliseTests, interpreterTests, parserTests]
   mempty
