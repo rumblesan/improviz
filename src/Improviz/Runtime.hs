@@ -8,11 +8,14 @@ module Improviz.Runtime
   , updateProgram
   , resetProgram
   , saveProgram
+  , resizeRuntime
   , programHasChanged
   )
 where
 
-import           Language                       ( initialInterpreterState )
+import           Language                       ( initialInterpreterState
+                                                , updateSystemVars
+                                                )
 import           Language.Ast                   ( Program(..) )
 import           Language.Interpreter.Types     ( InterpreterState )
 import           Lens.Simple                    ( (^.)
@@ -21,6 +24,8 @@ import           Lens.Simple                    ( (^.)
                                                 , makeLenses
                                                 )
 import           Gfx.Context                    ( GfxContext )
+import           Gfx.Engine                     ( GfxEngine )
+import qualified Improviz.SystemVars           as SV
 
 
 data ImprovizRuntime gfxContext = ImprovizRuntime
@@ -34,15 +39,28 @@ data ImprovizRuntime gfxContext = ImprovizRuntime
 makeLenses ''ImprovizRuntime
 
 makeRuntimeState
-  :: [(FilePath, Program)] -> GfxContext -> IO (ImprovizRuntime GfxContext)
-makeRuntimeState userCode ctx = do
-  initial <- initialInterpreterState userCode ctx
-  return ImprovizRuntime { _programText        = ""
-                         , _lastProgramText    = ""
-                         , _currentAst         = Program []
-                         , _lastWorkingAst     = Program []
-                         , _initialInterpreter = initial
-                         }
+  :: [(FilePath, Program)]
+  -> GfxEngine
+  -> GfxContext
+  -> IO (ImprovizRuntime GfxContext)
+makeRuntimeState userCode gfx ctx =
+  let sysVars = SV.create gfx
+  in  do
+        is <- initialInterpreterState sysVars userCode ctx
+        return ImprovizRuntime { _programText        = ""
+                               , _lastProgramText    = ""
+                               , _currentAst         = Program []
+                               , _lastWorkingAst     = Program []
+                               , _initialInterpreter = is
+                               }
+
+
+resizeRuntime
+  :: GfxEngine -> ImprovizRuntime GfxContext -> ImprovizRuntime GfxContext
+resizeRuntime gfx runtime =
+  let newSysVars  = SV.create gfx
+      interpState = _initialInterpreter runtime
+  in  runtime { _initialInterpreter = updateSystemVars newSysVars interpState }
 
 updateProgram :: String -> Program -> ImprovizRuntime eg -> ImprovizRuntime eg
 updateProgram newProgram newAst =

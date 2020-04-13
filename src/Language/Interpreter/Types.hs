@@ -5,6 +5,7 @@ module Language.Interpreter.Types
   , InterpreterState(..)
   , variables
   , externals
+  , systemVars
   , globals
   , builtins
   , functions
@@ -42,6 +43,7 @@ data InterpreterState = InterpreterState
   { _variables   :: LS.ScopeStack Identifier Value
   , _externals :: M.Map Identifier Value
   , _globals     :: M.Map Identifier Value
+  , _systemVars :: M.Map Identifier Value
   , _builtins    :: M.Map Identifier BuiltInFunction
   , _functions   :: M.Map Identifier Lambda
   , _textureInfo :: TextureInfo

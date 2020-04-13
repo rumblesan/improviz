@@ -67,11 +67,13 @@ initApp config width height fbWidth fbHeight = do
 
 resize :: ImprovizEnv -> Int -> Int -> Int -> Int -> IO ()
 resize env newWidth newHeight fbWidth fbHeight =
-  let config = env ^. I.config
-      gfxVar = env ^. I.graphics
+  let config     = env ^. I.config
+      gfxVar     = env ^. I.graphics
+      runtimeVar = env ^. I.runtime
   in  do
         logInfo $ "Resizing to " ++ show newWidth ++ " by " ++ show newHeight
         logInfo $ "Framebuffer " ++ show fbWidth ++ " by " ++ show fbHeight
+        runtime     <- readTVarIO runtimeVar
         engineState <- readTVarIO gfxVar
         newGfx      <- resizeGfx engineState
                                  config
@@ -79,7 +81,9 @@ resize env newWidth newHeight fbWidth fbHeight =
                                  newHeight
                                  fbWidth
                                  fbHeight
+        let newRuntime = IR.resizeRuntime newGfx runtime
         atomically $ writeTVar gfxVar newGfx
+        atomically $ writeTVar runtimeVar newRuntime
         return ()
 
 display :: ImprovizEnv -> Double -> IO ()

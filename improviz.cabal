@@ -51,6 +51,7 @@ executable improviz
                      , yaml
   other-modules:       Improviz
                      , Improviz.Runtime
+                     , Improviz.SystemVars
                      , Improviz.UI
                      , Configuration
                      , Configuration.CLI
