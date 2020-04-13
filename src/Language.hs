@@ -3,6 +3,7 @@ module Language
   , parse
   , interpret
   , setInterpreterVariables
+  , updateSystemVars
   , module Language.Ast
   )
 where
@@ -20,6 +21,7 @@ import           Language.Ast                   ( Identifier
                                                 )
 import           Language.Ast.Transformers      ( transform )
 import           Language.Interpreter           ( emptyState
+                                                , setSystemVars
                                                 , getGlobalNames
                                                 , interpretLanguage
                                                 , setGlobal
@@ -28,6 +30,7 @@ import           Language.Interpreter.Types     ( InterpreterState
                                                 , gfxContext
                                                 , runInterpreterM
                                                 , externals
+                                                , systemVars
                                                 )
 import           Language.Interpreter.StdLib    ( addStdLib )
 import           Language.Parser                ( parseProgram )
@@ -39,10 +42,14 @@ parse :: String -> Either ParserError Program
 parse = parseProgram
 
 initialInterpreterState
-  :: [(FilePath, Program)] -> GfxContext -> IO InterpreterState
-initialInterpreterState userCode ctx =
+  :: [(Identifier, Value)]
+  -> [(FilePath, Program)]
+  -> GfxContext
+  -> IO InterpreterState
+initialInterpreterState systemVariables userCode ctx =
   let langState = set gfxContext ctx emptyState
       setup     = do
+        setSystemVars systemVariables
         addStdLib
         globals <- getGlobalNames
         mapM (load globals) userCode
@@ -51,6 +58,10 @@ initialInterpreterState userCode ctx =
   load globals (fp, code) = do
     liftIO $ logInfo ("Loading " ++ fp)
     interpretLanguage $ transform globals code
+
+updateSystemVars
+  :: [(Identifier, Value)] -> InterpreterState -> InterpreterState
+updateSystemVars newSysVars = set systemVars (M.fromList newSysVars)
 
 setInterpreterVariables
   :: [(Identifier, Value)]

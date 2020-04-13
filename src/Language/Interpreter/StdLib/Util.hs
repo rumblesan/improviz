@@ -16,6 +16,7 @@ import           Lens.Simple                    ( use
                                                 )
 import           Language.Ast
 import           Language.Interpreter           ( getExternal
+                                                , getSystemVar
                                                 , setBuiltIn
                                                 , useGfxCtx
                                                 )
@@ -27,6 +28,7 @@ addUtilStdLib :: InterpreterProcess ()
 addUtilStdLib = do
   setBuiltIn "isNull"     isNullFunc
   setBuiltIn "ext"        getExtFunc
+  setBuiltIn "sysVar"     getSysVarFunc
   setBuiltIn "length"     lengthFunc
   setBuiltIn "random"     randomFunc
   setBuiltIn "randomSeed" randomSeedFunc
@@ -43,6 +45,11 @@ getExtFunc args = case args of
   Symbol name : defaultValue : _ -> getExternal name defaultValue
   [Symbol name] -> getExternal name Null
   _ -> throwError "Need to provide ext with a name"
+
+getSysVarFunc :: [Value] -> InterpreterProcess Value
+getSysVarFunc args = case args of
+  Symbol name : _ -> getSystemVar name
+  _               -> throwError "Need to provide systemVar with a name"
 
 lengthFunc :: [Value] -> InterpreterProcess Value
 lengthFunc args = case args of

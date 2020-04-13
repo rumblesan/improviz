@@ -20,6 +20,7 @@ codeFiles:
   - "./stdlib/shapes.pz"
   - "./stdlib/style.pz"
   - "./stdlib/textures.pz"
+  - "./stdlib/screen.pz"
   - "./usercode/grid.pz"
   - "./usercode/seq.pz"
 debug: false

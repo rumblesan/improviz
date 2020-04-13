@@ -5,6 +5,8 @@ module Language.Interpreter
   , getGlobalNames
   , setVariable
   , setGlobal
+  , setSystemVars
+  , getSystemVar
   , getVariable
   , getExternal
   , interpretLanguage
@@ -42,6 +44,7 @@ emptyState :: InterpreterState
 emptyState = InterpreterState { _variables   = LS.empty
                               , _externals   = M.empty
                               , _globals     = M.empty
+                              , _systemVars  = M.empty
                               , _builtins    = M.empty
                               , _functions   = M.empty
                               , _textureInfo = TextureInfo M.empty
@@ -86,6 +89,14 @@ getGlobal name = do
 
 getGlobalNames :: InterpreterProcess (S.Set String)
 getGlobalNames = M.keysSet <$> use globals
+
+setSystemVars :: [(Identifier, Value)] -> InterpreterProcess Value
+setSystemVars sysVars = assign systemVars (M.fromList sysVars) >> return Null
+
+getSystemVar :: Identifier -> InterpreterProcess Value
+getSystemVar name = do
+  sv <- use systemVars
+  return $ fromMaybe Null (M.lookup name sv)
 
 setVariable :: Identifier -> Value -> InterpreterProcess Value
 setVariable name val = do

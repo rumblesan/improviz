@@ -74,7 +74,7 @@ createEnv config gfx = do
   externalVars <- newTVarIO M.empty
   uiState      <- newTVarIO defaultUI
   userCode     <- readExternalCode (config ^. codeFiles)
-  runtimeState <- makeRuntimeState userCode gfxContext >>= newTVarIO
+  runtimeState <- makeRuntimeState userCode gfx gfxContext >>= newTVarIO
   return $ ImprovizEnv runtimeState
                        uiState
                        gfxState
