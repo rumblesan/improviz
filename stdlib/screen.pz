@@ -1,0 +1,5 @@
+
+func movePct(xPct, yPct)
+  x = sysVar(:screenCornerX) * (xPct / 100)
+  y = sysVar(:screenCornerY) * (yPct / 100)
+  move(x, y, 0)
