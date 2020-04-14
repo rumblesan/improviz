@@ -15,13 +15,14 @@ import           Lens.Simple                    ( use
                                                 , assign
                                                 )
 import           Language.Ast
-import           Language.Interpreter           ( getExternal
-                                                , getSystemVar
-                                                , setBuiltIn
-                                                , useGfxCtx
-                                                )
 import           Gfx.Context                    ( setDepthChecking )
-import           Language.Interpreter.Types
+import           Language.Interpreter.Types     ( InterpreterProcess
+                                                , getExternal
+                                                , getSystemVar
+                                                , rnGen
+                                                , setBuiltIn
+                                                , withGfxCtx
+                                                )
 import           Language.Interpreter.Values
 
 addUtilStdLib :: InterpreterProcess ()
@@ -74,6 +75,6 @@ debugFunc args = mapM_ (liftIO . logInfo . show) args >> return Null
 
 depthCheck :: [Value] -> InterpreterProcess Value
 depthCheck args = case args of
-  v : _ -> useGfxCtx (`setDepthChecking` (v /= Number 0)) >> return Null
+  v : _ -> withGfxCtx (`setDepthChecking` (v /= Number 0)) >> return Null
   _     -> throwError "Must give a value argument to depth checking"
 

@@ -27,9 +27,7 @@ import           Gfx                            ( createGfx
                                                 , renderGfx
                                                 , resizeGfx
                                                 )
-import           Gfx.Textures                   ( TextureInfo(..)
-                                                , createTextureLib
-                                                )
+import           Gfx.Textures                   ( createTextureLib )
 import           Gfx.Context                    ( reset
                                                 , renderCode
                                                 , renderCodeToBuffer
@@ -60,7 +58,7 @@ initApp config width height fbWidth fbHeight = do
   gfx        <- createGfx config textureLib width height fbWidth fbHeight
   env        <- createEnv config gfx
   serveComs env
-  let ti = TextureInfo $ M.map M.size textureLib
+  let ti = M.map M.size textureLib
   atomically $ modifyTVar (env ^. I.runtime)
                           (set (IR.initialInterpreter . textureInfo) ti)
   return env

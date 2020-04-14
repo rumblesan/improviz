@@ -1,16 +1,5 @@
 module Language.Interpreter
-  ( emptyState
-  , getTextureInfo
-  , setBuiltIn
-  , getGlobalNames
-  , setVariable
-  , setGlobal
-  , setSystemVars
-  , getSystemVar
-  , getVariable
-  , getExternal
-  , interpretLanguage
-  , useGfxCtx
+  ( interpretLanguage
   )
 where
 
@@ -18,124 +7,20 @@ import           Control.Monad                  ( zipWithM_
                                                 , foldM
                                                 , foldM_
                                                 )
-import           Control.Monad.Trans            ( liftIO )
 import           Control.Monad.Except           ( throwError )
-import           System.Random                  ( mkStdGen )
 import           Lens.Simple                    ( use
                                                 , assign
                                                 )
-import           Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
-import qualified Data.Set                      as S
 import           Safe                           ( atMay )
 
 import           Language.Interpreter.Operators
 import           Language.Interpreter.Types
 import           Language.Interpreter.Values    ( getValueType )
 
-import           Gfx.Textures                   ( TextureInfo(..) )
-import           Gfx.Context                    ( GfxContext
-                                                , emptyGfxContext
-                                                )
 import           Language.Ast
 import qualified Language.Interpreter.Scope    as LS
 
-emptyState :: InterpreterState
-emptyState = InterpreterState { _variables   = LS.empty
-                              , _externals   = M.empty
-                              , _globals     = M.empty
-                              , _systemVars  = M.empty
-                              , _builtins    = M.empty
-                              , _functions   = M.empty
-                              , _textureInfo = TextureInfo M.empty
-                              , _gfxContext  = emptyGfxContext
-                              , _rnGen       = mkStdGen 1234
-                              }
-
-getTextureInfo :: String -> InterpreterProcess (Maybe Int)
-getTextureInfo name = do
-  ti <- use textureInfo
-  return $ M.lookup name $ textureFrames ti
-
-setBuiltIn
-  :: Identifier
-  -> ([Value] -> InterpreterProcess Value)
-  -> InterpreterProcess ()
-setBuiltIn name func = do
-  g <- use globals
-  assign globals (M.insert name (BuiltInFunctionRef name) g)
-  b <- use builtins
-  assign builtins (M.insert name (BuiltInFunction func) b)
-
-getBuiltIn :: Identifier -> InterpreterProcess BuiltInFunction
-getBuiltIn name = do
-  builtInDefs <- use builtins
-  case M.lookup name builtInDefs of
-    Just b  -> return b
-    Nothing -> throwError $ "Could not get builtin: " ++ name
-
-setGlobal :: Identifier -> Value -> InterpreterProcess Value
-setGlobal name val = do
-  g <- use globals
-  assign globals (M.insert name val g)
-  return val
-
-getGlobal :: Identifier -> InterpreterProcess Value
-getGlobal name = do
-  globalDefs <- use globals
-  case M.lookup name globalDefs of
-    Just v  -> return v
-    Nothing -> throwError $ "Could not get global: " ++ name
-
-getGlobalNames :: InterpreterProcess (S.Set String)
-getGlobalNames = M.keysSet <$> use globals
-
-setSystemVars :: [(Identifier, Value)] -> InterpreterProcess Value
-setSystemVars sysVars = assign systemVars (M.fromList sysVars) >> return Null
-
-getSystemVar :: Identifier -> InterpreterProcess Value
-getSystemVar name = do
-  sv <- use systemVars
-  return $ fromMaybe Null (M.lookup name sv)
-
-setVariable :: Identifier -> Value -> InterpreterProcess Value
-setVariable name val = do
-  v <- use variables
-  assign variables (LS.setVariable v name val)
-  return val
-
-getVariable :: Identifier -> InterpreterProcess Value
-getVariable name = do
-  variableDefs <- use variables
-  case LS.getVariable variableDefs name of
-    Just v  -> return v
-    Nothing -> throwError $ "Could not get variable: " ++ name
-
-getExternal :: Identifier -> Value -> InterpreterProcess Value
-getExternal name defaultValue = do
-  externalVars <- use externals
-  return $ fromMaybe defaultValue (M.lookup name externalVars)
-
-useGfxCtx :: (GfxContext -> IO ()) -> InterpreterProcess ()
-useGfxCtx action = do
-  ctx <- use gfxContext
-  liftIO $ action ctx
-
-newScope :: InterpreterProcess Value -> InterpreterProcess Value
-newScope childScope = do
-  varB <- use variables
-  assign variables (LS.newScope varB)
-  v    <- childScope
-  varA <- use variables
-  assign variables (popScope varA)
-  return v
- where
-  popScope :: LS.ScopeStack k v -> LS.ScopeStack k v
-  popScope oldS = case LS.popScope oldS of
-    Left  _      -> oldS
-    Right popped -> popped
-
--- Interpreter Logic
 interpretLanguage :: Program -> InterpreterProcess Value
 interpretLanguage (Program statements) =
   last <$> mapM interpretStatement statements

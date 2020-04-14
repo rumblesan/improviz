@@ -6,10 +6,10 @@ where
 import           Control.Monad.Except           ( throwError )
 
 import           Language.Ast                   ( Value(Number) )
-import           Language.Interpreter           ( setBuiltIn
+import           Language.Interpreter.Types     ( InterpreterProcess
+                                                , setBuiltIn
                                                 , setVariable
                                                 )
-import           Language.Interpreter.Types     ( InterpreterProcess )
 import           Language.Interpreter.Values    ( getNumberValue )
 
 addMathStdLib :: InterpreterProcess ()

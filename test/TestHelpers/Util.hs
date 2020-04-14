@@ -14,7 +14,7 @@ import           TestHelpers.GfxContext         ( createGfxContextHelpers
                                                 )
 import qualified TestHelpers.GfxAst            as GA
 
-import           Gfx.Context                    ( emptyGfxContext )
+import qualified Gfx.Context                   as GfxC
 import qualified Language                      as L
 import           Language.Ast
 import           Language.Parser.Errors         ( prettyPrintErrors )
@@ -39,6 +39,6 @@ resultTest :: String -> Value -> String -> Assertion
 resultTest program expected message = case L.parse program of
   Left  err -> assertFailure $ prettyPrintErrors err
   Right ast -> do
-    interpreterState <- L.initialInterpreterState [] [] emptyGfxContext
+    interpreterState <- L.initialInterpreterState [] [] GfxC.empty
     result           <- fst <$> L.interpret interpreterState ast
     assertEqual message (Right expected) result

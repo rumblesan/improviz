@@ -20,17 +20,16 @@ import           Language.Ast                   ( Identifier
                                                 , Value(..)
                                                 )
 import           Language.Ast.Transformers      ( transform )
-import           Language.Interpreter           ( emptyState
-                                                , setSystemVars
-                                                , getGlobalNames
-                                                , interpretLanguage
-                                                , setGlobal
-                                                )
+import           Language.Interpreter           ( interpretLanguage )
+import qualified Language.Interpreter.Types    as LT
 import           Language.Interpreter.Types     ( InterpreterState
-                                                , gfxContext
-                                                , runInterpreterM
                                                 , externals
+                                                , gfxContext
                                                 , systemVars
+                                                , setGlobal
+                                                , getGlobalNames
+                                                , setSystemVars
+                                                , runInterpreterM
                                                 )
 import           Language.Interpreter.StdLib    ( addStdLib )
 import           Language.Parser                ( parseProgram )
@@ -47,7 +46,7 @@ initialInterpreterState
   -> GfxContext
   -> IO InterpreterState
 initialInterpreterState systemVariables userCode ctx =
-  let langState = set gfxContext ctx emptyState
+  let langState = set gfxContext ctx LT.empty
       setup     = do
         setSystemVars systemVariables
         addStdLib

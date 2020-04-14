@@ -4,10 +4,10 @@ module Language.Interpreter.StdLib.BlockHandling
 where
 
 import           Language.Ast                   ( Value(Null) )
-import           Language.Interpreter           ( useGfxCtx
+import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , setBuiltIn
+                                                , withGfxCtx
                                                 )
-import           Language.Interpreter.Types
 
 import           Gfx.Context                    ( pushScope
                                                 , popScope
@@ -19,7 +19,7 @@ addBlockHandlingStdLib = do
   setBuiltIn "popScope"  popGfxScope
 
 pushGfxScope :: [Value] -> InterpreterProcess Value
-pushGfxScope _ = useGfxCtx pushScope >> return Null
+pushGfxScope _ = withGfxCtx pushScope >> return Null
 
 popGfxScope :: [Value] -> InterpreterProcess Value
-popGfxScope _ = useGfxCtx popScope >> return Null
+popGfxScope _ = withGfxCtx popScope >> return Null

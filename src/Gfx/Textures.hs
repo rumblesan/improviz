@@ -2,7 +2,6 @@
 
 module Gfx.Textures
   ( TextureLibrary
-  , TextureInfo(..)
   , createTextureLib
   , addTexture
   )
@@ -43,10 +42,6 @@ import           Logging                        ( logError
                                                 )
 
 type TextureLibrary = M.Map String (M.Map Int TextureObject)
-
-newtype TextureInfo = TextureInfo
-  { textureFrames :: M.Map String Int
-  } deriving (Show)
 
 loadTexture :: String -> FilePath -> IO (String, M.Map Int TextureObject)
 loadTexture name path = do

@@ -31,7 +31,7 @@ value :: Lens (SettingStack v) (SettingStack v) v v
 value = lens get set
 
 save :: SettingStack k -> [k]
-save setting = stack setting
+save = stack
 
 load :: SettingStack k -> [k] -> SettingStack k
 load setting st = setting { stack = st }

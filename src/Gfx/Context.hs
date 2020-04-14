@@ -1,7 +1,7 @@
 module Gfx.Context
   ( GfxContext(..)
   , createGfxContext
-  , emptyGfxContext
+  , empty
   )
 where
 
@@ -64,8 +64,8 @@ createGfxContext gfx = GfxContext
   , renderCodeToBuffer = wrapOneArg gfx GC.renderCodeToBuffer
   }
 
-emptyGfxContext :: GfxContext
-emptyGfxContext = GfxContext
+empty :: GfxContext
+empty = GfxContext
   { drawShape          = \_ _ _ _ -> print "No GFX Context"
   , rotate             = \_ _ _ -> print "No GFX Context"
   , scale              = \_ _ _ -> print "No GFX Context"

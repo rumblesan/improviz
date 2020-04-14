@@ -10,10 +10,10 @@ import           Gfx.Context                    ( rotate
                                                 , move
                                                 )
 import           Language.Ast                   ( Value(Symbol, Null, Number) )
-import           Language.Interpreter           ( useGfxCtx
+import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , setBuiltIn
+                                                , withGfxCtx
                                                 )
-import           Language.Interpreter.Types     ( InterpreterProcess )
 
 addMatrixStdLib :: InterpreterProcess ()
 addMatrixStdLib = setBuiltIn "matrix" gfxMatrix
@@ -23,9 +23,9 @@ gfxMatrix :: [Value] -> InterpreterProcess Value
 gfxMatrix args = do
   case args of
     [name, Number x, Number y, Number z] -> case name of
-      (Symbol "rotate") -> useGfxCtx (\ctx -> rotate ctx x y z)
-      (Symbol "scale" ) -> useGfxCtx (\ctx -> scale ctx x y z)
-      (Symbol "move"  ) -> useGfxCtx (\ctx -> move ctx x y z)
+      (Symbol "rotate") -> withGfxCtx (\ctx -> rotate ctx x y z)
+      (Symbol "scale" ) -> withGfxCtx (\ctx -> scale ctx x y z)
+      (Symbol "move"  ) -> withGfxCtx (\ctx -> move ctx x y z)
       (Symbol n       ) -> throwError $ "unrecognised matrix (" ++ n ++ ")"
       _                 -> throwError "invalid matrix command value"
     _ -> throwError "invalid arguments given to matrix"
