@@ -2,9 +2,7 @@ module Gfx.Matrices where
 
 import           Lens.Simple                    ( (^.) )
 
-import           Linear.Matrix                  ( M44(..)
-                                                , (!*!)
-                                                )
+import           Linear.Matrix                  ( M44 )
 import           Linear.Vector                  ( (^-^) )
 import           Linear.V3                      ( V3(..) )
 import qualified Linear.V3                     as L3
@@ -59,8 +57,24 @@ rotationZ f = V4 (V4 (cos (f * toRads)) (-sin (f * toRads)) 0 0)
                  (V4 0 0 1 0)
                  (V4 0 0 0 1)
 
+--rotMat :: Floating f => f -> f -> f -> M44 f
+--rotMat xRot yRot zRot = rotationZ zRot !*! rotationY yRot !*! rotationX xRot
+
 rotMat :: Floating f => f -> f -> f -> M44 f
-rotMat xRot yRot zRot = rotationZ zRot !*! rotationY yRot !*! rotationX xRot
+rotMat xRot yRot zRot =
+  let xRads = xRot * toRads
+      yRads = yRot * toRads
+      zRads = zRot * toRads
+      sx    = sin xRads
+      cx    = cos xRads
+      sy    = sin yRads
+      cy    = cos yRads
+      sz    = sin zRads
+      cz    = cos zRads
+  in  V4 (V4 (cx * cy) (cx * sy * sz - sx * cz) (cx * sy * cz + sx * sz) 0)
+         (V4 (sx * cy) (sx * sy * sz + cx * cz) (sx * sy * cz - cx * sz) 0)
+         (V4 (-sy) (cy * sz) (cy * cz) 0)
+         (V4 0 0 0 1)
 
 scaleMat :: Floating f => f -> f -> f -> M44 f
 scaleMat xS yS zS = V4 (V4 xS 0 0 0) (V4 0 yS 0 0) (V4 0 0 zS 0) (V4 0 0 0 1)
