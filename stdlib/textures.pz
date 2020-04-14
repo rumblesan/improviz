@@ -14,7 +14,7 @@ func texture(name, frame, &blk)
 
 func animate(name, speed, &blk)
 	speed := 1
-	frame = ((bpm/60) * (time + nudge) * speed) % frames(name)
+	frame = ((bpm/60) * ((time/100) + nudge) * speed) % frames(name)
 	if (isNull(blk))
 		texture(name, frame)
 		style(:material, :texture)
