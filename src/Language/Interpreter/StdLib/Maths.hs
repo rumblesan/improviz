@@ -10,7 +10,9 @@ import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , setBuiltIn
                                                 , setVariable
                                                 )
-import           Language.Interpreter.Values    ( getNumberValue )
+import           Language.Interpreter.Values    ( getNumberValue
+                                                , getNumberAsRads
+                                                )
 
 addMathStdLib :: InterpreterProcess ()
 addMathStdLib = do
@@ -29,18 +31,18 @@ addMathStdLib = do
 
 sinFunc :: [Value] -> InterpreterProcess Value
 sinFunc args = case args of
-  [rads] -> Number . sin <$> getNumberValue rads
-  []     -> throwError "Must give sin function an argument"
+  [degrees] -> Number . sin <$> getNumberAsRads degrees
+  []        -> throwError "Must give sin function an argument"
 
 cosFunc :: [Value] -> InterpreterProcess Value
 cosFunc args = case args of
-  [rads] -> Number . cos <$> getNumberValue rads
-  []     -> throwError "Must give cos function an argument"
+  [degrees] -> Number . cos <$> getNumberAsRads degrees
+  []        -> throwError "Must give cos function an argument"
 
 tanFunc :: [Value] -> InterpreterProcess Value
 tanFunc args = case args of
-  [rads] -> Number . tan <$> getNumberValue rads
-  []     -> throwError "Must give tan function an argument"
+  [degrees] -> Number . tan <$> getNumberAsRads degrees
+  []        -> throwError "Must give tan function an argument"
 
 absFunc :: [Value] -> InterpreterProcess Value
 absFunc args = case args of
