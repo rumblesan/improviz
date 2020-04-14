@@ -1,33 +1,18 @@
 module Gfx.Matrices where
 
-import           Lens.Simple                    ( (^.) )
-
 import           Linear.Matrix                  ( M44 )
-import           Linear.Vector                  ( (^-^) )
 import           Linear.V3                      ( V3(..) )
-import qualified Linear.V3                     as L3
 import           Linear.V4                      ( V4(..) )
 import           Linear.Epsilon                 ( Epsilon )
-import qualified Linear.Metric                 as LM
-import           Linear.Projection              ( perspective )
+import           Linear.Projection              ( lookAt
+                                                , perspective
+                                                )
 
 toRads :: Floating f => f
 toRads = pi / 180.0
 
 viewMat :: (Floating f, Num f, Epsilon f) => V3 f -> V3 f -> V3 f -> M44 f
-viewMat eye target up = V4 x y z h
- where
-  forward = LM.normalize $ target ^-^ eye
-  right   = LM.normalize $ L3.cross forward up
-  up'     = L3.cross right forward
-  x =
-    V4 (right ^. L3._x) (right ^. L3._y) (right ^. L3._z) (-(LM.dot right eye))
-  y = V4 (up' ^. L3._x) (up' ^. L3._y) (up' ^. L3._z) (-(LM.dot up' eye))
-  z = V4 (-(forward ^. L3._x))
-         (-(forward ^. L3._y))
-         (-(forward ^. L3._z))
-         (LM.dot forward eye)
-  h = V4 0 0 0 1
+viewMat = lookAt
 
 projectionMat :: Floating f => f -> f -> f -> f -> M44 f
 projectionMat near far fov aspect = perspective fov aspect near far
