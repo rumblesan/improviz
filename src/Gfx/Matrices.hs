@@ -42,9 +42,6 @@ rotationZ f = V4 (V4 (cos (f * toRads)) (-sin (f * toRads)) 0 0)
                  (V4 0 0 1 0)
                  (V4 0 0 0 1)
 
---rotMat :: Floating f => f -> f -> f -> M44 f
---rotMat xRot yRot zRot = rotationZ zRot !*! rotationY yRot !*! rotationX xRot
-
 rotMat :: Floating f => f -> f -> f -> M44 f
 rotMat xRot yRot zRot =
   let xRads = xRot * toRads
