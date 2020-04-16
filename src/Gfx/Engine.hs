@@ -2,6 +2,7 @@
 
 module Gfx.Engine where
 
+import qualified Data.Map                      as M
 import           Control.Monad.State.Strict
 import           Linear.V3                      ( V3(..) )
 import           Linear.Matrix                  ( M44
@@ -69,6 +70,7 @@ data GfxEngine = GfxEngine
   , _geometryBuffers    :: Geometries
   , _textureLibrary     :: TextureLibrary
   , _materialLibrary    :: MaterialLibrary
+  , _materialVars       :: M.Map String Float
   , _viewMatrix         :: M44 GLfloat
   , _projectionMatrix   :: M44 GLfloat
   , _postFX             :: PostProcessing
@@ -88,6 +90,7 @@ makeLensesFor [ ("_fillStyle", "fillStyleSetting")
               , ("_geometryBuffers", "geometryBuffers")
               , ("_textureLibrary", "textureLibrary")
               , ("_materialLibrary", "materialLibrary")
+              , ("_materialVars", "materialVars")
               , ("_viewMatrix", "viewMatrix")
               , ("_projectionMatrix", "projectionMatrix")
               , ("_postFX", "postFX")
@@ -169,6 +172,7 @@ createGfxEngine config width height pprocess trender textLib matLib =
           , _geometryBuffers  = gbos
           , _textureLibrary   = textLib
           , _materialLibrary  = matLib
+          , _materialVars     = M.empty
           , _viewMatrix       = view
           , _projectionMatrix = projection
           , _postFX           = pprocess
@@ -200,6 +204,7 @@ resetGfxEngine ge = ge { _fillStyle       = GSS.reset (_fillStyle ge)
                        , _strokeStyle     = GSS.reset (_strokeStyle ge)
                        , _strokeSize      = GSS.reset (_strokeSize ge)
                        , _material        = GSS.reset (_material ge)
+                       , _materialVars    = M.empty
                        , _matrixStack     = [identity]
                        , _scopeStack      = []
                        , _animationStyle  = GS.reset (_animationStyle ge)

@@ -9,3 +9,5 @@ materials:
     file: ceed.yaml
   - name: weird
     file: weird.yaml
+  - name: hydra
+    file: hydra.yaml

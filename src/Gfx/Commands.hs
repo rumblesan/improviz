@@ -10,6 +10,7 @@ module Gfx.Commands
   , noStroke
   , setStrokeSize
   , setMaterial
+  , setMaterialVariable
   , setBackground
   , setAnimationStyle
   , setDepthChecking
@@ -28,6 +29,7 @@ import           Control.Monad.Trans            ( liftIO )
 import           Control.Monad.State.Strict     ( modify' )
 import           Lens.Simple                    ( use
                                                 , assign
+                                                , at
                                                 , view
                                                 )
 import qualified Data.Map.Strict               as M
@@ -114,7 +116,11 @@ setUniform ("Texture", uniformLoc) = do
     Just texture -> liftIO $ do
       GL.activeTexture $= TextureUnit 0
       GL.textureBinding Texture2D $= Just texture
-setUniform (name, _) = liftIO $ logError $ name ++ " is not a known uniform"
+setUniform (name, uniformLoc) = do
+  matVar <- use (materialVars . at name)
+  case matVar of
+    Nothing -> liftIO $ logError $ name ++ " is not a known uniform"
+    Just v  -> liftIO (GL.uniform uniformLoc $= v)
 
 drawTriangles :: GeometryBuffers -> GraphicsEngine ()
 drawTriangles geoData = do
@@ -154,6 +160,9 @@ move x y z = modify' (multMatrix $ translateMat x y z)
 
 setMaterial :: String -> GraphicsEngine ()
 setMaterial = assign material
+
+setMaterialVariable :: String -> Float -> GraphicsEngine ()
+setMaterialVariable name value = assign (materialVars . at name) (Just value)
 
 setBackground :: Float -> Float -> Float -> GraphicsEngine ()
 setBackground r g b = assign backgroundColor (Colour r g b 1)

@@ -7,6 +7,8 @@ import           Language.Interpreter.StdLib.BlockHandling
                                                 ( addBlockHandlingStdLib )
 import           Language.Interpreter.StdLib.ColourOps
                                                 ( addColourStdLib )
+import           Language.Interpreter.StdLib.Materials
+                                                ( addMaterialStdLib )
 import           Language.Interpreter.StdLib.Maths
                                                 ( addMathStdLib )
 import           Language.Interpreter.StdLib.MatrixOps
@@ -23,6 +25,7 @@ import           Language.Interpreter.Types     ( InterpreterProcess )
 addStdLib :: InterpreterProcess ()
 addStdLib = do
   addMathStdLib
+  addMaterialStdLib
   addShapesStdLib
   addMatrixStdLib
   addColourStdLib

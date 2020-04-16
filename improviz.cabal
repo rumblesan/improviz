@@ -92,6 +92,7 @@ executable improviz
                      , Language.Interpreter.StdLib.BlockHandling
                      , Language.Interpreter.StdLib.ColourOps
                      , Language.Interpreter.StdLib.Maths
+                     , Language.Interpreter.StdLib.Materials
                      , Language.Interpreter.StdLib.MatrixOps
                      , Language.Interpreter.StdLib.PostEffects
                      , Language.Interpreter.StdLib.Shapes
@@ -181,6 +182,7 @@ test-suite improviz-test
                      , Language.Interpreter.StdLib
                      , Language.Interpreter.StdLib.BlockHandling
                      , Language.Interpreter.StdLib.ColourOps
+                     , Language.Interpreter.StdLib.Materials
                      , Language.Interpreter.StdLib.Maths
                      , Language.Interpreter.StdLib.MatrixOps
                      , Language.Interpreter.StdLib.PostEffects

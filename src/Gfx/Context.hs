@@ -31,6 +31,7 @@ data GfxContext = GfxContext { drawShape :: String -> Float -> Float -> Float ->
                              , noStroke :: IO ()
                              , setStrokeSize :: Float -> IO ()
                              , setMaterial :: String -> IO ()
+                             , setMaterialVar :: String -> Float -> IO ()
                              , setBackground :: Float -> Float -> Float -> IO ()
                              , pushScope :: IO ()
                              , popScope :: IO ()
@@ -54,6 +55,7 @@ createGfxContext gfx = GfxContext
   , noStroke           = wrapNoArg gfx GC.noStroke
   , setStrokeSize      = wrapOneArg gfx GC.setStrokeSize
   , setMaterial        = wrapOneArg gfx GC.setMaterial
+  , setMaterialVar     = wrapTwoArg gfx GC.setMaterialVariable
   , setBackground      = wrapThreeArg gfx GC.setBackground
   , pushScope          = wrapNoArg gfx GC.pushScope
   , popScope           = wrapNoArg gfx GC.popScope
@@ -65,27 +67,27 @@ createGfxContext gfx = GfxContext
   }
 
 empty :: GfxContext
-empty = GfxContext
-  { drawShape          = \_ _ _ _ -> print "No GFX Context"
-  , rotate             = \_ _ _ -> print "No GFX Context"
-  , scale              = \_ _ _ -> print "No GFX Context"
-  , move               = \_ _ _ -> print "No GFX Context"
-  , colourFill         = \_ _ _ _ -> print "No GFX Context"
-  , noFill             = print "No Gfx Context"
-  , textureFill        = \_ _ -> print "No Gfx Context"
-  , colourStroke       = \_ _ _ _ -> print "No GFX Context"
-  , noStroke           = print "No Gfx Context"
-  , setStrokeSize      = \_ -> print "No Gfx Context"
-  , setMaterial        = \_ -> print "No Gfx Context"
-  , setBackground      = \_ _ _ -> print "No Gfx Context"
-  , pushScope          = print "No Gfx Context"
-  , popScope           = print "No Gfx Context"
-  , setAnimationStyle  = \_ -> print "No Gfx Context"
-  , setDepthChecking   = \_ -> print "No Gfx Context"
-  , reset              = print "No Gfx Context"
-  , renderCode         = \_ -> print "No Gfx Context"
-  , renderCodeToBuffer = \_ -> print "No Gfx Context"
-  }
+empty = GfxContext { drawShape          = \_ _ _ _ -> print "No GFX Context"
+                   , rotate             = \_ _ _ -> print "No GFX Context"
+                   , scale              = \_ _ _ -> print "No GFX Context"
+                   , move               = \_ _ _ -> print "No GFX Context"
+                   , colourFill         = \_ _ _ _ -> print "No GFX Context"
+                   , noFill             = print "No Gfx Context"
+                   , textureFill        = \_ _ -> print "No Gfx Context"
+                   , colourStroke       = \_ _ _ _ -> print "No GFX Context"
+                   , noStroke           = print "No Gfx Context"
+                   , setStrokeSize      = \_ -> print "No Gfx Context"
+                   , setMaterial        = \_ -> print "No Gfx Context"
+                   , setMaterialVar     = \_ _ -> print "No Gfx Context"
+                   , setBackground      = \_ _ _ -> print "No Gfx Context"
+                   , pushScope          = print "No Gfx Context"
+                   , popScope           = print "No Gfx Context"
+                   , setAnimationStyle  = \_ -> print "No Gfx Context"
+                   , setDepthChecking   = \_ -> print "No Gfx Context"
+                   , reset              = print "No Gfx Context"
+                   , renderCode         = \_ -> print "No Gfx Context"
+                   , renderCodeToBuffer = \_ -> print "No Gfx Context"
+                   }
 
 resetGfxCtx :: TVar GfxEngine -> IO ()
 resetGfxCtx gfx = atomically $ modifyTVar' gfx resetGfxEngine

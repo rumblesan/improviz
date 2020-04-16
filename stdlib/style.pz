@@ -2,12 +2,24 @@
 func material(name, &blk)
 	s = :material
 	if (isNull(blk))
-		style(s, name)
+		intMaterial(s, name)
 	else
 		pushScope()
-		style(s, name)
+		intMaterial(s, name)
 		blk()
 		popScope()
+
+func materialVar(name, value, &blk)
+	s = :variable
+	if (isNull(blk))
+		intMaterial(s, name, value)
+	else
+		pushScope()
+		intMaterial(s, name)
+		blk()
+		popScope()
+
+
 
 func fill(r, g, b, a, &blk)
 	r := 255
