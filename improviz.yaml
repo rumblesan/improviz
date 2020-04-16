@@ -2,7 +2,7 @@ screenwidth: 640
 screenheight: 480
 # fullscreen: 0
 font:
-  size: 36
+  size: 20
   foregroundColour: [0, 0, 0, 255]
   backgroundColour: [255, 200, 0, 255]
 assetsDirectory: "./assets"
