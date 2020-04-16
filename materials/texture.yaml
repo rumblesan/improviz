@@ -1,10 +1,4 @@
 name: texture
-attributes:
-  - position
-  - texcoord
-uniforms:
-  - MVPMat
-  - Texture
 vertexShader: |
   #version 330 core
 

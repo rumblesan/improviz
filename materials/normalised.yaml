@@ -1,11 +1,4 @@
 name: normalised
-attributes:
-  - position
-  - normals
-uniforms:
-  - Pmatrix
-  - Vmatrix
-  - Mmatrix
 vertexShader: |
   #version 330 core
 

@@ -39,8 +39,6 @@ data MaterialData = MaterialData
   { mdName :: String
   , vertexShader :: String
   , fragmentShader :: String
-  , uniformNames :: [String]
-  , attributeNames :: [String]
   }
 
 instance FromJSON MaterialData where
@@ -52,10 +50,6 @@ instance FromJSON MaterialData where
       .:  "vertexShader"
       <*> v
       .:  "fragmentShader"
-      <*> v
-      .:  "uniforms"
-      <*> v
-      .:  "attributes"
   parseJSON _ = fail "Expected Object for Material Data"
 
 data Material = Material
@@ -72,8 +66,10 @@ loadMaterial md = do
     , ShaderInfo GL.FragmentShader (StringSource $ fragmentShader md)
     ]
   GL.currentProgram $= Just program
-  uniforms   <- mapM (getUniformLoc program) (uniformNames md)
-  attributes <- mapM (getAttribLoc program) (attributeNames md)
+  uniformInfo <- GL.get $ GL.activeUniforms program
+  uniforms <- mapM (\(_, _, uName) -> getUniformLoc program uName) uniformInfo
+  attribInfo  <- GL.get $ GL.activeAttribs program
+  attributes  <- mapM (\(_, _, aName) -> getAttribLoc program aName) attribInfo
   return $ Material (mdName md) program uniforms attributes
 
 getUniformLoc :: GL.Program -> String -> IO (String, GL.UniformLocation)
