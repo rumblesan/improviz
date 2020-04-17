@@ -14,26 +14,33 @@ module Gfx.Materials
 where
 
 
+import qualified Data.Map.Strict               as M
+import           Data.Either                    ( either
+                                                , partitionEithers
+                                                )
 import           Data.ByteString.Lazy.Char8     ( ByteString
                                                 , toStrict
                                                 )
-import qualified Data.Map.Strict               as M
+
 import           Control.Exception              ( IOException
                                                 , try
                                                 )
 import           Control.Monad                  ( mapM )
-import           Data.Either                    ( partitionEithers )
+
 import           System.FilePath.Posix          ( (</>) )
 
 import           Graphics.Rendering.OpenGL      ( ($=) )
 import qualified Graphics.Rendering.OpenGL     as GL
 
+import qualified Data.Yaml                     as Y
 import           Data.Yaml                      ( FromJSON(..)
                                                 , (.:)
                                                 )
-import qualified Data.Yaml                     as Y
 
-import           Gfx.LoadShaders
+import           Gfx.LoadShaders                ( ShaderInfo(..)
+                                                , ShaderSource(StringSource)
+                                                , loadShaders
+                                                )
 
 import           Configuration                  ( loadFolderConfig )
 import           Configuration.Materials
@@ -96,32 +103,26 @@ getAttribLoc p an = do
   al <- GL.get $ GL.attribLocation p an
   return (an, al)
 
-
 destroyMaterial :: Material -> IO ()
 destroyMaterial material = do
   programShaders <- GL.get $ GL.attachedShaders (program material)
   GL.deleteObjectNames programShaders
   GL.deleteObjectName (program material)
 
-
 loadMaterialString :: ByteString -> Either String MaterialData
-loadMaterialString matStr = case Y.decodeEither' (toStrict matStr) of
-  Left  err     -> Left (Y.prettyPrintParseException err)
-  Right matData -> Right matData
+loadMaterialString matStr = either (Left . Y.prettyPrintParseException)
+                                   id
+                                   (Y.decodeEither' (toStrict matStr))
 
 loadMaterialFile :: FilePath -> IO (Either String Material)
 loadMaterialFile fp = do
   yaml <- Y.decodeFileEither fp
-  case yaml of
-    Left  err     -> return (Left $ Y.prettyPrintParseException err)
-    Right matData -> loadMaterial matData
+  either (return . Left . Y.prettyPrintParseException) loadMaterial yaml
 
 loadMaterialFolder :: FilePath -> IO [Either String Material]
 loadMaterialFolder folderPath = do
   folderConfig <- loadFolderConfig folderPath
-  case folderConfig of
-    Left  err -> return [Left err]
-    Right cfg -> mapM ml (materials cfg)
+  either (return . (: []) . Left) (mapM ml . materials) folderConfig
   where ml material = loadMaterialFile (folderPath </> materialFile material)
 
 createMaterialLib :: [FilePath] -> IO MaterialLibrary
