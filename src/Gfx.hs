@@ -3,15 +3,10 @@ module Gfx
   , renderGfx
   , createGfx
   , resizeGfx
-  , updateMaterials
   )
 where
 
-import           Control.Monad                  ( foldM )
-import           Lens.Simple                    ( set
-                                                , (^.)
-                                                , at
-                                                )
+import           Lens.Simple                    ( (^.) )
 
 import           Graphics.Rendering.OpenGL
 
@@ -21,7 +16,6 @@ import           Gfx.Engine                     ( GfxEngine
                                                 , backgroundColor
                                                 , depthChecking
                                                 , postFX
-                                                , materialLibrary
                                                 , animationStyle
                                                 , textRenderer
                                                 )
@@ -39,7 +33,6 @@ import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 )
 import           Gfx.Textures                   ( TextureLibrary )
 import qualified Gfx.Materials                 as GM
-import           Gfx.Materials                  ( MaterialData )
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -71,20 +64,6 @@ resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
                                          (engineState ^. textRenderer)
   return
     $ resizeGfxEngine config newWidth newHeight newPost newTrender engineState
-
-updateMaterials :: [MaterialData] -> GfxEngine -> IO GfxEngine
-updateMaterials newMaterialsData ge = do
-  newMaterials <- mapM GM.loadMaterial newMaterialsData
-  foldM updateMaterial ge newMaterials
- where
-  updateMaterial engine mat =
-    case engine ^. (materialLibrary . at (GM.name mat)) of
-      Nothing ->
-        return $ set (materialLibrary . at (GM.name mat)) (Just mat) engine
-      Just oldMat -> do
-        GM.destroyMaterial oldMat
-        return $ set (materialLibrary . at (GM.name mat)) (Just mat) engine
-
 
 renderGfx :: IO result -> GfxEngine -> IO result
 renderGfx program gs =

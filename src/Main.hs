@@ -11,9 +11,13 @@ import           Control.Monad                  ( unless
                                                 , when
                                                 )
 import qualified Data.List                     as L
-import qualified Data.Map.Strict               as M
+import qualified Data.Map                      as M
+import           Data.Either                    ( partitionEithers )
+import           Data.Maybe                     ( catMaybes )
 
 import           Lens.Simple                    ( set
+                                                , view
+                                                , at
                                                 , (^.)
                                                 )
 
@@ -28,10 +32,11 @@ import qualified Configuration                 as C
 
 import           Gfx                            ( createGfx
                                                 , renderGfx
-                                                , updateMaterials
                                                 , resizeGfx
                                                 )
 import           Gfx.Textures                   ( createTextureLib )
+import qualified Gfx.Materials                 as GM
+import qualified Gfx.Engine                    as GE
 import           Gfx.Context                    ( reset
                                                 , renderCode
                                                 , renderCodeToBuffer
@@ -88,25 +93,39 @@ resize env newWidth newHeight fbWidth fbHeight =
         atomically $ writeTVar runtimeVar newRuntime
         return ()
 
+loadQueuedMaterials :: ImprovizEnv -> IO ()
+loadQueuedMaterials env = do
+  as <- readTVarIO (env ^. I.runtime)
+  let newMaterialsData = as ^. IR.materialsToLoad
+  (errs, newMaterials) <-
+    partitionEithers <$> mapM GM.loadMaterial newMaterialsData
+  mapM_ logError errs
+  unless
+    (L.null newMaterials)
+    (do
+      logInfo $ "loading " ++ show (L.length newMaterials) ++ " new materials"
+      ge <- readTVarIO (env ^. I.graphics)
+      let existingMaterials =
+            catMaybes
+              $   (\m -> view (GE.materialLibrary . at (GM.name m)) ge)
+              <$> newMaterials
+      let newGfx = foldl
+            (\fge m -> set (GE.materialLibrary . at (GM.name m)) (Just m) fge)
+            ge
+            newMaterials
+      atomically $ do
+        writeTVar (env ^. I.runtime)  (set IR.materialsToLoad [] as)
+        writeTVar (env ^. I.graphics) newGfx
+      mapM_ GM.destroyMaterial existingMaterials
+    )
+
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
+  loadQueuedMaterials env
   as      <- readTVarIO (env ^. I.runtime)
   extVars <- readTVarIO (env ^. I.externalVars)
   let gfxCtx     = env ^. I.gfxContext
   let globalVars = [("time", Number $ double2Float (time * 1000))] -- set time to be milliseconds
-  unless
-    (L.null $ as ^. IR.materialsToLoad)
-    (do
-      print
-        $  "loading "
-        ++ show (L.length $ as ^. IR.materialsToLoad)
-        ++ " new materials"
-      gs     <- readTVarIO (env ^. I.graphics)
-      newGfx <- updateMaterials (as ^. IR.materialsToLoad) gs
-      atomically $ do
-        writeTVar (env ^. I.runtime)  (set IR.materialsToLoad [] as)
-        writeTVar (env ^. I.graphics) newGfx
-    )
   is <- setInterpreterVariables globalVars extVars (as ^. IR.initialInterpreter)
   ui          <- readTVarIO $ env ^. I.ui
   gs          <- readTVarIO (env ^. I.graphics)
