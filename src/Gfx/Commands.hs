@@ -158,6 +158,17 @@ scale x y z = modify' (multMatrix $ scaleMat x y z)
 move :: Float -> Float -> Float -> GraphicsEngine ()
 move x y z = modify' (multMatrix $ translateMat x y z)
 
+loadNewMaterial :: GM.MaterialData -> GraphicsEngine ()
+loadNewMaterial materialData = do
+  -- TODO handle errors!
+  newMat           <- liftIO $ GM.loadMaterial materialData
+  existingMaterial <- use (materialLibrary . at (GM.name newMat))
+  case existingMaterial of
+    Nothing     -> assign (materialLibrary . at (GM.name newMat)) (Just newMat)
+    Just oldMat -> do
+      assign (materialLibrary . at (GM.name newMat)) (Just newMat)
+      liftIO $ GM.destroyMaterial oldMat
+
 setMaterial :: String -> GraphicsEngine ()
 setMaterial = assign material
 

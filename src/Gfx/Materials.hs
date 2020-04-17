@@ -5,6 +5,7 @@ module Gfx.Materials
   , MaterialData(..)
   , MaterialLibrary
   , loadMaterial
+  , destroyMaterial
   , loadMaterialFile
   , loadMaterialFolder
   , createMaterialLib
@@ -71,6 +72,13 @@ loadMaterial md = do
   attribInfo  <- GL.get $ GL.activeAttribs program
   attributes  <- mapM (\(_, _, aName) -> getAttribLoc program aName) attribInfo
   return $ Material (mdName md) program uniforms attributes
+
+destroyMaterial :: Material -> IO ()
+destroyMaterial material = do
+  programShaders <- GL.get $ GL.attachedShaders (program material)
+  GL.deleteObjectNames programShaders
+  GL.deleteObjectName (program material)
+
 
 getUniformLoc :: GL.Program -> String -> IO (String, GL.UniformLocation)
 getUniformLoc p un = do
