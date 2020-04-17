@@ -7,7 +7,10 @@ import           Control.Concurrent.STM         ( atomically
                                                 , readTVarIO
                                                 , writeTVar
                                                 )
-import           Control.Monad                  ( when )
+import           Control.Monad                  ( unless
+                                                , when
+                                                )
+import qualified Data.List                     as L
 import qualified Data.Map.Strict               as M
 
 import           Lens.Simple                    ( set
@@ -25,6 +28,7 @@ import qualified Configuration                 as C
 
 import           Gfx                            ( createGfx
                                                 , renderGfx
+                                                , updateMaterials
                                                 , resizeGfx
                                                 )
 import           Gfx.Textures                   ( createTextureLib )
@@ -88,11 +92,24 @@ display :: ImprovizEnv -> Double -> IO ()
 display env time = do
   as      <- readTVarIO (env ^. I.runtime)
   extVars <- readTVarIO (env ^. I.externalVars)
-  gs      <- readTVarIO (env ^. I.graphics)
   let gfxCtx     = env ^. I.gfxContext
   let globalVars = [("time", Number $ double2Float (time * 1000))] -- set time to be milliseconds
+  unless
+    (L.null $ as ^. IR.materialsToLoad)
+    (do
+      print
+        $  "loading "
+        ++ show (L.length $ as ^. IR.materialsToLoad)
+        ++ " new materials"
+      gs     <- readTVarIO (env ^. I.graphics)
+      newGfx <- updateMaterials (as ^. IR.materialsToLoad) gs
+      atomically $ do
+        writeTVar (env ^. I.runtime)  (set IR.materialsToLoad [] as)
+        writeTVar (env ^. I.graphics) newGfx
+    )
   is <- setInterpreterVariables globalVars extVars (as ^. IR.initialInterpreter)
-  ui <- readTVarIO $ env ^. I.ui
+  ui          <- readTVarIO $ env ^. I.ui
+  gs          <- readTVarIO (env ^. I.graphics)
   (result, _) <- renderGfx (interpret is (as ^. IR.currentAst)) gs
   case result of
     Left msg -> do

@@ -10,6 +10,7 @@ module Improviz.Runtime
   , saveProgram
   , resizeRuntime
   , programHasChanged
+  , materialsToLoad
   )
 where
 
@@ -25,6 +26,7 @@ import           Lens.Simple                    ( (^.)
                                                 )
 import           Gfx.Context                    ( GfxContext )
 import           Gfx.Engine                     ( GfxEngine )
+import           Gfx.Materials                  ( MaterialData )
 import qualified Improviz.SystemVars           as SV
 
 
@@ -33,6 +35,7 @@ data ImprovizRuntime gfxContext = ImprovizRuntime
   , _lastProgramText    :: String
   , _currentAst         :: Program
   , _lastWorkingAst     :: Program
+  , _materialsToLoad    :: [MaterialData]
   , _initialInterpreter :: InterpreterState
   }
 
@@ -51,6 +54,7 @@ makeRuntimeState userCode gfx ctx =
                                , _lastProgramText    = ""
                                , _currentAst         = Program []
                                , _lastWorkingAst     = Program []
+                               , _materialsToLoad    = []
                                , _initialInterpreter = is
                                }
 

@@ -18,7 +18,8 @@ import           Control.Concurrent.STM         ( TVar
 import           Control.Monad.Trans            ( liftIO )
 import           System.FilePath.Posix          ( (</>) )
 
-import           Data.ByteString.Lazy.Char8     ( pack
+import           Data.ByteString.Lazy.Char8     ( ByteString
+                                                , pack
                                                 , unpack
                                                 )
 import qualified Data.Map.Strict               as M
@@ -31,7 +32,7 @@ import           Language.Ast                   ( Value(Number) )
 import           Language.Parser.Errors         ( prettyPrintErrors
                                                 , parseErrorsOut
                                                 )
-
+import qualified Gfx.Materials                 as GM
 import           Server.Protocol
 
 import qualified Configuration                 as C
@@ -60,6 +61,20 @@ updateProgram env newProgram = case L.parse newProgram of
   Left err -> do
     logError $ prettyPrintErrors err
     return $ ImprovizCodeErrorResponse $ parseErrorsOut err
+
+updateMaterial :: ImprovizEnv -> ByteString -> IO ImprovizResponse
+updateMaterial env newMaterial = case GM.loadMaterialString newMaterial of
+  Right materialData -> do
+    atomically $ modifyTVar (env ^. I.runtime) (addToMaterialQueue materialData)
+    let msg = "Material Queued Successfully"
+    logInfo msg
+    return $ ImprovizOKResponse msg
+  Left err -> do
+    logError err
+    return $ ImprovizErrorResponse err
+ where
+  addToMaterialQueue md rt =
+    set IR.materialsToLoad (md : rt ^. IR.materialsToLoad) rt
 
 toggleTextDisplay :: TVar ImprovizUI -> IO ImprovizResponse
 toggleTextDisplay ui = do
@@ -90,6 +105,10 @@ startHttpServer env =
               $   (env ^. I.config . C.assetsDirectory)
               </> editorHtmlFilePath
             raw $ pack html
+          post "/read/material" $ do
+            b    <- body
+            resp <- liftIO $ updateMaterial env b
+            json resp
           post "/read" $ do
             b    <- body
             resp <- liftIO $ updateProgram env (unpack b)

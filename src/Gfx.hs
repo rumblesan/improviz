@@ -3,10 +3,15 @@ module Gfx
   , renderGfx
   , createGfx
   , resizeGfx
+  , updateMaterials
   )
 where
 
-import           Lens.Simple                    ( (^.) )
+import           Control.Monad                  ( foldM )
+import           Lens.Simple                    ( set
+                                                , (^.)
+                                                , at
+                                                )
 
 import           Graphics.Rendering.OpenGL
 
@@ -16,6 +21,7 @@ import           Gfx.Engine                     ( GfxEngine
                                                 , backgroundColor
                                                 , depthChecking
                                                 , postFX
+                                                , materialLibrary
                                                 , animationStyle
                                                 , textRenderer
                                                 )
@@ -32,7 +38,8 @@ import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 , resizeTextRendererScreen
                                                 )
 import           Gfx.Textures                   ( TextureLibrary )
-import           Gfx.Materials                  ( createMaterialLib )
+import qualified Gfx.Materials                 as GM
+import           Gfx.Materials                  ( MaterialData )
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -49,7 +56,7 @@ createGfx config textureLib width height fbWidth fbHeight = do
   post <- createPostProcessing fbWidth fbHeight
   let scaling = fromIntegral width / fromIntegral fbWidth
   trender     <- createTextRenderer config fbWidth fbHeight scaling
-  materialLib <- createMaterialLib (config ^. C.materialDirectories)
+  materialLib <- GM.createMaterialLib (config ^. C.materialDirectories)
   let tLibWithCode = addCodeTextureToLib trender textureLib
   createGfxEngine config width height post trender tLibWithCode materialLib
 
@@ -64,6 +71,20 @@ resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
                                          (engineState ^. textRenderer)
   return
     $ resizeGfxEngine config newWidth newHeight newPost newTrender engineState
+
+updateMaterials :: [MaterialData] -> GfxEngine -> IO GfxEngine
+updateMaterials newMaterialsData ge = do
+  newMaterials <- mapM GM.loadMaterial newMaterialsData
+  foldM updateMaterial ge newMaterials
+ where
+  updateMaterial engine mat =
+    case engine ^. (materialLibrary . at (GM.name mat)) of
+      Nothing ->
+        return $ set (materialLibrary . at (GM.name mat)) (Just mat) engine
+      Just oldMat -> do
+        GM.destroyMaterial oldMat
+        return $ set (materialLibrary . at (GM.name mat)) (Just mat) engine
+
 
 renderGfx :: IO result -> GfxEngine -> IO result
 renderGfx program gs =

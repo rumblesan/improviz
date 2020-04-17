@@ -6,6 +6,7 @@ module Gfx.Materials
   , MaterialLibrary
   , loadMaterial
   , destroyMaterial
+  , loadMaterialString
   , loadMaterialFile
   , loadMaterialFolder
   , createMaterialLib
@@ -13,6 +14,9 @@ module Gfx.Materials
 where
 
 
+import           Data.ByteString.Lazy.Char8     ( ByteString
+                                                , toStrict
+                                                )
 import qualified Data.Map.Strict               as M
 import           Control.Monad                  ( mapM )
 import           Data.Maybe                     ( catMaybes )
@@ -89,6 +93,11 @@ getAttribLoc :: GL.Program -> String -> IO (String, GL.AttribLocation)
 getAttribLoc p an = do
   al <- GL.get $ GL.attribLocation p an
   return (an, al)
+
+loadMaterialString :: ByteString -> Either String MaterialData
+loadMaterialString matStr = case Y.decodeEither' (toStrict matStr) of
+  Left  err     -> Left (Y.prettyPrintParseException err)
+  Right matData -> Right matData
 
 loadMaterialFile :: FilePath -> IO (Maybe Material)
 loadMaterialFile fp = do
