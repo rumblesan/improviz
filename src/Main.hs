@@ -125,7 +125,7 @@ display env time = do
   as      <- readTVarIO (env ^. I.runtime)
   extVars <- readTVarIO (env ^. I.externalVars)
   let gfxCtx     = env ^. I.gfxContext
-  let globalVars = [("time", Number $ double2Float (time * 1000))] -- set time to be milliseconds
+  let globalVars = [("time", Number $ double2Float time)]
   is <- setInterpreterVariables globalVars extVars (as ^. IR.initialInterpreter)
   ui          <- readTVarIO $ env ^. I.ui
   gs          <- readTVarIO (env ^. I.graphics)
