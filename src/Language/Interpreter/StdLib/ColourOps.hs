@@ -63,6 +63,8 @@ style styleArgs = do
     Symbol "noStroke"   : rest -> withGfxCtx noStroke
     Symbol "strokeSize" : rest -> runStrokeSize rest
     Symbol "texture"    : rest -> runTexture rest
+    Symbol n : _ -> throwError $ "unrecognised style (" ++ n ++ ")"
+    _                          -> throwError "invalid style command value"
   return Null
  where
   runFill :: [Value] -> InterpreterProcess ()
