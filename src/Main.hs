@@ -97,12 +97,12 @@ loadQueuedMaterials :: ImprovizEnv -> IO ()
 loadQueuedMaterials env = do
   as <- readTVarIO (env ^. I.runtime)
   let newMaterialsData = as ^. IR.materialsToLoad
-  (errs, newMaterials) <-
-    partitionEithers <$> mapM GM.loadMaterial newMaterialsData
-  mapM_ logError errs
   unless
-    (L.null newMaterials)
+    (L.null newMaterialsData)
     (do
+      (errs, newMaterials) <-
+        partitionEithers <$> mapM GM.loadMaterial newMaterialsData
+      mapM_ logError errs
       logInfo $ "loading " ++ show (L.length newMaterials) ++ " new materials"
       ge <- readTVarIO (env ^. I.graphics)
       let existingMaterials =

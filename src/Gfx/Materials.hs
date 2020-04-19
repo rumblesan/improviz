@@ -111,7 +111,7 @@ destroyMaterial material = do
 
 loadMaterialString :: ByteString -> Either String MaterialData
 loadMaterialString matStr = either (Left . Y.prettyPrintParseException)
-                                   id
+                                   Right
                                    (Y.decodeEither' (toStrict matStr))
 
 loadMaterialFile :: FilePath -> IO (Either String Material)
