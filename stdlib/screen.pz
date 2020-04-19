@@ -1,5 +1,14 @@
 
-func movePct(xPct, yPct)
-  x = sysVar(:screenCornerX) * (xPct / 100)
-  y = sysVar(:screenCornerY) * (yPct / 100)
-  move(x, y, 0)
+func movePct(xPct, yPct, &blk)
+	xPct := 0
+	yPct := xPct
+	x = sysVar(:screenCornerX) * (xPct / 100)
+	y = sysVar(:screenCornerY) * (yPct / 100)
+	m = :move
+	if (isNull(blk))
+		matrix(m, x, y, 0)
+	else
+		pushScope()
+		matrix(m, x, y, 0)
+		blk()
+		popScope()
