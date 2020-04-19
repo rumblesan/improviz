@@ -8,9 +8,6 @@ import           Linear.Projection              ( lookAt
                                                 , perspective
                                                 )
 
-toRads :: Floating f => f
-toRads = pi / 180.0
-
 viewMat :: (Floating f, Num f, Epsilon f) => V3 f -> V3 f -> V3 f -> M44 f
 viewMat = lookAt
 
@@ -26,27 +23,27 @@ orthographicMat left right top bottom near far = V4
 
 rotationX :: Floating f => f -> M44 f
 rotationX f = V4 (V4 1 0 0 0)
-                 (V4 0 (cos (f * toRads)) (-sin (f * toRads)) 0)
-                 (V4 0 (sin (f * toRads)) (cos (f * toRads)) 0)
+                 (V4 0 (cos f) (-sin f) 0)
+                 (V4 0 (sin f) (cos f) 0)
                  (V4 0 0 0 1)
 
 rotationY :: Floating f => f -> M44 f
-rotationY f = V4 (V4 (cos (f * toRads)) 0 (sin (f * toRads)) 0)
+rotationY f = V4 (V4 (cos f) 0 (sin f) 0)
                  (V4 0 1 0 0)
-                 (V4 (-sin (f * toRads)) 0 (cos (f * toRads)) 0)
+                 (V4 (-sin f) 0 (cos f) 0)
                  (V4 0 0 0 1)
 
 rotationZ :: Floating f => f -> M44 f
-rotationZ f = V4 (V4 (cos (f * toRads)) (-sin (f * toRads)) 0 0)
-                 (V4 (sin (f * toRads)) (cos (f * toRads)) 0 0)
+rotationZ f = V4 (V4 (cos f) (-sin f) 0 0)
+                 (V4 (sin f) (cos f) 0 0)
                  (V4 0 0 1 0)
                  (V4 0 0 0 1)
 
 rotMat :: Floating f => f -> f -> f -> M44 f
 rotMat xRot yRot zRot =
-  let xRads = xRot * toRads
-      yRads = yRot * toRads
-      zRads = zRot * toRads
+  let xRads = xRot
+      yRads = yRot
+      zRads = zRot
       sx    = sin xRads
       cx    = cos xRads
       sy    = sin yRads

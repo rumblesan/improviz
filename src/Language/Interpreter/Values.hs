@@ -1,6 +1,5 @@
 module Language.Interpreter.Values
   ( getNumberValue
-  , getNumberAsRads
   , getValueType
   , valIsNull
   )
@@ -24,10 +23,3 @@ valIsNull _    = False
 getNumberValue :: Value -> InterpreterProcess Float
 getNumberValue (Number v) = return v
 getNumberValue v = throwError ("Expected number but got " ++ getValueType v)
-
-toRads :: Float
-toRads = pi / 180.0
-
-getNumberAsRads :: Value -> InterpreterProcess Float
-getNumberAsRads (Number v) = return $ v * toRads
-getNumberAsRads v = throwError ("Expected number but got " ++ getValueType v)
