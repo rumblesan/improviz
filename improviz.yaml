@@ -24,7 +24,7 @@ codeFiles:
   - "./usercode/grid.pz"
   - "./usercode/seq.pz"
 debug: false
-decorated: true
+decorated: false
 apptitle: "Improviz"
 serverPort: 3000
 osc:
