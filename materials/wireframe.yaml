@@ -1,4 +1,4 @@
-name: basic
+name: wireframe
 vertexShader: |
   #version 330 core
   layout (location = 0) in vec3 position;
@@ -16,23 +16,18 @@ fragmentShader: |
   #version 330 core
   precision mediump float;
 
-  uniform vec4 FillColour;
-  uniform vec4 StrokeColour;
-  uniform float StrokeSize;
-
   in vec3 Barycentric;
+
+  uniform float StrokeSize;
+  uniform vec4 StrokeColour;
 
   out vec4 finalColour;
 
   bool strokeArea = Barycentric.x < StrokeSize || Barycentric.y < StrokeSize || Barycentric.z < StrokeSize;
-  bool showStroke = StrokeColour.a >= 0;
-  bool showFill = FillColour.a >= 0;
 
   void main(void) {
-    if(showStroke && strokeArea) {
+    if(strokeArea) {
       finalColour = StrokeColour;
-    } else if (showFill) {
-      finalColour = FillColour;
     } else {
       discard;
     }

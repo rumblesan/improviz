@@ -5,35 +5,30 @@ vertexShader: |
   layout (location = 2) in vec3 barycentric;
   layout (location = 3) in vec3 normals;
 
-  uniform mat4 Pmatrix;
-  uniform mat4 Vmatrix;
-  uniform mat4 Mmatrix;
-  uniform float StrokeSize;
+  uniform mat4 MVPMatrix;
 
-  out vec3 vbc;
-  out float vStrokeSize;
-  out vec3 vNormal;
+  out vec3 Barycentric;
+  out vec3 Normal;
 
   void main(void) {
-    mat4 mvp = (Pmatrix * Vmatrix) * Mmatrix;
-    gl_Position = mvp * vec4(position, 1.);
-    vbc = barycentric;
-    vStrokeSize = StrokeSize;
-    vNormal = (mvp * vec4(normals, 1)).xyz;
+    gl_Position = MVPMatrix * vec4(position, 1.);
+    Barycentric = barycentric;
+    Normal = normalize((MVPMatrix * vec4(normals, 1)).xyz);
   }
 fragmentShader: |
   #version 330 core
   precision mediump float;
 
-  in vec3 vNormal;
-  in vec3 vbc;
-  in float vStrokeSize;
+  in vec3 Normal;
+  in vec3 Barycentric;
 
-  out vec4 finalColor;
+  uniform float StrokeSize;
+
+  out vec4 finalColour;
 
   void main(void) {
-    if(vbc.x < vStrokeSize || vbc.y < vStrokeSize || vbc.z < vStrokeSize) {
-      finalColor = vec4( 0.5 * normalize( vNormal ) + 0.5, 1.0 );
+    if(Barycentric.x < StrokeSize || Barycentric.y < StrokeSize || Barycentric.z < StrokeSize) {
+      finalColour = vec4( 0.5 * Normal + 0.5, 1.0 );
     } else {
       discard;
     }

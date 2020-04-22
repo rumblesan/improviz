@@ -5,25 +5,24 @@ vertexShader: |
   layout(location = 0) in vec4 position;
   layout(location = 1) in vec2 texcoord;
 
-  uniform mat4 MVPMat;
+  uniform mat4 MVPMatrix;
 
   out vec2 Texcoord;
 
-  void
-  main()
-  {
+  void main() {
+      gl_Position = MVPMatrix * position;
       Texcoord = texcoord;
-      gl_Position = MVPMat * position;
   }
 fragmentShader: |
   #version 330 core
+  precision mediump float;
 
   in vec2 Texcoord;
-  out vec4 outColor;
 
   uniform sampler2D Texture;
 
-  void main()
-  {
-      outColor = texture(Texture, Texcoord);
+  out vec4 finalColour;
+
+  void main() {
+      finalColour = texture(Texture, Texcoord);
   }

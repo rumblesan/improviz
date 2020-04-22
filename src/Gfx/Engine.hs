@@ -40,14 +40,16 @@ import qualified Configuration.Screen          as CS
 
 import           Util                           ( (/.) )
 
-newtype GFXFillStyling
+data GFXFillStyling
   = GFXFillColour Colour
+  | GFXNoFill
   deriving (Eq, Show)
 
 data GFXTextureStyling = GFXTextureStyling String Int deriving (Eq, Show)
 
-newtype GFXStrokeStyling
+data GFXStrokeStyling
   = GFXStrokeColour Colour
+  | GFXNoStroke
   deriving (Eq, Show)
 
 data SavableState = SavableState

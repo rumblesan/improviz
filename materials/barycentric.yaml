@@ -1,27 +1,25 @@
-name: normalised
+name: barycentric
 vertexShader: |
   #version 330 core
-
   layout (location = 0) in vec3 position;
-  layout (location = 3) in vec3 normals;
+  layout (location = 2) in vec3 barycentric;
 
   uniform mat4 MVPMatrix;
 
-  out vec3 Normal;
+  out vec3 Barycentric;
 
   void main(void) {
     gl_Position = MVPMatrix * vec4(position, 1.);
-    Normal = normalize((MVPMatrix * vec4(normals, 1)).xyz);
+    Barycentric = barycentric;
   }
 fragmentShader: |
   #version 330 core
   precision mediump float;
 
-  in vec3 Normal;
   in vec3 Barycentric;
 
   out vec4 finalColour;
 
   void main(void) {
-    finalColour = vec4( 0.5 * Normal + 0.5, 1.0 );
+    finalColour = vec4(Barycentric, 1.0);
   }

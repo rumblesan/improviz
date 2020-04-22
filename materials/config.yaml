@@ -1,13 +1,13 @@
 materials:
   - name: basic
     file: basic.yaml
+  - name: wireframe
+    file: wireframe.yaml
   - name: texture
     file: texture.yaml
   - name: normalised
     file: normalised.yaml
   - name: ceed
     file: ceed.yaml
-  - name: weird
-    file: weird.yaml
-  - name: hydra
-    file: hydra.yaml
+  - name: barycentric
+    file: barycentric.yaml

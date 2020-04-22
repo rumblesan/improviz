@@ -75,7 +75,7 @@ getFullMatrix = do
   return $ (pMat !*! vMat) !*! mMat
 
 setUniform :: (String, UniformLocation) -> GraphicsEngine ()
-setUniform ("MVPMat", UniformLocation uniformLoc) = do
+setUniform ("MVPMatrix", UniformLocation uniformLoc) = do
   mvpMat <- getFullMatrix
   liftIO
     $ with mvpMat
@@ -99,12 +99,18 @@ setUniform ("Pmatrix", UniformLocation uniformLoc) = do
     $ with projMat
     $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
     . castPtr
-setUniform ("Color", uniformLoc) = do
-  (GFXFillColour fillColour) <- use fillStyle
-  liftIO (GL.uniform uniformLoc $= colToGLCol fillColour)
-setUniform ("WireColor", uniformLoc) = do
-  (GFXStrokeColour strokeColour) <- use strokeStyle
-  liftIO (GL.uniform uniformLoc $= colToGLCol strokeColour)
+setUniform ("FillColour", uniformLoc) = do
+  gfxFillStyle <- use fillStyle
+  liftIO $ case gfxFillStyle of
+    (GFXFillColour fillColour) ->
+      GL.uniform uniformLoc $= colToGLCol fillColour
+    GFXNoFill -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
+setUniform ("StrokeColour", uniformLoc) = do
+  gfxStrokeStyle <- use strokeStyle
+  liftIO $ case gfxStrokeStyle of
+    (GFXStrokeColour strokeColour) ->
+      GL.uniform uniformLoc $= colToGLCol strokeColour
+    GFXNoStroke -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
 setUniform ("StrokeSize", uniformLoc) = do
   sSize <- use strokeSize
   liftIO (GL.uniform uniformLoc $= sSize)
@@ -181,13 +187,13 @@ colourFill :: Float -> Float -> Float -> Float -> GraphicsEngine ()
 colourFill r g b a = assign fillStyle $ GFXFillColour $ Colour r g b a
 
 noFill :: GraphicsEngine ()
-noFill = assign fillStyle $ GFXFillColour $ Colour 0.0 0.0 0.0 0.0
+noFill = assign fillStyle GFXNoFill
 
 colourStroke :: Float -> Float -> Float -> Float -> GraphicsEngine ()
 colourStroke r g b a = assign strokeStyle $ GFXStrokeColour $ Colour r g b a
 
 noStroke :: GraphicsEngine ()
-noStroke = assign strokeStyle $ GFXStrokeColour $ Colour 0.0 0.0 0.0 0.0
+noStroke = assign strokeStyle GFXNoStroke
 
 setStrokeSize :: Float -> GraphicsEngine ()
 setStrokeSize = assign strokeSize
