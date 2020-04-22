@@ -236,7 +236,7 @@ loop = L.indentBlock scn l
  where
   l = do
     ilevel   <- L.indentLevel
-    loopExpr <- try (expression <* symbol "times")
+    loopExpr <- try (optional (symbol "loop") *> expression <* symbol "times")
     loopVar  <- optional (rword "with" *> identifier)
     return
       (L.IndentSome (Just (ilevel <> tabWidth))
