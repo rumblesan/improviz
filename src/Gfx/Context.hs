@@ -29,7 +29,6 @@ data GfxContext = GfxContext { drawShape :: String -> Float -> Float -> Float ->
                              , textureFill :: String -> Float -> IO ()
                              , colourStroke :: Float -> Float -> Float -> Float -> IO ()
                              , noStroke :: IO ()
-                             , setStrokeSize :: Float -> IO ()
                              , setMaterial :: String -> IO ()
                              , setMaterialVar :: String -> Float -> IO ()
                              , setBackground :: Float -> Float -> Float -> IO ()
@@ -53,7 +52,6 @@ createGfxContext gfx = GfxContext
   , textureFill        = wrapTwoArg gfx GC.textureFill
   , colourStroke       = wrapFourArg gfx GC.colourStroke
   , noStroke           = wrapNoArg gfx GC.noStroke
-  , setStrokeSize      = wrapOneArg gfx GC.setStrokeSize
   , setMaterial        = wrapOneArg gfx GC.setMaterial
   , setMaterialVar     = wrapTwoArg gfx GC.setMaterialVariable
   , setBackground      = wrapThreeArg gfx GC.setBackground
@@ -76,7 +74,6 @@ empty = GfxContext { drawShape          = \_ _ _ _ -> print "No GFX Context"
                    , textureFill        = \_ _ -> print "No Gfx Context"
                    , colourStroke       = \_ _ _ _ -> print "No GFX Context"
                    , noStroke           = print "No Gfx Context"
-                   , setStrokeSize      = \_ -> print "No Gfx Context"
                    , setMaterial        = \_ -> print "No Gfx Context"
                    , setMaterialVar     = \_ _ -> print "No Gfx Context"
                    , setBackground      = \_ _ _ -> print "No Gfx Context"

@@ -24,7 +24,8 @@ fragmentShader: |
 
   out vec4 finalColour;
 
-  bool strokeArea = Barycentric.x < StrokeSize || Barycentric.y < StrokeSize || Barycentric.z < StrokeSize;
+  float ssize = StrokeSize / 2;
+  bool strokeArea = Barycentric.x < ssize || Barycentric.y < ssize || Barycentric.z < ssize;
   bool showStroke = StrokeColour.a >= 0;
   bool showFill = FillColour.a >= 0;
 

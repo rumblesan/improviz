@@ -8,7 +8,6 @@ module Gfx.Commands
   , noFill
   , colourStroke
   , noStroke
-  , setStrokeSize
   , setMaterial
   , setMaterialVariable
   , setBackground
@@ -29,7 +28,6 @@ import           Control.Monad.Trans            ( liftIO )
 import           Control.Monad.State.Strict     ( modify' )
 import           Lens.Simple                    ( use
                                                 , assign
-                                                , at
                                                 , view
                                                 )
 import qualified Data.Map.Strict               as M
@@ -49,6 +47,8 @@ import           Graphics.Rendering.OpenGL      ( ($=)
                                                 )
 
 import           Gfx.Engine
+import qualified Gfx.Setting                   as GS
+import qualified Gfx.SettingMap                as GSM
 import           Gfx.Geometries                 ( GeometryBuffers(..) )
 import           Gfx.Matrices                   ( scaleMat
                                                 , translateMat
@@ -100,22 +100,19 @@ setUniform ("Pmatrix", UniformLocation uniformLoc) = do
     $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
     . castPtr
 setUniform ("FillColour", uniformLoc) = do
-  gfxFillStyle <- use fillStyle
+  gfxFillStyle <- use (fillStyle . GS.value)
   liftIO $ case gfxFillStyle of
     (GFXFillColour fillColour) ->
       GL.uniform uniformLoc $= colToGLCol fillColour
     GFXNoFill -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
 setUniform ("StrokeColour", uniformLoc) = do
-  gfxStrokeStyle <- use strokeStyle
+  gfxStrokeStyle <- use (strokeStyle . GS.value)
   liftIO $ case gfxStrokeStyle of
     (GFXStrokeColour strokeColour) ->
       GL.uniform uniformLoc $= colToGLCol strokeColour
     GFXNoStroke -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
-setUniform ("StrokeSize", uniformLoc) = do
-  sSize <- use strokeSize
-  liftIO (GL.uniform uniformLoc $= sSize)
 setUniform ("Texture", uniformLoc) = do
-  (GFXTextureStyling textName textFrame) <- use textureStyle
+  (GFXTextureStyling textName textFrame) <- use (textureStyle . GS.value)
   textureLib                             <- use textureLibrary
   case M.lookup textName textureLib >>= M.lookup textFrame of
     Nothing      -> return ()
@@ -123,14 +120,14 @@ setUniform ("Texture", uniformLoc) = do
       GL.activeTexture $= TextureUnit 0
       GL.textureBinding Texture2D $= Just texture
 setUniform (name, uniformLoc) = do
-  matVar <- use (materialVars . at name)
+  matVar <- use (materialVars . GSM.value name)
   case matVar of
     Nothing -> liftIO $ logError $ name ++ " is not a known uniform"
     Just v  -> liftIO (GL.uniform uniformLoc $= v)
 
 drawTriangles :: GeometryBuffers -> GraphicsEngine ()
 drawTriangles geoData = do
-  matName <- use material
+  matName <- use (material . GS.value)
   matLib  <- use materialLibrary
   case M.lookup matName matLib of
     Just mat -> do
@@ -165,62 +162,62 @@ move :: Float -> Float -> Float -> GraphicsEngine ()
 move x y z = modify' (multMatrix $ translateMat x y z)
 
 setMaterial :: String -> GraphicsEngine ()
-setMaterial = assign material
+setMaterial = assign (material . GS.value)
 
 setMaterialVariable :: String -> Float -> GraphicsEngine ()
-setMaterialVariable name value = assign (materialVars . at name) (Just value)
+setMaterialVariable name value =
+  assign (materialVars . GSM.value name) (Just value)
 
 setBackground :: Float -> Float -> Float -> GraphicsEngine ()
-setBackground r g b = assign backgroundColor (Colour r g b 1)
+setBackground r g b = assign (backgroundColor . GS.value) (Colour r g b 1)
 
 setAnimationStyle :: AnimationStyle -> GraphicsEngine ()
-setAnimationStyle = assign animationStyle
+setAnimationStyle = assign (animationStyle . GS.value)
 
 setDepthChecking :: Bool -> GraphicsEngine ()
-setDepthChecking = assign depthChecking
+setDepthChecking = assign (depthChecking . GS.value)
 
 textureFill :: String -> Float -> GraphicsEngine ()
 textureFill name frame =
-  assign textureStyle $ GFXTextureStyling name (floor frame)
+  assign (textureStyle . GS.value) $ GFXTextureStyling name (floor frame)
 
 colourFill :: Float -> Float -> Float -> Float -> GraphicsEngine ()
-colourFill r g b a = assign fillStyle $ GFXFillColour $ Colour r g b a
+colourFill r g b a =
+  assign (fillStyle . GS.value) $ GFXFillColour $ Colour r g b a
 
 noFill :: GraphicsEngine ()
-noFill = assign fillStyle GFXNoFill
+noFill = assign (fillStyle . GS.value) GFXNoFill
 
 colourStroke :: Float -> Float -> Float -> Float -> GraphicsEngine ()
-colourStroke r g b a = assign strokeStyle $ GFXStrokeColour $ Colour r g b a
+colourStroke r g b a =
+  assign (strokeStyle . GS.value) $ GFXStrokeColour $ Colour r g b a
 
 noStroke :: GraphicsEngine ()
-noStroke = assign strokeStyle GFXNoStroke
-
-setStrokeSize :: Float -> GraphicsEngine ()
-setStrokeSize = assign strokeSize
+noStroke = assign (strokeStyle . GS.value) GFXNoStroke
 
 pushScope :: GraphicsEngine ()
 pushScope = do
   mStack  <- use matrixStack
-  fStyles <- use fillStyleSnapshot
-  sStyles <- use strokeStyleSnapshot
-  sSize   <- use strokeSizeSnapshot
-  texts   <- use textureStyleSnapshot
-  mat     <- use materialSnapshot
+  fStyles <- use (fillStyle . GS.value)
+  sStyles <- use (strokeStyle . GS.value)
+  texts   <- use (textureStyle . GS.value)
+  mat     <- use (material . GS.value)
+  mVars   <- use (materialVars . GSM.snapshot)
   stack   <- use scopeStack
-  let savable = SavableState mStack fStyles sStyles sSize texts mat
+  let savable = SavableState mStack fStyles sStyles texts mat mVars
   assign scopeStack (savable : stack)
 
 popScope :: GraphicsEngine ()
 popScope = do
   stack <- use scopeStack
   let prev = head stack
-  assign scopeStack           (tail stack)
-  assign fillStyleSnapshot    (view savedFillStyles prev)
-  assign strokeStyleSnapshot  (view savedStrokeStyles prev)
-  assign strokeSizeSnapshot   (view savedStrokeSize prev)
-  assign textureStyleSnapshot (view savedTextureStyles prev)
-  assign matrixStack          (view savedMatrixStack prev)
-  assign materialSnapshot     (view savedMaterials prev)
+  assign scopeStack                    (tail stack)
+  assign (fillStyle . GS.value)        (view savedFillStyles prev)
+  assign (strokeStyle . GS.value)      (view savedStrokeStyles prev)
+  assign (textureStyle . GS.value)     (view savedTextureStyles prev)
+  assign matrixStack                   (view savedMatrixStack prev)
+  assign (material . GS.value)         (view savedMaterials prev)
+  assign (materialVars . GSM.snapshot) (view savedMaterialVars prev)
 
 renderCode :: String -> GraphicsEngine ()
 renderCode text = do

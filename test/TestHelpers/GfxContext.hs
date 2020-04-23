@@ -36,7 +36,6 @@ createTestGfxContext gfx = GfxContext
                            (ColourCommand $ Fill $ TextureStyle name frame)
   , colourStroke       = \r g b a -> addAst gfx (ColourCommand $ Stroke r g b a)
   , noStroke           = addAst gfx (ColourCommand NoStroke)
-  , setStrokeSize      = \_ -> print "No set stroke size command"
   , setMaterial        = \_ -> print "No set material command"
   , setMaterialVar     = \_ _ -> print "No set material var command"
   , setBackground      = \_ _ _ -> print "No background command"

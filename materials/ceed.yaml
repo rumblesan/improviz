@@ -23,11 +23,12 @@ fragmentShader: |
   in vec3 Barycentric;
 
   uniform float StrokeSize;
+  float ssize = StrokeSize / 2;
 
   out vec4 finalColour;
 
   void main(void) {
-    if(Barycentric.x < StrokeSize || Barycentric.y < StrokeSize || Barycentric.z < StrokeSize) {
+    if(Barycentric.x < ssize || Barycentric.y < ssize || Barycentric.z < ssize) {
       finalColour = vec4( 0.5 * Normal + 0.5, 1.0 );
     } else {
       discard;

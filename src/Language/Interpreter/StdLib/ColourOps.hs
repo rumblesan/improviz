@@ -13,7 +13,6 @@ import           Gfx.Context                    ( textureFill
                                                 , noFill
                                                 , colourStroke
                                                 , noStroke
-                                                , setStrokeSize
                                                 , setBackground
                                                 )
 import           Language.Ast                   ( Value(Number, Null, Symbol) )
@@ -57,14 +56,13 @@ background args = do
 style :: [Value] -> InterpreterProcess Value
 style styleArgs = do
   cmd <- case styleArgs of
-    Symbol "fill"       : rest -> runFill rest
-    Symbol "noFill"     : rest -> withGfxCtx noFill
-    Symbol "stroke"     : rest -> runStroke rest
-    Symbol "noStroke"   : rest -> withGfxCtx noStroke
-    Symbol "strokeSize" : rest -> runStrokeSize rest
-    Symbol "texture"    : rest -> runTexture rest
-    Symbol n : _ -> throwError $ "unrecognised style (" ++ n ++ ")"
-    _                          -> throwError "invalid style command value"
+    Symbol "fill"     : rest -> runFill rest
+    Symbol "noFill"   : rest -> withGfxCtx noFill
+    Symbol "stroke"   : rest -> runStroke rest
+    Symbol "noStroke" : rest -> withGfxCtx noStroke
+    Symbol "texture"  : rest -> runTexture rest
+    Symbol n          : _    -> throwError $ "unrecognised style (" ++ n ++ ")"
+    _                        -> throwError "invalid style command value"
   return Null
  where
   runFill :: [Value] -> InterpreterProcess ()
@@ -77,10 +75,6 @@ style styleArgs = do
     [Number r, Number g, Number b, Number a] ->
       withGfxCtx (\ctx -> colourStroke ctx (dToC r) (dToC g) (dToC b) (dToC a))
     _ -> throwError "Error with functions to fill"
-  runStrokeSize :: [Value] -> InterpreterProcess ()
-  runStrokeSize args = case args of
-    [Number sSize] -> withGfxCtx (`setStrokeSize` sSize)
-    _              -> throwError "Error with functions to strokeSize"
   runTexture :: [Value] -> InterpreterProcess ()
   runTexture args = case args of
     Symbol name : rest -> do

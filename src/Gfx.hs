@@ -33,6 +33,7 @@ import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 )
 import           Gfx.Textures                   ( TextureLibrary )
 import qualified Gfx.Materials                 as GM
+import qualified Gfx.Setting                   as GS
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -69,9 +70,9 @@ renderGfx :: IO result -> GfxEngine -> IO result
 renderGfx program gs =
   let
     post       = gs ^. postFX
-    animStyle  = gs ^. animationStyle
-    bgColor    = gs ^. backgroundColor
-    depthCheck = gs ^. depthChecking
+    animStyle  = gs ^. animationStyle . GS.value
+    bgColor    = gs ^. backgroundColor . GS.value
+    depthCheck = gs ^. depthChecking . GS.value
   in
     do
       usePostProcessing post

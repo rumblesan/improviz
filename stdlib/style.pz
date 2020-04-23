@@ -70,11 +70,11 @@ func noStroke(&blk)
 		popScope()
 
 func strokeSize(size, &blk)
-	s = :strokeSize
+	name = :StrokeSize
 	if (isNull(blk))
-		style(s, size)
+		intMaterial(:variable, :StrokeSize, size)
 	else
 		pushScope()
-		style(s, size)
+		intMaterial(:variable, :StrokeSize, size)
 		blk()
 		popScope()
