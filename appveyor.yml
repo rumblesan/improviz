@@ -3,7 +3,7 @@ cache:
 
 branches:
   only:
-    - master
+    - main
     - /\d*\.\d*\.\d*/
 
 environment:

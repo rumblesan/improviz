@@ -1,6 +1,6 @@
 # Improviz
 
-[![Build Status](https://travis-ci.org/rumblesan/improviz.svg?branch=master)](https://travis-ci.org/rumblesan/improviz)
+[![Build Status](https://travis-ci.org/rumblesan/improviz.svg?branch=main)](https://travis-ci.org/rumblesan/improviz)
 [![Windows build](https://ci.appveyor.com/api/projects/status/sv8a7mosacfsng2l?svg=true)](https://ci.appveyor.com/project/rumblesan/improviz)
 
 An offshoot of [LiveCodeLab](https://livecodelab.net)
@@ -69,7 +69,7 @@ fill(0, 255, 255)
 ```
 
 There are better clients available for [Vim](https://github.com/rumblesan/improviz-vim) and [Atom](https://github.com/rumblesan/improviz-atom).
-There is a very basic client available for [Emacs](https://github.com/rumblesan/improviz/tree/master/editor/emacs).
+There is a very basic client available for [Emacs](https://github.com/rumblesan/improviz/tree/main/editor/emacs).
 
 
 ## Language

@@ -47,7 +47,7 @@ You should see ten light-blue cubes rotating on a red background, with the black
 The built in editor is fine for quick tests, but it's much nicer to work with one that's a bit more friendly.
 
 There are better clients available for [Vim](https://github.com/rumblesan/improviz-vim) and [Atom](https://github.com/rumblesan/improviz-atom).
-There is a very basic client available for [Emacs](https://github.com/rumblesan/improviz/tree/master/editor/emacs).
+There is a very basic client available for [Emacs](https://github.com/rumblesan/improviz/tree/main/editor/emacs).
 
 
 ## Documentation

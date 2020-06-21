@@ -40,7 +40,7 @@ The [Improviz Performance](https://github.com/rumblesan/improviz-performance/) r
 
 As part of the project, artist, algoraver, and all-round excellent human being [hellocatfood](https://hellocatfood.com) was commissioned to create a series of animated GIFs that can be used as textures with Improviz.
 
-These excellent and unique images, as well as some of the geometries used to create them, are bundled in the pre-built binary releases and can also be found in the [hellocatfood](https://github.com/rumblesan/improviz/tree/master/hellocatfood) folder of the performance repository. They're licensed under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for your own performances, projects, and anything else you may want.
+These excellent and unique images, as well as some of the geometries used to create them, are bundled in the pre-built binary releases and can also be found in the [hellocatfood](https://github.com/rumblesan/improviz/tree/main/hellocatfood) folder of the performance repository. They're licensed under the [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/) so can be freely used and misused for your own performances, projects, and anything else you may want.
 
 ## Troubleshooting
 
