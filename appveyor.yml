@@ -17,7 +17,7 @@ install:
 - set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
 - set PATH=C:\projects\improviz\dist\improviz-win;%PATH%
 
-- curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-i386.zip
+- curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
 - 7z x stack.zip stack.exe
 
 before_build:
