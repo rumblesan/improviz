@@ -90,6 +90,15 @@ These excellent and unique images are bundled in the pre-built binary releases a
 
 By default they're not loaded by improviz when using the default configuration as they're quite large and slow startup a bit, but just uncomment the relevant lines in the **improviz.yaml** config file and you're ready to go.
 
+## Contributors
+
+Many thanks to the following people who have contributed to Improviz and it's development.
+
+[hellocatfood](https://hellocatfood.com) for the excellent gifs and general feedback
+[darch](http://www.darch.dk/) for some really helpful feedback, and teaching improviz workshops
+[nihilazo](https://itwont.work/git/) for helping polish the vim plugin and give it some necessary updates
+
+
 ## Contact
 
 Drop me an email at guy@rumblesan.com
