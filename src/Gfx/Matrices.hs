@@ -50,9 +50,9 @@ rotMat xRot yRot zRot =
       cy    = cos yRads
       sz    = sin zRads
       cz    = cos zRads
-  in  V4 (V4 (cx * cy) (cx * sy * sz - sx * cz) (cx * sy * cz + sx * sz) 0)
-         (V4 (sx * cy) (sx * sy * sz + cx * cz) (sx * sy * cz - cx * sz) 0)
-         (V4 (-sy) (cy * sz) (cy * cz) 0)
+  in  V4 (V4 (cy * cz) (cy * (-sz)) sy 0)
+         (V4 (sx * sy * cz + cx * sz) (cx * cz - sx * sy * sz) (-sx * cy) 0)
+         (V4 (sx * sz - cx * sy * cz) (cx * sy * sz + sx * cz) (cx * cy) 0)
          (V4 0 0 0 1)
 
 scaleMat :: Floating f => f -> f -> f -> M44 f
