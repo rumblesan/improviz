@@ -3,12 +3,17 @@
 [![Build Status](https://travis-ci.org/rumblesan/improviz.svg?branch=main)](https://travis-ci.org/rumblesan/improviz)
 [![Windows build](https://ci.appveyor.com/api/projects/status/sv8a7mosacfsng2l?svg=true)](https://ci.appveyor.com/project/rumblesan/improviz)
 
-An offshoot of [LiveCodeLab](https://livecodelab.net)
-
 
 ## Description
 
-Improviz is built in Haskell and interacts directly with OpenGL. It's very much a work in progress but it should be about usable.
+Improviz is a live-coding environment built for creating visual performances of abstract shapes, blurred shades and broken GIFs.
+
+It is built in Haskell and interacts directly with OpenGL. It's very much a work in progress but is definitely stable enough to use for performances.
+
+
+## Documentation
+
+The most up-to-date documentation can be found in [the docs folder](docs/index.md) which are also used to build the [Improviz site](https://improviz.rumblesan.com), but the README should give enough of an overview to get started.
 
 
 ## Installing
