@@ -16,6 +16,15 @@ It is built in Haskell and interacts directly with OpenGL. It's very much a work
 The most up-to-date documentation can be found in [the docs folder](docs/index.md) which are also used to build the [Improviz site](https://improviz.rumblesan.com), but the README should give enough of an overview to get started.
 
 
+## Browser Version
+
+There is now a browser based version of Improviz available at [https://improviz-web.rumblesan.com/](https://improviz-web.rumblesan.com/) which has much of the functionality of the native version.
+
+The primary differences are that it currently lacks the ability to load custom textures, geometries and materials, though hopefully that will be changed in future.
+
+More details can be found [in the docs](docs/web.md).
+
+
 ## Installing
 
 Pre-built binaries are available for OSX, Windows and Linux, and can be found on the [Releases Page](https://github.com/rumblesan/improviz/releases). Download one and then jump straight to the [relevant section in Running](#pre-built-binary).

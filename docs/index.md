@@ -9,6 +9,10 @@ Improviz is a live-coding environment built for creating visual performances of 
 
 It is fully open source, with the code being fully available at [the repository](https://github.com/rumblesan/improviz) on GitHub, and all contributions are welcome.
 
+## Browser Version
+
+The browser based version of Improviz is available at [https://improviz-web.rumblesan.com/](https://improviz-web.rumblesan.com/), and more details available in [the web doc](web.md).
+
 ## Installation
 
 The first step is to get the Improviz binary for your system. This can either be done by building the project from source, or more easily by downloading one of the [pre-built binaries](https://github.com/rumblesan/improviz/releases).
