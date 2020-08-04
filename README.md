@@ -22,7 +22,7 @@ There is now a browser based version of Improviz available at [https://improviz-
 
 The primary differences are that it currently lacks the ability to load custom textures, geometries and materials, though hopefully that will be changed in future.
 
-More details can be found [in the docs](docs/web.md).
+More details can be found [in the docs](docs/web.md) whilst the code can be found in a [different repository](https://github.com/rumblesan/improviz-web).
 
 
 ## Installing

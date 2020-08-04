@@ -2,6 +2,8 @@
 
 The browser based version of Improviz can be found at [https://improviz-web.rumblesan.com/](https://improviz-web.rumblesan.com/) and shares most of the functionality but with a few differences.
 
+The code is available at [https://github.com/rumblesan/improviz-web](https://github.com/rumblesan/improviz-web).
+
 ## Missing Features
 
 Currently there is no loading custom textures, geometries or materials. This will hopefully be added in the future, but for the time being there's only what's built in (and which probably needs to be expanded on).
