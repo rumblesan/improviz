@@ -11,3 +11,5 @@ materials:
     file: ceed.yaml
   - name: barycentric
     file: barycentric.yaml
+  - name: wobbler
+    file: wobbler.yaml

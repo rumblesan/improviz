@@ -1,0 +1,9 @@
+
+texture(:algorave)
+materialVar(:Time, time/3)
+materialVar(:Freq, 8)
+materialVar(:Depth, 0.2)
+material(:wobbler)
+
+rotate(time/10)
+cube(5)
