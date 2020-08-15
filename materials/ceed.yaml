@@ -5,15 +5,15 @@ vertexShader: |
   layout (location = 2) in vec3 barycentric;
   layout (location = 3) in vec3 normals;
 
-  uniform mat4 MVPMatrix;
+  uniform mat4 MVPmatrix;
 
   out vec3 Barycentric;
   out vec3 Normal;
 
   void main(void) {
-    gl_Position = MVPMatrix * vec4(position, 1.);
+    gl_Position = MVPmatrix * vec4(position, 1.);
     Barycentric = barycentric;
-    Normal = normalize((MVPMatrix * vec4(normals, 1)).xyz);
+    Normal = normalize((MVPmatrix * vec4(normals, 1)).xyz);
   }
 fragmentShader: |
   #version 330 core

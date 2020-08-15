@@ -5,13 +5,13 @@ vertexShader: |
   layout (location = 0) in vec3 position;
   layout (location = 3) in vec3 normals;
 
-  uniform mat4 MVPMatrix;
+  uniform mat4 MVPmatrix;
 
   out vec3 Normal;
 
   void main(void) {
-    gl_Position = MVPMatrix * vec4(position, 1.);
-    Normal = normalize((MVPMatrix * vec4(normals, 1)).xyz);
+    gl_Position = MVPmatrix * vec4(position, 1.);
+    Normal = normalize((MVPmatrix * vec4(normals, 1)).xyz);
   }
 fragmentShader: |
   #version 330 core

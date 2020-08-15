@@ -75,7 +75,7 @@ getFullMatrix = do
   return $ (pMat !*! vMat) !*! mMat
 
 setUniform :: (String, UniformLocation) -> GraphicsEngine ()
-setUniform ("MVPMatrix", UniformLocation uniformLoc) = do
+setUniform ("MVPmatrix", UniformLocation uniformLoc) = do
   mvpMat <- getFullMatrix
   liftIO
     $ with mvpMat

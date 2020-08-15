@@ -4,12 +4,12 @@ vertexShader: |
   layout (location = 0) in vec3 position;
   layout (location = 2) in vec3 barycentric;
 
-  uniform mat4 MVPMatrix;
+  uniform mat4 MVPmatrix;
 
   out vec3 Barycentric;
 
   void main(void) {
-    gl_Position = MVPMatrix * vec4(position, 1.);
+    gl_Position = MVPmatrix * vec4(position, 1.);
     Barycentric = barycentric;
   }
 fragmentShader: |
