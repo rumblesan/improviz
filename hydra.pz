@@ -1,9 +1,0 @@
-
-fill(255, 0, 0)
-
-materialVar(:Time, time/3000)
-materialVar(:Freq, 10)
-material(:testhydra)
-
-rotate()
-sphere(5)
