@@ -15,7 +15,7 @@ Improviz needs to be run from the terminal because of the way it's built, but th
 * Download the zip file from GitHub, and then make sure you unzip it somewhere.
 * On OSX you'll want to open the *Terminal* app, whilst on Windows you want to open the Command Prompt.
 * You need to browse to the unzipped folder in the terminal, which will require using the `cd` command. For example, if on OSX you downloaded and unzipped it to your *Downloads* folder, then use the command `cd /Users/<your user name>/Downloads/improviz-osx`.
-* Run the `improviz` or `improviz.exe` file depending on your platform. On OSX or Linux you will probably need to specify it's the exe in the folder you want to run, in which case use the command `./improviz` without any file extension. On windows you don't need to do this, but you do need the file extension, so run `improviz.exe`.
+* Run the `improviz` or `improviz.exe` file depending on your platform. On OSX or Linux you will probably need to specify it's a file in the folder you want to run, in which case use the command `./improviz` without any file extension. On windows you don't need to do this, but you do need the file extension, so run `improviz.exe`.
 
 If you get a white screen appearing in the top-left then things are looking good.
 
