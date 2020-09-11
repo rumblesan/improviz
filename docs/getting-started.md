@@ -10,14 +10,18 @@ Ideally it should get you up and running and familiar with some of the basic con
 ### Pre-built Binary
 
 The simplest way to start is to downloaded and un-archive the pre-built release for your system from the [GitHub Releases](https://github.com/rumblesan/improviz/releases) page.
+Improviz needs to be run from the terminal because of the way it's built, but this is easy to do.
 
-* Open a terminal
-* Browse to the unzipped folder
-* Run the `improviz` or `improviz.exe` file depending on your platform
+* Download the zip file from GitHub, and then make sure you unzip it somewhere.
+* On OSX you'll want to open the *Terminal* app, whilst on Windows you want to open the Command Prompt.
+* You need to browse to the unzipped folder in the terminal, which will require using the `cd` command. For example, if on OSX you downloaded and unzipped it to your *Downloads* folder, then use the command `cd /Users/<your user name>/Downloads/improviz-osx`.
+* Run the `improviz` or `improviz.exe` file depending on your platform. On OSX or Linux you will probably need to specify it's the exe in the folder you want to run, in which case use the command `./improviz` without any file extension. On windows you don't need to do this, but you do need the file extension, so run `improviz.exe`.
 
 If you get a white screen appearing in the top-left then things are looking good.
 
 Depending on the system you're running on, you may get a prompt asking `Do you want the application “improviz” to accept incoming network connections?` This is because Improviz runs an HTTP service that's used for communications between the program and the editor, so you need to allow this.
+
+If you're on OSX, then you may also get a security warning that won't let you run Improviz. This isn't anything to worry about, it's just because I'm not willing to pay Apple to code sign the app. Open up *Security & Privacy* settings, go to the *General* tab, and you should have the option to let Improviz run. Allow this, and then try restarting it from the command line.
 
 If you don't get a screen appearing, then please [raise an issue](https://github.com/rumblesan/improviz/issues) on the repository and include any error messages that may have been printed out in the console.
 
