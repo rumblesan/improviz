@@ -1,0 +1,15 @@
+
+background(155, (sin(time*10) + 1) * 128, 0)
+
+stroke(0, 0, 255)
+
+noFill()
+10 times
+	rotate(time/20)
+	cube(sin(time*2) + 5)
+
+texture(:notThere)
+10 times
+	rotate(time/10)
+	cube(5)
+
