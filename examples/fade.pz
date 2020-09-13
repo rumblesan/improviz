@@ -1,0 +1,7 @@
+
+texture(:crystal)
+materialVar(:Threshold, 0.9)
+material(:fade)
+
+rotate(time/10)
+cube(5)

@@ -13,3 +13,5 @@ materials:
     file: barycentric.yaml
   - name: wobbler
     file: wobbler.yaml
+  - name: fade
+    file: fade.yaml

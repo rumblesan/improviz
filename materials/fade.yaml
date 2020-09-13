@@ -1,0 +1,36 @@
+name: fade
+vertexShader: |
+  #version 330 core
+
+  layout(location = 0) in vec4 position;
+  layout(location = 1) in vec2 texcoord;
+
+  uniform mat4 MVPmatrix;
+
+  out vec2 Texcoord;
+
+  void main() {
+      gl_Position = MVPmatrix * position;
+      Texcoord = texcoord;
+  }
+fragmentShader: |
+  #version 330 core
+  precision mediump float;
+
+  in vec2 Texcoord;
+
+  uniform sampler2D Texture;
+  uniform float Threshold;
+
+  out vec4 finalColour;
+
+
+  void main() {
+      vec4 tc = texture(Texture, Texcoord);
+      float brightness  =  sqrt( 0.241 * tc.r + 0.691 * tc.g + 0.068 * tc.b );
+      if (brightness > Threshold) {
+        discard;
+      } else {
+        finalColour = tc;
+      }
+  }
