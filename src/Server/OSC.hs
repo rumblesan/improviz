@@ -36,6 +36,7 @@ import qualified Configuration                 as C
 import qualified Configuration.OSC             as CO
 import           Improviz                       ( ImprovizEnv )
 import qualified Improviz                      as I
+import qualified Improviz.UI                   as IUI
 
 import           Language.Ast                   ( Value(Null, Number, Symbol) )
 import           Logging                        ( logDebug
@@ -50,6 +51,9 @@ handleMessage env (Message addr datem) =
         (["", "vars", name], [value]) -> atomically $ modifyTVar
           (env ^. I.externalVars)
           (M.insert name (datumValue value))
+        (["", "toggle", "text"], []) -> atomically $ modifyTVar
+          (env ^. I.ui)
+          IUI.toggleTextDisplay
         _ -> logError "invalid OSC address"
  where
   datumValue dm = case datum_tag dm of
