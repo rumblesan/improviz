@@ -36,8 +36,12 @@ Can be used to set the value of external variables within Improviz which can the
 
 Improviz can accept OSC messages to set and change the value of external variables within the system which can then be accessed via the [ext](./reference.md#ext) function. The format for this is very simple.
 
-`"/vars/<varname>" <int|float|string>`
+`/vars/<varname> <int|float|string>`
 
 The OSC server must be enabled by setting the flag in the configuration. The default port is *5510* but can also be changed in the config.
 
 Multiple variables can be set by sending message bundles.
+
+Displaying the code overlay can also be toggled with OSC, and just requires sending a message with the path
+
+`/toggle/text`
