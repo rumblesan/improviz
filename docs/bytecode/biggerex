@@ -1,7 +1,7 @@
 
 a = time
 
-10 times with i
+loop 10 times with i
   rotate(a / 10, a, i)
   box(1)
 

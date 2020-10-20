@@ -20,7 +20,7 @@ test_loop_program =
   let
     program
       = "matrix(:rotate, 0.1, 0.2, 0.3)\n\
-        \3 times with i\n\
+        \loop 3 times with i\n\
         \\tmatrix(:rotate, 0.2, 0.2, 0.2)\n\
         \\tshape(:cube, i, i, i)\n\n\n"
     expectedGfx =

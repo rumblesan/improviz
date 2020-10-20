@@ -25,7 +25,7 @@ parserLoopTests = testGroup
 
 test_parses_simple_loop :: Assertion
 test_parses_simple_loop =
-  let program = "4 times\n\trotate()\n\tbox()\n"
+  let program = "loop 4 times\n\trotate()\n\tbox()\n"
       rot =
           ElExpression $ EApp $ Application (LocalVariable "rotate") [] Nothing
       box = ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing
@@ -36,7 +36,7 @@ test_parses_simple_loop =
 test_parses_loop_with_var :: Assertion
 test_parses_loop_with_var =
   let
-    program = "4 times with i\n\trotate()\n\tbox(i, i, i)\n"
+    program = "loop 4 times with i\n\trotate()\n\tbox(i, i, i)\n"
     rot = ElExpression $ EApp $ Application (LocalVariable "rotate") [] Nothing
     boxargs =
       [ ApplicationSingleArg $ EVar $ LocalVariable "i"
@@ -53,7 +53,7 @@ test_parses_loop_with_var =
 test_parses_loop_with_expr_number :: Assertion
 test_parses_loop_with_expr_number =
   let
-    program = "(3 + 4) times\n\trotate()\n\tbox()\n"
+    program = "loop (3 + 4) times\n\trotate()\n\tbox()\n"
     numExpr = BinaryOp "+" (EVal $ Number 3) (EVal $ Number 4)
     rot = ElExpression $ EApp $ Application (LocalVariable "rotate") [] Nothing
     box = ElExpression $ EApp $ Application (LocalVariable "box") [] Nothing
@@ -65,7 +65,7 @@ test_parses_loop_with_expr_number =
 test_parses_loop_with_expr_number_and_loop_var :: Assertion
 test_parses_loop_with_expr_number_and_loop_var =
   let
-    program = "(5 * 2) times with i\n\trotate(i)\n\tbox(i)\n"
+    program = "loop (5 * 2) times with i\n\trotate(i)\n\tbox(i)\n"
     numExpr = BinaryOp "*" (EVal $ Number 5) (EVal $ Number 2)
     rotArgs = [ApplicationSingleArg $ EVar $ LocalVariable "i"]
     rot =

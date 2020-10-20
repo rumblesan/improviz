@@ -26,7 +26,7 @@ Loops allow you to repeatedly call some lines of code. The piece of code that's 
 ```
 stroke(0, 0, 0)
 fill(255, 0, 0)
-100 times
+loop 100 times
 	rotate()
 	cube(8, 8, 8)
 ```
@@ -37,11 +37,13 @@ Optional `with` variable can be used as well.
 stroke(0, 0, 0)
 fill(255, 0, 0)
 n = 100
-n times with i
+loop n times with i
 	rotate()
   move(i)
 	cube(8, 8, 8)
 ```
+
+**NOTE** Previously the `loop` keyword was optional but since version 0.9 of Improviz it is now required.
 
 ## Comments
 
@@ -95,7 +97,7 @@ cube(a) // cube will be of size 3
 Control flow can be done using `if`, `elif` and `else`. The number 0 is considered False, with anything else being considered True.
 
 ```
-10 times with x
+loop 10 times with x
   if (x % 3 < 1)
     fill(255, 0, 0)
   elif (x % 3 < 2)
@@ -155,8 +157,8 @@ These blocks can also have arguments defined so that values can be passed from t
 
 ```
 func gridit(x, y, &blk)
-  x times with xVal
-    y times with yVal
+  loop x times with xVal
+    loop y times with yVal
       move(xVal, yVal, 0)
         &blk(xVal, yVal)
 

@@ -1,10 +1,9 @@
 
 func grid(width, height, &blk)
 	if (!isNull(blk))
-		width times with x
-			height times with y
+		loop width times with x
+			loop height times with y
 				pushScope()
 				matrix(:move, x, y, 0)
 				blk()
 				popScope()
-

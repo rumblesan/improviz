@@ -49,7 +49,7 @@ background(0, 255, 100)
 noStroke()
 move(3, -3, -10)
 texture(:code)
-100 times with i
+loop 100 times with i
 	x = cos(time + (i / 10)) * 0.05
 	y = sin(time + (i / 10)) * 0.07
 	move(x, y, 0.1)

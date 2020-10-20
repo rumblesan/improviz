@@ -39,7 +39,7 @@ Open your browser and go to [http://localhost:3000/editor](http://localhost:3000
 background(255, 0, 0)
 
 fill(0, 255, 255)
-10 times
+loop 10 times
 	rotate(time, 3, time)
 	cube(4)
 ```

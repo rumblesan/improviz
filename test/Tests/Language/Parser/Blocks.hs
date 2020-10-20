@@ -39,9 +39,9 @@ test_parses_nested_indent_blocks :: Assertion
 test_parses_nested_indent_blocks =
   let
     program
-      = "10 times with x\n\
+      = "loop 10 times with x\n\
            \\trotate()\n\
-           \\t10 times with y\n\
+           \\tloop 10 times with y\n\
            \\t\trotate()\n\
            \\t\tbox()"
     expected = Program

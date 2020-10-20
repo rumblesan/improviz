@@ -431,7 +431,7 @@ Set the seed used to generate all the random numbers in a frame. The local time 
 ```
 depthCheck(0)
 
-10 times
+loop 10 times
 	rotate(time/3)
 	cube(4)
 ```

@@ -3,6 +3,6 @@ noFill()
 background(0)
 scale(16)
 
-10 times
+loop 10 times
 	rotate(time/10)
 	sphere()
