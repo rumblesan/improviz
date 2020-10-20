@@ -52,6 +52,15 @@ Depending on your platform it may be necessary to install some or all of the fol
 * freeglut3-dev
 * zlib1g-dev
 
+From there, you'll be able to run what was just built using
+
+```bash
+stack exec improviz
+```
+
+which will use the *improviz.yaml* file in the root of the repository.
+
+For more information about building and installing Improviz, check the [development documentation](docs/development.md).
 
 ## Running
 
