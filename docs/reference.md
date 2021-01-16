@@ -135,11 +135,11 @@ sphere(3)
 
 Sets the line thickness of the stroke when drawing a shape. The default is 0.02. Currently a value of 0.5 will cause the stroke to cover the entire face of a shape.
 
-### noFill
+### noStroke
 
 ```
 background(255, 0, 0)
-noFill()
+noStroke()
 cube(3)
 ```
 
