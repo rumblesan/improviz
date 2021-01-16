@@ -18,6 +18,7 @@ module Configuration
   , osc
   , apptitle
   , decorated
+  , showText
   , getConfig
   , loadFolderConfig
   )
@@ -63,6 +64,7 @@ data ImprovizConfig = ImprovizConfig
   , _osc                :: ImprovizOSCConfig
   , _apptitle           :: String
   , _decorated          :: Bool
+  , _showText           :: Bool
   } deriving (Show)
 
 makeLenses ''ImprovizConfig
@@ -86,6 +88,7 @@ defaultConfig = ImprovizConfig { _screenWidth         = 640
                                , _osc                 = defaultOSCConfig
                                , _apptitle            = "Improviz"
                                , _decorated           = False
+                               , _showText            = True
                                }
 
 instance FromJSON ImprovizConfig where
@@ -135,6 +138,9 @@ instance FromJSON ImprovizConfig where
       <*> v
       .:? "decorated"
       .!= (defaultConfig ^. decorated)
+      <*> v
+      .:? "showText"
+      .!= (defaultConfig ^. showText)
   parseJSON _ = fail "Expected Object for Config value"
 
 getConfig :: IO ImprovizConfig

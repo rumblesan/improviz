@@ -25,6 +25,7 @@ codeFiles:
   - "./usercode/seq.pz"
 debug: false
 decorated: false
+showText: true
 apptitle: "Improviz"
 serverPort: 3000
 osc:

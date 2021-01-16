@@ -11,8 +11,5 @@ data ImprovizUI = ImprovizUI
 
 makeLenses ''ImprovizUI
 
-defaultUI :: ImprovizUI
-defaultUI = ImprovizUI True ""
-
 toggleTextDisplay :: ImprovizUI -> ImprovizUI
 toggleTextDisplay = over displayText not

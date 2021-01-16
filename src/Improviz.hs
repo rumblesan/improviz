@@ -32,6 +32,7 @@ import           Lens.Simple                    ( makeLenses
 
 import           Configuration                  ( ImprovizConfig
                                                 , codeFiles
+                                                , showText
                                                 )
 import           Gfx.Engine                     ( GfxEngine )
 import           Gfx.Context                    ( GfxContext
@@ -41,9 +42,7 @@ import           Gfx.Context                    ( GfxContext
 import           Improviz.Runtime               ( ImprovizRuntime
                                                 , makeRuntimeState
                                                 )
-import           Improviz.UI                    ( ImprovizUI
-                                                , defaultUI
-                                                )
+import           Improviz.UI                    ( ImprovizUI(..) )
 import qualified Language                      as L
 import qualified Language.Ast                  as LA
 import           Language.Parser.Errors         ( prettyPrintErrors )
@@ -68,11 +67,10 @@ createEnv config gfx = do
   logInfo "*****************************"
   logInfo "Creating Improviz Environment"
   startTime <- getPOSIXTime
-  uiState   <- newTVarIO defaultUI
   gfxState  <- newTVarIO gfx
   let gfxContext = createGfxContext gfxState
   externalVars <- newTVarIO M.empty
-  uiState      <- newTVarIO defaultUI
+  uiState      <- newTVarIO $ ImprovizUI (config ^. showText) ""
   userCode     <- readExternalCode (config ^. codeFiles)
   runtimeState <- makeRuntimeState userCode gfx gfxContext >>= newTVarIO
   return $ ImprovizEnv runtimeState
