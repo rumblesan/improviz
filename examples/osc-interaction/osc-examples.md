@@ -26,4 +26,6 @@ When you run the example, you should see that when the frequency of the tone cha
 
 ## Pure Data
 
-The Pure Data example is simpler and a bit more reactive. All the patch has is a slider that outputs a value between 0 and 1000 which gets sent to the same *freq* variable in Improviz.
+The Pure Data example is more reactive. The patch has a slider that outputs a value between 0 and 1000 which gets sent to the same *freq* variable in Improviz. It also has two message boxes which will send either the string *sphere* or *cube* to the */var/shape* variable.
+
+This string is used by Improviz to set the shape that is drawn.
