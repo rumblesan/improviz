@@ -29,6 +29,8 @@ The OSC messages that are being sent to Improviz are actually independent of the
 
 This also means that if we try to send OSC messages quicker than Improviz is running the program, then it won't necessarily get all the values.
 
+There are [example programs](https://github.com/rumblesan/improviz/tree/main/examples/osc-interaction) for sending OSC messages to Improviz from PureData and SuperCollider
+
 ## Toggling Text
 
 Displaying the code overlay can also be toggled with OSC, and just requires sending an empty message with the path
