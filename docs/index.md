@@ -24,6 +24,7 @@ The following documents should hopefully explain more of the ins and outs of usi
 * [How It Works](./how-it-works.md)
 * [Language](./language.md)
 * [Interacting](./interacting.md)
+* [OSC](./osc.md)
 * [Reference](./reference.md)
 * [Configuration](./configuration.md)
 * [Textures](./textures.md)
