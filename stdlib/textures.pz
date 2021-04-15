@@ -24,3 +24,9 @@ func animate(name, speed, &blk)
 		intMaterial(:material, :texture)
 		blk(frame)
 		popScope()
+
+func slideshow(image_list, slideshow_speed, animation_speed)
+	slideshow_speed := 1
+	image = image_list[(slideshow_speed * time) % length(image_list)]
+	animation_speed := 10
+	animate(image, animation_speed)
