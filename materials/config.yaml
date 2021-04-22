@@ -15,3 +15,6 @@ materials:
     file: wobbler.yaml
   - name: fade
     file: fade.yaml
+defaults:
+  - name: StrokeSize
+    value: 0.08

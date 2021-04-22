@@ -50,9 +50,9 @@ createGfx config textureLib width height fbWidth fbHeight = do
   post <- createPostProcessing fbWidth fbHeight
   let scaling = fromIntegral width / fromIntegral fbWidth
   trender     <- createTextRenderer config fbWidth fbHeight scaling
-  materialLib <- GM.createMaterialLib (config ^. C.materialDirectories)
+  materialCfg <- GM.createMaterialsConfig (config ^. C.materialDirectories)
   let tLibWithCode = addCodeTextureToLib trender textureLib
-  createGfxEngine config width height post trender tLibWithCode materialLib
+  createGfxEngine config width height post trender tLibWithCode materialCfg
 
 resizeGfx
   :: GfxEngine -> ImprovizConfig -> Int -> Int -> Int -> Int -> IO GfxEngine

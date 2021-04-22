@@ -3,13 +3,14 @@
 module Gfx.Materials
   ( Material(..)
   , MaterialData(..)
+  , MaterialsConfig(..)
   , MaterialLibrary
   , loadMaterial
   , destroyMaterial
   , loadMaterialString
   , loadMaterialFile
   , loadMaterialFolder
-  , createMaterialLib
+  , createMaterialsConfig
   )
 where
 
@@ -47,6 +48,11 @@ import           Configuration.Materials
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
+
+data MaterialsConfig = MaterialsConfig
+  { materialsLibrary :: MaterialLibrary
+  , varDefaults :: [(String, Float)]
+  }
 
 type MaterialLibrary = M.Map String Material
 
@@ -119,16 +125,23 @@ loadMaterialFile fp = do
   yaml <- Y.decodeFileEither fp
   either (return . Left . Y.prettyPrintParseException) loadMaterial yaml
 
-loadMaterialFolder :: FilePath -> IO [Either String Material]
+loadMaterialFolder :: FilePath -> IO ([Either String Material], [(String, Float)])
 loadMaterialFolder folderPath = do
   folderConfig <- loadFolderConfig folderPath
-  either (return . (: []) . Left) (mapM ml . materials) folderConfig
+  case folderConfig of
+    Left err -> logError err >> return ([], [])
+    Right cfg -> do
+      loadedMaterials <- mapM ml (materialsConfig cfg)
+      return (loadedMaterials, folderVarDefaults cfg)
   where ml material = loadMaterialFile (folderPath </> materialFile material)
 
-createMaterialLib :: [FilePath] -> IO MaterialLibrary
-createMaterialLib folders = do
-  (errs, materials) <-
-    partitionEithers . concat <$> mapM loadMaterialFolder folders
-  logInfo $ "Loaded " ++ show (length materials) ++ " material files"
+createMaterialsConfig :: [FilePath] -> IO MaterialsConfig
+createMaterialsConfig folders = do
+  configs <- mapM loadMaterialFolder folders
+  let (errs, materials) = partitionEithers $ concat $ fmap fst configs
   mapM_ logError errs
-  return $ M.fromList $ (\m -> (name m, m)) <$> materials
+  let varDefaults = concat $ fmap snd configs
+  logInfo $ "Loaded " ++ show (length varDefaults) ++ " material defaults"
+  logInfo $ "Loaded " ++ show (length materials) ++ " material files"
+  let materialsLib = M.fromList $ (\m -> (name m, m)) <$> materials
+  return $ MaterialsConfig materialsLib varDefaults

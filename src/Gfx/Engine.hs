@@ -28,7 +28,7 @@ import           Gfx.PostProcessing             ( AnimationStyle(NormalStyle)
                                                 )
 import           Gfx.TextRendering              ( TextRenderer )
 import           Gfx.Textures                   ( TextureLibrary )
-import           Gfx.Materials                  ( MaterialLibrary )
+import           Gfx.Materials                  ( MaterialsConfig(..), MaterialLibrary )
 import           Gfx.Types                      ( Colour(..) )
 import qualified Gfx.Setting                   as GS
 import qualified Gfx.SettingMap                as GSM
@@ -93,9 +93,9 @@ createGfxEngine
   -> PostProcessing
   -> TextRenderer
   -> TextureLibrary
-  -> MaterialLibrary
+  -> MaterialsConfig
   -> IO GfxEngine
-createGfxEngine config width height pprocess trender textLib matLib =
+createGfxEngine config width height pprocess trender textLib matCfg =
   let ratio      = width /. height
       front      = config ^. C.screen . CS.front
       back       = config ^. C.screen . CS.back
@@ -110,8 +110,8 @@ createGfxEngine config width height pprocess trender textLib matLib =
           , _material         = GS.create "basic"
           , _geometryBuffers  = gbos
           , _textureLibrary   = textLib
-          , _materialLibrary  = matLib
-          , _materialVars     = GSM.create [("StrokeSize", 0.02)]
+          , _materialLibrary  = materialsLibrary matCfg
+          , _materialVars     = GSM.create $ varDefaults matCfg
           , _viewMatrix       = view
           , _projectionMatrix = projection
           , _postFX           = pprocess
