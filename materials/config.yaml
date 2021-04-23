@@ -18,3 +18,5 @@ materials:
 defaults:
   - name: StrokeSize
     value: 0.08
+  - name: TextureAlpha
+    value: 1.0

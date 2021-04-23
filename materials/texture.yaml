@@ -20,9 +20,14 @@ fragmentShader: |
   in vec2 Texcoord;
 
   uniform sampler2D Texture;
+  uniform float TextureAlpha;
 
+  vec4 textureColours;
+  float alpha;
   out vec4 finalColour;
 
   void main() {
-      finalColour = texture(Texture, Texcoord);
+      textureColours = texture(Texture, Texcoord);
+      alpha = textureColours.a;
+      finalColour = vec4(textureColours.rgb, alpha * TextureAlpha);
   }
