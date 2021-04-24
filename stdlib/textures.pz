@@ -25,8 +25,13 @@ func animate(name, speed, &blk)
 		blk(frame)
 		popScope()
 
-func slideshow(image_list, slideshow_speed, animation_speed)
+func slideshow(image_list, slideshow_speed, animation_speed, &blk)
 	slideshow_speed := 1
 	image = image_list[(slideshow_speed * time) % length(image_list)]
 	animation_speed := 10
-	animate(image, animation_speed)
+	if (isNull(blk))
+		animate(image, animation_speed)
+	else
+		animate(image, animation_speed)
+			blk()
+
