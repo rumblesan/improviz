@@ -23,6 +23,7 @@ fragmentShader: |
   uniform float Time;
   uniform float Freq;
   uniform float Depth;
+  uniform float TextureAlpha;
 
   out vec4 finalColour;
 
@@ -33,5 +34,5 @@ fragmentShader: |
   }
 
   void main() {
-      finalColour = texture(Texture, Texcoord + wobble(Texcoord, Freq));
+      finalColour = texture(Texture, Texcoord + wobble(Texcoord, Freq)) * vec4(1, 1, 1, TextureAlpha);
   }
