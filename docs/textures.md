@@ -38,6 +38,32 @@ texture(:loop1, f)
   cube()
 ```
 
+
+## Slideshow
+
+The slideshow() function can be used to loop through a list of textures or GIF-animations.
+
+```
+slideshow([:img1, :gif2, :images], slideshow_speed, animation_speed)
+```
+
+As the first paramenter you need to give `slideshow()` a list images in hard brackets `[ ]`. After that you can set the speed of the slideshow, ie. how fast i goes to the next image on the list. Lastly you can set the speed of the animation, ie. how fast it goes through the frames of a GIF. Sane defaults are set for both speeds, so they can be omitted.
+
+These two code examples should give the same results. 
+
+```
+slideshow([:algorave, :crystal, :diagsquares])
+cube()
+```
+
+In the above we only give `slideshow()` a list and below we set both the slideshow speed and animation speed to the same as the defaults.
+
+```
+slideshow([:algorave, :crystal, :diagsquares], 1, 10)
+cube()
+```
+
+
 ## Code Text
 
 The rendered code is also available as a texture that can be applied to shapes by using the `:code` texture name.
