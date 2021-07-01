@@ -16,6 +16,11 @@ It is built in Haskell and interacts directly with OpenGL. It's very much a work
 The most up-to-date documentation can be found in [the docs folder](docs/index.md) which are also used to build the [Improviz site](https://improviz.rumblesan.com), but the README should give enough of an overview to get started.
 
 
+## Community
+
+If you find bugs, need help setting things up, are unsure where to begin, or just want to share what you've made, then there is an Improviz channel on the *TOPLAP live coding* discord. Feel free to get in contact to get an invite.
+
+
 ## Browser Version
 
 There is now a browser based version of Improviz available at [https://improviz-web.rumblesan.com/](https://improviz-web.rumblesan.com/) which has much of the functionality of the native version.
