@@ -18,7 +18,7 @@ The most up-to-date documentation can be found in [the docs folder](docs/index.m
 
 ## Community
 
-If you find bugs, need help setting things up, are unsure where to begin, or just want to share what you've made, then there is an Improviz channel on the [*TOPLAP live coding* discord](https://discord.gg/mhjekDKXXg).
+If you find bugs, need help setting things up, are unsure where to begin, or just want to share what you've made, then there is an Improviz channel on the [*TOPLAP live coding* discord](https://discord.gg/D4Enr5u7Rp).
 
 
 ## Browser Version
