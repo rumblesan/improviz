@@ -19,6 +19,7 @@ import           Gfx.Engine                     ( GfxEngine
                                                 , resetGfxEngine
                                                 )
 import           Gfx.PostProcessing             ( AnimationStyle )
+import           Language.Ast                   ( Value )
 
 data GfxContext = GfxContext { drawShape :: String -> Float -> Float -> Float -> IO ()
                              , rotate :: Float -> Float -> Float -> IO ()
@@ -30,7 +31,7 @@ data GfxContext = GfxContext { drawShape :: String -> Float -> Float -> Float ->
                              , colourStroke :: Float -> Float -> Float -> Float -> IO ()
                              , noStroke :: IO ()
                              , setMaterial :: String -> IO ()
-                             , setMaterialVar :: String -> Float -> IO ()
+                             , setMaterialVar :: String -> Value -> IO ()
                              , setBackground :: Float -> Float -> Float -> IO ()
                              , pushScope :: IO ()
                              , popScope :: IO ()

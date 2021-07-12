@@ -36,6 +36,7 @@ import           Linear.Matrix                  ( M44
                                                 , (!*!)
                                                 )
 
+import           Language.Ast                   (Value(..))
 import qualified Graphics.GL                   as GLRaw
 import qualified Graphics.Rendering.OpenGL     as GL
 import           Graphics.Rendering.OpenGL      ( ($=)
@@ -45,6 +46,7 @@ import           Graphics.Rendering.OpenGL      ( ($=)
                                                 , UniformLocation(..)
                                                 , currentProgram
                                                 )
+import           Graphics.Rendering.OpenGL.GL.Shaders.Attribs as GLS
 
 import           Gfx.Engine
 import qualified Gfx.Setting                   as GS
@@ -74,44 +76,44 @@ getFullMatrix = do
   vMat <- use viewMatrix
   return $ (pMat !*! vMat) !*! mMat
 
-setUniform :: (String, UniformLocation) -> GraphicsEngine ()
-setUniform ("MVPmatrix", UniformLocation uniformLoc) = do
+setUniform :: (String, GL.VariableType, UniformLocation) -> GraphicsEngine ()
+setUniform ("MVPmatrix", _, UniformLocation uniformLoc) = do
   mvpMat <- getFullMatrix
   liftIO
     $ with mvpMat
     $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
     . castPtr
-setUniform ("Mmatrix", UniformLocation uniformLoc) = do
+setUniform ("Mmatrix", _, UniformLocation uniformLoc) = do
   modelMatrix <- head <$> use matrixStack
   liftIO
     $ with modelMatrix
     $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
     . castPtr
-setUniform ("Vmatrix", UniformLocation uniformLoc) = do
+setUniform ("Vmatrix", _, UniformLocation uniformLoc) = do
   viewMat <- use viewMatrix
   liftIO
     $ with viewMat
     $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
     . castPtr
-setUniform ("Pmatrix", UniformLocation uniformLoc) = do
+setUniform ("Pmatrix", _, UniformLocation uniformLoc) = do
   projMat <- use projectionMatrix
   liftIO
     $ with projMat
     $ GLRaw.glUniformMatrix4fv uniformLoc 1 (fromBool True)
     . castPtr
-setUniform ("FillColour", uniformLoc) = do
+setUniform ("FillColour", _, uniformLoc) = do
   gfxFillStyle <- use (fillStyle . GS.value)
   liftIO $ case gfxFillStyle of
     (GFXFillColour fillColour) ->
       GL.uniform uniformLoc $= colToGLCol fillColour
     GFXNoFill -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
-setUniform ("StrokeColour", uniformLoc) = do
+setUniform ("StrokeColour", _, uniformLoc) = do
   gfxStrokeStyle <- use (strokeStyle . GS.value)
   liftIO $ case gfxStrokeStyle of
     (GFXStrokeColour strokeColour) ->
       GL.uniform uniformLoc $= colToGLCol strokeColour
     GFXNoStroke -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
-setUniform ("Texture", uniformLoc) = do
+setUniform ("Texture", _, uniformLoc) = do
   (GFXTextureStyling textName textFrame) <- use (textureStyle . GS.value)
   textureLib                             <- use textureLibrary
   case M.lookup textName textureLib >>= M.lookup textFrame of
@@ -119,11 +121,18 @@ setUniform ("Texture", uniformLoc) = do
     Just texture -> liftIO $ do
       GL.activeTexture $= TextureUnit 0
       GL.textureBinding Texture2D $= Just texture
-setUniform (name, uniformLoc) = do
+setUniform (name, uniformType, uniformLoc) = do
   matVar <- use (materialVars . GSM.value name)
   case matVar of
     Nothing -> liftIO $ logError $ name ++ " is not a known uniform"
-    Just v  -> liftIO (GL.uniform uniformLoc $= v)
+    Just v  -> valueToUniform v uniformType uniformLoc
+
+valueToUniform :: Value -> GL.VariableType -> GL.UniformLocation -> GraphicsEngine ()
+valueToUniform (Number v) utype uniformLoc =
+  liftIO $ case utype of
+             GLS.Float' -> GL.uniform uniformLoc $= v
+valueToUniform value _ _ = liftIO $ logError "Unsupported value type"
+
 
 drawTriangles :: GeometryBuffers -> GraphicsEngine ()
 drawTriangles geoData = do
@@ -164,7 +173,7 @@ move x y z = modify' (multMatrix $ translateMat x y z)
 setMaterial :: String -> GraphicsEngine ()
 setMaterial = assign (material . GS.value)
 
-setMaterialVariable :: String -> Float -> GraphicsEngine ()
+setMaterialVariable :: String -> Value -> GraphicsEngine ()
 setMaterialVariable name value =
   assign (materialVars . GSM.value name) (Just value)
 
