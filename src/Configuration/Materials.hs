@@ -2,11 +2,13 @@
 
 module Configuration.Materials where
 
+import Language.Ast (Value(..))
 import Data.Maybe (fromMaybe)
 import           Data.Yaml                      ( FromJSON(..)
                                                 , (.:), (.:?)
                                                 )
 import qualified Data.Yaml                     as Y
+import Configuration.Ast
 
 data MaterialConfig = MaterialConfig
   { materialName :: String
@@ -19,7 +21,7 @@ instance FromJSON MaterialConfig where
 
 data MaterialFolderConfig = MaterialFolderConfig
   { materialsConfig :: [MaterialConfig]
-  , folderVarDefaults :: [(String, Float)]
+  , folderVarDefaults :: [(String, Value)]
   } deriving (Eq, Show)
 
 instance FromJSON MaterialFolderConfig where

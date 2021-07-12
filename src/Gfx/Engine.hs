@@ -17,6 +17,7 @@ import           Lens.Simple                    ( makeLenses
                                                 , (^.)
                                                 )
 
+import           Language.Ast                   (Value)
 import           Gfx.Geometries                 ( Geometries
                                                 , createAllGeometries
                                                 )
@@ -57,7 +58,7 @@ data SavableState = SavableState
   , _savedStrokeStyles  :: GFXStrokeStyling
   , _savedTextureStyles :: GFXTextureStyling
   , _savedMaterials     :: String
-  , _savedMaterialVars  :: M.Map String Float
+  , _savedMaterialVars  :: M.Map String Value
   } deriving (Show)
 
 makeLenses ''SavableState
@@ -70,7 +71,7 @@ data GfxEngine = GfxEngine
   , _geometryBuffers    :: Geometries
   , _textureLibrary     :: TextureLibrary
   , _materialLibrary    :: MaterialLibrary
-  , _materialVars       :: GSM.SettingMap String Float
+  , _materialVars       :: GSM.SettingMap String Value
   , _viewMatrix         :: M44 GLfloat
   , _projectionMatrix   :: M44 GLfloat
   , _postFX             :: PostProcessing

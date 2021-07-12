@@ -37,6 +37,7 @@ import qualified Data.Yaml                     as Y
 import           Data.Yaml                      ( FromJSON(..)
                                                 , (.:)
                                                 )
+import Language.Ast                             (Value(..))
 
 import           Gfx.LoadShaders                ( ShaderInfo(..)
                                                 , ShaderSource(StringSource)
@@ -51,7 +52,7 @@ import           Logging                        ( logError
 
 data MaterialsConfig = MaterialsConfig
   { materialsLibrary :: MaterialLibrary
-  , varDefaults :: [(String, Float)]
+  , varDefaults :: [(String, Value)]
   }
 
 type MaterialLibrary = M.Map String Material
@@ -76,8 +77,8 @@ instance FromJSON MaterialData where
 data Material = Material
   { name :: String
   , program :: GL.Program
-  , uniforms :: [(String, GL.UniformLocation)]
-  , attributes :: [(String, GL.AttribLocation)]
+  , uniforms :: [(String, GL.VariableType, GL.UniformLocation)]
+  , attributes :: [(String, GL.VariableType, GL.AttribLocation)]
   } deriving (Show, Eq)
 
 loadMaterial :: MaterialData -> IO (Either String Material)
@@ -91,23 +92,21 @@ loadMaterial md = do
     Right program -> do
       GL.currentProgram $= Just program
       uniformInfo <- GL.get $ GL.activeUniforms program
-      uniforms    <- mapM (\(_, _, uName) -> getUniformLoc program uName)
-                          uniformInfo
+      uniforms    <- mapM (getUniformLoc program) uniformInfo
       attribInfo <- GL.get $ GL.activeAttribs program
-      attributes <- mapM (\(_, _, aName) -> getAttribLoc program aName)
-                         attribInfo
+      attributes <- mapM (getAttribLoc program) attribInfo
       return $ Right $ Material (mdName md) program uniforms attributes
     Left err -> return $ Left (show err)
 
-getUniformLoc :: GL.Program -> String -> IO (String, GL.UniformLocation)
-getUniformLoc p un = do
-  ul <- GL.get $ GL.uniformLocation p un
-  return (un, ul)
+getUniformLoc :: GL.Program -> (GL.GLint, GL.VariableType, String) -> IO (String, GL.VariableType, GL.UniformLocation)
+getUniformLoc p (_, vt, uname) = do
+  ul <- GL.get $ GL.uniformLocation p uname
+  return (uname, vt, ul)
 
-getAttribLoc :: GL.Program -> String -> IO (String, GL.AttribLocation)
-getAttribLoc p an = do
-  al <- GL.get $ GL.attribLocation p an
-  return (an, al)
+getAttribLoc :: GL.Program -> (GL.GLint, GL.VariableType, String) -> IO (String, GL.VariableType, GL.AttribLocation)
+getAttribLoc p (_, vt, aname) = do
+  al <- GL.get $ GL.attribLocation p aname
+  return (aname, vt, al)
 
 destroyMaterial :: Material -> IO ()
 destroyMaterial material = do
@@ -125,7 +124,7 @@ loadMaterialFile fp = do
   yaml <- Y.decodeFileEither fp
   either (return . Left . Y.prettyPrintParseException) loadMaterial yaml
 
-loadMaterialFolder :: FilePath -> IO ([Either String Material], [(String, Float)])
+loadMaterialFolder :: FilePath -> IO ([Either String Material], [(String, Value)])
 loadMaterialFolder folderPath = do
   folderConfig <- loadFolderConfig folderPath
   case folderConfig of
