@@ -18,8 +18,10 @@ fragmentShader: |
 
   in vec3 Barycentric;
 
+  uniform vec4 ColourMult;
+
   out vec4 finalColour;
 
   void main(void) {
-    finalColour = vec4(Barycentric, 1.0);
+    finalColour = vec4(Barycentric, 1.0) * ColourMult;
   }
