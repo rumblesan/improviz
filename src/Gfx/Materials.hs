@@ -95,6 +95,7 @@ loadMaterial md = do
       uniforms    <- mapM (getUniformLoc program) uniformInfo
       attribInfo <- GL.get $ GL.activeAttribs program
       attributes <- mapM (getAttribLoc program) attribInfo
+      logInfo $ "Loading " ++ (mdName md) ++ " material"
       return $ Right $ Material (mdName md) program uniforms attributes
     Left err -> return $ Left (show err)
 

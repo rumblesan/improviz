@@ -8,7 +8,7 @@ import           Data.Yaml                      ( FromJSON(..)
                                                 , (.:), (.:?)
                                                 )
 import qualified Data.Yaml                     as Y
-import Configuration.Ast
+import Configuration.Ast()
 
 data MaterialConfig = MaterialConfig
   { materialName :: String

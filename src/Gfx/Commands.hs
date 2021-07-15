@@ -123,15 +123,33 @@ setUniform ("Texture", _, uniformLoc) = do
       GL.textureBinding Texture2D $= Just texture
 setUniform (name, uniformType, uniformLoc) = do
   matVar <- use (materialVars . GSM.value name)
-  case matVar of
-    Nothing -> liftIO $ logError $ name ++ " is not a known uniform"
+  liftIO $ case matVar of
+    Nothing -> logError $ name ++ " is not a known uniform"
     Just v  -> valueToUniform v uniformType uniformLoc
 
-valueToUniform :: Value -> GL.VariableType -> GL.UniformLocation -> GraphicsEngine ()
-valueToUniform (Number v) utype uniformLoc =
-  liftIO $ case utype of
-             GLS.Float' -> GL.uniform uniformLoc $= v
-valueToUniform value _ _ = liftIO $ logError "Unsupported value type"
+valueToUniform :: Value -> GL.VariableType -> GL.UniformLocation -> IO ()
+valueToUniform value utype uniformLoc =
+  case valueToList value of
+    Left err -> logError err
+    Right v -> case utype of
+                 GLS.Float' -> GL.uniform uniformLoc $= (v !! 0)
+                 GLS.FloatVec2 -> GL.uniform uniformLoc $= (GL.Vector2 (v !! 0) (v !! 1))
+                 GLS.FloatVec3 -> GL.uniform uniformLoc $= (GL.Vector3 (v !! 0) (v !! 1) (v !! 2) )
+                 GLS.FloatVec4 -> GL.uniform uniformLoc $= (GL.Vector4 (v !! 0) (v !! 1) (v !! 2) (v !! 3) )
+
+valueToList :: Value -> Either String [Float]
+valueToList (Number v) = Right $ replicate 4 v
+valueToList (VList valList) = case valsToFloats valList of
+                                   Just [] -> Right $ replicate 4 0
+                                   Just vals -> Right $ (vals ++ [1, 1, 1, 1])
+                                   Nothing -> Left "Invalid list for material variable"
+valueToList _ = Left "Invalid list for material variable"
+
+valsToFloats :: [Value] -> Maybe [Float]
+valsToFloats vals = mapM valToFloat vals
+  where
+    valToFloat (Number n) = Just n
+    valToFloat _ = Nothing
 
 
 drawTriangles :: GeometryBuffers -> GraphicsEngine ()
