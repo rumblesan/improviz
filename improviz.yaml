@@ -11,9 +11,9 @@ textureDirectories:
 #  - "./hellocatfood/gifs"
 geometryDirectories:
   - "./geometries"
+#  - "./hellocatfood/geometries"
 materialDirectories:
   - "./materials"
-#  - "./hellocatfood/geometries"
 codeFiles:
   - "./stdlib/variables.pz"
   - "./stdlib/transformations.pz"
