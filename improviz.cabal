@@ -136,6 +136,7 @@ test-suite improviz-test
                      , parser-combinators >= 1
                      , random
                      , safe
+                     , scientific
                      , stm
                      , test-framework
                      , test-framework-hunit
