@@ -30,7 +30,7 @@ type Parser = Parsec Void String
 
 type RawData = [Either (ParseError String Void) Statement]
 
-lineCmnt = L.skipLineComment "//"
+lineCmnt = L.skipLineComment "//" <|> L.skipLineComment "#"
 blockCmnt = L.skipBlockComment "/*" "*/"
 
 scn :: Parser ()

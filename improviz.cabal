@@ -209,6 +209,7 @@ test-suite improviz-test
                      , Tests.Language.Parser
                      , Tests.Language.Parser.Assignment
                      , Tests.Language.Parser.Blocks
+                     , Tests.Language.Parser.Comments
                      , Tests.Language.Parser.ErrorCatching
                      , Tests.Language.Parser.Functions
                      , Tests.Language.Parser.General
