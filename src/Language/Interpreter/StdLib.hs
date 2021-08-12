@@ -1,7 +1,6 @@
 module Language.Interpreter.StdLib
   ( addStdLib
-  )
-where
+  ) where
 
 import           Language.Interpreter.StdLib.BlockHandling
                                                 ( addBlockHandlingStdLib )

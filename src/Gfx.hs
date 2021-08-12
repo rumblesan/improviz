@@ -3,37 +3,35 @@ module Gfx
   , renderGfx
   , createGfx
   , resizeGfx
-  )
-where
+  ) where
 
 import           Lens.Simple                    ( (^.) )
 
 import           Graphics.Rendering.OpenGL
 
 import           Gfx.Engine                     ( GfxEngine
-                                                , createGfxEngine
-                                                , resizeGfxEngine
+                                                , animationStyle
                                                 , backgroundColor
+                                                , createGfxEngine
                                                 , depthChecking
                                                 , postFX
-                                                , animationStyle
+                                                , resizeGfxEngine
                                                 , textRenderer
                                                 )
+import qualified Gfx.Materials                 as GM
 import           Gfx.OpenGL                     ( colToGLCol )
 import           Gfx.PostProcessing             ( AnimationStyle(..)
-                                                , createPostProcessing
                                                 , createPostProcessing
                                                 , deletePostProcessing
                                                 , renderPostProcessing
                                                 , usePostProcessing
                                                 )
+import qualified Gfx.Setting                   as GS
 import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 , createTextRenderer
                                                 , resizeTextRendererScreen
                                                 )
 import           Gfx.Textures                   ( TextureLibrary )
-import qualified Gfx.Materials                 as GM
-import qualified Gfx.Setting                   as GS
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C

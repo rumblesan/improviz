@@ -2,8 +2,7 @@
 
 module Server.Http
   ( startHttpServer
-  )
-where
+  ) where
 
 import           Network.Wai.Handler.Warp
 import           Web.Scotty
@@ -27,12 +26,12 @@ import           Logging                        ( logError
                                                 , logInfo
                                                 )
 
+import qualified Gfx.Materials                 as GM
 import qualified Language                      as L
 import           Language.Ast                   ( Value(Number) )
-import           Language.Parser.Errors         ( prettyPrintErrors
-                                                , parseErrorsOut
+import           Language.Parser.Errors         ( parseErrorsOut
+                                                , prettyPrintErrors
                                                 )
-import qualified Gfx.Materials                 as GM
 import           Server.Protocol
 
 import qualified Configuration                 as C
@@ -42,8 +41,8 @@ import qualified Improviz.Runtime              as IR
 import           Improviz.UI                    ( ImprovizUI )
 import qualified Improviz.UI                   as IUI
 
-import           Lens.Simple                    ( set
-                                                , (^.)
+import           Lens.Simple                    ( (^.)
+                                                , set
                                                 )
 
 editorHtmlFilePath :: FilePath

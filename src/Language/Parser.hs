@@ -3,23 +3,23 @@
 module Language.Parser where
 
 import           Control.Monad                  ( void )
-import           Data.Void
-import           Data.Maybe                     ( maybeToList )
 import           Data.Either                    ( partitionEithers )
-import           Data.Monoid                    ( (<>) )
 import qualified Data.List.NonEmpty            as NE
+import           Data.Maybe                     ( maybeToList )
+import           Data.Monoid                    ( (<>) )
+import           Data.Void
 
 import           GHC.Float                      ( double2Float )
 
+import           Control.Monad.Combinators.Expr
 import           Text.Megaparsec
 import           Text.Megaparsec.Char           ( alphaNumChar
-                                                , space1
-                                                , letterChar
-                                                , eol
-                                                , string
                                                 , char
+                                                , eol
+                                                , letterChar
+                                                , space1
+                                                , string
                                                 )
-import           Control.Monad.Combinators.Expr
 import qualified Text.Megaparsec.Char.Lexer    as L
 
 import           Language.Ast
@@ -67,7 +67,8 @@ rws = ["if", "elif", "else", "null", "func", "loop", "times", "with", "time"]
 identifier :: Parser String
 identifier = (lexeme . try) (p >>= check)
  where
-  p = (:) <$> (letterChar <|> char '$' <|> char '_') <*> many (alphaNumChar <|> char '$' <|> char '_')
+  p = (:) <$> (letterChar <|> char '$' <|> char '_') <*> many
+    (alphaNumChar <|> char '$' <|> char '_')
   check x = if x `elem` rws
     then fail $ "keyword " ++ show x ++ " cannot be an identifier"
     else return x

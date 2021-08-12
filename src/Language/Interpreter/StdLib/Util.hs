@@ -1,21 +1,16 @@
 module Language.Interpreter.StdLib.Util
   ( addUtilStdLib
-  )
-where
+  ) where
 
 import           Control.Monad                  ( mapM_ )
 import           Control.Monad.Except           ( throwError )
 import           Control.Monad.Trans            ( liftIO )
-import           System.Random                  ( random
-                                                , mkStdGen
+import           System.Random                  ( mkStdGen
+                                                , random
                                                 )
 
-import           Logging                        ( logInfo )
-import           Lens.Simple                    ( use
-                                                , assign
-                                                )
-import           Language.Ast
 import           Gfx.Context                    ( setDepthChecking )
+import           Language.Ast
 import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , getExternal
                                                 , getSystemVar
@@ -24,6 +19,10 @@ import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , withGfxCtx
                                                 )
 import           Language.Interpreter.Values
+import           Lens.Simple                    ( assign
+                                                , use
+                                                )
+import           Logging                        ( logInfo )
 
 addUtilStdLib :: InterpreterProcess ()
 addUtilStdLib = do

@@ -1,7 +1,6 @@
 module Language.Interpreter.StdLib.BlockHandling
   ( addBlockHandlingStdLib
-  )
-where
+  ) where
 
 import           Language.Ast                   ( Value(Null) )
 import           Language.Interpreter.Types     ( InterpreterProcess
@@ -9,8 +8,8 @@ import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , withGfxCtx
                                                 )
 
-import           Gfx.Context                    ( pushScope
-                                                , popScope
+import           Gfx.Context                    ( popScope
+                                                , pushScope
                                                 )
 
 addBlockHandlingStdLib :: InterpreterProcess ()

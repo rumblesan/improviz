@@ -1,12 +1,12 @@
 module Gfx.Matrices where
 
-import           Linear.Matrix                  ( M44 )
-import           Linear.V3                      ( V3(..) )
-import           Linear.V4                      ( V4(..) )
 import           Linear.Epsilon                 ( Epsilon )
+import           Linear.Matrix                  ( M44 )
 import           Linear.Projection              ( lookAt
                                                 , perspective
                                                 )
+import           Linear.V3                      ( V3(..) )
+import           Linear.V4                      ( V4(..) )
 
 viewMat :: (Floating f, Num f, Epsilon f) => V3 f -> V3 f -> V3 f -> M44 f
 viewMat = lookAt

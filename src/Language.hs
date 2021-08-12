@@ -5,12 +5,11 @@ module Language
   , setInterpreterVariables
   , updateSystemVars
   , module Language.Ast
-  )
-where
+  ) where
 
-import qualified Data.Map.Strict               as M
 import           Control.Monad                  ( forM_ )
 import           Control.Monad.Trans            ( liftIO )
+import qualified Data.Map.Strict               as M
 import           Lens.Simple                    ( set )
 
 import           Gfx.Context                    ( GfxContext )
@@ -21,17 +20,17 @@ import           Language.Ast                   ( Identifier
                                                 )
 import           Language.Ast.Transformers      ( transform )
 import           Language.Interpreter           ( interpretLanguage )
+import           Language.Interpreter.StdLib    ( addStdLib )
 import qualified Language.Interpreter.Types    as LT
 import           Language.Interpreter.Types     ( InterpreterState
                                                 , externals
-                                                , gfxContext
-                                                , systemVars
-                                                , setGlobal
                                                 , getGlobalNames
-                                                , setSystemVars
+                                                , gfxContext
                                                 , runInterpreterM
+                                                , setGlobal
+                                                , setSystemVars
+                                                , systemVars
                                                 )
-import           Language.Interpreter.StdLib    ( addStdLib )
 import           Language.Parser                ( parseProgram )
 import           Language.Parser.Errors         ( ParserError )
 import           Logging                        ( logInfo )

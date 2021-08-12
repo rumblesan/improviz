@@ -1,12 +1,11 @@
 module Language.Interpreter.StdLib.PostEffects
   ( addPostEffectsStdLib
-  )
-where
+  ) where
 
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 
-import           Language.Ast                   ( Value(Symbol, Null) )
 import           Gfx.Context                    ( setAnimationStyle )
+import           Language.Ast                   ( Value(Null, Symbol) )
 import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , setBuiltIn
                                                 , withGfxCtx

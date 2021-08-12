@@ -1,25 +1,24 @@
 module Language.Interpreter.StdLib.ColourOps
   ( addColourStdLib
-  )
-where
+  ) where
 
 import           Control.Monad.Except
-import           Data.Maybe                     ( maybe
-                                                , listToMaybe
+import           Data.Maybe                     ( listToMaybe
+                                                , maybe
                                                 )
 
-import           Gfx.Context                    ( textureFill
-                                                , colourFill
-                                                , noFill
+import           Gfx.Context                    ( colourFill
                                                 , colourStroke
+                                                , noFill
                                                 , noStroke
                                                 , setBackground
+                                                , textureFill
                                                 )
-import           Language.Ast                   ( Value(Number, Null, Symbol) )
+import           Language.Ast                   ( Value(Null, Number, Symbol) )
 import           Language.Interpreter.Types     ( InterpreterProcess
-                                                , withGfxCtx
                                                 , getTextureInfo
                                                 , setBuiltIn
+                                                , withGfxCtx
                                                 )
 import           Language.Interpreter.Values    ( getNumberValue )
 

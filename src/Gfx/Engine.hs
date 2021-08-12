@@ -3,23 +3,25 @@
 
 module Gfx.Engine where
 
-import qualified Data.Map                      as M
 import           Control.Monad.State.Strict
-import           Linear.V3                      ( V3(..) )
-import           Linear.Matrix                  ( M44
-                                                , identity
-                                                , (!*!)
-                                                )
+import qualified Data.Map                      as M
 import           Graphics.Rendering.OpenGL      ( GLfloat )
-import           Lens.Simple                    ( makeLenses
+import           Lens.Simple                    ( (^.)
+                                                , makeLenses
                                                 , over
                                                 , set
-                                                , (^.)
                                                 )
+import           Linear.Matrix                  ( (!*!)
+                                                , M44
+                                                , identity
+                                                )
+import           Linear.V3                      ( V3(..) )
 
-import           Language.Ast                   (Value)
 import           Gfx.Geometries                 ( Geometries
                                                 , createAllGeometries
+                                                )
+import           Gfx.Materials                  ( MaterialLibrary
+                                                , MaterialsConfig(..)
                                                 )
 import           Gfx.Matrices                   ( projectionMat
                                                 , viewMat
@@ -27,12 +29,12 @@ import           Gfx.Matrices                   ( projectionMat
 import           Gfx.PostProcessing             ( AnimationStyle(NormalStyle)
                                                 , PostProcessing
                                                 )
-import           Gfx.TextRendering              ( TextRenderer )
-import           Gfx.Textures                   ( TextureLibrary )
-import           Gfx.Materials                  ( MaterialsConfig(..), MaterialLibrary )
-import           Gfx.Types                      ( Colour(..) )
 import qualified Gfx.Setting                   as GS
 import qualified Gfx.SettingMap                as GSM
+import           Gfx.TextRendering              ( TextRenderer )
+import           Gfx.Textures                   ( TextureLibrary )
+import           Gfx.Types                      ( Colour(..) )
+import           Language.Ast                   ( Value )
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -45,7 +47,8 @@ data GFXFillStyling
   | GFXNoFill
   deriving (Eq, Show)
 
-data GFXTextureStyling = GFXTextureStyling String Int deriving (Eq, Show)
+data GFXTextureStyling = GFXTextureStyling String Int
+  deriving (Eq, Show)
 
 data GFXStrokeStyling
   = GFXStrokeColour Colour
@@ -59,29 +62,31 @@ data SavableState = SavableState
   , _savedTextureStyles :: GFXTextureStyling
   , _savedMaterials     :: String
   , _savedMaterialVars  :: M.Map String Value
-  } deriving (Show)
+  }
+  deriving Show
 
 makeLenses ''SavableState
 
 data GfxEngine = GfxEngine
-  { _fillStyle          :: GS.Setting GFXFillStyling
-  , _strokeStyle        :: GS.Setting GFXStrokeStyling
-  , _textureStyle       :: GS.Setting GFXTextureStyling
-  , _material           :: GS.Setting String
-  , _geometryBuffers    :: Geometries
-  , _textureLibrary     :: TextureLibrary
-  , _materialLibrary    :: MaterialLibrary
-  , _materialVars       :: GSM.SettingMap String Value
-  , _viewMatrix         :: M44 GLfloat
-  , _projectionMatrix   :: M44 GLfloat
-  , _postFX             :: PostProcessing
-  , _textRenderer       :: TextRenderer
-  , _matrixStack        :: [M44 GLfloat]
-  , _scopeStack         :: [SavableState]
-  , _animationStyle     :: GS.Setting AnimationStyle
-  , _backgroundColor    :: GS.Setting Colour
+  { _fillStyle        :: GS.Setting GFXFillStyling
+  , _strokeStyle      :: GS.Setting GFXStrokeStyling
+  , _textureStyle     :: GS.Setting GFXTextureStyling
+  , _material         :: GS.Setting String
+  , _geometryBuffers  :: Geometries
+  , _textureLibrary   :: TextureLibrary
+  , _materialLibrary  :: MaterialLibrary
+  , _materialVars     :: GSM.SettingMap String Value
+  , _viewMatrix       :: M44 GLfloat
+  , _projectionMatrix :: M44 GLfloat
+  , _postFX           :: PostProcessing
+  , _textRenderer     :: TextRenderer
+  , _matrixStack      :: [M44 GLfloat]
+  , _scopeStack       :: [SavableState]
+  , _animationStyle   :: GS.Setting AnimationStyle
+  , _backgroundColor  :: GS.Setting Colour
   , _depthChecking    :: GS.Setting Bool
-  } deriving (Show)
+  }
+  deriving Show
 
 makeLenses '' GfxEngine
 

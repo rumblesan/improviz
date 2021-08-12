@@ -2,11 +2,7 @@ module Gfx.Types where
 
 import           Data.Yaml                      ( FromJSON(..) )
 
-data Colour =
-  Colour Float
-         Float
-         Float
-         Float
+data Colour = Colour Float Float Float Float
   deriving (Eq, Show)
 
 instance FromJSON Colour where

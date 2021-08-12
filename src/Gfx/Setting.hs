@@ -4,8 +4,7 @@ module Gfx.Setting
   , value
   , reset
   , resetIfUnused
-  )
-where
+  ) where
 
 import           Lens.Simple                    ( Lens
                                                 , lens
@@ -14,9 +13,10 @@ import           Lens.Simple                    ( Lens
 data Setting v = Setting
   { currentValue :: v
   , defaultValue :: v
-  , useCurrent :: Bool
+  , useCurrent   :: Bool
   , setLastFrame :: Bool
-  } deriving (Eq, Show)
+  }
+  deriving (Eq, Show)
 
 create :: k -> Setting k
 create value = Setting { currentValue = value

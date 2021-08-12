@@ -11,8 +11,7 @@ module Improviz
   , startTime
   , externalVars
   , createEnv
-  )
-where
+  ) where
 
 import           Control.Concurrent.STM         ( TVar
                                                 , newTVarIO
@@ -26,18 +25,18 @@ import           Data.Time.Clock.POSIX          ( POSIXTime
                                                 , getPOSIXTime
                                                 )
 
-import           Lens.Simple                    ( makeLenses
-                                                , (^.)
+import           Lens.Simple                    ( (^.)
+                                                , makeLenses
                                                 )
 
 import           Configuration                  ( ImprovizConfig
                                                 , codeFiles
                                                 , showText
                                                 )
-import           Gfx.Engine                     ( GfxEngine )
 import           Gfx.Context                    ( GfxContext
                                                 , createGfxContext
                                                 )
+import           Gfx.Engine                     ( GfxEngine )
 
 import           Improviz.Runtime               ( ImprovizRuntime
                                                 , makeRuntimeState

@@ -10,39 +10,38 @@ import           Control.Concurrent.STM         ( atomically
 import           Control.Monad                  ( unless
                                                 , when
                                                 )
+import           Data.Either                    ( partitionEithers )
 import qualified Data.List                     as L
 import qualified Data.Map                      as M
-import           Data.Either                    ( partitionEithers )
 import           Data.Maybe                     ( catMaybes )
 
-import           Lens.Simple                    ( set
-                                                , view
+import           Lens.Simple                    ( (^.)
                                                 , at
-                                                , (^.)
+                                                , set
+                                                , view
                                                 )
 
+import           Configuration                  ( ImprovizConfig )
+import qualified Configuration                 as C
 import           Improviz                       ( ImprovizEnv
                                                 , createEnv
                                                 )
 import qualified Improviz                      as I
 import qualified Improviz.Runtime              as IR
 import qualified Improviz.UI                   as IUI
-import           Configuration                  ( ImprovizConfig )
-import qualified Configuration                 as C
 
 import           Gfx                            ( createGfx
                                                 , renderGfx
                                                 , resizeGfx
                                                 )
-import           Gfx.Textures                   ( createTextureLib )
-import qualified Gfx.Materials                 as GM
-import qualified Gfx.Engine                    as GE
-import           Gfx.Context                    ( reset
-                                                , renderCode
+import           Gfx.Context                    ( renderCode
                                                 , renderCodeToBuffer
+                                                , reset
                                                 )
+import qualified Gfx.Engine                    as GE
+import qualified Gfx.Materials                 as GM
+import           Gfx.Textures                   ( createTextureLib )
 
-import           Windowing                      ( setupWindow )
 import           Language                       ( interpret
                                                 , setInterpreterVariables
                                                 )
@@ -52,6 +51,7 @@ import           Logging                        ( logError
                                                 , logInfo
                                                 )
 import           Server                         ( serveComs )
+import           Windowing                      ( setupWindow )
 
 main :: IO ()
 main = C.getConfig >>= app

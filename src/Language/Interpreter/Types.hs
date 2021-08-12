@@ -2,22 +2,22 @@
 
 module Language.Interpreter.Types where
 
-import qualified Data.Map.Strict               as M
-import qualified Data.Set                      as S
-import           Data.Maybe                     ( fromMaybe )
 import           Control.Monad.Except
 import           Control.Monad.State.Strict
+import qualified Data.Map.Strict               as M
+import           Data.Maybe                     ( fromMaybe )
+import qualified Data.Set                      as S
 
 import           System.Random                  ( StdGen
                                                 , mkStdGen
                                                 )
 
-import           Lens.Simple                    ( assign
+import           Lens.Simple                    ( (%=)
+                                                , assign
                                                 , at
                                                 , makeLenses
                                                 , use
                                                 , uses
-                                                , (%=)
                                                 )
 
 import           Gfx.Context                    ( GfxContext )

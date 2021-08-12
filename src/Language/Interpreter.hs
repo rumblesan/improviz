@@ -1,17 +1,16 @@
 module Language.Interpreter
   ( interpretLanguage
-  )
-where
+  ) where
 
-import           Control.Monad                  ( zipWithM_
-                                                , foldM
+import           Control.Monad                  ( foldM
                                                 , foldM_
+                                                , zipWithM_
                                                 )
 import           Control.Monad.Except           ( throwError )
-import           Lens.Simple                    ( use
-                                                , assign
-                                                )
 import           Data.Maybe                     ( fromMaybe )
+import           Lens.Simple                    ( assign
+                                                , use
+                                                )
 import           Safe                           ( atMay )
 
 import           Language.Interpreter.Operators

@@ -2,8 +2,7 @@ module Language.Interpreter.Values
   ( getNumberValue
   , getValueType
   , valIsNull
-  )
-where
+  ) where
 
 import           Control.Monad.Except
 

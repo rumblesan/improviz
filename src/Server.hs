@@ -1,7 +1,6 @@
 module Server
   ( serveComs
-  )
-where
+  ) where
 
 import           Control.Monad                  ( void
                                                 , when
