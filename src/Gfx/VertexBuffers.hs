@@ -4,8 +4,7 @@ module Gfx.VertexBuffers
   , createVBO
   , drawVBO
   , deleteVBO
-  )
-where
+  ) where
 
 import           Graphics.Rendering.OpenGL     as GL
 
@@ -18,12 +17,11 @@ import           Foreign.Ptr                    ( Ptr
                                                 )
 import           GHC.Int                        ( Int32 )
 
-data VBO =
-  VBO VertexArrayObject
-      [BufferObject]
-      PrimitiveMode
-      ArrayIndex
-      NumArrayIndices
+data VBO = VBO VertexArrayObject
+               [BufferObject]
+               PrimitiveMode
+               ArrayIndex
+               NumArrayIndices
   deriving (Show, Eq)
 
 bufferOffset :: Integral a => a -> Ptr b
@@ -37,7 +35,8 @@ setAttribPointer location numComponents stride idx = do
        )
   vertexAttribArray location $= Enabled
 
-createVBO :: [IO ()] -> PrimitiveMode -> ArrayIndex -> NumArrayIndices -> IO VBO
+createVBO
+  :: [IO ()] -> PrimitiveMode -> ArrayIndex -> NumArrayIndices -> IO VBO
 createVBO arrayConfigFuncs primMode arrIdx numVertices = do
   vao <- GL.genObjectName
   GL.bindVertexArrayObject $= Just vao

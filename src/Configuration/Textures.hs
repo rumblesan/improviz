@@ -2,15 +2,16 @@
 
 module Configuration.Textures where
 
-import           Data.Yaml                      ( FromJSON(..)
-                                                , (.:)
+import           Data.Yaml                      ( (.:)
+                                                , FromJSON(..)
                                                 )
 import qualified Data.Yaml                     as Y
 
 data TextureConfig = TextureConfig
   { textureName :: String
   , textureFile :: FilePath
-  } deriving (Eq, Show)
+  }
+  deriving (Eq, Show)
 
 instance FromJSON TextureConfig where
   parseJSON (Y.Object v) = TextureConfig <$> v .: "name" <*> v .: "file"

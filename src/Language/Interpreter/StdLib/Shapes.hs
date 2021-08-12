@@ -1,12 +1,11 @@
 module Language.Interpreter.StdLib.Shapes
   ( addShapesStdLib
-  )
-where
+  ) where
 
 import           Control.Monad.Except
 
 import           Gfx.Context                    ( drawShape )
-import           Language.Ast                   ( Value(Symbol, Null, Number) )
+import           Language.Ast                   ( Value(Null, Number, Symbol) )
 import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , setBuiltIn
                                                 , withGfxCtx

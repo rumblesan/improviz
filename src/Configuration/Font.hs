@@ -5,13 +5,13 @@ module Configuration.Font where
 
 import           Gfx.Types                      ( Colour(..) )
 
-import           Lens.Simple                    ( makeLenses
-                                                , (^.)
+import           Lens.Simple                    ( (^.)
+                                                , makeLenses
                                                 )
 
-import           Data.Yaml                      ( FromJSON(..)
-                                                , (.!=)
+import           Data.Yaml                      ( (.!=)
                                                 , (.:?)
+                                                , FromJSON(..)
                                                 )
 import qualified Data.Yaml                     as Y
 
@@ -20,7 +20,8 @@ data ImprovizFontConfig = ImprovizFontConfig
   , _size     :: Int
   , _fgColour :: Colour
   , _bgColour :: Colour
-  } deriving (Show)
+  }
+  deriving Show
 
 makeLenses ''ImprovizFontConfig
 

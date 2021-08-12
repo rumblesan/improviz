@@ -17,59 +17,59 @@ module Gfx.Commands
   , popScope
   , renderCode
   , renderCodeToBuffer
-  )
-    where
+  ) where
 
-import           Foreign.Ptr                    ( castPtr )
-import           Foreign.Marshal.Utils          ( with
-  , fromBool
-                                                )
-import           Control.Monad.Trans            ( liftIO )
 import           Control.Monad.State.Strict     ( modify' )
-import           Lens.Simple                    ( use
-  , assign
-  , view
-                                                )
+import           Control.Monad.Trans            ( liftIO )
 import qualified Data.Map.Strict               as M
-
-import           Linear.Matrix                  ( M44
-  , (!*!)
+import           Foreign.Marshal.Utils          ( fromBool
+                                                , with
+                                                )
+import           Foreign.Ptr                    ( castPtr )
+import           Lens.Simple                    ( assign
+                                                , use
+                                                , view
                                                 )
 
-import           Language.Ast                   (Value(..))
+import           Linear.Matrix                  ( (!*!)
+                                                , M44
+                                                )
+
 import qualified Graphics.GL                   as GLRaw
 import qualified Graphics.Rendering.OpenGL     as GL
 import           Graphics.Rendering.OpenGL      ( ($=)
-  , GLfloat
-  , TextureUnit(..)
-  , TextureTarget2D(Texture2D)
-  , UniformLocation(..)
-  , currentProgram
+                                                , GLfloat
+                                                , TextureTarget2D(Texture2D)
+                                                , TextureUnit(..)
+                                                , UniformLocation(..)
+                                                , currentProgram
                                                 )
-import           Graphics.Rendering.OpenGL.GL.Shaders.Attribs as GLS
+import           Graphics.Rendering.OpenGL.GL.Shaders.Attribs
+                                               as GLS
+import           Language.Ast                   ( Value(..) )
 
 import           Gfx.Engine
-import qualified Gfx.Setting                   as GS
-import qualified Gfx.SettingMap                as GSM
 import           Gfx.Geometries                 ( GeometryBuffers(..) )
-import           Gfx.Matrices                   ( scaleMat
-                                                , translateMat
-                                                , rotMat
-                                                )
 import qualified Gfx.Materials                 as GM
-import qualified Gfx.VAO                       as VAO
-import           Gfx.Types                      ( Colour(..) )
-import           Gfx.PostProcessing             ( AnimationStyle(..) )
-import           Gfx.TextRendering              ( renderText
-                                                , renderTextToBuffer
+import           Gfx.Matrices                   ( rotMat
+                                                , scaleMat
+                                                , translateMat
                                                 )
-import           Gfx.OpenGL                     ( printErrors
-                                                , colToGLCol
+import           Gfx.OpenGL                     ( colToGLCol
+                                                , printErrors
                                                 , valueToGLfloat
                                                 , valueToGLfloatVec2
                                                 , valueToGLfloatVec3
                                                 , valueToGLfloatVec4
                                                 )
+import           Gfx.PostProcessing             ( AnimationStyle(..) )
+import qualified Gfx.Setting                   as GS
+import qualified Gfx.SettingMap                as GSM
+import           Gfx.TextRendering              ( renderText
+                                                , renderTextToBuffer
+                                                )
+import           Gfx.Types                      ( Colour(..) )
+import qualified Gfx.VAO                       as VAO
 import           Logging                        ( logError )
 
 
@@ -108,13 +108,15 @@ setUniform ("Pmatrix", _, UniformLocation uniformLoc) = do
 setUniform ("FillColour", _, uniformLoc) = do
   gfxFillStyle <- use (fillStyle . GS.value)
   liftIO $ case gfxFillStyle of
-             (GFXFillColour fillColour) -> GL.uniform uniformLoc $= colToGLCol fillColour
-             GFXNoFill -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
+    (GFXFillColour fillColour) ->
+      GL.uniform uniformLoc $= colToGLCol fillColour
+    GFXNoFill -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
 setUniform ("StrokeColour", _, uniformLoc) = do
   gfxStrokeStyle <- use (strokeStyle . GS.value)
   liftIO $ case gfxStrokeStyle of
-             (GFXStrokeColour strokeColour) -> GL.uniform uniformLoc $= colToGLCol strokeColour
-             GFXNoStroke -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
+    (GFXStrokeColour strokeColour) ->
+      GL.uniform uniformLoc $= colToGLCol strokeColour
+    GFXNoStroke -> GL.uniform uniformLoc $= colToGLCol (Colour 0 0 0 (-1))
 setUniform ("Texture", _, uniformLoc) = do
   (GFXTextureStyling textName textFrame) <- use (textureStyle . GS.value)
   textureLib                             <- use textureLibrary
@@ -126,29 +128,32 @@ setUniform ("Texture", _, uniformLoc) = do
 setUniform (name, uniformType, uniformLoc) = do
   matVar <- use (materialVars . GSM.value name)
   liftIO $ case matVar of
-             Nothing -> logError $ name ++ " is not a known uniform"
-             Just v  -> valueToUniform v uniformType uniformLoc
+    Nothing -> logError $ name ++ " is not a known uniform"
+    Just v  -> valueToUniform v uniformType uniformLoc
 
 
 valueToUniform :: Value -> GL.VariableType -> GL.UniformLocation -> IO ()
-valueToUniform value utype uniformLoc =
-  case utype of
-    GLS.Float' -> valueToGLfloatUniform value uniformLoc
-    GLS.FloatVec2 -> valueToVec2Uniform value uniformLoc
-    GLS.FloatVec3 -> valueToVec3Uniform value uniformLoc
-    GLS.FloatVec4 -> valueToVec4Uniform value uniformLoc
+valueToUniform value utype uniformLoc = case utype of
+  GLS.Float'    -> valueToGLfloatUniform value uniformLoc
+  GLS.FloatVec2 -> valueToVec2Uniform value uniformLoc
+  GLS.FloatVec3 -> valueToVec3Uniform value uniformLoc
+  GLS.FloatVec4 -> valueToVec4Uniform value uniformLoc
 
 valueToGLfloatUniform :: Value -> GL.UniformLocation -> IO ()
-valueToGLfloatUniform value uniformLoc = either logError (GL.uniform uniformLoc $=) (valueToGLfloat value)
+valueToGLfloatUniform value uniformLoc =
+  either logError (GL.uniform uniformLoc $=) (valueToGLfloat value)
 
 valueToVec2Uniform :: Value -> GL.UniformLocation -> IO ()
-valueToVec2Uniform value uniformLoc = either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec2 value)
+valueToVec2Uniform value uniformLoc =
+  either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec2 value)
 
 valueToVec3Uniform :: Value -> GL.UniformLocation -> IO ()
-valueToVec3Uniform value uniformLoc = either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec3 value)
+valueToVec3Uniform value uniformLoc =
+  either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec3 value)
 
 valueToVec4Uniform :: Value -> GL.UniformLocation -> IO ()
-valueToVec4Uniform value uniformLoc = either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec4 value)
+valueToVec4Uniform value uniformLoc =
+  either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec4 value)
 
 
 drawTriangles :: GeometryBuffers -> GraphicsEngine ()

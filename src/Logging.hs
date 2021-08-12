@@ -2,8 +2,7 @@ module Logging
   ( logInfo
   , logDebug
   , logError
-  )
-where
+  ) where
 
 import           Control.Monad                  ( when )
 import           Data.Monoid                    ( (<>) )

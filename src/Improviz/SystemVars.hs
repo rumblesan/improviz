@@ -2,15 +2,15 @@ module Improviz.SystemVars where
 
 import           Lens.Simple                    ( (^.) )
 
-import           Linear.Matrix                  ( (!*!)
-                                                , (!*)
+import           Linear.Matrix                  ( (!*)
+                                                , (!*!)
                                                 , inv44
                                                 )
 import           Linear.V3                      ( V3(..) )
 import           Linear.V4                      ( V4(..)
-                                                , point
                                                 , _x
                                                 , _y
+                                                , point
                                                 )
 
 import           Gfx.Engine                     ( GfxEngine

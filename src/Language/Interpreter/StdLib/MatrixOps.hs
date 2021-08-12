@@ -1,15 +1,14 @@
 module Language.Interpreter.StdLib.MatrixOps
   ( addMatrixStdLib
-  )
-where
+  ) where
 
 import           Control.Monad.Except           ( throwError )
 
-import           Gfx.Context                    ( rotate
+import           Gfx.Context                    ( move
+                                                , rotate
                                                 , scale
-                                                , move
                                                 )
-import           Language.Ast                   ( Value(Symbol, Null, Number) )
+import           Language.Ast                   ( Value(Null, Number, Symbol) )
 import           Language.Interpreter.Types     ( InterpreterProcess
                                                 , setBuiltIn
                                                 , withGfxCtx

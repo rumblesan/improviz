@@ -11,17 +11,16 @@ module Gfx.Materials
   , loadMaterialFile
   , loadMaterialFolder
   , createMaterialsConfig
-  )
-where
+  ) where
 
 
-import qualified Data.Map.Strict               as M
-import           Data.Either                    ( either
-                                                , partitionEithers
-                                                )
 import           Data.ByteString.Lazy.Char8     ( ByteString
                                                 , toStrict
                                                 )
+import           Data.Either                    ( either
+                                                , partitionEithers
+                                                )
+import qualified Data.Map.Strict               as M
 
 import           Control.Exception              ( IOException
                                                 , try
@@ -34,10 +33,10 @@ import           Graphics.Rendering.OpenGL      ( ($=) )
 import qualified Graphics.Rendering.OpenGL     as GL
 
 import qualified Data.Yaml                     as Y
-import           Data.Yaml                      ( FromJSON(..)
-                                                , (.:)
+import           Data.Yaml                      ( (.:)
+                                                , FromJSON(..)
                                                 )
-import Language.Ast                             (Value(..))
+import           Language.Ast                   ( Value(..) )
 
 import           Gfx.LoadShaders                ( ShaderInfo(..)
                                                 , ShaderSource(StringSource)
@@ -52,14 +51,14 @@ import           Logging                        ( logError
 
 data MaterialsConfig = MaterialsConfig
   { materialsLibrary :: MaterialLibrary
-  , varDefaults :: [(String, Value)]
+  , varDefaults      :: [(String, Value)]
   }
 
 type MaterialLibrary = M.Map String Material
 
 data MaterialData = MaterialData
-  { mdName :: String
-  , vertexShader :: String
+  { mdName         :: String
+  , vertexShader   :: String
   , fragmentShader :: String
   }
 
@@ -75,11 +74,12 @@ instance FromJSON MaterialData where
   parseJSON _ = fail "Expected Object for Material Data"
 
 data Material = Material
-  { name :: String
-  , program :: GL.Program
-  , uniforms :: [(String, GL.VariableType, GL.UniformLocation)]
+  { name       :: String
+  , program    :: GL.Program
+  , uniforms   :: [(String, GL.VariableType, GL.UniformLocation)]
   , attributes :: [(String, GL.VariableType, GL.AttribLocation)]
-  } deriving (Show, Eq)
+  }
+  deriving (Show, Eq)
 
 loadMaterial :: MaterialData -> IO (Either String Material)
 loadMaterial md = do
@@ -93,18 +93,24 @@ loadMaterial md = do
       GL.currentProgram $= Just program
       uniformInfo <- GL.get $ GL.activeUniforms program
       uniforms    <- mapM (getUniformLoc program) uniformInfo
-      attribInfo <- GL.get $ GL.activeAttribs program
-      attributes <- mapM (getAttribLoc program) attribInfo
+      attribInfo  <- GL.get $ GL.activeAttribs program
+      attributes  <- mapM (getAttribLoc program) attribInfo
       logInfo $ "Loading " ++ (mdName md) ++ " material"
       return $ Right $ Material (mdName md) program uniforms attributes
     Left err -> return $ Left (show err)
 
-getUniformLoc :: GL.Program -> (GL.GLint, GL.VariableType, String) -> IO (String, GL.VariableType, GL.UniformLocation)
+getUniformLoc
+  :: GL.Program
+  -> (GL.GLint, GL.VariableType, String)
+  -> IO (String, GL.VariableType, GL.UniformLocation)
 getUniformLoc p (_, vt, uname) = do
   ul <- GL.get $ GL.uniformLocation p uname
   return (uname, vt, ul)
 
-getAttribLoc :: GL.Program -> (GL.GLint, GL.VariableType, String) -> IO (String, GL.VariableType, GL.AttribLocation)
+getAttribLoc
+  :: GL.Program
+  -> (GL.GLint, GL.VariableType, String)
+  -> IO (String, GL.VariableType, GL.AttribLocation)
 getAttribLoc p (_, vt, aname) = do
   al <- GL.get $ GL.attribLocation p aname
   return (aname, vt, al)
@@ -125,11 +131,12 @@ loadMaterialFile fp = do
   yaml <- Y.decodeFileEither fp
   either (return . Left . Y.prettyPrintParseException) loadMaterial yaml
 
-loadMaterialFolder :: FilePath -> IO ([Either String Material], [(String, Value)])
+loadMaterialFolder
+  :: FilePath -> IO ([Either String Material], [(String, Value)])
 loadMaterialFolder folderPath = do
   folderConfig <- loadFolderConfig folderPath
   case folderConfig of
-    Left err -> logError err >> return ([], [])
+    Left  err -> logError err >> return ([], [])
     Right cfg -> do
       loadedMaterials <- mapM ml (materialsConfig cfg)
       return (loadedMaterials, folderVarDefaults cfg)

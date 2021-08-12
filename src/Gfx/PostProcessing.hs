@@ -10,8 +10,7 @@ module Gfx.PostProcessing
   , PostProcessing(..)
   , Savebuffer(..)
   , AnimationStyle(..)
-  )
-where
+  ) where
 
 import           Graphics.Rendering.OpenGL     as GL
 
@@ -48,22 +47,20 @@ instance Show PostProcessing where
   show _ = "PostProcessing"
 
 -- Simple Framebuffer with a texture that can be rendered to and then drawn out to a quad
-data Savebuffer =
-  Savebuffer FramebufferObject
-             TextureObject
-             TextureObject
-             Program
-             VBO
+data Savebuffer = Savebuffer FramebufferObject
+                             TextureObject
+                             TextureObject
+                             Program
+                             VBO
 
 instance Show Savebuffer where
   show _ = "Savebuffer"
 
-data Mixbuffer =
-  Mixbuffer FramebufferObject
-            TextureObject
-            TextureObject
-            Program
-            VBO
+data Mixbuffer = Mixbuffer FramebufferObject
+                           TextureObject
+                           TextureObject
+                           Program
+                           VBO
 
 -- 2D positions and texture coordinates
 -- brittany-disable-next-binding

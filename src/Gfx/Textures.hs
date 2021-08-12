@@ -4,20 +4,27 @@ module Gfx.Textures
   ( TextureLibrary
   , createTextureLib
   , addTexture
-  )
-where
+  ) where
 
 import qualified Data.ByteString               as B
-import qualified Data.Map.Strict               as M
 import           Data.Either                    ( rights )
 import           Data.List                      ( concat )
+import qualified Data.Map.Strict               as M
 import           Data.Vector.Storable           ( unsafeWith )
-import           System.FilePath.Posix          ( takeExtension
-                                                , (</>)
+import           System.FilePath.Posix          ( (</>)
+                                                , takeExtension
                                                 )
 
+import           Codec.Picture                  ( Pixel
+                                                , decodeImage
+                                                )
+import           Codec.Picture.Gif              ( decodeGifImages )
+import           Codec.Picture.Types            ( DynamicImage(..)
+                                                , Image(..)
+                                                )
 import qualified Graphics.Rendering.OpenGL     as GL
-import           Graphics.Rendering.OpenGL      ( DataType(UnsignedByte)
+import           Graphics.Rendering.OpenGL      ( ($=)
+                                                , DataType(UnsignedByte)
                                                 , PixelData(..)
                                                 , PixelFormat(..)
                                                 , PixelInternalFormat(..)
@@ -25,14 +32,6 @@ import           Graphics.Rendering.OpenGL      ( DataType(UnsignedByte)
                                                 , TextureObject
                                                 , TextureSize2D(..)
                                                 , TextureTarget2D(Texture2D)
-                                                , ($=)
-                                                )
-import           Codec.Picture                  ( Pixel
-                                                , decodeImage
-                                                )
-import           Codec.Picture.Gif              ( decodeGifImages )
-import           Codec.Picture.Types            ( DynamicImage(..)
-                                                , Image(..)
                                                 )
 
 import           Configuration                  ( loadFolderConfig )

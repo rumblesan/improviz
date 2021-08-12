@@ -16,8 +16,7 @@ module Language.Ast
   , Value(..)
   , If(..)
   , Identifier
-  )
-where
+  ) where
 
 import           Language.Interpreter.Scope     ( ScopeStack )
 
@@ -44,10 +43,7 @@ data Element
   | ElIf If
   deriving (Eq, Show)
 
-data Application =
-  Application Variable
-              [ApplicationArg]
-              (Maybe Lambda)
+data Application = Application Variable [ApplicationArg] (Maybe Lambda)
   deriving (Eq, Show)
 
 data ApplicationArg
@@ -55,10 +51,7 @@ data ApplicationArg
   | ApplicationSpreadArg Expression
   deriving (Eq, Show)
 
-data Loop =
-  Loop Expression
-       (Maybe Identifier)
-       Block
+data Loop = Loop Expression (Maybe Identifier) Block
   deriving (Eq, Show)
 
 data Assignment
@@ -72,17 +65,12 @@ newtype If =
   If [(Expression, Block)]
   deriving (Eq, Show)
 
-data Lambda =
-  Lambda [FuncArg]
-         (Maybe (ScopeStack Identifier Value))
-         Block deriving (Eq, Show)
+data Lambda = Lambda [FuncArg] (Maybe (ScopeStack Identifier Value)) Block
+  deriving (Eq, Show)
 
 data LambdaBodyElement = LambdaArgs [FuncArg] | LambdaElement Element deriving (Eq, Show)
 
-data Func =
-  Func Identifier
-       [FuncArg]
-       Block
+data Func = Func Identifier [FuncArg] Block
   deriving (Eq, Show)
 
 data FuncArg = VarArg Identifier Value | BlockArg Identifier deriving (Eq, Show)

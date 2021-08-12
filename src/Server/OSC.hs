@@ -1,7 +1,6 @@
 module Server.OSC
   ( startOSCServer
-  )
-where
+  ) where
 
 import           Control.Concurrent             ( ThreadId
                                                 , forkIO
@@ -14,14 +13,14 @@ import           Control.Monad                  ( forever
                                                 )
 import           Lens.Simple                    ( (^.) )
 
+import           Data.List.Split                ( splitOn )
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( fromMaybe )
-import           Data.List.Split                ( splitOn )
 
-import           Sound.OSC.Datum                ( datum_floating
-                                                , datum_tag
-                                                , ascii_to_string
+import           Sound.OSC.Datum                ( ascii_to_string
                                                 , d_ascii_string
+                                                , datum_floating
+                                                , datum_tag
                                                 )
 import           Sound.OSC.FD                   ( Message
                                                 , recvPacket
@@ -51,9 +50,8 @@ handleMessage env (Message addr datem) =
         (["", "vars", name], [value]) -> atomically $ modifyTVar
           (env ^. I.externalVars)
           (M.insert name (datumValue value))
-        (["", "toggle", "text"], []) -> atomically $ modifyTVar
-          (env ^. I.ui)
-          IUI.toggleTextDisplay
+        (["", "toggle", "text"], []) ->
+          atomically $ modifyTVar (env ^. I.ui) IUI.toggleTextDisplay
         _ -> logError "invalid OSC address"
  where
   datumValue dm = case datum_tag dm of

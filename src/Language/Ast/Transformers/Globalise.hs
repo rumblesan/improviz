@@ -1,7 +1,6 @@
 module Language.Ast.Transformers.Globalise
   ( globalise
-  )
-where
+  ) where
 
 import           Control.Monad.Trans.State.Strict
 import           Data.Set                       ( Set(..) )

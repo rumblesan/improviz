@@ -5,8 +5,7 @@ module Gfx.FontHandling
   , Character(..)
   , Font(..)
   , getCharacter
-  )
-where
+  ) where
 
 import           Foreign.C.String               ( withCString )
 import           Foreign.Marshal.Alloc          ( alloca )
@@ -52,7 +51,8 @@ import qualified Graphics.Rendering.FreeType.Internal.Size
 import qualified Graphics.Rendering.FreeType.Internal.SizeMetrics
                                                as FSM
 
-import           Graphics.Rendering.OpenGL      ( Clamping(ClampToEdge)
+import           Graphics.Rendering.OpenGL      ( ($=)
+                                                , Clamping(ClampToEdge)
                                                 , DataType(UnsignedByte)
                                                 , PixelData(PixelData)
                                                 , PixelFormat(Red)
@@ -68,29 +68,28 @@ import           Graphics.Rendering.OpenGL      ( Clamping(ClampToEdge)
                                                 , TextureObject
                                                 , TextureSize2D(TextureSize2D)
                                                 , TextureTarget2D(Texture2D)
-                                                , ($=)
                                                 )
 import qualified Graphics.Rendering.OpenGL     as GL
 
 import           Gfx.OpenGL                     ( printErrors )
 
 
-data Character =
-  Character Char -- char
-            Int -- width
-            Int -- height
-            Int -- advance
-            Int -- xBearing
-            Int -- yBearing
-            TextureObject -- texture
-  deriving (Eq)
+data Character = Character Char -- char
+                                Int -- width
+                                    Int -- height
+                                        Int -- advance
+                                            Int -- xBearing
+                                                Int -- yBearing
+                                                    TextureObject -- texture
+  deriving Eq
 
 data Font = Font
   { fontCharacters :: M.Map Char Character
   , fontHeight     :: Int
   , fontAscender   :: Int
   , fontAdvance    :: Int
-  } deriving (Show)
+  }
+  deriving Show
 
 instance Show Character where
   show (Character c _ _ _ _ _ _) = show c

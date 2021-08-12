@@ -11,23 +11,22 @@ module Improviz.Runtime
   , resizeRuntime
   , programHasChanged
   , materialsToLoad
-  )
-where
+  ) where
 
+import           Gfx.Context                    ( GfxContext )
+import           Gfx.Engine                     ( GfxEngine )
+import           Gfx.Materials                  ( MaterialData )
+import qualified Improviz.SystemVars           as SV
 import           Language                       ( initialInterpreterState
                                                 , updateSystemVars
                                                 )
 import           Language.Ast                   ( Program(..) )
 import           Language.Interpreter.Types     ( InterpreterState )
 import           Lens.Simple                    ( (^.)
+                                                , makeLenses
                                                 , set
                                                 , view
-                                                , makeLenses
                                                 )
-import           Gfx.Context                    ( GfxContext )
-import           Gfx.Engine                     ( GfxEngine )
-import           Gfx.Materials                  ( MaterialData )
-import qualified Improviz.SystemVars           as SV
 
 
 data ImprovizRuntime gfxContext = ImprovizRuntime

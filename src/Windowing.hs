@@ -1,12 +1,11 @@
 module Windowing
   ( setupWindow
-  )
-where
+  ) where
 
 import           Control.Monad                  ( forever )
-import           Graphics.Rendering.OpenGL      ( ComparisonFunction(Less)
+import           Graphics.Rendering.OpenGL      ( ($=)
+                                                , ComparisonFunction(Less)
                                                 , depthFunc
-                                                , ($=)
                                                 )
 
 import qualified Graphics.UI.GLFW              as GLFW
