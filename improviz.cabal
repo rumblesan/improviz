@@ -76,6 +76,7 @@ executable improviz
                      , Gfx.Setting
                      , Gfx.SettingMap
                      , Gfx.Materials
+                     , Gfx.Shaders
                      , Gfx.TextRendering
                      , Gfx.Textures
                      , Gfx.Types
@@ -169,6 +170,7 @@ test-suite improviz-test
                      , Gfx.TextRendering
                      , Gfx.Textures
                      , Gfx.Types
+                     , Gfx.Shaders
                      , Gfx.Setting
                      , Gfx.SettingMap
                      , Gfx.Materials

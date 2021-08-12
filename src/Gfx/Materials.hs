@@ -42,6 +42,9 @@ import           Gfx.LoadShaders                ( ShaderInfo(..)
                                                 , ShaderSource(StringSource)
                                                 , loadShaders
                                                 )
+import           Gfx.Shaders                    ( getAttribLoc
+                                                , getUniformLoc
+                                                )
 
 import           Configuration                  ( loadFolderConfig )
 import           Configuration.Materials
@@ -98,22 +101,6 @@ loadMaterial md = do
       logInfo $ "Loading " ++ (mdName md) ++ " material"
       return $ Right $ Material (mdName md) program uniforms attributes
     Left err -> return $ Left (show err)
-
-getUniformLoc
-  :: GL.Program
-  -> (GL.GLint, GL.VariableType, String)
-  -> IO (String, GL.VariableType, GL.UniformLocation)
-getUniformLoc p (_, vt, uname) = do
-  ul <- GL.get $ GL.uniformLocation p uname
-  return (uname, vt, ul)
-
-getAttribLoc
-  :: GL.Program
-  -> (GL.GLint, GL.VariableType, String)
-  -> IO (String, GL.VariableType, GL.AttribLocation)
-getAttribLoc p (_, vt, aname) = do
-  al <- GL.get $ GL.attribLocation p aname
-  return (aname, vt, al)
 
 destroyMaterial :: Material -> IO ()
 destroyMaterial material = do

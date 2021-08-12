@@ -23,11 +23,17 @@ import           Gfx.LoadShaders                ( ShaderInfo(..)
                                                 , ShaderSource(..)
                                                 , loadShaders
                                                 )
+import           Gfx.Shaders                    ( getAttribLoc
+                                                , getUniformLoc
+                                                )
 import           Gfx.VertexBuffers              ( VBO
                                                 , createVBO
                                                 , deleteVBO
                                                 , drawVBO
                                                 , setAttribPointer
+                                                )
+import           Logging                        ( logError
+                                                , logInfo
                                                 )
 
 data AnimationStyle
@@ -38,8 +44,8 @@ data AnimationStyle
 
 data PostProcessing = PostProcessing
   { input      :: Savebuffer
-  , motionBlur :: Mixbuffer
-  , paintOver  :: Mixbuffer
+  , motionBlur :: Processingbuffer
+  , paintOver  :: Processingbuffer
   , output     :: Savebuffer
   }
 
@@ -56,11 +62,34 @@ data Savebuffer = Savebuffer FramebufferObject
 instance Show Savebuffer where
   show _ = "Savebuffer"
 
-data Mixbuffer = Mixbuffer FramebufferObject
-                           TextureObject
-                           TextureObject
-                           Program
-                           VBO
+data Processingbuffer = Processingbuffer FramebufferObject
+                                         TextureObject
+                                         TextureObject
+                                         PostProcessingShader
+                                         VBO
+
+data PostProcessingShader = PostProcessingShader
+  { ppName       :: String
+  , ppProgram    :: GL.Program
+  , ppUniforms   :: [(String, GL.VariableType, GL.UniformLocation)]
+  , ppAttributes :: [(String, GL.VariableType, GL.AttribLocation)]
+  }
+  deriving (Show, Eq)
+
+loadPostProcessingShader
+  :: String -> ShaderSource -> ShaderSource -> IO PostProcessingShader
+loadPostProcessingShader name vertShader fragShader = do
+  program <- loadShaders
+    [ ShaderInfo GL.VertexShader   vertShader
+    , ShaderInfo GL.FragmentShader fragShader
+    ]
+  GL.currentProgram $= Just program
+  uniformInfo <- GL.get $ GL.activeUniforms program
+  uniforms    <- mapM (getUniformLoc program) uniformInfo
+  attribInfo  <- GL.get $ GL.activeAttribs program
+  attributes  <- mapM (getAttribLoc program) attribInfo
+  logInfo $ "Loading " ++ name ++ " post processor"
+  return $ PostProcessingShader name program uniforms attributes
 
 -- 2D positions and texture coordinates
 -- brittany-disable-next-binding
@@ -138,9 +167,19 @@ createPostProcessing w h =
   in
     do
       inputBuffer      <- createSavebuffer width height
-      motionBlurBuffer <- createMotionBlurbuffer width height
-      paintOverBuffer  <- createPaintOverbuffer width height
-      outputBuffer     <- createSavebuffer width height
+      motionBlurBuffer <- createPostProcessingBuffer
+        width
+        height
+        (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.vert"))
+        (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.frag"))
+        ordinaryQuadVertices
+      paintOverBuffer <- createPostProcessingBuffer
+        width
+        height
+        (ByteStringSource $(embedFile "src/assets/shaders/paintOver.vert"))
+        (ByteStringSource $(embedFile "src/assets/shaders/paintOver.frag"))
+        ordinaryQuadVertices
+      outputBuffer <- createSavebuffer width height
       return $ PostProcessing inputBuffer
                               motionBlurBuffer
                               paintOverBuffer
@@ -149,8 +188,8 @@ createPostProcessing w h =
 deletePostProcessing :: PostProcessing -> IO ()
 deletePostProcessing post = do
   deleteSavebuffer $ input post
-  deleteMixbuffer $ motionBlur post
-  deleteMixbuffer $ paintOver post
+  deleteProcessingbuffer $ motionBlur post
+  deleteProcessingbuffer $ paintOver post
   deleteSavebuffer $ output post
 
 createSavebuffer :: GLint -> GLint -> IO Savebuffer
@@ -197,49 +236,30 @@ deleteSavebuffer (Savebuffer sbfbo sbtext sbdepth sbprogram sbvbo) = do
   deleteVBO sbvbo
   deleteObjectName sbfbo
 
-createMotionBlurbuffer :: GLint -> GLint -> IO Mixbuffer
-createMotionBlurbuffer width height = do
-  fbo <- genObjectName
-  bindFramebuffer Framebuffer $= fbo
-  text <- create2DTexture width height
-  framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
-  depth   <- createDepthbuffer width height
-  qvbo    <- createQuadVBO ordinaryQuadVertices
-  program <- loadShaders
-    [ ShaderInfo
-      VertexShader
-      (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.vert"))
-    , ShaderInfo
-      FragmentShader
-      (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.frag"))
-    ]
-  return $ Mixbuffer fbo text depth program qvbo
-
-deleteMixbuffer :: Mixbuffer -> IO ()
-deleteMixbuffer (Mixbuffer mfbo mtext depth mprogram mbvbo) = do
+deleteProcessingbuffer :: Processingbuffer -> IO ()
+deleteProcessingbuffer (Processingbuffer mfbo mtext depth shader mbvbo) = do
   deleteObjectName mtext
   deleteObjectName depth
-  deleteObjectName mprogram
+  deleteObjectName (ppProgram shader)
   deleteVBO mbvbo
   deleteObjectName mfbo
 
-createPaintOverbuffer :: GLint -> GLint -> IO Mixbuffer
-createPaintOverbuffer width height = do
+createPostProcessingBuffer
+  :: GLint
+  -> GLint
+  -> ShaderSource
+  -> ShaderSource
+  -> [GLfloat]
+  -> IO Processingbuffer
+createPostProcessingBuffer width height vertShader fragShader vertices = do
   fbo <- genObjectName
   bindFramebuffer Framebuffer $= fbo
   text <- create2DTexture width height
   framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
-  depth   <- createDepthbuffer width height
-  qvbo    <- createQuadVBO ordinaryQuadVertices
-  program <- loadShaders
-    [ ShaderInfo
-      VertexShader
-      (ByteStringSource $(embedFile "src/assets/shaders/paintOver.vert"))
-    , ShaderInfo
-      FragmentShader
-      (ByteStringSource $(embedFile "src/assets/shaders/paintOver.frag"))
-    ]
-  return $ Mixbuffer fbo text depth program qvbo
+  depth  <- createDepthbuffer width height
+  qvbo   <- createQuadVBO vertices
+  shader <- loadPostProcessingShader "" vertShader fragShader
+  return $ Processingbuffer fbo text depth shader qvbo
 
 usePostProcessing :: PostProcessing -> IO ()
 usePostProcessing post = do
@@ -254,11 +274,19 @@ renderPostProcessing post animStyle = do
   case animStyle of
     NormalStyle -> renderSavebuffer $ input post
     MotionBlur  -> do
-      let (Savebuffer _ sceneFrame _ _ _) = input post
-      renderMotionBlurbuffer (motionBlur post) sceneFrame previousFrame 0.7
+      let (Savebuffer _ sceneFrame sceneDepth _ _) = input post
+      renderPostProcessingBuffer (motionBlur post)
+                                 sceneDepth
+                                 sceneFrame
+                                 previousFrame
+                                 0.7
     PaintOver -> do
       let (Savebuffer _ sceneFrame sceneDepth _ _) = input post
-      renderPaintOverbuffer (paintOver post) sceneDepth sceneFrame previousFrame
+      renderPostProcessingBuffer (paintOver post)
+                                 sceneDepth
+                                 sceneFrame
+                                 previousFrame
+                                 0.7
   bindFramebuffer Framebuffer $= defaultFramebufferObject
   renderSavebuffer outbuffer
 
@@ -269,38 +297,41 @@ renderSavebuffer (Savebuffer _ text _ program quadVBO) = do
   textureBinding Texture2D $= Just text
   drawVBO quadVBO
 
-renderMotionBlurbuffer
-  :: Mixbuffer -> TextureObject -> TextureObject -> GLfloat -> IO ()
-renderMotionBlurbuffer (Mixbuffer _ _ _ program quadVBO) nextFrame lastFrame mix
+setUniform
+  :: TextureObject
+  -> TextureObject
+  -> TextureObject
+  -> GLfloat
+  -> (String, GL.VariableType, UniformLocation)
+  -> IO ()
+setUniform _ nextFrame _ _ ("texFramebuffer", _, uniformLoc) = do
+  activeTexture $= TextureUnit 0
+  textureBinding Texture2D $= Just nextFrame
+  uniform uniformLoc $= TextureUnit 0
+setUniform _ _ lastFrame _ ("lastFrame", _, uniformLoc) = do
+  activeTexture $= TextureUnit 1
+  textureBinding Texture2D $= Just lastFrame
+  uniform uniformLoc $= TextureUnit 1
+setUniform depth _ _ _ ("depth", _, uniformLoc) = do
+  activeTexture $= TextureUnit 2
+  textureBinding Texture2D $= Just depth
+  uniform uniformLoc $= TextureUnit 2
+setUniform _ _ _ mix ("mixRatio", _, uniformLoc) = do
+  uniform uniformLoc $= mix
+setUniform _ _ _ mix (name, _, _) =
+  logError $ name ++ " is not a known uniform"
+
+renderPostProcessingBuffer
+  :: Processingbuffer
+  -> TextureObject
+  -> TextureObject
+  -> TextureObject
+  -> GLfloat
+  -> IO ()
+renderPostProcessingBuffer (Processingbuffer _ _ _ shader quadVBO) depth nextFrame lastFrame mix
   = do
-    activeTexture $= TextureUnit 0
-    textureBinding Texture2D $= Just nextFrame
-    activeTexture $= TextureUnit 1
-    textureBinding Texture2D $= Just lastFrame
+    let program = ppProgram shader
     currentProgram $= Just program
-    texFramebufferU <- GL.get $ uniformLocation program "texFramebuffer"
-    lastFrameU      <- GL.get $ uniformLocation program "lastFrame"
-    mixRatioU       <- GL.get $ uniformLocation program "mixRatio"
-    uniform texFramebufferU $= TextureUnit 0
-    uniform lastFrameU $= TextureUnit 1
-    uniform mixRatioU $= mix
+    mapM_ (setUniform depth nextFrame lastFrame mix) (ppUniforms shader)
     drawVBO quadVBO
 
-renderPaintOverbuffer
-  :: Mixbuffer -> TextureObject -> TextureObject -> TextureObject -> IO ()
-renderPaintOverbuffer (Mixbuffer _ _ _ program quadVBO) depth nextFrame lastFrame
-  = do
-    activeTexture $= TextureUnit 0
-    textureBinding Texture2D $= Just nextFrame
-    activeTexture $= TextureUnit 1
-    textureBinding Texture2D $= Just lastFrame
-    activeTexture $= TextureUnit 2
-    textureBinding Texture2D $= Just depth
-    currentProgram $= Just program
-    texFramebufferU <- GL.get $ uniformLocation program "texFramebuffer"
-    lastFrameU      <- GL.get $ uniformLocation program "lastFrame"
-    depthU          <- GL.get $ uniformLocation program "depth"
-    uniform texFramebufferU $= TextureUnit 0
-    uniform lastFrameU $= TextureUnit 1
-    uniform depthU $= TextureUnit 2
-    drawVBO quadVBO
