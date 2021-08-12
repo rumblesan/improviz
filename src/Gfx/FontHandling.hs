@@ -74,13 +74,14 @@ import qualified Graphics.Rendering.OpenGL     as GL
 import           Gfx.OpenGL                     ( printErrors )
 
 
+-- brittany-disable-next-binding
 data Character = Character Char -- char
-                                Int -- width
-                                    Int -- height
-                                        Int -- advance
-                                            Int -- xBearing
-                                                Int -- yBearing
-                                                    TextureObject -- texture
+                           Int -- width
+                           Int -- height
+                           Int -- advance
+                           Int -- xBearing
+                           Int -- yBearing
+                           TextureObject -- texture
   deriving Eq
 
 data Font = Font
