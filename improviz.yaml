@@ -8,7 +8,7 @@ font:
 assetsDirectory: "./assets"
 textureDirectories:
   - "./textures"
-  - "./hellocatfood/gifs"
+#  - "./hellocatfood/gifs"
 geometryDirectories:
   - "./geometries"
 #  - "./hellocatfood/geometries"
@@ -24,7 +24,7 @@ codeFiles:
   - "./usercode/grid.pz"
   - "./usercode/seq.pz"
 debug: false
-decorated: false
+decorated: true
 showText: true
 apptitle: "Improviz"
 serverPort: 3000

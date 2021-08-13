@@ -7,12 +7,17 @@ module Gfx.PostProcessing
   , deletePostProcessing
   , createTextDisplaybuffer
   , deleteSavebuffer
-  , PostProcessing(..)
+  , PostProcessingBuffers(..)
   , Savebuffer(..)
   , AnimationStyle(..)
   ) where
 
+import           Control.Monad.State.Strict
 import           Graphics.Rendering.OpenGL     as GL
+import           Lens.Simple                    ( (^.)
+                                                , makeLenses
+                                                , use
+                                                )
 
 import           Foreign.Marshal.Array          ( withArray )
 import           Foreign.Ptr                    ( nullPtr )
@@ -42,15 +47,10 @@ data AnimationStyle
   | PaintOver
   deriving (Eq, Show)
 
-data PostProcessing = PostProcessing
-  { input      :: Savebuffer
-  , motionBlur :: Processingbuffer
-  , paintOver  :: Processingbuffer
-  , output     :: Savebuffer
-  }
+type PostProcessing v = StateT PostProcessingBuffers IO v
 
-instance Show PostProcessing where
-  show _ = "PostProcessing"
+runPostProcessing :: PostProcessingBuffers -> PostProcessing v -> IO v
+runPostProcessing post f = evalStateT f post
 
 -- Simple Framebuffer with a texture that can be rendered to and then drawn out to a quad
 data Savebuffer = Savebuffer FramebufferObject
@@ -75,6 +75,18 @@ data PostProcessingShader = PostProcessingShader
   , ppAttributes :: [(String, GL.VariableType, GL.AttribLocation)]
   }
   deriving (Show, Eq)
+
+data PostProcessingBuffers = PostProcessingBuffers
+  { _input      :: Savebuffer
+  , _motionBlur :: Processingbuffer
+  , _paintOver  :: Processingbuffer
+  , _output     :: Savebuffer
+  }
+
+makeLenses ''PostProcessingBuffers
+
+instance Show PostProcessingBuffers where
+  show _ = "PostProcessingBuffers"
 
 loadPostProcessingShader
   :: String -> ShaderSource -> ShaderSource -> IO PostProcessingShader
@@ -159,38 +171,36 @@ createDepthbuffer width height = do
   GL.textureBinding Texture2D $= Nothing
   return depth
 
-createPostProcessing :: Int -> Int -> IO PostProcessing
+createPostProcessing :: Int -> Int -> IO PostProcessingBuffers
 createPostProcessing w h =
-  let
-    width  = fromIntegral w
-    height = fromIntegral h
-  in
-    do
-      inputBuffer      <- createSavebuffer width height
-      motionBlurBuffer <- createPostProcessingBuffer
-        width
-        height
-        (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.vert"))
-        (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.frag"))
-        ordinaryQuadVertices
-      paintOverBuffer <- createPostProcessingBuffer
-        width
-        height
-        (ByteStringSource $(embedFile "src/assets/shaders/paintOver.vert"))
-        (ByteStringSource $(embedFile "src/assets/shaders/paintOver.frag"))
-        ordinaryQuadVertices
-      outputBuffer <- createSavebuffer width height
-      return $ PostProcessing inputBuffer
-                              motionBlurBuffer
-                              paintOverBuffer
-                              outputBuffer
+  let width  = fromIntegral w
+      height = fromIntegral h
+  in  do
+        inputBuffer      <- createSavebuffer width height
+        motionBlurBuffer <- createPostProcessingBuffer
+          width
+          height
+          (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.vert"))
+          (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.frag"))
+          ordinaryQuadVertices
+        paintOverBuffer <- createPostProcessingBuffer
+          width
+          height
+          (ByteStringSource $(embedFile "src/assets/shaders/paintOver.vert"))
+          (ByteStringSource $(embedFile "src/assets/shaders/paintOver.frag"))
+          ordinaryQuadVertices
+        outputBuffer <- createSavebuffer width height
+        return $ PostProcessingBuffers inputBuffer
+                                       motionBlurBuffer
+                                       paintOverBuffer
+                                       outputBuffer
 
-deletePostProcessing :: PostProcessing -> IO ()
+deletePostProcessing :: PostProcessingBuffers -> IO ()
 deletePostProcessing post = do
-  deleteSavebuffer $ input post
-  deleteProcessingbuffer $ motionBlur post
-  deleteProcessingbuffer $ paintOver post
-  deleteSavebuffer $ output post
+  deleteSavebuffer $ post ^. input
+  deleteProcessingbuffer $ post ^. motionBlur
+  deleteProcessingbuffer $ post ^. paintOver
+  deleteSavebuffer $ post ^. output
 
 createSavebuffer :: GLint -> GLint -> IO Savebuffer
 createSavebuffer width height = do
@@ -261,77 +271,64 @@ createPostProcessingBuffer width height vertShader fragShader vertices = do
   shader <- loadPostProcessingShader "" vertShader fragShader
   return $ Processingbuffer fbo text depth shader qvbo
 
-usePostProcessing :: PostProcessing -> IO ()
-usePostProcessing post = do
-  let (Savebuffer fbo _ _ _ _) = input post
-  bindFramebuffer Framebuffer $= fbo
+usePostProcessing :: PostProcessingBuffers -> IO ()
+usePostProcessing post = runPostProcessing post usePostProcessingST
 
-renderPostProcessing :: PostProcessing -> AnimationStyle -> IO ()
-renderPostProcessing post animStyle = do
-  depthFunc $= Nothing
-  let outbuffer@(Savebuffer outFBO previousFrame _ _ _) = output post
-  bindFramebuffer Framebuffer $= outFBO
+usePostProcessingST :: PostProcessing ()
+usePostProcessingST = do
+  (Savebuffer fbo _ _ _ _) <- use input
+  liftIO $ bindFramebuffer Framebuffer $= fbo
+
+renderPostProcessing :: PostProcessingBuffers -> AnimationStyle -> IO ()
+renderPostProcessing post animStyle =
+  runPostProcessing post (renderPostProcessingST animStyle)
+
+renderPostProcessingST :: AnimationStyle -> PostProcessing ()
+renderPostProcessingST animStyle = do
+  outbuffer@(Savebuffer outFBO previousFrame _ _ _) <- use output
+  liftIO $ do
+    depthFunc $= Nothing
+    bindFramebuffer Framebuffer $= outFBO
   case animStyle of
-    NormalStyle -> renderSavebuffer $ input post
-    MotionBlur  -> do
-      let (Savebuffer _ sceneFrame sceneDepth _ _) = input post
-      renderPostProcessingBuffer (motionBlur post)
-                                 sceneDepth
-                                 sceneFrame
-                                 previousFrame
-                                 0.7
-    PaintOver -> do
-      let (Savebuffer _ sceneFrame sceneDepth _ _) = input post
-      renderPostProcessingBuffer (paintOver post)
-                                 sceneDepth
-                                 sceneFrame
-                                 previousFrame
-                                 0.7
-  bindFramebuffer Framebuffer $= defaultFramebufferObject
+    NormalStyle -> use input >>= renderSavebuffer
+    MotionBlur  -> use motionBlur >>= renderPostProcessingBuffer
+    PaintOver   -> use paintOver >>= renderPostProcessingBuffer
+  liftIO (bindFramebuffer Framebuffer $= defaultFramebufferObject)
   renderSavebuffer outbuffer
 
-renderSavebuffer :: Savebuffer -> IO ()
-renderSavebuffer (Savebuffer _ text _ program quadVBO) = do
+renderSavebuffer :: Savebuffer -> PostProcessing ()
+renderSavebuffer (Savebuffer _ text _ program quadVBO) = liftIO $ do
   currentProgram $= Just program
   activeTexture $= TextureUnit 0
   textureBinding Texture2D $= Just text
   drawVBO quadVBO
 
-setUniform
-  :: TextureObject
-  -> TextureObject
-  -> TextureObject
-  -> GLfloat
-  -> (String, GL.VariableType, UniformLocation)
-  -> IO ()
-setUniform _ nextFrame _ _ ("texFramebuffer", _, uniformLoc) = do
-  activeTexture $= TextureUnit 0
-  textureBinding Texture2D $= Just nextFrame
-  uniform uniformLoc $= TextureUnit 0
-setUniform _ _ lastFrame _ ("lastFrame", _, uniformLoc) = do
-  activeTexture $= TextureUnit 1
-  textureBinding Texture2D $= Just lastFrame
-  uniform uniformLoc $= TextureUnit 1
-setUniform depth _ _ _ ("depth", _, uniformLoc) = do
-  activeTexture $= TextureUnit 2
-  textureBinding Texture2D $= Just depth
-  uniform uniformLoc $= TextureUnit 2
-setUniform _ _ _ mix ("mixRatio", _, uniformLoc) = do
-  uniform uniformLoc $= mix
-setUniform _ _ _ mix (name, _, _) =
-  logError $ name ++ " is not a known uniform"
+setUniform :: (String, GL.VariableType, UniformLocation) -> PostProcessing ()
+setUniform ("texFramebuffer", _, uniformLoc) = do
+  (Savebuffer _ sceneFrame _ _ _) <- use input
+  liftIO $ do
+    activeTexture $= TextureUnit 0
+    textureBinding Texture2D $= Just sceneFrame
+    uniform uniformLoc $= TextureUnit 0
+setUniform ("lastFrame", _, uniformLoc) = do
+  (Savebuffer _ lastFrame _ _ _) <- use output
+  liftIO $ do
+    activeTexture $= TextureUnit 1
+    textureBinding Texture2D $= Just lastFrame
+    uniform uniformLoc $= TextureUnit 1
+setUniform ("depth", _, uniformLoc) = do
+  (Savebuffer _ _ depth _ _) <- use input
+  liftIO $ do
+    activeTexture $= TextureUnit 2
+    textureBinding Texture2D $= Just depth
+    uniform uniformLoc $= TextureUnit 2
+setUniform ("mixRatio", _, uniformLoc) =
+  let mix = 0.7 :: GLfloat in liftIO (uniform uniformLoc $= mix)
+setUniform (name, _, _) = liftIO $ logError $ name ++ " is not a known uniform"
 
-renderPostProcessingBuffer
-  :: Processingbuffer
-  -> TextureObject
-  -> TextureObject
-  -> TextureObject
-  -> GLfloat
-  -> IO ()
-renderPostProcessingBuffer (Processingbuffer _ _ _ shader quadVBO) depth nextFrame lastFrame mix
-  = do
-    let program = ppProgram shader
-    currentProgram $= Just program
-    mapM_ (setUniform depth nextFrame lastFrame mix) (ppUniforms shader)
-    drawVBO quadVBO
+renderPostProcessingBuffer :: Processingbuffer -> PostProcessing ()
+renderPostProcessingBuffer (Processingbuffer _ _ _ shader quadVBO) = do
+  liftIO (currentProgram $= (Just $ ppProgram shader))
+  mapM_ setUniform (ppUniforms shader)
+  liftIO $ drawVBO quadVBO
 
