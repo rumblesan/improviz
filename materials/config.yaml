@@ -1,4 +1,4 @@
-materials:
+shaders:
   - name: basic
     file: basic.yaml
   - name: wireframe
