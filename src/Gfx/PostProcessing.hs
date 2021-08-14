@@ -12,6 +12,7 @@ module Gfx.PostProcessing
   , AnimationStyle(..)
   ) where
 
+import           Configuration.Shaders
 import           Control.Monad.State.Strict
 import           Graphics.Rendering.OpenGL     as GL
 import           Lens.Simple                    ( (^.)
@@ -23,7 +24,7 @@ import           Foreign.Marshal.Array          ( withArray )
 import           Foreign.Ptr                    ( nullPtr )
 import           Foreign.Storable               ( sizeOf )
 
-import           Data.FileEmbed                 ( embedFile )
+import           Data.FileEmbed                 ( embedStringFile )
 import           Gfx.LoadShaders                ( ShaderInfo(..)
                                                 , ShaderSource(..)
                                                 , loadShaders
@@ -88,12 +89,11 @@ makeLenses ''PostProcessingBuffers
 instance Show PostProcessingBuffers where
   show _ = "PostProcessingBuffers"
 
-loadPostProcessingShader
-  :: String -> ShaderSource -> ShaderSource -> IO PostProcessingShader
-loadPostProcessingShader name vertShader fragShader = do
+loadPostProcessingShader :: ShaderData -> IO PostProcessingShader
+loadPostProcessingShader (ShaderData name vertShader fragShader) = do
   program <- loadShaders
-    [ ShaderInfo GL.VertexShader   vertShader
-    , ShaderInfo GL.FragmentShader fragShader
+    [ ShaderInfo GL.VertexShader   (StringSource vertShader)
+    , ShaderInfo GL.FragmentShader (StringSource fragShader)
     ]
   GL.currentProgram $= Just program
   uniformInfo <- GL.get $ GL.activeUniforms program
@@ -176,20 +176,38 @@ createPostProcessing w h =
   let width  = fromIntegral w
       height = fromIntegral h
   in  do
-        inputBuffer      <- createSavebuffer width height
+        inputBuffer      <- createSavebuffer
+          width
+          height
+          (ShaderData ""
+                      $(embedStringFile "src/assets/shaders/savebuffer.vert")
+                      $(embedStringFile "src/assets/shaders/savebuffer.frag")
+          )
+          ordinaryQuadVertices
         motionBlurBuffer <- createPostProcessingBuffer
           width
           height
-          (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.vert"))
-          (ByteStringSource $(embedFile "src/assets/shaders/motionBlur.frag"))
+          (ShaderData ""
+                      $(embedStringFile "src/assets/shaders/motionBlur.vert")
+                      $(embedStringFile "src/assets/shaders/motionBlur.frag")
+          )
           ordinaryQuadVertices
         paintOverBuffer <- createPostProcessingBuffer
           width
           height
-          (ByteStringSource $(embedFile "src/assets/shaders/paintOver.vert"))
-          (ByteStringSource $(embedFile "src/assets/shaders/paintOver.frag"))
+          (ShaderData ""
+                      $(embedStringFile "src/assets/shaders/paintOver.vert")
+                      $(embedStringFile "src/assets/shaders/paintOver.frag")
+          )
           ordinaryQuadVertices
-        outputBuffer <- createSavebuffer width height
+        outputBuffer <- createSavebuffer
+          width
+          height
+          (ShaderData ""
+                      $(embedStringFile "src/assets/shaders/savebuffer.vert")
+                      $(embedStringFile "src/assets/shaders/savebuffer.frag")
+          )
+          ordinaryQuadVertices
         return $ PostProcessingBuffers inputBuffer
                                        motionBlurBuffer
                                        paintOverBuffer
@@ -202,41 +220,32 @@ deletePostProcessing post = do
   deleteProcessingbuffer $ post ^. paintOver
   deleteSavebuffer $ post ^. output
 
-createSavebuffer :: GLint -> GLint -> IO Savebuffer
-createSavebuffer width height = do
-  fbo <- genObjectName
-  GL.bindFramebuffer Framebuffer $= fbo
-  text <- create2DTexture width height
-  GL.framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
-  depth   <- createDepthbuffer width height
-  qvbo    <- createQuadVBO ordinaryQuadVertices
-  program <- loadShaders
-    [ ShaderInfo
-      VertexShader
-      (ByteStringSource $(embedFile "src/assets/shaders/savebuffer.vert"))
-    , ShaderInfo
-      FragmentShader
-      (ByteStringSource $(embedFile "src/assets/shaders/savebuffer.frag"))
-    ]
-  return $ Savebuffer fbo text depth program qvbo
-
 createTextDisplaybuffer :: GLint -> GLint -> IO Savebuffer
-createTextDisplaybuffer width height = do
-  fbo <- genObjectName
-  GL.bindFramebuffer Framebuffer $= fbo
-  text <- create2DTexture width height
-  GL.framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
-  depth   <- createDepthbuffer width height
-  qvbo    <- createQuadVBO textQuadVertices
-  program <- loadShaders
-    [ ShaderInfo
-      VertexShader
-      (ByteStringSource $(embedFile "src/assets/shaders/savebuffer.vert"))
-    , ShaderInfo
-      FragmentShader
-      (ByteStringSource $(embedFile "src/assets/shaders/savebuffer.frag"))
-    ]
-  return $ Savebuffer fbo text depth program qvbo
+createTextDisplaybuffer width height =
+  createSavebuffer
+    width
+    height
+    (ShaderData
+      ""
+      $(embedStringFile "src/assets/shaders/savebuffer.vert")
+      $(embedStringFile "src/assets/shaders/savebuffer.frag")
+    )
+    textQuadVertices
+
+createSavebuffer :: GLint -> GLint -> ShaderData -> [GLfloat] -> IO Savebuffer
+createSavebuffer width height (ShaderData _ vertShader fragShader) vertices =
+  do
+    fbo <- genObjectName
+    GL.bindFramebuffer Framebuffer $= fbo
+    text <- create2DTexture width height
+    GL.framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
+    depth   <- createDepthbuffer width height
+    qvbo    <- createQuadVBO vertices
+    program <- loadShaders
+      [ ShaderInfo VertexShader   (StringSource vertShader)
+      , ShaderInfo FragmentShader (StringSource fragShader)
+      ]
+    return $ Savebuffer fbo text depth program qvbo
 
 deleteSavebuffer :: Savebuffer -> IO ()
 deleteSavebuffer (Savebuffer sbfbo sbtext sbdepth sbprogram sbvbo) = do
@@ -255,20 +264,15 @@ deleteProcessingbuffer (Processingbuffer mfbo mtext depth shader mbvbo) = do
   deleteObjectName mfbo
 
 createPostProcessingBuffer
-  :: GLint
-  -> GLint
-  -> ShaderSource
-  -> ShaderSource
-  -> [GLfloat]
-  -> IO Processingbuffer
-createPostProcessingBuffer width height vertShader fragShader vertices = do
+  :: GLint -> GLint -> ShaderData -> [GLfloat] -> IO Processingbuffer
+createPostProcessingBuffer width height shaderData vertices = do
   fbo <- genObjectName
   bindFramebuffer Framebuffer $= fbo
   text <- create2DTexture width height
   framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
   depth  <- createDepthbuffer width height
   qvbo   <- createQuadVBO vertices
-  shader <- loadPostProcessingShader "" vertShader fragShader
+  shader <- loadPostProcessingShader shaderData
   return $ Processingbuffer fbo text depth shader qvbo
 
 usePostProcessing :: PostProcessingBuffers -> IO ()
