@@ -13,9 +13,9 @@ module Improviz.Runtime
   , materialsToLoad
   ) where
 
+import           Configuration.Shaders          ( ShaderData )
 import           Gfx.Context                    ( GfxContext )
 import           Gfx.Engine                     ( GfxEngine )
-import           Gfx.Materials                  ( MaterialData )
 import qualified Improviz.SystemVars           as SV
 import           Language                       ( initialInterpreterState
                                                 , updateSystemVars
@@ -34,7 +34,7 @@ data ImprovizRuntime gfxContext = ImprovizRuntime
   , _lastProgramText    :: String
   , _currentAst         :: Program
   , _lastWorkingAst     :: Program
-  , _materialsToLoad    :: [MaterialData]
+  , _materialsToLoad    :: [ShaderData]
   , _initialInterpreter :: InterpreterState
   }
 

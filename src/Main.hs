@@ -121,7 +121,7 @@ loadQueuedMaterials env = do
 
 display :: ImprovizEnv -> Double -> IO ()
 display env time = do
-  loadQueuedMaterials env
+  --loadQueuedMaterials env
   as      <- readTVarIO (env ^. I.runtime)
   extVars <- readTVarIO (env ^. I.externalVars)
   let gfxCtx     = env ^. I.gfxContext

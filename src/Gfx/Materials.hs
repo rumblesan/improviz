@@ -7,27 +7,17 @@ module Gfx.Materials
   , MaterialLibrary
   , loadMaterial
   , destroyMaterial
-  , loadMaterialString
-  , loadMaterialFile
-  , loadMaterialFolder
   , createMaterialsConfig
   ) where
 
 
-import           Data.ByteString.Lazy.Char8     ( ByteString
-                                                , toStrict
-                                                )
-import           Data.Either                    ( either
-                                                , partitionEithers
-                                                )
+import           Data.Either                    ( partitionEithers )
 import qualified Data.Map.Strict               as M
 
 import           Control.Exception              ( IOException
                                                 , try
                                                 )
 import           Control.Monad                  ( mapM )
-
-import           System.FilePath.Posix          ( (</>) )
 
 import           Graphics.Rendering.OpenGL      ( ($=) )
 import qualified Graphics.Rendering.OpenGL     as GL
@@ -46,8 +36,7 @@ import           Gfx.Shaders                    ( getAttribLoc
                                                 , getUniformLoc
                                                 )
 
-import           Configuration                  ( loadFolderConfig )
-import           Configuration.Materials
+import           Configuration.Shaders
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
@@ -84,12 +73,12 @@ data Material = Material
   }
   deriving (Show, Eq)
 
-loadMaterial :: MaterialData -> IO (Either String Material)
-loadMaterial md = do
+loadMaterial :: ShaderData -> IO (Either String Material)
+loadMaterial (ShaderData matName vertShader fragShader) = do
   result <-
     try $ loadShaders
-      [ ShaderInfo GL.VertexShader   (StringSource $ vertexShader md)
-      , ShaderInfo GL.FragmentShader (StringSource $ fragmentShader md)
+      [ ShaderInfo GL.VertexShader   (StringSource vertShader)
+      , ShaderInfo GL.FragmentShader (StringSource fragShader)
       ] :: IO (Either IOException GL.Program)
   case result of
     Right program -> do
@@ -98,8 +87,8 @@ loadMaterial md = do
       uniforms    <- mapM (getUniformLoc program) uniformInfo
       attribInfo  <- GL.get $ GL.activeAttribs program
       attributes  <- mapM (getAttribLoc program) attribInfo
-      logInfo $ "Loading " ++ (mdName md) ++ " material"
-      return $ Right $ Material (mdName md) program uniforms attributes
+      logInfo $ "Loading " ++ matName ++ " material"
+      return $ Right $ Material matName program uniforms attributes
     Left err -> return $ Left (show err)
 
 destroyMaterial :: Material -> IO ()
@@ -108,34 +97,19 @@ destroyMaterial material = do
   GL.deleteObjectNames programShaders
   GL.deleteObjectName (program material)
 
-loadMaterialString :: ByteString -> Either String MaterialData
-loadMaterialString matStr = either (Left . Y.prettyPrintParseException)
-                                   Right
-                                   (Y.decodeEither' (toStrict matStr))
-
-loadMaterialFile :: FilePath -> IO (Either String Material)
-loadMaterialFile fp = do
-  yaml <- Y.decodeFileEither fp
-  either (return . Left . Y.prettyPrintParseException) loadMaterial yaml
-
-loadMaterialFolder
-  :: FilePath -> IO ([Either String Material], [(String, Value)])
-loadMaterialFolder folderPath = do
-  folderConfig <- loadFolderConfig folderPath
-  case folderConfig of
-    Left  err -> logError err >> return ([], [])
-    Right cfg -> do
-      loadedMaterials <- mapM ml (materialsConfig cfg)
-      return (loadedMaterials, folderVarDefaults cfg)
-  where ml material = loadMaterialFile (folderPath </> materialFile material)
-
 createMaterialsConfig :: [FilePath] -> IO MaterialsConfig
 createMaterialsConfig folders = do
-  configs <- mapM loadMaterialFolder folders
-  let (errs, materials) = partitionEithers $ concat $ fmap fst configs
-  mapM_ logError errs
-  let varDefaults = concat $ fmap snd configs
+  loadedFolders <- mapM loadShaderFolder folders
+  let (folderLoadingErrs, parsedShaders) =
+        partitionEithers $ concat $ fmap fst loadedFolders
+  mapM_ logError folderLoadingErrs
+  loadedMaterials <- mapM loadMaterial parsedShaders
+  let (materialLoadingErrs, materials) = partitionEithers loadedMaterials
+  mapM_ logError materialLoadingErrs
+  let varDefaults = concat $ fmap snd loadedFolders
   logInfo $ "Loaded " ++ show (length varDefaults) ++ " material defaults"
   logInfo $ "Loaded " ++ show (length materials) ++ " material files"
   let materialsLib = M.fromList $ (\m -> (name m, m)) <$> materials
   return $ MaterialsConfig materialsLib varDefaults
+
+

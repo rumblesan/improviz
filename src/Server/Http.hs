@@ -26,7 +26,7 @@ import           Logging                        ( logError
                                                 , logInfo
                                                 )
 
-import qualified Gfx.Materials                 as GM
+import qualified Configuration.Shaders         as CS
 import qualified Language                      as L
 import           Language.Ast                   ( Value(Number) )
 import           Language.Parser.Errors         ( parseErrorsOut
@@ -62,7 +62,7 @@ updateProgram env newProgram = case L.parse newProgram of
     return $ ImprovizCodeErrorResponse $ parseErrorsOut err
 
 updateMaterial :: ImprovizEnv -> ByteString -> IO ImprovizResponse
-updateMaterial env newMaterial = case GM.loadMaterialString newMaterial of
+updateMaterial env newMaterial = case CS.loadShaderString newMaterial of
   Right materialData -> do
     atomically $ modifyTVar (env ^. I.runtime) (addToMaterialQueue materialData)
     let msg = "Material Queued Successfully"
