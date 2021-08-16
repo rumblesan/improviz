@@ -14,6 +14,8 @@ geometryDirectories:
 #  - "./hellocatfood/geometries"
 materialDirectories:
   - "./materials"
+filterDirectories:
+  - "./filters"
 codeFiles:
   - "./stdlib/variables.pz"
   - "./stdlib/transformations.pz"

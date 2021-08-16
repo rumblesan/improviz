@@ -45,9 +45,7 @@ createGfx
   -> Int
   -> IO GfxEngine
 createGfx config textureLib width height fbWidth fbHeight = do
-  post <- createPostProcessing (config ^. C.postFilterDirectories)
-                               fbWidth
-                               fbHeight
+  post <- createPostProcessing (config ^. C.filterDirectories) fbWidth fbHeight
   let scaling = fromIntegral width / fromIntegral fbWidth
   trender     <- createTextRenderer config fbWidth fbHeight scaling
   materialCfg <- GM.createMaterialsConfig (config ^. C.materialDirectories)
@@ -58,7 +56,7 @@ resizeGfx
   :: GfxEngine -> ImprovizConfig -> Int -> Int -> Int -> Int -> IO GfxEngine
 resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
   deletePostProcessing $ engineState ^. postFX
-  newPost <- createPostProcessing (config ^. C.postFilterDirectories)
+  newPost <- createPostProcessing (config ^. C.filterDirectories)
                                   fbWidth
                                   fbHeight
   newTrender <- resizeTextRendererScreen config
