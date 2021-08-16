@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Gfx.SettingMap
+module Util.SettingMap
   ( SettingMap(..)
   , create
   , value

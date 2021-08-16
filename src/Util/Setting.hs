@@ -1,4 +1,4 @@
-module Gfx.Setting
+module Util.Setting
   ( Setting(..)
   , create
   , value

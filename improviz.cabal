@@ -73,8 +73,6 @@ executable improviz
                      , Gfx.Matrices
                      , Gfx.OpenGL
                      , Gfx.PostProcessing
-                     , Gfx.Setting
-                     , Gfx.SettingMap
                      , Gfx.Materials
                      , Gfx.Shaders
                      , Gfx.TextRendering
@@ -110,6 +108,8 @@ executable improviz
                      , Server.Protocol
                      , Server.OSC
                      , Util
+                     , Util.Setting
+                     , Util.SettingMap
                      , Windowing
   default-language:    Haskell2010
 
@@ -171,8 +171,6 @@ test-suite improviz-test
                      , Gfx.Textures
                      , Gfx.Types
                      , Gfx.Shaders
-                     , Gfx.Setting
-                     , Gfx.SettingMap
                      , Gfx.Materials
                      , Gfx.VertexBuffers
                      , Gfx.VAO
@@ -225,6 +223,8 @@ test-suite improviz-test
                      , Tests.Language.Parser.Operators
                      , Tests.Language.Parser.Symbols
                      , Util
+                     , Util.Setting
+                     , Util.SettingMap
   default-language:    Haskell2010
 
 source-repository head

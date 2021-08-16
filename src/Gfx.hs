@@ -26,12 +26,12 @@ import           Gfx.PostProcessing             ( AnimationStyle(..)
                                                 , renderPostProcessing
                                                 , usePostProcessing
                                                 )
-import qualified Gfx.Setting                   as GS
 import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 , createTextRenderer
                                                 , resizeTextRendererScreen
                                                 )
 import           Gfx.Textures                   ( TextureLibrary )
+import qualified Util.Setting                  as S
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -70,9 +70,9 @@ renderGfx :: IO result -> GfxEngine -> IO result
 renderGfx program gs =
   let
     post       = gs ^. postFX
-    animStyle  = gs ^. animationStyle . GS.value
-    bgColor    = gs ^. backgroundColor . GS.value
-    depthCheck = gs ^. depthChecking . GS.value
+    animStyle  = gs ^. animationStyle . S.value
+    bgColor    = gs ^. backgroundColor . S.value
+    depthCheck = gs ^. depthChecking . S.value
   in
     do
       usePostProcessing post

@@ -17,13 +17,13 @@ import           Configuration.Shaders
 import           Control.Monad.State.Strict
 import           Data.Either                    ( partitionEithers )
 import qualified Data.Map.Strict               as M
-import qualified Gfx.SettingMap                as GSM
 import           Graphics.Rendering.OpenGL     as GL
 import           Lens.Simple                    ( (^.)
                                                 , makeLenses
                                                 , use
                                                 , uses
                                                 )
+import qualified Util.SettingMap               as SM
 
 import           Foreign.Marshal.Array          ( withArray )
 import           Foreign.Ptr                    ( nullPtr )
@@ -91,7 +91,7 @@ data PostProcessingConfig = PostProcessingConfig
   , _paintOver   :: PostFilter
   , _output      :: Savebuffer
   , _userFilters :: M.Map String PostFilter
-  , _filterVars  :: GSM.SettingMap String Value
+  , _filterVars  :: SM.SettingMap String Value
   }
 
 makeLenses ''PostProcessingConfig
@@ -344,7 +344,7 @@ setUniform ("depth", _, uniformLoc) = do
 setUniform ("mixRatio", _, uniformLoc) =
   let mix = 0.7 :: GLfloat in liftIO (uniform uniformLoc $= mix)
 setUniform (name, uniformType, uniformLoc) = do
-  filtVar <- use (filterVars . GSM.value name)
+  filtVar <- use (filterVars . SM.value name)
   liftIO $ case filtVar of
     Nothing -> logError $ name ++ " is not a known uniform"
     Just v  -> valueToUniform v uniformType uniformLoc
@@ -358,7 +358,7 @@ renderPostProcessingFilter (PostFilter _ _ _ shader quadVBO) = do
 
 createPostProcessingFilters
   :: [FilePath]
-  -> IO (M.Map String PostProcessingShader, GSM.SettingMap String Value)
+  -> IO (M.Map String PostProcessingShader, SM.SettingMap String Value)
 createPostProcessingFilters folders = do
   loadedFolders <- mapM loadShaderFolder folders
   let (folderLoadingErrs, parsedShaders) =
@@ -378,7 +378,7 @@ createPostProcessingFilters folders = do
     ++ " post processing filter files"
   return
     $ ( M.fromList $ (\ps -> (ppName ps, ps)) <$> loadedFilters
-      , GSM.create varDefaults
+      , SM.create varDefaults
       )
 
 
