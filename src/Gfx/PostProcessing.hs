@@ -7,6 +7,7 @@ module Gfx.PostProcessing
   , deletePostProcessing
   , createTextDisplaybuffer
   , deleteSavebuffer
+  , filterVars
   , PostProcessingConfig(..)
   , Savebuffer(..)
   , AnimationStyle(..)
@@ -16,6 +17,7 @@ import           Configuration.Shaders
 import           Control.Monad.State.Strict
 import           Data.Either                    ( partitionEithers )
 import qualified Data.Map.Strict               as M
+import qualified Gfx.SettingMap                as GSM
 import           Graphics.Rendering.OpenGL     as GL
 import           Lens.Simple                    ( (^.)
                                                 , makeLenses
@@ -32,6 +34,7 @@ import           Gfx.LoadShaders                ( ShaderInfo(..)
                                                 , ShaderSource(..)
                                                 , loadShaders
                                                 )
+import           Gfx.OpenGL                     ( valueToUniform )
 import           Gfx.Shaders                    ( getAttribLoc
                                                 , getUniformLoc
                                                 )
@@ -41,6 +44,7 @@ import           Gfx.VertexBuffers              ( VBO
                                                 , drawVBO
                                                 , setAttribPointer
                                                 )
+import           Language.Ast                   ( Value )
 import           Logging                        ( logError
                                                 , logInfo
                                                 )
@@ -87,6 +91,7 @@ data PostProcessingConfig = PostProcessingConfig
   , _paintOver   :: Processingbuffer
   , _output      :: Savebuffer
   , _userFilters :: M.Map String Processingbuffer
+  , _filterVars  :: GSM.SettingMap String Value
   }
 
 makeLenses ''PostProcessingConfig
@@ -215,9 +220,9 @@ createPostProcessing filterDirectories w h =
                       $(embedStringFile "src/assets/shaders/savebuffer.vert")
                       $(embedStringFile "src/assets/shaders/savebuffer.frag")
           )
-        loadedFilters <- createPostProcessingFilters filterDirectories
+        (loadedFilters, varDefaults) <- createPostProcessingFilters filterDirectories
         userFilters <- mapM (createPostProcessingBuffer width height ordinaryQuadVertices) loadedFilters
-        return $ PostProcessingConfig inputBuffer motionBlurBuffer paintOverBuffer outputBuffer userFilters
+        return $ PostProcessingConfig inputBuffer motionBlurBuffer paintOverBuffer outputBuffer userFilters varDefaults
 
 deletePostProcessing :: PostProcessingConfig -> IO ()
 deletePostProcessing post = do
@@ -338,7 +343,12 @@ setUniform ("depth", _, uniformLoc) = do
     uniform uniformLoc $= TextureUnit 2
 setUniform ("mixRatio", _, uniformLoc) =
   let mix = 0.7 :: GLfloat in liftIO (uniform uniformLoc $= mix)
-setUniform (name, _, _) = liftIO $ logError $ name ++ " is not a known uniform"
+setUniform (name, uniformType, uniformLoc) = do
+  filtVar <- use (filterVars . GSM.value name)
+  liftIO $ case filtVar of
+    Nothing -> logError $ name ++ " is not a known uniform"
+    Just v  -> valueToUniform v uniformType uniformLoc
+
 
 renderPostProcessingBuffer :: Processingbuffer -> PostProcessing ()
 renderPostProcessingBuffer (Processingbuffer _ _ _ shader quadVBO) = do
@@ -347,7 +357,8 @@ renderPostProcessingBuffer (Processingbuffer _ _ _ shader quadVBO) = do
   liftIO $ drawVBO quadVBO
 
 createPostProcessingFilters
-  :: [FilePath] -> IO (M.Map String PostProcessingShader)
+  :: [FilePath]
+  -> IO (M.Map String PostProcessingShader, GSM.SettingMap String Value)
 createPostProcessingFilters folders = do
   loadedFolders <- mapM loadShaderFolder folders
   let (folderLoadingErrs, parsedShaders) =
@@ -365,6 +376,9 @@ createPostProcessingFilters folders = do
     $  "Loaded "
     ++ show (length loadedFilters)
     ++ " post processing filter files"
-  return $ M.fromList $ (\ps -> (ppName ps, ps)) <$> loadedFilters
+  return
+    $ ( M.fromList $ (\ps -> (ppName ps, ps)) <$> loadedFilters
+      , GSM.create varDefaults
+      )
 
 

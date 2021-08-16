@@ -12,6 +12,7 @@ module Gfx.Commands
   , setMaterialVariable
   , setBackground
   , setAnimationStyle
+  , setFilterVar
   , setDepthChecking
   , pushScope
   , popScope
@@ -44,8 +45,6 @@ import           Graphics.Rendering.OpenGL      ( ($=)
                                                 , UniformLocation(..)
                                                 , currentProgram
                                                 )
-import           Graphics.Rendering.OpenGL.GL.Shaders.Attribs
-                                               as GLS
 import           Language.Ast                   ( Value(..) )
 
 import           Gfx.Engine
@@ -57,11 +56,9 @@ import           Gfx.Matrices                   ( rotMat
                                                 )
 import           Gfx.OpenGL                     ( colToGLCol
                                                 , printErrors
-                                                , valueToGLfloat
-                                                , valueToGLfloatVec2
-                                                , valueToGLfloatVec3
-                                                , valueToGLfloatVec4
+                                                , valueToUniform
                                                 )
+import qualified Gfx.PostProcessing            as PP
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 import qualified Gfx.Setting                   as GS
 import qualified Gfx.SettingMap                as GSM
@@ -132,29 +129,6 @@ setUniform (name, uniformType, uniformLoc) = do
     Just v  -> valueToUniform v uniformType uniformLoc
 
 
-valueToUniform :: Value -> GL.VariableType -> GL.UniformLocation -> IO ()
-valueToUniform value utype uniformLoc = case utype of
-  GLS.Float'    -> valueToGLfloatUniform value uniformLoc
-  GLS.FloatVec2 -> valueToVec2Uniform value uniformLoc
-  GLS.FloatVec3 -> valueToVec3Uniform value uniformLoc
-  GLS.FloatVec4 -> valueToVec4Uniform value uniformLoc
-
-valueToGLfloatUniform :: Value -> GL.UniformLocation -> IO ()
-valueToGLfloatUniform value uniformLoc =
-  either logError (GL.uniform uniformLoc $=) (valueToGLfloat value)
-
-valueToVec2Uniform :: Value -> GL.UniformLocation -> IO ()
-valueToVec2Uniform value uniformLoc =
-  either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec2 value)
-
-valueToVec3Uniform :: Value -> GL.UniformLocation -> IO ()
-valueToVec3Uniform value uniformLoc =
-  either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec3 value)
-
-valueToVec4Uniform :: Value -> GL.UniformLocation -> IO ()
-valueToVec4Uniform value uniformLoc =
-  either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec4 value)
-
 
 drawTriangles :: GeometryBuffers -> GraphicsEngine ()
 drawTriangles geoData = do
@@ -204,6 +178,10 @@ setBackground r g b = assign (backgroundColor . GS.value) (Colour r g b 1)
 
 setAnimationStyle :: AnimationStyle -> GraphicsEngine ()
 setAnimationStyle = assign (animationStyle . GS.value)
+
+setFilterVar :: String -> Value -> GraphicsEngine ()
+setFilterVar name value =
+  assign (postFX . PP.filterVars . GSM.value name) (Just value)
 
 setDepthChecking :: Bool -> GraphicsEngine ()
 setDepthChecking = assign (depthChecking . GS.value)

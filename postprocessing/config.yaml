@@ -1,3 +1,6 @@
 shaders:
   - name: posttest
     file: posttest.yaml
+defaults:
+  - name: ColourMult
+    value: [1.0, 1.0, 1.0, 1.0]

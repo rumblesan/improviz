@@ -152,6 +152,7 @@ resetGfxEngine ge = ge
   , _strokeStyle     = GS.reset (_strokeStyle ge)
   , _material        = GS.reset (_material ge)
   , _materialVars    = GSM.reset (_materialVars ge)
+  , _postFXVars      = GSM.reset (_postFXVars ge)
   , _matrixStack     = [identity]
   , _scopeStack      = []
   , _animationStyle  = GS.resetIfUnused (_animationStyle ge)

@@ -19,6 +19,7 @@ fragmentShader: |
   uniform sampler2D texFramebuffer;
   uniform sampler2D lastFrame;
   uniform sampler2D depth;
+  uniform vec4 ColourMult;
 
   void main()
   {
@@ -31,7 +32,7 @@ fragmentShader: |
       vec4 texel2 = texture(lastFrame, Texcoord);
 
       if (z < 1.0) {
-          outColor = texel1 * vec4(1, 0, 0, 1);
+          outColor = texel1 * ColourMult;
       } else {
           outColor = texel2;
       }

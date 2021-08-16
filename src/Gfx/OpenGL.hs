@@ -1,6 +1,7 @@
 module Gfx.OpenGL where
 
 import           Gfx.Types                      ( Colour(..) )
+import qualified Graphics.Rendering.OpenGL     as GL
 import           Graphics.Rendering.OpenGL      ( Color4(..)
                                                 , GLfloat
                                                 , Vector2(..)
@@ -9,8 +10,12 @@ import           Graphics.Rendering.OpenGL      ( Color4(..)
                                                 , errors
                                                 , get
                                                 )
+import           Graphics.Rendering.OpenGL      ( ($=) )
+import           Graphics.Rendering.OpenGL.GL.Shaders.Attribs
+                                               as GLS
 import           Language.Ast                   ( Value(..) )
 
+import           Logging                        ( logError )
 import           System.IO                      ( hPutStrLn
                                                 , stderr
                                                 )
@@ -18,6 +23,29 @@ import           System.IO                      ( hPutStrLn
 valueGetFloat :: Value -> Either String GLfloat
 valueGetFloat (Number v) = Right v
 valueGetFloat _          = Left "Expected number"
+
+valueToUniform :: Value -> GL.VariableType -> GL.UniformLocation -> IO ()
+valueToUniform value utype uniformLoc = case utype of
+  GLS.Float'    -> valueToGLfloatUniform value uniformLoc
+  GLS.FloatVec2 -> valueToVec2Uniform value uniformLoc
+  GLS.FloatVec3 -> valueToVec3Uniform value uniformLoc
+  GLS.FloatVec4 -> valueToVec4Uniform value uniformLoc
+
+valueToGLfloatUniform :: Value -> GL.UniformLocation -> IO ()
+valueToGLfloatUniform value uniformLoc =
+  either logError (GL.uniform uniformLoc $=) (valueToGLfloat value)
+
+valueToVec2Uniform :: Value -> GL.UniformLocation -> IO ()
+valueToVec2Uniform value uniformLoc =
+  either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec2 value)
+
+valueToVec3Uniform :: Value -> GL.UniformLocation -> IO ()
+valueToVec3Uniform value uniformLoc =
+  either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec3 value)
+
+valueToVec4Uniform :: Value -> GL.UniformLocation -> IO ()
+valueToVec4Uniform value uniformLoc =
+  either logError (GL.uniform uniformLoc $=) (valueToGLfloatVec4 value)
 
 valueToGLfloat :: Value -> Either String GLfloat
 valueToGLfloat (Number v      ) = Right v

@@ -36,6 +36,7 @@ data GfxContext = GfxContext
   , pushScope          :: IO ()
   , popScope           :: IO ()
   , setAnimationStyle  :: AnimationStyle -> IO ()
+  , setFilterVar       :: String -> Value -> IO ()
   , setDepthChecking   :: Bool -> IO ()
   , reset              :: IO ()
   , renderCode         :: String -> IO ()
@@ -59,6 +60,7 @@ createGfxContext gfx = GfxContext
   , pushScope          = wrapNoArg gfx GC.pushScope
   , popScope           = wrapNoArg gfx GC.popScope
   , setAnimationStyle  = wrapOneArg gfx GC.setAnimationStyle
+  , setFilterVar       = wrapTwoArg gfx GC.setFilterVar
   , setDepthChecking   = wrapOneArg gfx GC.setDepthChecking
   , reset              = resetGfxCtx gfx
   , renderCode         = wrapOneArg gfx GC.renderCode
@@ -81,6 +83,7 @@ empty = GfxContext { drawShape          = \_ _ _ _ -> print "No GFX Context"
                    , pushScope          = print "No Gfx Context"
                    , popScope           = print "No Gfx Context"
                    , setAnimationStyle  = \_ -> print "No Gfx Context"
+                   , setFilterVar       = \_ _ -> print "No Gfx Context"
                    , setDepthChecking   = \_ -> print "No Gfx Context"
                    , reset              = print "No Gfx Context"
                    , renderCode         = \_ -> print "No Gfx Context"
