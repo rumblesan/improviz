@@ -45,7 +45,9 @@ createGfx
   -> Int
   -> IO GfxEngine
 createGfx config textureLib width height fbWidth fbHeight = do
-  post <- createPostProcessing fbWidth fbHeight
+  post <- createPostProcessing (config ^. C.postFilterDirectories)
+                               fbWidth
+                               fbHeight
   let scaling = fromIntegral width / fromIntegral fbWidth
   trender     <- createTextRenderer config fbWidth fbHeight scaling
   materialCfg <- GM.createMaterialsConfig (config ^. C.materialDirectories)
@@ -56,7 +58,9 @@ resizeGfx
   :: GfxEngine -> ImprovizConfig -> Int -> Int -> Int -> Int -> IO GfxEngine
 resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
   deletePostProcessing $ engineState ^. postFX
-  newPost    <- createPostProcessing fbWidth fbHeight
+  newPost <- createPostProcessing (config ^. C.postFilterDirectories)
+                                  fbWidth
+                                  fbHeight
   newTrender <- resizeTextRendererScreen config
                                          fbWidth
                                          fbHeight
@@ -85,6 +89,8 @@ renderGfx program gs =
           blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
         PaintOver ->
           blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
+        otherwise ->
+          blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, One))
       clearColor $= colToGLCol bgColor
       clear [ColorBuffer, DepthBuffer]
       result <- program

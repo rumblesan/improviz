@@ -27,7 +27,7 @@ import           Gfx.Matrices                   ( projectionMat
                                                 , viewMat
                                                 )
 import           Gfx.PostProcessing             ( AnimationStyle(NormalStyle)
-                                                , PostProcessingBuffers
+                                                , PostProcessingConfig
                                                 )
 import qualified Gfx.Setting                   as GS
 import qualified Gfx.SettingMap                as GSM
@@ -78,7 +78,7 @@ data GfxEngine = GfxEngine
   , _materialVars     :: GSM.SettingMap String Value
   , _viewMatrix       :: M44 GLfloat
   , _projectionMatrix :: M44 GLfloat
-  , _postFX           :: PostProcessingBuffers
+  , _postFX           :: PostProcessingConfig
   , _postFXVars       :: GSM.SettingMap String Value
   , _textRenderer     :: TextRenderer
   , _matrixStack      :: [M44 GLfloat]
@@ -97,7 +97,7 @@ createGfxEngine
   :: ImprovizConfig
   -> Int
   -> Int
-  -> PostProcessingBuffers
+  -> PostProcessingConfig
   -> TextRenderer
   -> TextureLibrary
   -> MaterialsConfig
@@ -135,7 +135,7 @@ resizeGfxEngine
   :: ImprovizConfig
   -> Int
   -> Int
-  -> PostProcessingBuffers
+  -> PostProcessingConfig
   -> TextRenderer
   -> GfxEngine
   -> GfxEngine

@@ -1,0 +1,3 @@
+shaders:
+  - name: posttest
+    file: posttest.yaml

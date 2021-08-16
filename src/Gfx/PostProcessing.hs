@@ -7,17 +7,20 @@ module Gfx.PostProcessing
   , deletePostProcessing
   , createTextDisplaybuffer
   , deleteSavebuffer
-  , PostProcessingBuffers(..)
+  , PostProcessingConfig(..)
   , Savebuffer(..)
   , AnimationStyle(..)
   ) where
 
 import           Configuration.Shaders
 import           Control.Monad.State.Strict
+import           Data.Either                    ( partitionEithers )
+import qualified Data.Map.Strict               as M
 import           Graphics.Rendering.OpenGL     as GL
 import           Lens.Simple                    ( (^.)
                                                 , makeLenses
                                                 , use
+                                                , uses
                                                 )
 
 import           Foreign.Marshal.Array          ( withArray )
@@ -46,11 +49,12 @@ data AnimationStyle
   = NormalStyle
   | MotionBlur
   | PaintOver
+  | UserFilter String
   deriving (Eq, Show)
 
-type PostProcessing v = StateT PostProcessingBuffers IO v
+type PostProcessing v = StateT PostProcessingConfig IO v
 
-runPostProcessing :: PostProcessingBuffers -> PostProcessing v -> IO v
+runPostProcessing :: PostProcessingConfig -> PostProcessing v -> IO v
 runPostProcessing post f = evalStateT f post
 
 -- Simple Framebuffer with a texture that can be rendered to and then drawn out to a quad
@@ -77,17 +81,18 @@ data PostProcessingShader = PostProcessingShader
   }
   deriving (Show, Eq)
 
-data PostProcessingBuffers = PostProcessingBuffers
-  { _input      :: Savebuffer
-  , _motionBlur :: Processingbuffer
-  , _paintOver  :: Processingbuffer
-  , _output     :: Savebuffer
+data PostProcessingConfig = PostProcessingConfig
+  { _input       :: Savebuffer
+  , _motionBlur  :: Processingbuffer
+  , _paintOver   :: Processingbuffer
+  , _output      :: Savebuffer
+  , _userFilters :: M.Map String Processingbuffer
   }
 
-makeLenses ''PostProcessingBuffers
+makeLenses ''PostProcessingConfig
 
-instance Show PostProcessingBuffers where
-  show _ = "PostProcessingBuffers"
+instance Show PostProcessingConfig where
+  show _ = "PostProcessingConfig"
 
 loadPostProcessingShader :: ShaderData -> IO PostProcessingShader
 loadPostProcessingShader (ShaderData name vertShader fragShader) = do
@@ -171,49 +176,50 @@ createDepthbuffer width height = do
   GL.textureBinding Texture2D $= Nothing
   return depth
 
-createPostProcessing :: Int -> Int -> IO PostProcessingBuffers
-createPostProcessing w h =
+createPostProcessing :: [FilePath] -> Int -> Int -> IO PostProcessingConfig
+createPostProcessing filterDirectories w h =
   let width  = fromIntegral w
       height = fromIntegral h
   in  do
-        inputBuffer      <- createSavebuffer
+        inputBuffer      <- createSaveBuffer
           width
           height
+          ordinaryQuadVertices
           (ShaderData ""
                       $(embedStringFile "src/assets/shaders/savebuffer.vert")
                       $(embedStringFile "src/assets/shaders/savebuffer.frag")
           )
-          ordinaryQuadVertices
-        motionBlurBuffer <- createPostProcessingBuffer
-          width
-          height
-          (ShaderData ""
+        motionBlurShader <- loadPostProcessingShader (ShaderData ""
                       $(embedStringFile "src/assets/shaders/motionBlur.vert")
                       $(embedStringFile "src/assets/shaders/motionBlur.frag")
           )
-          ordinaryQuadVertices
-        paintOverBuffer <- createPostProcessingBuffer
+        motionBlurBuffer <- createPostProcessingBuffer
           width
           height
-          (ShaderData ""
+          ordinaryQuadVertices
+          motionBlurShader
+        paintOverShader <- loadPostProcessingShader (ShaderData ""
                       $(embedStringFile "src/assets/shaders/paintOver.vert")
                       $(embedStringFile "src/assets/shaders/paintOver.frag")
           )
-          ordinaryQuadVertices
-        outputBuffer <- createSavebuffer
+        paintOverBuffer <- createPostProcessingBuffer
           width
           height
+          ordinaryQuadVertices
+          paintOverShader
+        outputBuffer <- createSaveBuffer
+          width
+          height
+          ordinaryQuadVertices
           (ShaderData ""
                       $(embedStringFile "src/assets/shaders/savebuffer.vert")
                       $(embedStringFile "src/assets/shaders/savebuffer.frag")
           )
-          ordinaryQuadVertices
-        return $ PostProcessingBuffers inputBuffer
-                                       motionBlurBuffer
-                                       paintOverBuffer
-                                       outputBuffer
+        loadedFilters <- createPostProcessingFilters filterDirectories
+        userFilters <- mapM (createPostProcessingBuffer width height ordinaryQuadVertices) loadedFilters
+        return $ PostProcessingConfig inputBuffer motionBlurBuffer paintOverBuffer outputBuffer userFilters
 
-deletePostProcessing :: PostProcessingBuffers -> IO ()
+deletePostProcessing :: PostProcessingConfig -> IO ()
 deletePostProcessing post = do
   deleteSavebuffer $ post ^. input
   deleteProcessingbuffer $ post ^. motionBlur
@@ -222,18 +228,18 @@ deletePostProcessing post = do
 
 createTextDisplaybuffer :: GLint -> GLint -> IO Savebuffer
 createTextDisplaybuffer width height =
-  createSavebuffer
+  createSaveBuffer
     width
     height
+    textQuadVertices
     (ShaderData
       ""
       $(embedStringFile "src/assets/shaders/savebuffer.vert")
       $(embedStringFile "src/assets/shaders/savebuffer.frag")
     )
-    textQuadVertices
 
-createSavebuffer :: GLint -> GLint -> ShaderData -> [GLfloat] -> IO Savebuffer
-createSavebuffer width height (ShaderData _ vertShader fragShader) vertices =
+createSaveBuffer :: GLint -> GLint -> [GLfloat] -> ShaderData -> IO Savebuffer
+createSaveBuffer width height vertices (ShaderData _ vertShader fragShader) =
   do
     fbo <- genObjectName
     GL.bindFramebuffer Framebuffer $= fbo
@@ -264,18 +270,17 @@ deleteProcessingbuffer (Processingbuffer mfbo mtext depth shader mbvbo) = do
   deleteObjectName mfbo
 
 createPostProcessingBuffer
-  :: GLint -> GLint -> ShaderData -> [GLfloat] -> IO Processingbuffer
-createPostProcessingBuffer width height shaderData vertices = do
+  :: GLint -> GLint -> [GLfloat] -> PostProcessingShader -> IO Processingbuffer
+createPostProcessingBuffer width height vertices shader = do
   fbo <- genObjectName
   bindFramebuffer Framebuffer $= fbo
   text <- create2DTexture width height
   framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
-  depth  <- createDepthbuffer width height
-  qvbo   <- createQuadVBO vertices
-  shader <- loadPostProcessingShader shaderData
+  depth <- createDepthbuffer width height
+  qvbo  <- createQuadVBO vertices
   return $ Processingbuffer fbo text depth shader qvbo
 
-usePostProcessing :: PostProcessingBuffers -> IO ()
+usePostProcessing :: PostProcessingConfig -> IO ()
 usePostProcessing post = runPostProcessing post usePostProcessingST
 
 usePostProcessingST :: PostProcessing ()
@@ -283,7 +288,7 @@ usePostProcessingST = do
   (Savebuffer fbo _ _ _ _) <- use input
   liftIO $ bindFramebuffer Framebuffer $= fbo
 
-renderPostProcessing :: PostProcessingBuffers -> AnimationStyle -> IO ()
+renderPostProcessing :: PostProcessingConfig -> AnimationStyle -> IO ()
 renderPostProcessing post animStyle =
   runPostProcessing post (renderPostProcessingST animStyle)
 
@@ -294,9 +299,14 @@ renderPostProcessingST animStyle = do
     depthFunc $= Nothing
     bindFramebuffer Framebuffer $= outFBO
   case animStyle of
-    NormalStyle -> use input >>= renderSavebuffer
-    MotionBlur  -> use motionBlur >>= renderPostProcessingBuffer
-    PaintOver   -> use paintOver >>= renderPostProcessingBuffer
+    NormalStyle     -> use input >>= renderSavebuffer
+    MotionBlur      -> use motionBlur >>= renderPostProcessingBuffer
+    PaintOver       -> use paintOver >>= renderPostProcessingBuffer
+    UserFilter name -> do
+      maybeFilter <- uses userFilters (M.lookup name)
+      case maybeFilter of
+        Nothing           -> use input >>= renderSavebuffer
+        Just filterBuffer -> renderPostProcessingBuffer filterBuffer
   liftIO (bindFramebuffer Framebuffer $= defaultFramebufferObject)
   renderSavebuffer outbuffer
 
@@ -335,4 +345,26 @@ renderPostProcessingBuffer (Processingbuffer _ _ _ shader quadVBO) = do
   liftIO (currentProgram $= (Just $ ppProgram shader))
   mapM_ setUniform (ppUniforms shader)
   liftIO $ drawVBO quadVBO
+
+createPostProcessingFilters
+  :: [FilePath] -> IO (M.Map String PostProcessingShader)
+createPostProcessingFilters folders = do
+  loadedFolders <- mapM loadShaderFolder folders
+  let (folderLoadingErrs, parsedShaders) =
+        partitionEithers $ concat $ fmap fst loadedFolders
+  mapM_ logError folderLoadingErrs
+  loadedFilters <- mapM loadPostProcessingShader parsedShaders
+  --let (shaderLoadingErrs, ppShaders) = partitionEithers loadedFilters
+  --mapM_ logError shaderLoadingErrs
+  let varDefaults = concat $ fmap snd loadedFolders
+  logInfo
+    $  "Loaded "
+    ++ show (length varDefaults)
+    ++ " post processing defaults"
+  logInfo
+    $  "Loaded "
+    ++ show (length loadedFilters)
+    ++ " post processing filter files"
+  return $ M.fromList $ (\ps -> (ppName ps, ps)) <$> loadedFilters
+
 

@@ -28,5 +28,6 @@ animationStyle args = do
   case args of
     [Symbol "paintOver" ] -> withGfxCtx (`setAnimationStyle` PaintOver)
     [Symbol "motionBlur"] -> withGfxCtx (`setAnimationStyle` MotionBlur)
+    [Symbol name        ] -> withGfxCtx (`setAnimationStyle` (UserFilter name))
     _                     -> withGfxCtx (`setAnimationStyle` NormalStyle)
   return Null

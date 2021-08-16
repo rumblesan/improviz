@@ -13,6 +13,7 @@ module Configuration
   , geometryDirectories
   , codeFiles
   , materialDirectories
+  , postFilterDirectories
   , assetsDirectory
   , serverPort
   , osc
@@ -48,22 +49,23 @@ import           Data.Yaml                      ( (.!=)
 import qualified Data.Yaml                     as Y
 
 data ImprovizConfig = ImprovizConfig
-  { _screenWidth         :: Int
-  , _screenHeight        :: Int
-  , _fullscreenDisplay   :: Maybe Int
-  , _debug               :: Bool
-  , _screen              :: ImprovizScreenConfig
-  , _fontConfig          :: ImprovizFontConfig
-  , _textureDirectories  :: [FilePath]
-  , _geometryDirectories :: [FilePath]
-  , _materialDirectories :: [FilePath]
-  , _codeFiles           :: [FilePath]
-  , _assetsDirectory     :: FilePath
-  , _serverPort          :: Int
-  , _osc                 :: ImprovizOSCConfig
-  , _apptitle            :: String
-  , _decorated           :: Bool
-  , _showText            :: Bool
+  { _screenWidth           :: Int
+  , _screenHeight          :: Int
+  , _fullscreenDisplay     :: Maybe Int
+  , _debug                 :: Bool
+  , _screen                :: ImprovizScreenConfig
+  , _fontConfig            :: ImprovizFontConfig
+  , _textureDirectories    :: [FilePath]
+  , _geometryDirectories   :: [FilePath]
+  , _materialDirectories   :: [FilePath]
+  , _postFilterDirectories :: [FilePath]
+  , _codeFiles             :: [FilePath]
+  , _assetsDirectory       :: FilePath
+  , _serverPort            :: Int
+  , _osc                   :: ImprovizOSCConfig
+  , _apptitle              :: String
+  , _decorated             :: Bool
+  , _showText              :: Bool
   }
   deriving Show
 
@@ -73,22 +75,23 @@ defaultConfigFile :: FilePath
 defaultConfigFile = "./improviz.yaml"
 
 defaultConfig :: ImprovizConfig
-defaultConfig = ImprovizConfig { _screenWidth         = 640
-                               , _screenHeight        = 480
-                               , _fullscreenDisplay   = Nothing
-                               , _debug               = False
-                               , _screen              = defaultScreenConfig
-                               , _fontConfig          = defaultFontConfig
-                               , _textureDirectories  = ["./textures"]
-                               , _geometryDirectories = ["./geometries"]
-                               , _materialDirectories = ["./materials"]
-                               , _codeFiles           = []
-                               , _assetsDirectory     = "./assets"
-                               , _serverPort          = 3000
-                               , _osc                 = defaultOSCConfig
-                               , _apptitle            = "Improviz"
-                               , _decorated           = False
-                               , _showText            = True
+defaultConfig = ImprovizConfig { _screenWidth           = 640
+                               , _screenHeight          = 480
+                               , _fullscreenDisplay     = Nothing
+                               , _debug                 = False
+                               , _screen                = defaultScreenConfig
+                               , _fontConfig            = defaultFontConfig
+                               , _textureDirectories    = ["./textures"]
+                               , _geometryDirectories   = ["./geometries"]
+                               , _materialDirectories   = ["./materials"]
+                               , _postFilterDirectories = ["./postProcessing"]
+                               , _codeFiles             = []
+                               , _assetsDirectory       = "./assets"
+                               , _serverPort            = 3000
+                               , _osc                   = defaultOSCConfig
+                               , _apptitle              = "Improviz"
+                               , _decorated             = False
+                               , _showText              = True
                                }
 
 instance FromJSON ImprovizConfig where
@@ -120,6 +123,9 @@ instance FromJSON ImprovizConfig where
       <*> v
       .:? "materialDirectories"
       .!= (defaultConfig ^. materialDirectories)
+      <*> v
+      .:? "postFilterDirectories"
+      .!= (defaultConfig ^. postFilterDirectories)
       <*> v
       .:? "codeFiles"
       .!= (defaultConfig ^. codeFiles)
