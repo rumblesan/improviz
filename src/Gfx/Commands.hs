@@ -58,7 +58,6 @@ import           Gfx.OpenGL                     ( colToGLCol
                                                 , printErrors
                                                 , valueToUniform
                                                 )
-import qualified Gfx.PostProcessing            as PP
 import           Gfx.PostProcessing             ( AnimationStyle(..) )
 import           Gfx.TextRendering              ( renderText
                                                 , renderTextToBuffer
@@ -180,8 +179,7 @@ setAnimationStyle :: AnimationStyle -> GraphicsEngine ()
 setAnimationStyle = assign (animationStyle . S.value)
 
 setFilterVar :: String -> Value -> GraphicsEngine ()
-setFilterVar name value =
-  assign (postFX . PP.filterVars . SM.value name) (Just value)
+setFilterVar name value = assign (postFXVars . SM.value name) (Just value)
 
 setDepthChecking :: Bool -> GraphicsEngine ()
 setDepthChecking = assign (depthChecking . S.value)

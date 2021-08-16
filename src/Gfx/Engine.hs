@@ -28,6 +28,7 @@ import           Gfx.Matrices                   ( projectionMat
                                                 )
 import           Gfx.PostProcessing             ( AnimationStyle(NormalStyle)
                                                 , PostProcessingConfig
+                                                , filterVars
                                                 )
 import           Gfx.TextRendering              ( TextRenderer )
 import           Gfx.Textures                   ( TextureLibrary )
@@ -122,7 +123,7 @@ createGfxEngine config width height pprocess trender textLib matCfg =
           , _viewMatrix       = view
           , _projectionMatrix = projection
           , _postFX           = pprocess
-          , _postFXVars       = SM.create []
+          , _postFXVars       = pprocess ^. filterVars
           , _textRenderer     = trender
           , _matrixStack      = [identity]
           , _scopeStack       = []
