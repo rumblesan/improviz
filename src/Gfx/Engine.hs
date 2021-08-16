@@ -5,7 +5,13 @@ module Gfx.Engine where
 
 import           Control.Monad.State.Strict
 import qualified Data.Map                      as M
-import           Graphics.Rendering.OpenGL      ( GLfloat )
+import           Graphics.Rendering.OpenGL      ( BlendingFactor
+                                                  ( One
+                                                  , OneMinusSrcAlpha
+                                                  , SrcAlpha
+                                                  )
+                                                , GLfloat
+                                                )
 import           Lens.Simple                    ( (^.)
                                                 , makeLenses
                                                 , over
@@ -87,6 +93,8 @@ data GfxEngine = GfxEngine
   , _animationStyle   :: S.Setting AnimationStyle
   , _backgroundColor  :: S.Setting Colour
   , _depthChecking    :: S.Setting Bool
+  , _blendFunction
+      :: ((BlendingFactor, BlendingFactor), (BlendingFactor, BlendingFactor))
   }
   deriving Show
 
@@ -130,6 +138,7 @@ createGfxEngine config width height pprocess trender textLib matCfg =
           , _animationStyle   = S.create NormalStyle
           , _backgroundColor  = S.create (Colour 1 1 1 1)
           , _depthChecking    = S.create True
+          , _blendFunction    = ((SrcAlpha, OneMinusSrcAlpha), (One, One))
           }
 
 resizeGfxEngine

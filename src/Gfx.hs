@@ -12,6 +12,7 @@ import           Graphics.Rendering.OpenGL
 import           Gfx.Engine                     ( GfxEngine
                                                 , animationStyle
                                                 , backgroundColor
+                                                , blendFunction
                                                 , createGfxEngine
                                                 , depthChecking
                                                 , postFX
@@ -68,29 +69,19 @@ resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
 
 renderGfx :: IO result -> GfxEngine -> IO result
 renderGfx program gs =
-  let
-    post       = gs ^. postFX
-    animStyle  = gs ^. animationStyle . S.value
-    bgColor    = gs ^. backgroundColor . S.value
-    depthCheck = gs ^. depthChecking . S.value
-  in
-    do
-      usePostProcessing post
-      depthFunc $= if depthCheck then Just Less else Nothing
-      blend $= Enabled
-      blendEquationSeparate $= (FuncAdd, FuncAdd)
-      frontFace $= CW
-      case animStyle of
-        NormalStyle ->
-          blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, One))
-        MotionBlur ->
-          blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
-        PaintOver ->
-          blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
-        otherwise ->
-          blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, One))
-      clearColor $= colToGLCol bgColor
-      clear [ColorBuffer, DepthBuffer]
-      result <- program
-      renderPostProcessing post animStyle
-      return result
+  let post       = gs ^. postFX
+      animStyle  = gs ^. animationStyle . S.value
+      bgColor    = gs ^. backgroundColor . S.value
+      depthCheck = gs ^. depthChecking . S.value
+  in  do
+        usePostProcessing post
+        depthFunc $= if depthCheck then Just Less else Nothing
+        blend $= Enabled
+        blendEquationSeparate $= (FuncAdd, FuncAdd)
+        frontFace $= CW
+        blendFuncSeparate $= gs ^. blendFunction
+        clearColor $= colToGLCol bgColor
+        clear [ColorBuffer, DepthBuffer]
+        result <- program
+        renderPostProcessing post animStyle
+        return result

@@ -14,6 +14,7 @@ module Gfx.Commands
   , setAnimationStyle
   , setFilterVar
   , setDepthChecking
+  , setBlendFunction
   , pushScope
   , popScope
   , renderCode
@@ -39,6 +40,7 @@ import           Linear.Matrix                  ( (!*!)
 import qualified Graphics.GL                   as GLRaw
 import qualified Graphics.Rendering.OpenGL     as GL
 import           Graphics.Rendering.OpenGL      ( ($=)
+                                                , BlendingFactor
                                                 , GLfloat
                                                 , TextureTarget2D(Texture2D)
                                                 , TextureUnit(..)
@@ -183,6 +185,11 @@ setFilterVar name value = assign (postFXVars . SM.value name) (Just value)
 
 setDepthChecking :: Bool -> GraphicsEngine ()
 setDepthChecking = assign (depthChecking . S.value)
+
+setBlendFunction
+  :: ((BlendingFactor, BlendingFactor), (BlendingFactor, BlendingFactor))
+  -> GraphicsEngine ()
+setBlendFunction = assign blendFunction
 
 textureFill :: String -> Float -> GraphicsEngine ()
 textureFill name frame =

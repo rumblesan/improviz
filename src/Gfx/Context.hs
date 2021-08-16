@@ -18,26 +18,30 @@ import           Gfx.Engine                     ( GfxEngine
                                                 , resetGfxEngine
                                                 )
 import           Gfx.PostProcessing             ( AnimationStyle )
+import           Graphics.Rendering.OpenGL      ( BlendingFactor )
 import           Language.Ast                   ( Value )
 
 data GfxContext = GfxContext
-  { drawShape          :: String -> Float -> Float -> Float -> IO ()
-  , rotate             :: Float -> Float -> Float -> IO ()
-  , scale              :: Float -> Float -> Float -> IO ()
-  , move               :: Float -> Float -> Float -> IO ()
-  , colourFill         :: Float -> Float -> Float -> Float -> IO ()
-  , noFill             :: IO ()
-  , textureFill        :: String -> Float -> IO ()
-  , colourStroke       :: Float -> Float -> Float -> Float -> IO ()
-  , noStroke           :: IO ()
-  , setMaterial        :: String -> IO ()
-  , setMaterialVar     :: String -> Value -> IO ()
-  , setBackground      :: Float -> Float -> Float -> IO ()
-  , pushScope          :: IO ()
-  , popScope           :: IO ()
-  , setAnimationStyle  :: AnimationStyle -> IO ()
-  , setFilterVar       :: String -> Value -> IO ()
-  , setDepthChecking   :: Bool -> IO ()
+  { drawShape         :: String -> Float -> Float -> Float -> IO ()
+  , rotate            :: Float -> Float -> Float -> IO ()
+  , scale             :: Float -> Float -> Float -> IO ()
+  , move              :: Float -> Float -> Float -> IO ()
+  , colourFill        :: Float -> Float -> Float -> Float -> IO ()
+  , noFill            :: IO ()
+  , textureFill       :: String -> Float -> IO ()
+  , colourStroke      :: Float -> Float -> Float -> Float -> IO ()
+  , noStroke          :: IO ()
+  , setMaterial       :: String -> IO ()
+  , setMaterialVar    :: String -> Value -> IO ()
+  , setBackground     :: Float -> Float -> Float -> IO ()
+  , pushScope         :: IO ()
+  , popScope          :: IO ()
+  , setAnimationStyle :: AnimationStyle -> IO ()
+  , setFilterVar      :: String -> Value -> IO ()
+  , setDepthChecking  :: Bool -> IO ()
+  , setBlendFunction
+      :: ((BlendingFactor, BlendingFactor), (BlendingFactor, BlendingFactor))
+      -> IO ()
   , reset              :: IO ()
   , renderCode         :: String -> IO ()
   , renderCodeToBuffer :: String -> IO ()
@@ -62,6 +66,7 @@ createGfxContext gfx = GfxContext
   , setAnimationStyle  = wrapOneArg gfx GC.setAnimationStyle
   , setFilterVar       = wrapTwoArg gfx GC.setFilterVar
   , setDepthChecking   = wrapOneArg gfx GC.setDepthChecking
+  , setBlendFunction   = wrapOneArg gfx GC.setBlendFunction
   , reset              = resetGfxCtx gfx
   , renderCode         = wrapOneArg gfx GC.renderCode
   , renderCodeToBuffer = wrapOneArg gfx GC.renderCodeToBuffer
@@ -85,6 +90,7 @@ empty = GfxContext { drawShape          = \_ _ _ _ -> print "No GFX Context"
                    , setAnimationStyle  = \_ -> print "No Gfx Context"
                    , setFilterVar       = \_ _ -> print "No Gfx Context"
                    , setDepthChecking   = \_ -> print "No Gfx Context"
+                   , setBlendFunction   = \_ -> print "No Gfx Context"
                    , reset              = print "No Gfx Context"
                    , renderCode         = \_ -> print "No Gfx Context"
                    , renderCodeToBuffer = \_ -> print "No Gfx Context"

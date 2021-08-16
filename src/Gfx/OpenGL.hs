@@ -10,7 +10,9 @@ import           Graphics.Rendering.OpenGL      ( Color4(..)
                                                 , errors
                                                 , get
                                                 )
-import           Graphics.Rendering.OpenGL      ( ($=) )
+import           Graphics.Rendering.OpenGL      ( ($=)
+                                                , BlendingFactor(..)
+                                                )
 import           Graphics.Rendering.OpenGL.GL.Shaders.Attribs
                                                as GLS
 import           Language.Ast                   ( Value(..) )
@@ -115,3 +117,21 @@ printErrors = get errors >>= mapM_ (hPutStrLn stderr . ("GL: " ++) . show)
 printErrorsDBG :: String -> IO ()
 printErrorsDBG msg =
   print msg >> get errors >>= mapM_ (hPutStrLn stderr . ("GL: " ++) . show)
+
+valueToBlendFactor :: Value -> Maybe GL.BlendingFactor
+valueToBlendFactor (Symbol v) = case v of
+  "Zero"              -> Just Zero
+  "One"               -> Just One
+  "SrcColour"         -> Just SrcColor
+  "OneMinusSrcColour" -> Just OneMinusSrcColor
+  "DstColour"         -> Just DstColor
+  "OneMinusDstColour" -> Just OneMinusDstColor
+  "SrcAlpha"          -> Just SrcAlpha
+  "OneMinusSrcAlpha"  -> Just OneMinusSrcAlpha
+  otherwise           -> Nothing
+
+
+
+
+
+
