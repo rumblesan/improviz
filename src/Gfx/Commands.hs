@@ -189,7 +189,7 @@ setDepthChecking = assign (depthChecking . S.value)
 setBlendFunction
   :: ((BlendingFactor, BlendingFactor), (BlendingFactor, BlendingFactor))
   -> GraphicsEngine ()
-setBlendFunction = assign blendFunction
+setBlendFunction = assign (blendFunction . S.value)
 
 textureFill :: String -> Float -> GraphicsEngine ()
 textureFill name frame =

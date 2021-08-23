@@ -106,7 +106,6 @@ loadPostProcessingShader (ShaderData name vertShader fragShader) = do
   uniforms    <- mapM (getUniformLoc program) uniformInfo
   attribInfo  <- GL.get $ GL.activeAttribs program
   attributes  <- mapM (getAttribLoc program) attribInfo
-  logInfo $ "Loading " ++ name ++ " post processor"
   return $ PostProcessingShader name program uniforms attributes
 
 -- 2D positions and texture coordinates
@@ -186,19 +185,15 @@ createPostProcessing filterDirectories w h =
           width
           height
           ordinaryQuadVertices
-          (ShaderData ""
-                      $(embedStringFile "src/assets/shaders/savebuffer.vert")
-                      $(embedStringFile "src/assets/shaders/savebuffer.frag")
-          )
+          $(embedStringFile "src/assets/shaders/savebuffer.vert")
+          $(embedStringFile "src/assets/shaders/savebuffer.frag")
         outputBuffer <- createSaveBuffer
           width
           height
           ordinaryQuadVertices
-          (ShaderData ""
-                      $(embedStringFile "src/assets/shaders/savebuffer.vert")
-                      $(embedStringFile "src/assets/shaders/savebuffer.frag")
-          )
-        (loadedFilters, varDefaults) <- createPostProcessingFilters filterDirectories
+          $(embedStringFile "src/assets/shaders/savebuffer.vert")
+          $(embedStringFile "src/assets/shaders/savebuffer.frag")
+        (loadedFilters, varDefaults) <- loadFilterDirectories filterDirectories
         userFilters <- mapM (createPostProcessingFilter width height ordinaryQuadVertices) loadedFilters
         return $ PostProcessingConfig inputBuffer outputBuffer userFilters varDefaults
 
@@ -214,26 +209,23 @@ createTextDisplaybuffer width height =
     width
     height
     textQuadVertices
-    (ShaderData
-      ""
-      $(embedStringFile "src/assets/shaders/savebuffer.vert")
-      $(embedStringFile "src/assets/shaders/savebuffer.frag")
-    )
+    $(embedStringFile "src/assets/shaders/savebuffer.vert")
+    $(embedStringFile "src/assets/shaders/savebuffer.frag")
 
-createSaveBuffer :: GLint -> GLint -> [GLfloat] -> ShaderData -> IO Savebuffer
-createSaveBuffer width height vertices (ShaderData _ vertShader fragShader) =
-  do
-    fbo <- genObjectName
-    GL.bindFramebuffer Framebuffer $= fbo
-    text <- create2DTexture width height
-    GL.framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
-    depth   <- createDepthbuffer width height
-    qvbo    <- createQuadVBO vertices
-    program <- loadShaders
-      [ ShaderInfo VertexShader   (StringSource vertShader)
-      , ShaderInfo FragmentShader (StringSource fragShader)
-      ]
-    return $ Savebuffer fbo text depth program qvbo
+createSaveBuffer
+  :: GLint -> GLint -> [GLfloat] -> String -> String -> IO Savebuffer
+createSaveBuffer width height vertices vertShader fragShader = do
+  fbo <- genObjectName
+  GL.bindFramebuffer Framebuffer $= fbo
+  text <- create2DTexture width height
+  GL.framebufferTexture2D Framebuffer (ColorAttachment 0) Texture2D text 0
+  depth   <- createDepthbuffer width height
+  qvbo    <- createQuadVBO vertices
+  program <- loadShaders
+    [ ShaderInfo VertexShader   (StringSource vertShader)
+    , ShaderInfo FragmentShader (StringSource fragShader)
+    ]
+  return $ Savebuffer fbo text depth program qvbo
 
 deleteSavebuffer :: Savebuffer -> IO ()
 deleteSavebuffer (Savebuffer sbfbo sbtext sbdepth sbprogram sbvbo) = do
@@ -316,8 +308,6 @@ setUniform ("depth", _, uniformLoc) = do
     activeTexture $= TextureUnit 2
     textureBinding Texture2D $= Just depth
     uniform uniformLoc $= TextureUnit 2
-setUniform ("mixRatio", _, uniformLoc) =
-  let mix = 0.7 :: GLfloat in liftIO (uniform uniformLoc $= mix)
 setUniform (name, uniformType, uniformLoc) = do
   filtVar <- use (filterVars . SM.value name)
   liftIO $ case filtVar of
@@ -331,10 +321,10 @@ renderPostProcessingFilter (PostFilter _ _ _ shader quadVBO) = do
   mapM_ setUniform (ppUniforms shader)
   liftIO $ drawVBO quadVBO
 
-createPostProcessingFilters
+loadFilterDirectories
   :: [FilePath]
   -> IO (M.Map String PostProcessingShader, SM.SettingMap String Value)
-createPostProcessingFilters folders = do
+loadFilterDirectories folders = do
   loadedFolders <- mapM loadShaderFolder folders
   let (folderLoadingErrs, parsedShaders) =
         partitionEithers $ concat $ fmap fst loadedFolders

@@ -72,13 +72,14 @@ renderGfx program gs =
       animStyle  = gs ^. animationStyle . S.value
       bgColor    = gs ^. backgroundColor . S.value
       depthCheck = gs ^. depthChecking . S.value
+      blendFunc  = gs ^. blendFunction . S.value
   in  do
         usePostProcessing post
         depthFunc $= if depthCheck then Just Less else Nothing
         blend $= Enabled
         blendEquationSeparate $= (FuncAdd, FuncAdd)
         frontFace $= CW
-        blendFuncSeparate $= gs ^. blendFunction
+        blendFuncSeparate $= blendFunc
         clearColor $= colToGLCol bgColor
         clear [ColorBuffer, DepthBuffer]
         result <- program

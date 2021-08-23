@@ -94,7 +94,8 @@ data GfxEngine = GfxEngine
   , _backgroundColor  :: S.Setting Colour
   , _depthChecking    :: S.Setting Bool
   , _blendFunction
-      :: ((BlendingFactor, BlendingFactor), (BlendingFactor, BlendingFactor))
+      :: S.Setting
+        ((BlendingFactor, BlendingFactor), (BlendingFactor, BlendingFactor))
   }
   deriving Show
 
@@ -112,34 +113,36 @@ createGfxEngine
   -> MaterialsConfig
   -> IO GfxEngine
 createGfxEngine config width height pprocess trender textLib matCfg =
-  let ratio      = width /. height
-      front      = config ^. C.screen . CS.front
-      back       = config ^. C.screen . CS.back
-      projection = projectionMat front back (pi / 4) ratio
-      view       = viewMat (V3 0 0 10) (V3 0 0 0) (V3 0 1 0)
-  in  do
-        gbos <- createAllGeometries (config ^. C.geometryDirectories)
-        return GfxEngine
-          { _fillStyle        = S.create $ GFXFillColour $ Colour 1 1 1 1
-          , _strokeStyle      = S.create $ GFXStrokeColour $ Colour 0 0 0 1
-          , _textureStyle     = S.create $ GFXTextureStyling "" 0
-          , _material         = S.create "basic"
-          , _geometryBuffers  = gbos
-          , _textureLibrary   = textLib
-          , _materialLibrary  = materialsLibrary matCfg
-          , _materialVars     = SM.create $ varDefaults matCfg
-          , _viewMatrix       = view
-          , _projectionMatrix = projection
-          , _postFX           = pprocess
-          , _postFXVars       = pprocess ^. filterVars
-          , _textRenderer     = trender
-          , _matrixStack      = [identity]
-          , _scopeStack       = []
-          , _animationStyle   = S.create NormalStyle
-          , _backgroundColor  = S.create (Colour 1 1 1 1)
-          , _depthChecking    = S.create True
-          , _blendFunction    = ((SrcAlpha, OneMinusSrcAlpha), (One, One))
-          }
+  let
+    ratio      = width /. height
+    front      = config ^. C.screen . CS.front
+    back       = config ^. C.screen . CS.back
+    projection = projectionMat front back (pi / 4) ratio
+    view       = viewMat (V3 0 0 10) (V3 0 0 0) (V3 0 1 0)
+  in
+    do
+      gbos <- createAllGeometries (config ^. C.geometryDirectories)
+      return GfxEngine
+        { _fillStyle        = S.create $ GFXFillColour $ Colour 1 1 1 1
+        , _strokeStyle      = S.create $ GFXStrokeColour $ Colour 0 0 0 1
+        , _textureStyle     = S.create $ GFXTextureStyling "" 0
+        , _material         = S.create "basic"
+        , _geometryBuffers  = gbos
+        , _textureLibrary   = textLib
+        , _materialLibrary  = materialsLibrary matCfg
+        , _materialVars     = SM.create $ varDefaults matCfg
+        , _viewMatrix       = view
+        , _projectionMatrix = projection
+        , _postFX           = pprocess
+        , _postFXVars       = pprocess ^. filterVars
+        , _textRenderer     = trender
+        , _matrixStack      = [identity]
+        , _scopeStack       = []
+        , _animationStyle   = S.create NormalStyle
+        , _backgroundColor  = S.create (Colour 1 1 1 1)
+        , _depthChecking    = S.create True
+        , _blendFunction = S.create ((SrcAlpha, OneMinusSrcAlpha), (One, One))
+        }
 
 resizeGfxEngine
   :: ImprovizConfig
@@ -168,6 +171,7 @@ resetGfxEngine ge = ge
   , _animationStyle  = S.resetIfUnused (_animationStyle ge)
   , _backgroundColor = S.resetIfUnused (_backgroundColor ge)
   , _depthChecking   = S.resetIfUnused (_depthChecking ge)
+  , _blendFunction   = S.resetIfUnused (_blendFunction ge)
   }
 
 pushMatrix :: M44 Float -> GfxEngine -> GfxEngine

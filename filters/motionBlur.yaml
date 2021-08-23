@@ -18,12 +18,12 @@ fragmentShader: |
 
   uniform sampler2D texFramebuffer;
   uniform sampler2D lastFrame;
-  uniform float mixRatio;
+  uniform float BlurRatio;
 
   void main()
   {
       vec4 texel1 = texture(texFramebuffer, Texcoord);
       vec4 texel2 = texture(lastFrame, Texcoord);
 
-      outColor = mix(texel1, texel2, mixRatio);
+      outColor = mix(texel1, texel2, BlurRatio);
   }
