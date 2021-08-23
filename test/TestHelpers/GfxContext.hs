@@ -43,6 +43,7 @@ createTestGfxContext gfx = GfxContext
   , setAnimationStyle  = \_ -> print "No animation style command"
   , setFilterVar       = \_ _ -> print "No set filter var command"
   , setDepthChecking   = \_ -> print "No depth checking command"
+  , setBlendFunction   = \_ -> print "No blend function command"
   , reset              = print "No reset command"
   , renderCode         = \_ -> print "No renderCode command"
   , renderCodeToBuffer = \_ -> print "No renderCodeToBuffer command"
