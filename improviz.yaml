@@ -17,6 +17,7 @@ materialDirectories:
 filterDirectories:
   - "./filters"
 codeFiles:
+  - "./stdlib/filters.pz"
   - "./stdlib/variables.pz"
   - "./stdlib/transformations.pz"
   - "./stdlib/shapes.pz"

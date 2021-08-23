@@ -21,8 +21,7 @@ import           Gfx.Engine                     ( GfxEngine
                                                 )
 import qualified Gfx.Materials                 as GM
 import           Gfx.OpenGL                     ( colToGLCol )
-import           Gfx.PostProcessing             ( AnimationStyle(..)
-                                                , createPostProcessing
+import           Gfx.PostProcessing             ( createPostProcessing
                                                 , deletePostProcessing
                                                 , renderPostProcessing
                                                 , usePostProcessing

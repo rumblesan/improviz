@@ -1,6 +1,10 @@
 shaders:
   - name: posttest
     file: posttest.yaml
+  - name: paintOver
+    file: paintOver.yaml
+  - name: motionBlur
+    file: motionBlur.yaml
 defaults:
   - name: ColourMult
     value: [1.0, 1.0, 1.0, 1.0]

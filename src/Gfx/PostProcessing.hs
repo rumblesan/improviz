@@ -51,8 +51,6 @@ import           Logging                        ( logError
 
 data AnimationStyle
   = NormalStyle
-  | MotionBlur
-  | PaintOver
   | UserFilter String
   deriving (Eq, Show)
 
@@ -87,8 +85,6 @@ data PostProcessingShader = PostProcessingShader
 
 data PostProcessingConfig = PostProcessingConfig
   { _input       :: Savebuffer
-  , _motionBlur  :: PostFilter
-  , _paintOver   :: PostFilter
   , _output      :: Savebuffer
   , _userFilters :: M.Map String PostFilter
   , _filterVars  :: SM.SettingMap String Value
@@ -194,24 +190,6 @@ createPostProcessing filterDirectories w h =
                       $(embedStringFile "src/assets/shaders/savebuffer.vert")
                       $(embedStringFile "src/assets/shaders/savebuffer.frag")
           )
-        motionBlurShader <- loadPostProcessingShader (ShaderData ""
-                      $(embedStringFile "src/assets/shaders/motionBlur.vert")
-                      $(embedStringFile "src/assets/shaders/motionBlur.frag")
-          )
-        motionBlurBuffer <- createPostProcessingFilter
-          width
-          height
-          ordinaryQuadVertices
-          motionBlurShader
-        paintOverShader <- loadPostProcessingShader (ShaderData ""
-                      $(embedStringFile "src/assets/shaders/paintOver.vert")
-                      $(embedStringFile "src/assets/shaders/paintOver.frag")
-          )
-        paintOverBuffer <- createPostProcessingFilter
-          width
-          height
-          ordinaryQuadVertices
-          paintOverShader
         outputBuffer <- createSaveBuffer
           width
           height
@@ -222,14 +200,13 @@ createPostProcessing filterDirectories w h =
           )
         (loadedFilters, varDefaults) <- createPostProcessingFilters filterDirectories
         userFilters <- mapM (createPostProcessingFilter width height ordinaryQuadVertices) loadedFilters
-        return $ PostProcessingConfig inputBuffer motionBlurBuffer paintOverBuffer outputBuffer userFilters varDefaults
+        return $ PostProcessingConfig inputBuffer outputBuffer userFilters varDefaults
 
 deletePostProcessing :: PostProcessingConfig -> IO ()
 deletePostProcessing post = do
   deleteSavebuffer $ post ^. input
-  deletePostFilter $ post ^. motionBlur
-  deletePostFilter $ post ^. paintOver
   deleteSavebuffer $ post ^. output
+  mapM_ deletePostFilter $ post ^. userFilters
 
 createTextDisplaybuffer :: GLint -> GLint -> IO Savebuffer
 createTextDisplaybuffer width height =
@@ -305,8 +282,6 @@ renderPostProcessingST animStyle = do
     bindFramebuffer Framebuffer $= outFBO
   case animStyle of
     NormalStyle     -> use input >>= renderSavebuffer
-    MotionBlur      -> use motionBlur >>= renderPostProcessingFilter
-    PaintOver       -> use paintOver >>= renderPostProcessingFilter
     UserFilter name -> do
       maybeFilter <- uses userFilters (M.lookup name)
       case maybeFilter of

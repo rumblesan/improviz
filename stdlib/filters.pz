@@ -1,0 +1,7 @@
+func paintOver()
+	blendFunc([:SrcAlpha, :OneMinusSrcAlpha], [:One, :Zero])
+	animationStyle(:paintOver)
+
+func motionBlur()
+	blendFunc([:SrcAlpha, :OneMinusSrcAlpha], [:One, :Zero])
+	animationStyle(:motionBlur)

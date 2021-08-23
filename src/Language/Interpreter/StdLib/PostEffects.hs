@@ -20,25 +20,15 @@ import           Language.Interpreter.Types     ( InterpreterProcess
 
 addPostEffectsStdLib :: InterpreterProcess ()
 addPostEffectsStdLib = do
-  setBuiltIn "paintOver"      paintOver
-  setBuiltIn "motionBlur"     motionBlur
   setBuiltIn "animationStyle" animationStyle
   setBuiltIn "postProcess"    internalPostProcess
   setBuiltIn "blendFunc"      blendFunc
 
-motionBlur :: [Value] -> InterpreterProcess Value
-motionBlur _ = withGfxCtx (`setAnimationStyle` MotionBlur) >> return Null
-
-paintOver :: [Value] -> InterpreterProcess Value
-paintOver _ = withGfxCtx (`setAnimationStyle` PaintOver) >> return Null
-
 animationStyle :: [Value] -> InterpreterProcess Value
 animationStyle args = do
   case args of
-    [Symbol "paintOver" ] -> withGfxCtx (`setAnimationStyle` PaintOver)
-    [Symbol "motionBlur"] -> withGfxCtx (`setAnimationStyle` MotionBlur)
-    [Symbol name        ] -> withGfxCtx (`setAnimationStyle` (UserFilter name))
-    _                     -> withGfxCtx (`setAnimationStyle` NormalStyle)
+    [Symbol name] -> withGfxCtx (`setAnimationStyle` (UserFilter name))
+    _             -> withGfxCtx (`setAnimationStyle` NormalStyle)
   return Null
 
 internalPostProcess :: [Value] -> InterpreterProcess Value
