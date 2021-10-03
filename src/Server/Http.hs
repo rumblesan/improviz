@@ -5,6 +5,7 @@ module Server.Http
   ) where
 
 import           Network.Wai.Handler.Warp
+import           Network.Wai.Middleware.Static
 import           Web.Scotty
 
 import           Control.Concurrent             ( ThreadId
@@ -15,10 +16,8 @@ import           Control.Concurrent.STM         ( TVar
                                                 , modifyTVar
                                                 )
 import           Control.Monad.Trans            ( liftIO )
-import           System.FilePath.Posix          ( (</>) )
 
 import           Data.ByteString.Lazy.Char8     ( ByteString
-                                                , pack
                                                 , unpack
                                                 )
 import qualified Data.Map.Strict               as M
@@ -44,9 +43,6 @@ import qualified Improviz.UI                   as IUI
 import           Lens.Simple                    ( (^.)
                                                 , set
                                                 )
-
-editorHtmlFilePath :: FilePath
-editorHtmlFilePath = "html/editor.html"
 
 updateProgram :: ImprovizEnv -> String -> IO ImprovizResponse
 updateProgram env newProgram = case L.parse newProgram of
@@ -96,14 +92,7 @@ startHttpServer env =
   in  do
         logInfo $ "Improviz HTTP server listening on port " ++ show port
         forkIO $ scottyOpts options $ do
-          get "/" $ text "SERVING"
-          get "/editor" $ do
-            html <-
-              liftIO
-              $   readFile
-              $   (env ^. I.config . C.assetsDirectory)
-              </> editorHtmlFilePath
-            raw $ pack html
+          middleware $ staticPolicy (noDots >-> addBase "assets/static")
           post "/read/material" $ do
             b    <- body
             resp <- liftIO $ updateMaterial env b
@@ -127,3 +116,5 @@ startHttpServer env =
                   $  ImprovizErrorResponse
                   $  name
                   ++ " variable not updated. Value invalid"
+          get "/" $ text "SERVING"
+          get "/editor" $ redirect "/editor/index.html"

@@ -48,6 +48,7 @@ executable improviz
                      , transformers
                      , vector
                      , warp
+                     , wai-middleware-static
                      , wavefront
                      , yaml
   other-modules:       Improviz
