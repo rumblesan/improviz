@@ -7,6 +7,9 @@ module Gfx
 
 import           Lens.Simple                    ( (^.) )
 
+import           Control.Concurrent.STM         ( TVar
+                                                , readTVarIO
+                                                )
 import           Graphics.Rendering.OpenGL
 
 import           Gfx.Engine                     ( GfxEngine
@@ -16,6 +19,7 @@ import           Gfx.Engine                     ( GfxEngine
                                                 , createGfxEngine
                                                 , depthChecking
                                                 , postFX
+                                                , postFXVars
                                                 , resizeGfxEngine
                                                 , textRenderer
                                                 )
@@ -66,22 +70,27 @@ resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
   return
     $ resizeGfxEngine config newWidth newHeight newPost newTrender engineState
 
-renderGfx :: IO result -> GfxEngine -> IO result
-renderGfx program gs =
+renderGfx :: IO result -> TVar GfxEngine -> IO result
+renderGfx program tvgs = do
+  gs <- readTVarIO tvgs
   let post       = gs ^. postFX
-      animStyle  = gs ^. animationStyle . S.value
-      bgColor    = gs ^. backgroundColor . S.value
-      depthCheck = gs ^. depthChecking . S.value
-      blendFunc  = gs ^. blendFunction . S.value
-  in  do
-        usePostProcessing post
-        depthFunc $= if depthCheck then Just Less else Nothing
-        blend $= Enabled
-        blendEquationSeparate $= (FuncAdd, FuncAdd)
-        frontFace $= CW
-        blendFuncSeparate $= blendFunc
-        clearColor $= colToGLCol bgColor
-        clear [ColorBuffer, DepthBuffer]
-        result <- program
-        renderPostProcessing post animStyle
-        return result
+  let animStyle  = gs ^. animationStyle . S.value
+  let bgColor    = gs ^. backgroundColor . S.value
+  let depthCheck = gs ^. depthChecking . S.value
+  let blendFunc  = gs ^. blendFunction . S.value
+  usePostProcessing post
+  depthFunc $= if depthCheck then Just Less else Nothing
+  blend $= Enabled
+  blendEquationSeparate $= (FuncAdd, FuncAdd)
+  frontFace $= CW
+  blendFuncSeparate $= blendFunc
+  clearColor $= colToGLCol bgColor
+  clear [ColorBuffer, DepthBuffer]
+  result <- program
+  ngs    <- readTVarIO tvgs
+  -- get postFXFars after program has run
+  -- to get the updated state
+  -- FIXME needs to be a better way to do this
+  let postVars = ngs ^. postFXVars
+  renderPostProcessing post postVars animStyle
+  return result

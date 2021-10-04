@@ -1,0 +1,10 @@
+
+postProcess(:variable, :BlurRatio, sin(time/5) * 0.93)
+motionBlur()
+
+fill(0, 200, 50, 70)
+rotate(time/5)
+loop 10 times with x
+  move(x/3, time % (x + 1))
+  rotate(time/2)
+    cube(3)

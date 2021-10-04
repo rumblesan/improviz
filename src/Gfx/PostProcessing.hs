@@ -83,11 +83,13 @@ data PostProcessingShader = PostProcessingShader
   }
   deriving (Show, Eq)
 
+type FilterVars = SM.SettingMap String Value
+
 data PostProcessingConfig = PostProcessingConfig
   { _input       :: Savebuffer
   , _output      :: Savebuffer
   , _userFilters :: M.Map String PostFilter
-  , _filterVars  :: SM.SettingMap String Value
+  , _filterVars  :: FilterVars
   }
 
 makeLenses ''PostProcessingConfig
@@ -262,12 +264,13 @@ usePostProcessingST = do
   (Savebuffer fbo _ _ _ _) <- use input
   liftIO $ bindFramebuffer Framebuffer $= fbo
 
-renderPostProcessing :: PostProcessingConfig -> AnimationStyle -> IO ()
-renderPostProcessing post animStyle =
-  runPostProcessing post (renderPostProcessingST animStyle)
+renderPostProcessing
+  :: PostProcessingConfig -> FilterVars -> AnimationStyle -> IO ()
+renderPostProcessing post postVars animStyle =
+  runPostProcessing post (renderPostProcessingST postVars animStyle)
 
-renderPostProcessingST :: AnimationStyle -> PostProcessing ()
-renderPostProcessingST animStyle = do
+renderPostProcessingST :: FilterVars -> AnimationStyle -> PostProcessing ()
+renderPostProcessingST postVars animStyle = do
   outbuffer@(Savebuffer outFBO previousFrame _ _ _) <- use output
   liftIO $ do
     depthFunc $= Nothing
@@ -278,7 +281,7 @@ renderPostProcessingST animStyle = do
       maybeFilter <- uses userFilters (M.lookup name)
       case maybeFilter of
         Nothing           -> use input >>= renderSavebuffer
-        Just filterBuffer -> renderPostProcessingFilter filterBuffer
+        Just filterBuffer -> renderPostProcessingFilter postVars filterBuffer
   liftIO (bindFramebuffer Framebuffer $= defaultFramebufferObject)
   renderSavebuffer outbuffer
 
@@ -289,41 +292,43 @@ renderSavebuffer (Savebuffer _ text _ program quadVBO) = liftIO $ do
   textureBinding Texture2D $= Just text
   drawVBO quadVBO
 
-setUniform :: (String, GL.VariableType, UniformLocation) -> PostProcessing ()
-setUniform ("texFramebuffer", _, uniformLoc) = do
+setUniform
+  :: FilterVars
+  -> (String, GL.VariableType, UniformLocation)
+  -> PostProcessing ()
+setUniform _ ("texFramebuffer", _, uniformLoc) = do
   (Savebuffer _ sceneFrame _ _ _) <- use input
   liftIO $ do
     activeTexture $= TextureUnit 0
     textureBinding Texture2D $= Just sceneFrame
     uniform uniformLoc $= TextureUnit 0
-setUniform ("lastFrame", _, uniformLoc) = do
+setUniform _ ("lastFrame", _, uniformLoc) = do
   (Savebuffer _ lastFrame _ _ _) <- use output
   liftIO $ do
     activeTexture $= TextureUnit 1
     textureBinding Texture2D $= Just lastFrame
     uniform uniformLoc $= TextureUnit 1
-setUniform ("depth", _, uniformLoc) = do
+setUniform _ ("depth", _, uniformLoc) = do
   (Savebuffer _ _ depth _ _) <- use input
   liftIO $ do
     activeTexture $= TextureUnit 2
     textureBinding Texture2D $= Just depth
     uniform uniformLoc $= TextureUnit 2
-setUniform (name, uniformType, uniformLoc) = do
-  filtVar <- use (filterVars . SM.value name)
+setUniform filterVars (name, uniformType, uniformLoc) = do
+  let filtVar = filterVars ^. SM.value name
   liftIO $ case filtVar of
     Nothing -> logError $ name ++ " is not a known uniform"
     Just v  -> valueToUniform v uniformType uniformLoc
 
 
-renderPostProcessingFilter :: PostFilter -> PostProcessing ()
-renderPostProcessingFilter (PostFilter _ _ _ shader quadVBO) = do
+renderPostProcessingFilter :: FilterVars -> PostFilter -> PostProcessing ()
+renderPostProcessingFilter postVars (PostFilter _ _ _ shader quadVBO) = do
   liftIO (currentProgram $= (Just $ ppProgram shader))
-  mapM_ setUniform (ppUniforms shader)
+  mapM_ (setUniform postVars) (ppUniforms shader)
   liftIO $ drawVBO quadVBO
 
 loadFilterDirectories
-  :: [FilePath]
-  -> IO (M.Map String PostProcessingShader, SM.SettingMap String Value)
+  :: [FilePath] -> IO (M.Map String PostProcessingShader, FilterVars)
 loadFilterDirectories folders = do
   loadedFolders <- mapM loadShaderFolder folders
   let (folderLoadingErrs, parsedShaders) =

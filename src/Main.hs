@@ -127,9 +127,9 @@ display env time = do
   let gfxCtx     = env ^. I.gfxContext
   let globalVars = [("time", Number $ double2Float time)]
   is <- setInterpreterVariables globalVars extVars (as ^. IR.initialInterpreter)
-  ui          <- readTVarIO $ env ^. I.ui
-  gs          <- readTVarIO (env ^. I.graphics)
-  (result, _) <- renderGfx (interpret is (as ^. IR.currentAst)) gs
+  ui <- readTVarIO $ env ^. I.ui
+  (result, _) <- renderGfx (interpret is (as ^. IR.currentAst))
+                           (env ^. I.graphics)
   case result of
     Left msg -> do
       logError $ "Could not interpret program: " ++ msg
