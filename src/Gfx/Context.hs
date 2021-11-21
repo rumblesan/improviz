@@ -2,16 +2,15 @@ module Gfx.Context
   ( GfxContext(..)
   , createGfxContext
   , empty
-  )
-where
+  ) where
 
-import           Control.Monad.State.Strict     ( execStateT )
 import           Control.Concurrent.STM         ( TVar
                                                 , atomically
+                                                , modifyTVar'
                                                 , readTVarIO
                                                 , writeTVar
-                                                , modifyTVar'
                                                 )
+import           Control.Monad.State.Strict     ( execStateT )
 
 import qualified Gfx.Commands                  as GC
 import           Gfx.Engine                     ( GfxEngine
@@ -19,27 +18,34 @@ import           Gfx.Engine                     ( GfxEngine
                                                 , resetGfxEngine
                                                 )
 import           Gfx.PostProcessing             ( AnimationStyle )
+import           Graphics.Rendering.OpenGL      ( BlendingFactor )
+import           Language.Ast                   ( Value )
 
-data GfxContext = GfxContext { drawShape :: String -> Float -> Float -> Float -> IO ()
-                             , rotate :: Float -> Float -> Float -> IO ()
-                             , scale :: Float -> Float -> Float -> IO ()
-                             , move :: Float -> Float -> Float -> IO ()
-                             , colourFill :: Float -> Float -> Float -> Float -> IO ()
-                             , noFill :: IO ()
-                             , textureFill :: String -> Float -> IO ()
-                             , colourStroke :: Float -> Float -> Float -> Float -> IO ()
-                             , noStroke :: IO ()
-                             , setMaterial :: String -> IO ()
-                             , setMaterialVar :: String -> Float -> IO ()
-                             , setBackground :: Float -> Float -> Float -> IO ()
-                             , pushScope :: IO ()
-                             , popScope :: IO ()
-                             , setAnimationStyle :: AnimationStyle -> IO ()
-                             , setDepthChecking :: Bool -> IO ()
-                             , reset :: IO ()
-                             , renderCode :: String -> IO ()
-                             , renderCodeToBuffer :: String -> IO ()
-}
+data GfxContext = GfxContext
+  { drawShape         :: String -> Float -> Float -> Float -> IO ()
+  , rotate            :: Float -> Float -> Float -> IO ()
+  , scale             :: Float -> Float -> Float -> IO ()
+  , move              :: Float -> Float -> Float -> IO ()
+  , colourFill        :: Float -> Float -> Float -> Float -> IO ()
+  , noFill            :: IO ()
+  , textureFill       :: String -> Float -> IO ()
+  , colourStroke      :: Float -> Float -> Float -> Float -> IO ()
+  , noStroke          :: IO ()
+  , setMaterial       :: String -> IO ()
+  , setMaterialVar    :: String -> Value -> IO ()
+  , setBackground     :: Float -> Float -> Float -> IO ()
+  , pushScope         :: IO ()
+  , popScope          :: IO ()
+  , setAnimationStyle :: AnimationStyle -> IO ()
+  , setFilterVar      :: String -> Value -> IO ()
+  , setDepthChecking  :: Bool -> IO ()
+  , setBlendFunction
+      :: ((BlendingFactor, BlendingFactor), (BlendingFactor, BlendingFactor))
+      -> IO ()
+  , reset              :: IO ()
+  , renderCode         :: String -> IO ()
+  , renderCodeToBuffer :: String -> IO ()
+  }
 
 createGfxContext :: TVar GfxEngine -> GfxContext
 createGfxContext gfx = GfxContext
@@ -58,7 +64,9 @@ createGfxContext gfx = GfxContext
   , pushScope          = wrapNoArg gfx GC.pushScope
   , popScope           = wrapNoArg gfx GC.popScope
   , setAnimationStyle  = wrapOneArg gfx GC.setAnimationStyle
+  , setFilterVar       = wrapTwoArg gfx GC.setFilterVar
   , setDepthChecking   = wrapOneArg gfx GC.setDepthChecking
+  , setBlendFunction   = wrapOneArg gfx GC.setBlendFunction
   , reset              = resetGfxCtx gfx
   , renderCode         = wrapOneArg gfx GC.renderCode
   , renderCodeToBuffer = wrapOneArg gfx GC.renderCodeToBuffer
@@ -80,7 +88,9 @@ empty = GfxContext { drawShape          = \_ _ _ _ -> print "No GFX Context"
                    , pushScope          = print "No Gfx Context"
                    , popScope           = print "No Gfx Context"
                    , setAnimationStyle  = \_ -> print "No Gfx Context"
+                   , setFilterVar       = \_ _ -> print "No Gfx Context"
                    , setDepthChecking   = \_ -> print "No Gfx Context"
+                   , setBlendFunction   = \_ -> print "No Gfx Context"
                    , reset              = print "No Gfx Context"
                    , renderCode         = \_ -> print "No Gfx Context"
                    , renderCodeToBuffer = \_ -> print "No Gfx Context"
@@ -101,7 +111,8 @@ wrapOneArg gfx func a = do
   newGe <- execStateT (func a) ge
   atomically $ writeTVar gfx newGe
 
-wrapTwoArg :: TVar GfxEngine -> (a -> b -> GraphicsEngine ()) -> a -> b -> IO ()
+wrapTwoArg
+  :: TVar GfxEngine -> (a -> b -> GraphicsEngine ()) -> a -> b -> IO ()
 wrapTwoArg gfx func a b = do
   ge    <- readTVarIO gfx
   newGe <- execStateT (func a b) ge

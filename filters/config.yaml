@@ -1,0 +1,8 @@
+shaders:
+  - name: paintOver
+    file: paintOver.yaml
+  - name: motionBlur
+    file: motionBlur.yaml
+defaults:
+  - name: BlurRatio
+    value: 0.7

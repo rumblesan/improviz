@@ -1,7 +1,6 @@
 module Language.Interpreter.StdLib.Maths
   ( addMathStdLib
-  )
-where
+  ) where
 
 import           Control.Monad.Except           ( throwError )
 

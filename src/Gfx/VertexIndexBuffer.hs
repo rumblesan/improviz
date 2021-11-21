@@ -2,8 +2,7 @@ module Gfx.VertexIndexBuffer
   ( VertexIndexBuffer(..)
   , create
   , delete
-  )
-where
+  ) where
 
 import           Data.Maybe                     ( listToMaybe )
 import           Foreign.Marshal.Array          ( withArray )
@@ -13,9 +12,11 @@ import           Foreign.Storable               ( Storable
 
 import           Graphics.Rendering.OpenGL     as GL
 
-data VertexIndexBuffer = VertexIndexBuffer { buffer :: GL.BufferObject
-                                           , indexCount :: GLsizei
-                                           } deriving (Show, Eq)
+data VertexIndexBuffer = VertexIndexBuffer
+  { buffer     :: GL.BufferObject
+  , indexCount :: GLsizei
+  }
+  deriving (Show, Eq)
 
 create :: Storable a => [a] -> IO VertexIndexBuffer
 create indices =

@@ -10,6 +10,7 @@ import           Test.Framework                 ( Test
 import           Tests.Language.Parser.Assignment
                                                 ( parserAssignmentTests )
 import           Tests.Language.Parser.Blocks   ( parserBlocksTests )
+import           Tests.Language.Parser.Comments   ( parserCommentTests )
 import           Tests.Language.Parser.ErrorCatching
                                                 ( parserErrorCatchingTests )
 import           Tests.Language.Parser.Functions
@@ -27,6 +28,7 @@ parserTests = testGroup
   "Parser Tests"
   [ parserAssignmentTests
   , parserBlocksTests
+  , parserCommentTests
   , parserErrorCatchingTests
   , parserFunctionTests
   , parserGeneralTests

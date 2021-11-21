@@ -2,10 +2,10 @@
 
 module Server.Http
   ( startHttpServer
-  )
-where
+  ) where
 
 import           Network.Wai.Handler.Warp
+import           Network.Wai.Middleware.Static
 import           Web.Scotty
 
 import           Control.Concurrent             ( ThreadId
@@ -16,10 +16,8 @@ import           Control.Concurrent.STM         ( TVar
                                                 , modifyTVar
                                                 )
 import           Control.Monad.Trans            ( liftIO )
-import           System.FilePath.Posix          ( (</>) )
 
 import           Data.ByteString.Lazy.Char8     ( ByteString
-                                                , pack
                                                 , unpack
                                                 )
 import qualified Data.Map.Strict               as M
@@ -27,12 +25,12 @@ import           Logging                        ( logError
                                                 , logInfo
                                                 )
 
+import qualified Configuration.Shaders         as CS
 import qualified Language                      as L
 import           Language.Ast                   ( Value(Number) )
-import           Language.Parser.Errors         ( prettyPrintErrors
-                                                , parseErrorsOut
+import           Language.Parser.Errors         ( parseErrorsOut
+                                                , prettyPrintErrors
                                                 )
-import qualified Gfx.Materials                 as GM
 import           Server.Protocol
 
 import qualified Configuration                 as C
@@ -42,12 +40,9 @@ import qualified Improviz.Runtime              as IR
 import           Improviz.UI                    ( ImprovizUI )
 import qualified Improviz.UI                   as IUI
 
-import           Lens.Simple                    ( set
-                                                , (^.)
+import           Lens.Simple                    ( (^.)
+                                                , set
                                                 )
-
-editorHtmlFilePath :: FilePath
-editorHtmlFilePath = "html/editor.html"
 
 updateProgram :: ImprovizEnv -> String -> IO ImprovizResponse
 updateProgram env newProgram = case L.parse newProgram of
@@ -63,7 +58,7 @@ updateProgram env newProgram = case L.parse newProgram of
     return $ ImprovizCodeErrorResponse $ parseErrorsOut err
 
 updateMaterial :: ImprovizEnv -> ByteString -> IO ImprovizResponse
-updateMaterial env newMaterial = case GM.loadMaterialString newMaterial of
+updateMaterial env newMaterial = case CS.loadShaderString newMaterial of
   Right materialData -> do
     atomically $ modifyTVar (env ^. I.runtime) (addToMaterialQueue materialData)
     let msg = "Material Queued Successfully"
@@ -97,14 +92,7 @@ startHttpServer env =
   in  do
         logInfo $ "Improviz HTTP server listening on port " ++ show port
         forkIO $ scottyOpts options $ do
-          get "/" $ text "SERVING"
-          get "/editor" $ do
-            html <-
-              liftIO
-              $   readFile
-              $   (env ^. I.config . C.assetsDirectory)
-              </> editorHtmlFilePath
-            raw $ pack html
+          middleware $ staticPolicy (noDots >-> addBase "assets/static")
           post "/read/material" $ do
             b    <- body
             resp <- liftIO $ updateMaterial env b
@@ -128,3 +116,5 @@ startHttpServer env =
                   $  ImprovizErrorResponse
                   $  name
                   ++ " variable not updated. Value invalid"
+          get "/" $ text "SERVING"
+          get "/editor" $ redirect "/editor/index.html"

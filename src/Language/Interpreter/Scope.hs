@@ -5,15 +5,15 @@ module Language.Interpreter.Scope
   , getVariable
   , newScope
   , popScope
-  )
-where
+  ) where
 
 import qualified Data.Map.Strict               as M
 
 data ScopeStack k v = ScopeStack
   { current :: M.Map k v
   , stack   :: [M.Map k v]
-  } deriving (Eq, Show)
+  }
+  deriving (Eq, Show)
 
 empty :: Ord k => ScopeStack k v
 empty = ScopeStack { current = M.empty, stack = [] }

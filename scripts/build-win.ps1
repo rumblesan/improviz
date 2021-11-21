@@ -23,4 +23,6 @@ cp ./docs/materials.md $DOCUMENTATION_DIR/materials.txt
 cp ./docs/configuration.md $DOCUMENTATION_DIR/configuration.txt
 ./stack.exe install --local-bin-path $BUNDLE_DIR
 
+echo "${VERSION}" >> "${BUNDLE_DIR}/version.txt"
+
 7z a "improviz-win-${ENV:APPVEYOR_REPO_TAG_NAME}.zip" $BUNDLE_DIR

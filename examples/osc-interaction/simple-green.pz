@@ -1,0 +1,12 @@
+
+freq = ext(:freq, 0)
+g = freq%255
+
+shp = ext(:shape, :cube)
+
+rotate(time)
+move(1, 2, 1)
+fill(0, g, 0)
+
+
+shape(shp, 2, 2, 2)

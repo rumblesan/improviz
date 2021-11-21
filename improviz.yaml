@@ -11,10 +11,13 @@ textureDirectories:
 #  - "./hellocatfood/gifs"
 geometryDirectories:
   - "./geometries"
+#  - "./hellocatfood/geometries"
 materialDirectories:
   - "./materials"
-#  - "./hellocatfood/geometries"
+filterDirectories:
+  - "./filters"
 codeFiles:
+  - "./stdlib/filters.pz"
   - "./stdlib/variables.pz"
   - "./stdlib/transformations.pz"
   - "./stdlib/shapes.pz"
@@ -24,7 +27,7 @@ codeFiles:
   - "./usercode/grid.pz"
   - "./usercode/seq.pz"
 debug: false
-decorated: false
+decorated: true
 showText: true
 apptitle: "Improviz"
 serverPort: 3000

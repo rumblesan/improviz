@@ -6,26 +6,28 @@ import           Data.Either                    ( partitionEithers )
 import qualified Data.List                     as L
 import           System.FilePath.Posix          ( (</>) )
 
-import           Data.Yaml                      ( FromJSON(..)
-                                                , (.:)
-                                                , (.:?)
-                                                , (.!=)
-                                                )
-import qualified Data.Yaml                     as Y
 import           Codec.Wavefront                ( WavefrontOBJ
                                                 , fromFile
                                                 )
+import           Data.Yaml                      ( (.!=)
+                                                , (.:)
+                                                , (.:?)
+                                                , FromJSON(..)
+                                                )
+import qualified Data.Yaml                     as Y
 
 import           Configuration                  ( loadFolderConfig )
 import           Logging                        ( logError )
 
 data OBJGeometryConfig = OBJGeometryConfig
-  { geometryName :: String
-  , objData :: WavefrontOBJ
+  { geometryName   :: String
+  , objData        :: WavefrontOBJ
   , removeCrossbar :: Bool
-  } deriving (Eq, Show)
+  }
+  deriving (Eq, Show)
 
-data GeometryConfig = GeometryConfig String FilePath Bool deriving (Eq, Show)
+data GeometryConfig = GeometryConfig String FilePath Bool
+  deriving (Eq, Show)
 
 instance FromJSON GeometryConfig where
   parseJSON (Y.Object v) =

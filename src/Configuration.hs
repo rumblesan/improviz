@@ -13,6 +13,7 @@ module Configuration
   , geometryDirectories
   , codeFiles
   , materialDirectories
+  , filterDirectories
   , assetsDirectory
   , serverPort
   , osc
@@ -21,8 +22,7 @@ module Configuration
   , showText
   , getConfig
   , loadFolderConfig
-  )
-where
+  ) where
 
 import           Control.Applicative            ( (<|>) )
 import           Data.Maybe                     ( fromMaybe )
@@ -42,30 +42,32 @@ import           Configuration.OSC              ( ImprovizOSCConfig
 import           Configuration.Screen           ( ImprovizScreenConfig
                                                 , defaultScreenConfig
                                                 )
-import           Data.Yaml                      ( FromJSON(..)
-                                                , (.!=)
+import           Data.Yaml                      ( (.!=)
                                                 , (.:?)
+                                                , FromJSON(..)
                                                 )
 import qualified Data.Yaml                     as Y
 
 data ImprovizConfig = ImprovizConfig
-  { _screenWidth        :: Int
-  , _screenHeight       :: Int
-  , _fullscreenDisplay  :: Maybe Int
-  , _debug              :: Bool
-  , _screen             :: ImprovizScreenConfig
-  , _fontConfig         :: ImprovizFontConfig
-  , _textureDirectories :: [FilePath]
+  { _screenWidth         :: Int
+  , _screenHeight        :: Int
+  , _fullscreenDisplay   :: Maybe Int
+  , _debug               :: Bool
+  , _screen              :: ImprovizScreenConfig
+  , _fontConfig          :: ImprovizFontConfig
+  , _textureDirectories  :: [FilePath]
   , _geometryDirectories :: [FilePath]
   , _materialDirectories :: [FilePath]
-  , _codeFiles          :: [FilePath]
-  , _assetsDirectory    :: FilePath
-  , _serverPort         :: Int
-  , _osc                :: ImprovizOSCConfig
-  , _apptitle           :: String
-  , _decorated          :: Bool
-  , _showText           :: Bool
-  } deriving (Show)
+  , _filterDirectories   :: [FilePath]
+  , _codeFiles           :: [FilePath]
+  , _assetsDirectory     :: FilePath
+  , _serverPort          :: Int
+  , _osc                 :: ImprovizOSCConfig
+  , _apptitle            :: String
+  , _decorated           :: Bool
+  , _showText            :: Bool
+  }
+  deriving Show
 
 makeLenses ''ImprovizConfig
 
@@ -82,6 +84,7 @@ defaultConfig = ImprovizConfig { _screenWidth         = 640
                                , _textureDirectories  = ["./textures"]
                                , _geometryDirectories = ["./geometries"]
                                , _materialDirectories = ["./materials"]
+                               , _filterDirectories   = ["./filters"]
                                , _codeFiles           = []
                                , _assetsDirectory     = "./assets"
                                , _serverPort          = 3000
@@ -120,6 +123,9 @@ instance FromJSON ImprovizConfig where
       <*> v
       .:? "materialDirectories"
       .!= (defaultConfig ^. materialDirectories)
+      <*> v
+      .:? "filterDirectories"
+      .!= (defaultConfig ^. filterDirectories)
       <*> v
       .:? "codeFiles"
       .!= (defaultConfig ^. codeFiles)

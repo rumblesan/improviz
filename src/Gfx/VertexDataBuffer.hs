@@ -2,8 +2,7 @@ module Gfx.VertexDataBuffer
   ( VertexDataBuffer(..)
   , create
   , delete
-  )
-where
+  ) where
 
 import           Data.Maybe                     ( listToMaybe )
 import           Foreign.Marshal.Array          ( withArray )
@@ -13,10 +12,12 @@ import           Foreign.Storable               ( Storable
 
 import           Graphics.Rendering.OpenGL     as GL
 
-data VertexDataBuffer = VertexDataBuffer { buffer :: GL.BufferObject
-                                         , vertexCount :: GLsizei
-                                         , vertexComponents :: NumComponents
-                                         } deriving (Show, Eq)
+data VertexDataBuffer = VertexDataBuffer
+  { buffer           :: GL.BufferObject
+  , vertexCount      :: GLsizei
+  , vertexComponents :: NumComponents
+  }
+  deriving (Show, Eq)
 
 create :: Storable a => [a] -> NumComponents -> IO VertexDataBuffer
 create verts vertComponentCount =

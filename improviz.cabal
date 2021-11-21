@@ -1,5 +1,5 @@
 name:                improviz
-version:             0.7.1.0
+version:             0.9.5.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
 homepage:            https://github.com/rumblesan/improviz#README.md
@@ -39,6 +39,7 @@ executable improviz
                      , parser-combinators >= 1
                      , random
                      , safe
+                     , scientific
                      , scotty
                      , split
                      , stm
@@ -47,6 +48,7 @@ executable improviz
                      , transformers
                      , vector
                      , warp
+                     , wai-middleware-static
                      , wavefront
                      , yaml
   other-modules:       Improviz
@@ -54,10 +56,11 @@ executable improviz
                      , Improviz.SystemVars
                      , Improviz.UI
                      , Configuration
+                     , Configuration.Ast
                      , Configuration.CLI
                      , Configuration.Font
                      , Configuration.Geometries
-                     , Configuration.Materials
+                     , Configuration.Shaders
                      , Configuration.OSC
                      , Configuration.Screen
                      , Configuration.Textures
@@ -71,9 +74,8 @@ executable improviz
                      , Gfx.Matrices
                      , Gfx.OpenGL
                      , Gfx.PostProcessing
-                     , Gfx.Setting
-                     , Gfx.SettingMap
                      , Gfx.Materials
+                     , Gfx.Shaders
                      , Gfx.TextRendering
                      , Gfx.Textures
                      , Gfx.Types
@@ -107,6 +109,8 @@ executable improviz
                      , Server.Protocol
                      , Server.OSC
                      , Util
+                     , Util.Setting
+                     , Util.SettingMap
                      , Windowing
   default-language:    Haskell2010
 
@@ -134,6 +138,7 @@ test-suite improviz-test
                      , parser-combinators >= 1
                      , random
                      , safe
+                     , scientific
                      , stm
                      , test-framework
                      , test-framework-hunit
@@ -145,10 +150,11 @@ test-suite improviz-test
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
                        -fwarn-unused-binds -fwarn-unused-imports
   other-modules:       Configuration
+                     , Configuration.Ast
                      , Configuration.CLI
                      , Configuration.Font
                      , Configuration.Geometries
-                     , Configuration.Materials
+                     , Configuration.Shaders
                      , Configuration.OSC
                      , Configuration.Screen
                      , Configuration.Textures
@@ -165,8 +171,7 @@ test-suite improviz-test
                      , Gfx.TextRendering
                      , Gfx.Textures
                      , Gfx.Types
-                     , Gfx.Setting
-                     , Gfx.SettingMap
+                     , Gfx.Shaders
                      , Gfx.Materials
                      , Gfx.VertexBuffers
                      , Gfx.VAO
@@ -209,6 +214,7 @@ test-suite improviz-test
                      , Tests.Language.Parser
                      , Tests.Language.Parser.Assignment
                      , Tests.Language.Parser.Blocks
+                     , Tests.Language.Parser.Comments
                      , Tests.Language.Parser.ErrorCatching
                      , Tests.Language.Parser.Functions
                      , Tests.Language.Parser.General
@@ -218,6 +224,8 @@ test-suite improviz-test
                      , Tests.Language.Parser.Operators
                      , Tests.Language.Parser.Symbols
                      , Util
+                     , Util.Setting
+                     , Util.SettingMap
   default-language:    Haskell2010
 
 source-repository head

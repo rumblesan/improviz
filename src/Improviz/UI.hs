@@ -7,7 +7,8 @@ import           Lens.Simple
 data ImprovizUI = ImprovizUI
   { _displayText :: Bool
   , _currentText :: String
-  } deriving (Eq, Show)
+  }
+  deriving (Eq, Show)
 
 makeLenses ''ImprovizUI
 

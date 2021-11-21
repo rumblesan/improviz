@@ -16,8 +16,7 @@ module Gfx.LoadShaders
   ( ShaderSource(..)
   , ShaderInfo(..)
   , loadShaders
-  )
-where
+  ) where
 
 import           Control.Exception
 import           Control.Monad
@@ -42,9 +41,7 @@ getSource (FileSource       path) = B.readFile path
 
 --------------------------------------------------------------------------------
 -- | A description of a shader: The type of the shader plus its source code.
-data ShaderInfo =
-  ShaderInfo ShaderType
-             ShaderSource
+data ShaderInfo = ShaderInfo ShaderType ShaderSource
   deriving (Eq, Ord, Show)
 
 --------------------------------------------------------------------------------

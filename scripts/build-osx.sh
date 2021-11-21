@@ -44,4 +44,6 @@ cp ./docs/configuration.md $DOCUMENTATION_DIR/configuration.txt
 
 cp $(stack exec -- which improviz) "$BUNDLE_DIR"
 
+echo "${VERSION}" >> "${BUNDLE_DIR}/version.txt"
+
 tar -C $BUILD_DIR -zcvf improviz-osx-${VERSION}.tar.gz improviz-osx

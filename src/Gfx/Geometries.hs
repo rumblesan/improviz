@@ -4,42 +4,41 @@ module Gfx.Geometries
   ( Geometries
   , GeometryBuffers(..)
   , createAllGeometries
-  )
-where
+  ) where
 
-import qualified Data.Vector                   as V
-import           Data.Vector                    ( Vector
-                                                , (!?)
-                                                )
+import           Data.Int                       ( Int32 )
 import qualified Data.List                     as L
 import qualified Data.Map.Strict               as M
 import           Data.Maybe                     ( catMaybes
                                                 , fromMaybe
                                                 )
-import           Data.Int                       ( Int32 )
+import qualified Data.Vector                   as V
+import           Data.Vector                    ( (!?)
+                                                , Vector
+                                                )
 import           Data.Word                      ( Word32 )
 
+import           Codec.Wavefront                ( Element(..)
+                                                , Face(..)
+                                                , FaceIndex(..)
+                                                , Location(..)
+                                                , Normal(..)
+                                                , TexCoord(..)
+                                                , WavefrontOBJ(..)
+                                                )
+import           Graphics.Rendering.OpenGL      ( AttribLocation(..) )
 import           Linear.V2                      ( V2(..) )
 import           Linear.V3                      ( V3(..) )
 import qualified Linear.V3                     as L3
 import           Linear.Vector                  ( (^-^) )
-import           Graphics.Rendering.OpenGL      ( AttribLocation(..) )
-import           Codec.Wavefront                ( WavefrontOBJ(..)
-                                                , Element(..)
-                                                , Face(..)
-                                                , FaceIndex(..)
-                                                , Location(..)
-                                                , TexCoord(..)
-                                                , Normal(..)
-                                                )
 
+import           Configuration.Geometries       ( OBJGeometryConfig(..)
+                                                , loadGeometryFolders
+                                                )
 import           Gfx.VAO                        ( VAO )
 import qualified Gfx.VAO                       as VAO
 import qualified Gfx.VertexDataBuffer          as VDB
 import qualified Gfx.VertexIndexBuffer         as VIB
-import           Configuration.Geometries       ( OBJGeometryConfig(..)
-                                                , loadGeometryFolders
-                                                )
 import           Logging                        ( logInfo )
 
   {-
@@ -51,15 +50,19 @@ data GeometryData = GeometryData { vertices :: V3 Float
                                  }
                                  -}
 
-data GeometryFace = GeometryFace { faceVerts :: [V3 Float]
-                                 , faceTextCoords :: [V2 Float]
-                                 , faceNormals :: [V3 Float]
-                                 , faceBaryCoords :: [V3 Float]
-                                 } deriving (Show, Eq)
+data GeometryFace = GeometryFace
+  { faceVerts      :: [V3 Float]
+  , faceTextCoords :: [V2 Float]
+  , faceNormals    :: [V3 Float]
+  , faceBaryCoords :: [V3 Float]
+  }
+  deriving (Show, Eq)
 
-data GeometryBuffers = GeometryBuffers { vao :: VAO
-                                       , vertCount :: Int32
-                                       } deriving (Show, Eq)
+data GeometryBuffers = GeometryBuffers
+  { vao       :: VAO
+  , vertCount :: Int32
+  }
+  deriving (Show, Eq)
 
 type Geometries = M.Map String GeometryBuffers
 

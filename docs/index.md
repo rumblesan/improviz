@@ -21,8 +21,10 @@ Once you've downloaded the release and un-archived it to a folder on your system
 
 The following documents should hopefully explain more of the ins and outs of using it.
 
+* [How It Works](./how-it-works.md)
 * [Language](./language.md)
 * [Interacting](./interacting.md)
+* [OSC](./osc.md)
 * [Reference](./reference.md)
 * [Configuration](./configuration.md)
 * [Textures](./textures.md)

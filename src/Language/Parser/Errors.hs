@@ -4,22 +4,22 @@ module Language.Parser.Errors where
 
 import           Control.Monad                  ( mapM )
 import           Control.Monad.State            ( State(..)
+                                                , evalState
                                                 , gets
                                                 , put
-                                                , evalState
                                                 )
-import           GHC.Generics
-import           Data.Void
 import qualified Data.List.NonEmpty            as NE
+import           Data.Void
+import           GHC.Generics
 
 import           Data.Aeson
 
 import           Text.Megaparsec         hiding ( State )
-import           Text.Megaparsec.Pos            ( unPos
-                                                , SourcePos(..)
+import           Text.Megaparsec.Error          ( errorOffset
+                                                , parseErrorTextPretty
                                                 )
-import           Text.Megaparsec.Error          ( parseErrorTextPretty
-                                                , errorOffset
+import           Text.Megaparsec.Pos            ( SourcePos(..)
+                                                , unPos
                                                 )
 import           Text.Megaparsec.Stream         ( reachOffsetNoLine )
 
@@ -27,10 +27,11 @@ import           Text.Megaparsec.Stream         ( reachOffsetNoLine )
 type ParserError = ParseErrorBundle String Void
 
 data ImprovizCodeError = ImprovizCodeError
-  { line :: Int
-  , column :: Int
+  { line    :: Int
+  , column  :: Int
   , message :: String
-  } deriving (Generic, Show, Eq)
+  }
+  deriving (Generic, Show, Eq)
 
 instance ToJSON ImprovizCodeError where
   toEncoding = genericToEncoding defaultOptions

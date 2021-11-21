@@ -1,4 +1,4 @@
-materials:
+shaders:
   - name: basic
     file: basic.yaml
   - name: wireframe
@@ -15,3 +15,10 @@ materials:
     file: wobbler.yaml
   - name: fade
     file: fade.yaml
+defaults:
+  - name: StrokeSize
+    value: 0.08
+  - name: TextureAlpha
+    value: 1.0
+  - name: ColourMult
+    value: [1.0, 1.0, 1.0, 1.0]

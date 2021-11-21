@@ -3,20 +3,21 @@
 
 module Configuration.OSC where
 
-import           Lens.Simple                    ( makeLenses
-                                                , (^.)
+import           Lens.Simple                    ( (^.)
+                                                , makeLenses
                                                 )
 
-import           Data.Yaml                      ( FromJSON(..)
-                                                , (.!=)
+import           Data.Yaml                      ( (.!=)
                                                 , (.:?)
+                                                , FromJSON(..)
                                                 )
 import qualified Data.Yaml                     as Y
 
 data ImprovizOSCConfig = ImprovizOSCConfig
   { _enabled :: Bool
   , _port    :: Int
-  } deriving (Show)
+  }
+  deriving Show
 
 makeLenses ''ImprovizOSCConfig
 

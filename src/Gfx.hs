@@ -3,26 +3,29 @@ module Gfx
   , renderGfx
   , createGfx
   , resizeGfx
-  )
-where
+  ) where
 
 import           Lens.Simple                    ( (^.) )
 
+import           Control.Concurrent.STM         ( TVar
+                                                , readTVarIO
+                                                )
 import           Graphics.Rendering.OpenGL
 
 import           Gfx.Engine                     ( GfxEngine
-                                                , createGfxEngine
-                                                , resizeGfxEngine
+                                                , animationStyle
                                                 , backgroundColor
+                                                , blendFunction
+                                                , createGfxEngine
                                                 , depthChecking
                                                 , postFX
-                                                , animationStyle
+                                                , postFXVars
+                                                , resizeGfxEngine
                                                 , textRenderer
                                                 )
+import qualified Gfx.Materials                 as GM
 import           Gfx.OpenGL                     ( colToGLCol )
-import           Gfx.PostProcessing             ( AnimationStyle(..)
-                                                , createPostProcessing
-                                                , createPostProcessing
+import           Gfx.PostProcessing             ( createPostProcessing
                                                 , deletePostProcessing
                                                 , renderPostProcessing
                                                 , usePostProcessing
@@ -32,8 +35,7 @@ import           Gfx.TextRendering              ( addCodeTextureToLib
                                                 , resizeTextRendererScreen
                                                 )
 import           Gfx.Textures                   ( TextureLibrary )
-import qualified Gfx.Materials                 as GM
-import qualified Gfx.Setting                   as GS
+import qualified Util.Setting                  as S
 
 import           Configuration                  ( ImprovizConfig )
 import qualified Configuration                 as C
@@ -47,18 +49,20 @@ createGfx
   -> Int
   -> IO GfxEngine
 createGfx config textureLib width height fbWidth fbHeight = do
-  post <- createPostProcessing fbWidth fbHeight
+  post <- createPostProcessing (config ^. C.filterDirectories) fbWidth fbHeight
   let scaling = fromIntegral width / fromIntegral fbWidth
   trender     <- createTextRenderer config fbWidth fbHeight scaling
-  materialLib <- GM.createMaterialLib (config ^. C.materialDirectories)
+  materialCfg <- GM.createMaterialsConfig (config ^. C.materialDirectories)
   let tLibWithCode = addCodeTextureToLib trender textureLib
-  createGfxEngine config width height post trender tLibWithCode materialLib
+  createGfxEngine config width height post trender tLibWithCode materialCfg
 
 resizeGfx
   :: GfxEngine -> ImprovizConfig -> Int -> Int -> Int -> Int -> IO GfxEngine
 resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
   deletePostProcessing $ engineState ^. postFX
-  newPost    <- createPostProcessing fbWidth fbHeight
+  newPost <- createPostProcessing (config ^. C.filterDirectories)
+                                  fbWidth
+                                  fbHeight
   newTrender <- resizeTextRendererScreen config
                                          fbWidth
                                          fbHeight
@@ -66,29 +70,27 @@ resizeGfx engineState config newWidth newHeight fbWidth fbHeight = do
   return
     $ resizeGfxEngine config newWidth newHeight newPost newTrender engineState
 
-renderGfx :: IO result -> GfxEngine -> IO result
-renderGfx program gs =
-  let
-    post       = gs ^. postFX
-    animStyle  = gs ^. animationStyle . GS.value
-    bgColor    = gs ^. backgroundColor . GS.value
-    depthCheck = gs ^. depthChecking . GS.value
-  in
-    do
-      usePostProcessing post
-      depthFunc $= if depthCheck then Just Less else Nothing
-      blend $= Enabled
-      blendEquationSeparate $= (FuncAdd, FuncAdd)
-      frontFace $= CW
-      case animStyle of
-        NormalStyle ->
-          blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, One))
-        MotionBlur ->
-          blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
-        PaintOver ->
-          blendFuncSeparate $= ((SrcAlpha, OneMinusSrcAlpha), (One, Zero))
-      clearColor $= colToGLCol bgColor
-      clear [ColorBuffer, DepthBuffer]
-      result <- program
-      renderPostProcessing post animStyle
-      return result
+renderGfx :: IO result -> TVar GfxEngine -> IO result
+renderGfx program tvgs = do
+  gs <- readTVarIO tvgs
+  let post       = gs ^. postFX
+  let animStyle  = gs ^. animationStyle . S.value
+  let bgColor    = gs ^. backgroundColor . S.value
+  let depthCheck = gs ^. depthChecking . S.value
+  let blendFunc  = gs ^. blendFunction . S.value
+  usePostProcessing post
+  depthFunc $= if depthCheck then Just Less else Nothing
+  blend $= Enabled
+  blendEquationSeparate $= (FuncAdd, FuncAdd)
+  frontFace $= CW
+  blendFuncSeparate $= blendFunc
+  clearColor $= colToGLCol bgColor
+  clear [ColorBuffer, DepthBuffer]
+  result <- program
+  ngs    <- readTVarIO tvgs
+  -- get postFXFars after program has run
+  -- to get the updated state
+  -- FIXME needs to be a better way to do this
+  let postVars = ngs ^. postFXVars
+  renderPostProcessing post postVars animStyle
+  return result

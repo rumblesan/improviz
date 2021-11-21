@@ -1,3 +1,4 @@
+materialVar(:TextureAlpha, 0.5)
 background(155, 0, 0)
 noStroke()
 rotate()

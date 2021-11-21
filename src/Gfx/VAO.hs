@@ -4,8 +4,7 @@ module Gfx.VAO
   , delete
   , bind
   , draw
-  )
-where
+  ) where
 
 import           Control.Monad                  ( forM_ )
 import           Foreign.Ptr                    ( nullPtr )
@@ -17,10 +16,12 @@ import qualified Gfx.VertexDataBuffer          as VDB
 import           Gfx.VertexIndexBuffer          ( VertexIndexBuffer )
 import qualified Gfx.VertexIndexBuffer         as VIB
 
-data VAO = VAO { vertexArrayObject :: GL.VertexArrayObject
-               , indexBuffer :: VertexIndexBuffer
-               , buffers :: [(GL.AttribLocation, VDB.VertexDataBuffer)]
-               } deriving (Show, Eq)
+data VAO = VAO
+  { vertexArrayObject :: GL.VertexArrayObject
+  , indexBuffer       :: VertexIndexBuffer
+  , buffers           :: [(GL.AttribLocation, VDB.VertexDataBuffer)]
+  }
+  deriving (Show, Eq)
 
 create
   :: VertexIndexBuffer -> [(GL.AttribLocation, VDB.VertexDataBuffer)] -> IO VAO

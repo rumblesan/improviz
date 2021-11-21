@@ -8,8 +8,7 @@ module Configuration.CLI
   , configFilePath
   , ImprovizCLIConfig
   , opts
-  )
-where
+  ) where
 
 import           Data.Semigroup                 ( (<>) )
 import           Options.Applicative
@@ -22,7 +21,8 @@ data ImprovizCLIConfig = ImprovizCLIConfig
   , _fullscreenDisplay :: Maybe Int
   , _debug             :: Bool
   , _configFilePath    :: Maybe FilePath
-  } deriving (Show)
+  }
+  deriving Show
 
 makeLenses ''ImprovizCLIConfig
 

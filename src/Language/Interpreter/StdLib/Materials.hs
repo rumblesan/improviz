@@ -1,17 +1,16 @@
 module Language.Interpreter.StdLib.Materials
   ( addMaterialStdLib
-  )
-where
+  ) where
 
 import           Control.Monad.Except
 
 import           Gfx.Context                    ( setMaterial
                                                 , setMaterialVar
                                                 )
-import           Language.Ast                   ( Value(Number, Null, Symbol) )
+import           Language.Ast                   ( Value(Null, Symbol) )
 import           Language.Interpreter.Types     ( InterpreterProcess
-                                                , withGfxCtx
                                                 , setBuiltIn
+                                                , withGfxCtx
                                                 )
 
 addMaterialStdLib :: InterpreterProcess ()
@@ -30,6 +29,5 @@ internalMaterial materialArgs = do
     _             -> throwError "Error with functions to material"
   runMatVar :: [Value] -> InterpreterProcess ()
   runMatVar args = case args of
-    [Symbol name, Number value] ->
-      withGfxCtx (\ctx -> setMaterialVar ctx name value)
+    [Symbol name, value] -> withGfxCtx (\ctx -> setMaterialVar ctx name value)
     _ -> throwError "Error with functions to material variable"

@@ -1,14 +1,13 @@
 module TestHelpers.GfxContext
   ( createGfxContextHelpers
   , getOutputGfx
-  )
-where
+  ) where
 
 import           Control.Concurrent.STM         ( TVar
                                                 , atomically
                                                 , modifyTVar'
-                                                , readTVarIO
                                                 , newTVarIO
+                                                , readTVarIO
                                                 )
 
 import           Gfx.Context                    ( GfxContext(..) )
@@ -42,7 +41,9 @@ createTestGfxContext gfx = GfxContext
   , pushScope          = addAst gfx (ScopeCommand PushScope)
   , popScope           = addAst gfx (ScopeCommand PopScope)
   , setAnimationStyle  = \_ -> print "No animation style command"
+  , setFilterVar       = \_ _ -> print "No set filter var command"
   , setDepthChecking   = \_ -> print "No depth checking command"
+  , setBlendFunction   = \_ -> print "No blend function command"
   , reset              = print "No reset command"
   , renderCode         = \_ -> print "No renderCode command"
   , renderCodeToBuffer = \_ -> print "No renderCodeToBuffer command"
