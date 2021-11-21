@@ -27,6 +27,8 @@ Will default to `1` for each if no value is given.
 If a single value is given then that will be used for both the width and height.
 If two arguments are given then they will set the width and height separately.
 
+![rectangle_reference](assets/images/reference/rectangle_reference.png)
+
 ### cube
 
 ```
@@ -39,6 +41,8 @@ Will default to `1` for each if no value is given.
 If a single value is given then that will be used for all three dimensions.
 If two arguments are given then the first will set the width, and the second will set the height and depth.
 If three arguments are given then they will set the width, height, and depth separately.
+
+![cube_reference](assets/images/reference/cube_reference.png)
 
 ### sphere
 
@@ -53,6 +57,8 @@ If a single value is given then that will be used for all three dimensions.
 If two arguments are given then the first will set the width, and the second will set the height and depth.
 If three arguments are given then they will set the width, height, and depth separately.
 
+![sphere_reference](assets/images/reference/sphere_reference.png)
+
 ### cylinder
 
 ```
@@ -66,6 +72,8 @@ If a single value is given then that will be used for all three dimensions.
 If two arguments are given then the first will set the width, and the second will set the height and depth.
 If three arguments are given then they will set the width, height, and depth separately.
 
+![cylinder_reference](assets/images/reference/cylinder_reference.png)
+
 ### shape
 
 ```
@@ -77,6 +85,8 @@ shape(:cube, 2) // will cause an error
 All the above functions are actually implemented using the `shape` function.
 The first value given needs to be a symbol that specifies which shape to draw, with the remaining arguments being the shape's dimensions.
 If a value is not given for a required dimension then an error will occur.
+
+![shape_reference](assets/images/reference/shape_reference.png)
 
 ## Styles
 
