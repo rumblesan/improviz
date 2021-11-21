@@ -10,18 +10,6 @@ Currently there is no loading custom textures, geometries or materials. This wil
 
 There is also no way to send values to the program over OSC, though this too is on the roadmap.
 
-## Language Differences
-
-The only difference to the language is that loops must use the keyword `loop` before the looping expression.
-
-```
-loop 10 times
-  rotate()
-  cube()
-```
-
-This is is currently optional in the native version of Improviz but will likely become mandatory in the future.
-
 ## Editor Experience
 
 The browser version has an integrated editor with built-in error notifications and code highlighting. It does support Vim bindings as well.
