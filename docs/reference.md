@@ -15,6 +15,8 @@ line(3)
 Draws a line on the screen with width and depth equal to a single pixel.
 Can be given a single value which can set the line length, but will otherwise default to `1`.
 
+![line_reference](assets/images/reference/line_reference.png)
+
 ### rectangle
 
 ```
