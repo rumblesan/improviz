@@ -1,4 +1,4 @@
-# Reference
+l# Reference
 
 This is a reference of all the built-in functions and variables available in Improviz.
 
@@ -163,7 +163,7 @@ Does not take any arguments.
 ```
 texture(:code)
 cube(3)
-texture(:hand1, time % frames(:hand1))
+texture(:diagsquares, time % frames(:diagsquares))
 sphere(2)
 ```
 
