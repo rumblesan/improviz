@@ -1,4 +1,4 @@
-# Reference
+l# Reference
 
 This is a reference of all the built-in functions and variables available in Improviz.
 
@@ -15,6 +15,8 @@ line(3)
 Draws a line on the screen with width and depth equal to a single pixel.
 Can be given a single value which can set the line length, but will otherwise default to `1`.
 
+![line_reference](assets/images/reference/line_reference.png)
+
 ### rectangle
 
 ```
@@ -26,6 +28,8 @@ Can be given up to two arguments to set the width and height.
 Will default to `1` for each if no value is given.
 If a single value is given then that will be used for both the width and height.
 If two arguments are given then they will set the width and height separately.
+
+![rectangle_reference](assets/images/reference/rectangle_reference.png)
 
 ### cube
 
@@ -40,6 +44,8 @@ If a single value is given then that will be used for all three dimensions.
 If two arguments are given then the first will set the width, and the second will set the height and depth.
 If three arguments are given then they will set the width, height, and depth separately.
 
+![cube_reference](assets/images/reference/cube_reference.png)
+
 ### sphere
 
 ```
@@ -52,6 +58,8 @@ Will default to `1` for each if no value is given.
 If a single value is given then that will be used for all three dimensions.
 If two arguments are given then the first will set the width, and the second will set the height and depth.
 If three arguments are given then they will set the width, height, and depth separately.
+
+![sphere_reference](assets/images/reference/sphere_reference.png)
 
 ### cylinder
 
@@ -66,6 +74,8 @@ If a single value is given then that will be used for all three dimensions.
 If two arguments are given then the first will set the width, and the second will set the height and depth.
 If three arguments are given then they will set the width, height, and depth separately.
 
+![cylinder_reference](assets/images/reference/cylinder_reference.png)
+
 ### shape
 
 ```
@@ -77,6 +87,8 @@ shape(:cube, 2) // will cause an error
 All the above functions are actually implemented using the `shape` function.
 The first value given needs to be a symbol that specifies which shape to draw, with the remaining arguments being the shape's dimensions.
 If a value is not given for a required dimension then an error will occur.
+
+![shape_reference](assets/images/reference/shape_reference.png)
 
 ## Styles
 
@@ -99,6 +111,8 @@ If a single value is given then this will be used for the red, green and blue co
 If two arguments are given then the first will be used for the red and blue components, with the second being the green component, and alpha being `255`.
 If three arguments are given then these will be used for the red, green, and blue components and alpha being `255`.
 
+![fill_reference](assets/images/reference/fill_reference.png)
+
 ### noFill
 
 ```
@@ -110,6 +124,7 @@ cube(3)
 Sets the face colour to be fully transparent.
 Does not take any arguments.
 
+![nofill_reference](assets/images/reference/nofill_reference.png)
 
 ### stroke
 
@@ -126,6 +141,8 @@ If a single value is given then this will be used for the red, green and blue co
 If two arguments are given then the first will be used for the red and blue components, with the second being the green component, and alpha being `255`.
 If three arguments are given then these will be used for the red, green, and blue components and alpha being `255`.
 
+![stroke_reference](assets/images/reference/stroke_reference.png)
+
 ### strokeSize
 
 ```
@@ -135,23 +152,27 @@ sphere(3)
 
 Sets the line thickness of the stroke when drawing a shape. The default is 0.02. Currently a value of 0.5 will cause the stroke to cover the entire face of a shape.
 
-### noFill
+![strokesize_reference](assets/images/reference/strokesize_reference.png)
+
+### noStroke
 
 ```
 background(255, 0, 0)
-noFill()
+noStroke()
 cube(3)
 ```
 
 Sets the edge colour to be fully transparent.
 Does not take any arguments.
 
+![nostroke_reference](assets/images/reference/nostroke_reference.png)
+
 ### texture
 
 ```
 texture(:code)
 cube(3)
-texture(:hand1, time % frames(:hand1))
+texture(:diagsquares, time % frames(:diagsquares))
 sphere(2)
 ```
 
