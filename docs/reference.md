@@ -111,6 +111,8 @@ If a single value is given then this will be used for the red, green and blue co
 If two arguments are given then the first will be used for the red and blue components, with the second being the green component, and alpha being `255`.
 If three arguments are given then these will be used for the red, green, and blue components and alpha being `255`.
 
+![fill_reference](assets/images/reference/fill_reference.png)
+
 ### noFill
 
 ```
@@ -122,6 +124,7 @@ cube(3)
 Sets the face colour to be fully transparent.
 Does not take any arguments.
 
+![nofill_reference](assets/images/reference/nofill_reference.png)
 
 ### stroke
 
@@ -138,6 +141,8 @@ If a single value is given then this will be used for the red, green and blue co
 If two arguments are given then the first will be used for the red and blue components, with the second being the green component, and alpha being `255`.
 If three arguments are given then these will be used for the red, green, and blue components and alpha being `255`.
 
+![stroke_reference](assets/images/reference/stroke_reference.png)
+
 ### strokeSize
 
 ```
@@ -146,6 +151,8 @@ sphere(3)
 ```
 
 Sets the line thickness of the stroke when drawing a shape. The default is 0.02. Currently a value of 0.5 will cause the stroke to cover the entire face of a shape.
+
+![strokesize_reference](assets/images/reference/strokesize_reference.png)
 
 ### noStroke
 
@@ -157,6 +164,8 @@ cube(3)
 
 Sets the edge colour to be fully transparent.
 Does not take any arguments.
+
+![nostroke_reference](assets/images/reference/nostroke_reference.png)
 
 ### texture
 
