@@ -280,7 +280,7 @@ If a value is not given for a required axis then an error will occur.
 
 ## Global
 
-The global functions change general things about the Improviz environment. Specifically the background colour and the animation style.
+The global functions change general things about the Improviz environment. Currently this is really just the background colour.
 
 ### background
 
@@ -296,25 +296,10 @@ If no arguments are given then they will all default to `255`.
 If a single value is given then this will be used for the red, green and blue components.
 If two arguments are given then the first will be used for the red component, with the second being the green component, with the blue being `255`.
 
-### motionBlur
 
-```
-motionBlur()
-rotate()
-cube()
-```
+## PostProcessing
 
-Adds a motion blur effect to the frame when drawn. If this is followed by other animation style function calls then this will be ignored.
-
-### paintOver
-
-```
-paintOver()
-rotate()
-cube()
-```
-
-Adds a paint over effect to the frame when drawn. If this is followed by other animation style function calls then this will be ignored.
+Post Processing is a fairly catch all term to describe any graphical manipulation to the final rendered image. Primarily this involves just setting the animationStyle, but it's possible to create custom post processing shaders and modify attributes on them in a similar fashion to geometry materials.
 
 ### animationStyle
 
@@ -324,12 +309,48 @@ rotate()
 cube()
 ```
 
-Sets the animation style to use when drawing the frame. If this is followed by other animation style function calls then this will be ignored.
-Takes a single argument which is a symbol specifying the animation style. Can be any of the following,
+Sets the animation style to use when drawing the frame.
+Takes a single argument which is a symbol specifying the animation style, which needs to be for one of the pre-configured filters.
 
-* `:normal`
-* `:motionBlur`
-* `:paintOver`
+### motionBlur
+
+```
+motionBlur()
+rotate()
+cube()
+```
+
+Helper function to use the motionBlur post processing filter and set the blend function so it looks ok.
+
+### paintOver
+
+```
+paintOver()
+rotate()
+cube()
+```
+
+Helper function to use the paintOver post processing filter and set the blend function so it looks ok.
+
+### postProcess
+
+The low level function that's currently used to set variables in the post processing filter shaders.
+
+```
+postProcess(:variable, :BlurRatio, sin(time/5) * 0.93)
+motionBlur()
+```
+
+### blendFunc
+
+Allows setting the OpenGL blend function. This is mainly useful when doing post processing that involves blending between the current frame and a previously saved frame. For more information it's probably best to read [the official OpenGL documentation](https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml) on the function.
+
+```
+blendFunc([:SrcAlpha, :OneMinusSrcAlpha], [:One, :Zero])
+animationStyle(:paintOver)
+```
+
+
 
 ## Math
 
