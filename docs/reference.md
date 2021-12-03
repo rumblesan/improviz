@@ -146,11 +146,11 @@ If three arguments are given then these will be used for the red, green, and blu
 ### strokeSize
 
 ```
-strokeSize(0.3)
+strokeSize(25)
 sphere(3)
 ```
 
-Sets the line thickness of the stroke when drawing a shape. The default is 0.02. Currently a value of 0.5 will cause the stroke to cover the entire face of a shape.
+Sets the line thickness of the stroke when drawing a shape. The range is from no stroke at 0 to the faces fully covered at 100. The default is 8.
 
 ![strokesize_reference](assets/images/reference/strokesize_reference.png)
 
