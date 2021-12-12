@@ -17,6 +17,7 @@ jobs:
     name: Testing ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2.3.4
+      - uses: openrndr/setup-opengl@v1.1
       - name: Setup Haskell
         id: setup-haskell-stack
         uses: haskell/actions/setup@v1.2
