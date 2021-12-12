@@ -20,7 +20,7 @@ jobs:
       - name: apt-get update
         run: sudo apt-get update
       - name: apt-get install dependencies
-        run: sudo apt-get install freeglut3-dev
+        run: sudo apt-get install freeglut3-dev libglfw3-dev
       - name: Setup Haskell
         id: setup-haskell-stack
         uses: haskell/actions/setup@v1.2
