@@ -17,11 +17,10 @@ jobs:
     name: Testing ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2.3.4
-      - name: apt-get update
-        run: sudo apt-get update
-        if: matrix.os == 'ubuntu-latest'
       - name: apt-get install dependencies
-        run: sudo apt-get install libgmp-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev freeglut3-dev libglfw3-dev libxxf86vm-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgmp-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev freeglut3-dev libglfw3-dev libxxf86vm-dev
         if: matrix.os == 'ubuntu-latest'
       - name: Setup Haskell
         id: setup-haskell-stack
