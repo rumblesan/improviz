@@ -14,6 +14,8 @@ Using a filter is done with the `animationStyle` function, and then giving it a 
 animationStyle(:paintOver)
 ```
 
+To see what filters are available, look the in __filters__ folder of your Improviz installation.
+
 ## Creating Custom Filters
 
 There are two sets of attribute data and three uniforms that Improviz makes available to the filter shaders by default. It is also possible to pass custom uniform values to shaders for further control.
