@@ -1,0 +1,14 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Release
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - name: just getting things working
+        run: echo "starting"
