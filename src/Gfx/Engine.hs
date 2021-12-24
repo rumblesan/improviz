@@ -85,6 +85,7 @@ data GfxEngine = GfxEngine
   , _materialVars     :: SM.SettingMap String Value
   , _viewMatrix       :: M44 GLfloat
   , _projectionMatrix :: M44 GLfloat
+  , _aspectRatio      :: Float
   , _postFX           :: PostProcessingConfig
   , _postFXVars       :: SM.SettingMap String Value
   , _textRenderer     :: TextRenderer
@@ -133,6 +134,7 @@ createGfxEngine config width height pprocess trender textLib matCfg =
         , _materialVars     = SM.create $ varDefaults matCfg
         , _viewMatrix       = view
         , _projectionMatrix = projection
+        , _aspectRatio      = ratio
         , _postFX           = pprocess
         , _postFXVars       = pprocess ^. filterVars
         , _textRenderer     = trender
@@ -157,7 +159,10 @@ resizeGfxEngine config newWidth newHeight newPP newTR =
       back     = config ^. C.screen . CS.back
       newRatio = newWidth /. newHeight
       newProj  = projectionMat front back (pi / 4) newRatio
-  in  set projectionMatrix newProj . set postFX newPP . set textRenderer newTR
+  in  set projectionMatrix newProj
+        . set postFX       newPP
+        . set textRenderer newTR
+        . set aspectRatio  newRatio
 
 resetGfxEngine :: GfxEngine -> GfxEngine
 resetGfxEngine ge = ge

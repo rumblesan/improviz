@@ -124,12 +124,16 @@ display env time = do
   --loadQueuedMaterials env
   as      <- readTVarIO (env ^. I.runtime)
   extVars <- readTVarIO (env ^. I.externalVars)
-  let gfxCtx     = env ^. I.gfxContext
-  let globalVars = [("time", Number $ double2Float time)]
+  let gfxCtx = env ^. I.gfxContext
+  let tvgs   = env ^. I.graphics
+  gfx <- readTVarIO tvgs
+  let globalVars =
+        [ ("time"       , Number $ double2Float time)
+        , ("aspectRatio", Number $ gfx ^. GE.aspectRatio)
+        ]
   is <- setInterpreterVariables globalVars extVars (as ^. IR.initialInterpreter)
   ui <- readTVarIO $ env ^. I.ui
-  (result, _) <- renderGfx (interpret is (as ^. IR.currentAst))
-                           (env ^. I.graphics)
+  (result, _) <- renderGfx (interpret is (as ^. IR.currentAst)) tvgs
   case result of
     Left msg -> do
       logError $ "Could not interpret program: " ++ msg
