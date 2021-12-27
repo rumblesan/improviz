@@ -40,3 +40,4 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./improviz-nix-*.tar.gz
+          asset_name: improviz-nix-tar.gz

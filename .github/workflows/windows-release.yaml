@@ -36,3 +36,4 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./improviz-win-*.zip
+          asset_name: improviz-win.zip
