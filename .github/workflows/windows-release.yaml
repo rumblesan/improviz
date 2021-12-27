@@ -23,6 +23,8 @@ jobs:
       - run: stack test
       - name: Windows Build
         run: ./scripts/build-win.ps1
+        env:
+          VERSION_TAG: ${{ github.event.release.tag_name }}
       - uses: actions/cache@v2
         with:
           path: ./.stack-work
@@ -35,6 +37,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./improviz-win-*.zip
+          asset_path: ./improviz-win-${{ github.event.release.tag_name}}.tar.gz
           asset_name: improviz-win.zip
           asset_content_type: application/zip

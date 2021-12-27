@@ -31,8 +31,10 @@ cp ./docs/reference.md $DOCUMENTATION_DIR/reference.txt
 cp ./docs/textures.md $DOCUMENTATION_DIR/textures.txt
 cp ./docs/web.md $DOCUMENTATION_DIR/web.txt
 
+VERSION="${VERSION_TAG:-0.0.0}"
+
 cp $(stack exec -- which improviz) $BUNDLE_DIR
 
 echo "${VERSION}" >> "${BUNDLE_DIR}/version.txt"
 
-tar -C $BUILD_DIR -zcvf improviz-nix-${TRAVIS_TAG}.tar.gz improviz-nix
+tar -C $BUILD_DIR -zcvf improviz-nix-${VERSION}.tar.gz improviz-nix

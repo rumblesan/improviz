@@ -18,7 +18,7 @@ cp -r ./improviz.yaml $BUNDLE_DIR
 #APP_DIR="$BUNDLE_DIR/improviz.app"
 #mkdir -p "$APP_DIR/Contents/MacOS"
 #mkdir -p "$APP_DIR/Contents/Resources"
-VERSION="${TRAVIS_TAG:-0.0.0}"
+VERSION="${VERSION_TAG:-0.0.0}"
 
 #iconutil -c icns -o "$APP_DIR/Contents/Resources/improviz.icns" ./builds/osx/improviz.iconset
 
