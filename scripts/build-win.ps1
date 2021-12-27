@@ -29,10 +29,10 @@ cp ./docs/reference.md $DOCUMENTATION_DIR/reference.txt
 cp ./docs/textures.md $DOCUMENTATION_DIR/textures.txt
 cp ./docs/web.md $DOCUMENTATION_DIR/web.txt
 
-VERSION="${VERSION_TAG:-0.0.0}"
-
 ./stack.exe install --local-bin-path $BUNDLE_DIR
 
-echo "${VERSION}" >> "${BUNDLE_DIR}/version.txt"
+$ENV:VERSION = ${ENV:VERSION_TAG}
 
-7z a "improviz-win-${VERSION}.zip" $BUNDLE_DIR
+echo "${ENV:VERSION}" >> "${BUNDLE_DIR}/version.txt"
+
+7z a "improviz-win-${ENV:VERSION}.zip" $BUNDLE_DIR
