@@ -29,7 +29,7 @@ cp ./docs/reference.md $DOCUMENTATION_DIR/reference.txt
 cp ./docs/textures.md $DOCUMENTATION_DIR/textures.txt
 cp ./docs/web.md $DOCUMENTATION_DIR/web.txt
 
-./stack.exe install --local-bin-path $BUNDLE_DIR
+stack install --local-bin-path $BUNDLE_DIR
 
 $ENV:VERSION = ${ENV:VERSION_TAG}
 
