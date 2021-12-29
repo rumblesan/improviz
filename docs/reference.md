@@ -278,6 +278,22 @@ The first value given needs to be a symbol that specifies which matrix transform
 If a value is not given for a required axis then an error will occur.
 
 
+## Variables
+
+There are a small number of pre-defined variables available.
+
+### time
+
+This is the most useful and heavily used variable, and is responsible for all of the animation that happens. Its value is the number of seconds passed since Improviz started running, it's a floating point number, and it is always increasing.
+
+### pi
+
+The mathematical constant, has a fixed value of *3.1415927*
+
+### aspectRatio
+
+A floating point number that is the ratio between the screen width and height.
+
 ## Global
 
 The global functions change general things about the Improviz environment. Currently this is really just the background colour.
