@@ -33,6 +33,6 @@ stack install --local-bin-path $BUNDLE_DIR
 
 $ENV:VERSION = ${ENV:VERSION_TAG}
 
-echo "${ENV:VERSION}" >> "${BUNDLE_DIR}/version.txt"
+echo "${ENV:VERSION}" > "${BUNDLE_DIR}/version.txt"
 
 7z a "improviz-win-${ENV:VERSION}.zip" $BUNDLE_DIR
