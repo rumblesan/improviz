@@ -223,9 +223,8 @@ pushScope = do
 
 popScope :: GraphicsEngine ()
 popScope = do
-  stack <- use scopeStack
-  let prev = head stack
-  assign scopeStack                   (tail stack)
+  (prev:stack) <- use scopeStack
+  assign scopeStack                   (stack)
   assign (fillStyle . S.value)        (view savedFillStyles prev)
   assign (strokeStyle . S.value)      (view savedStrokeStyles prev)
   assign (textureStyle . S.value)     (view savedTextureStyles prev)

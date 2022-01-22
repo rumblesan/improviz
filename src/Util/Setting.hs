@@ -6,17 +6,19 @@ module Util.Setting
   , resetIfUnused
   ) where
 
+import           Control.DeepSeq
 import           Lens.Simple                    ( Lens
                                                 , lens
                                                 )
 
 data Setting v = Setting
-  { currentValue :: v
-  , defaultValue :: v
-  , useCurrent   :: Bool
-  , setLastFrame :: Bool
+  { currentValue :: !v
+  , defaultValue :: !v
+  , useCurrent   :: !Bool
+  , setLastFrame :: !Bool
   }
   deriving (Eq, Show)
+instance NFData v => NFData (Setting v) where rnf (Setting a b _ _) = rnf (a, b)
 
 create :: k -> Setting k
 create value = Setting { currentValue = value

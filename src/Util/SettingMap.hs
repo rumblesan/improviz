@@ -9,6 +9,7 @@ module Util.SettingMap
   , snapshot
   ) where
 
+import           Control.DeepSeq
 import qualified Data.Map.Strict               as M
 
 import           Lens.Simple                    ( Lens'
@@ -20,10 +21,11 @@ import           Lens.Simple                    ( Lens'
                                                 )
 
 data Ord k => SettingMap k v = SettingMap
-  { _valueMap      :: M.Map k v
-  , _defaultValues :: M.Map k v
+  { _valueMap      :: !(M.Map k v)
+  , _defaultValues :: !(M.Map k v)
   }
   deriving (Eq, Show)
+instance (NFData k, NFData v) => NFData (SettingMap k v) where rnf = rwhnf
 
 makeLenses ''SettingMap
 

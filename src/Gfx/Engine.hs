@@ -3,6 +3,7 @@
 
 module Gfx.Engine where
 
+import           Control.DeepSeq
 import           Control.Monad.State.Strict
 import qualified Data.Map                      as M
 import           Graphics.Rendering.OpenGL      ( BlendingFactor
@@ -50,27 +51,31 @@ import qualified Configuration.Screen          as CS
 import           Util                           ( (/.) )
 
 data GFXFillStyling
-  = GFXFillColour Colour
+  = GFXFillColour !Colour
   | GFXNoFill
   deriving (Eq, Show)
+instance NFData GFXFillStyling where rnf = rwhnf
 
-data GFXTextureStyling = GFXTextureStyling String Int
+data GFXTextureStyling = GFXTextureStyling String !Int
   deriving (Eq, Show)
+instance NFData GFXTextureStyling where rnf = rwhnf
 
 data GFXStrokeStyling
-  = GFXStrokeColour Colour
+  = GFXStrokeColour !Colour
   | GFXNoStroke
   deriving (Eq, Show)
+instance NFData GFXStrokeStyling where rnf = rwhnf
 
 data SavableState = SavableState
   { _savedMatrixStack   :: [M44 GLfloat]
-  , _savedFillStyles    :: GFXFillStyling
-  , _savedStrokeStyles  :: GFXStrokeStyling
-  , _savedTextureStyles :: GFXTextureStyling
+  , _savedFillStyles    :: !GFXFillStyling
+  , _savedStrokeStyles  :: !GFXStrokeStyling
+  , _savedTextureStyles :: !GFXTextureStyling
   , _savedMaterials     :: String
-  , _savedMaterialVars  :: M.Map String Value
+  , _savedMaterialVars  :: !(M.Map String Value)
   }
   deriving Show
+instance NFData SavableState where rnf s = rnf (rwhnf s, _savedMatrixStack s)
 
 makeLenses ''SavableState
 
@@ -83,8 +88,8 @@ data GfxEngine = GfxEngine
   , _textureLibrary   :: TextureLibrary
   , _materialLibrary  :: MaterialLibrary
   , _materialVars     :: SM.SettingMap String Value
-  , _viewMatrix       :: M44 GLfloat
-  , _projectionMatrix :: M44 GLfloat
+  , _viewMatrix       :: !(M44 GLfloat)
+  , _projectionMatrix :: !(M44 GLfloat)
   , _aspectRatio      :: Float
   , _postFX           :: PostProcessingConfig
   , _postFXVars       :: SM.SettingMap String Value
@@ -98,7 +103,9 @@ data GfxEngine = GfxEngine
       :: S.Setting
         ((BlendingFactor, BlendingFactor), (BlendingFactor, BlendingFactor))
   }
-  deriving Show
+  deriving (Show)
+instance NFData GfxEngine where
+  rnf g = rnf ((_fillStyle g, _strokeStyle g, _textureStyle g, _material g), (_matrixStack g, _scopeStack g))
 
 makeLenses '' GfxEngine
 
