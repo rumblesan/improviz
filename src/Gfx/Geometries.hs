@@ -6,6 +6,7 @@ module Gfx.Geometries
   , createAllGeometries
   ) where
 
+import           Control.DeepSeq
 import           Data.Int                       ( Int32 )
 import qualified Data.List                     as L
 import qualified Data.Map.Strict               as M
@@ -59,10 +60,11 @@ data GeometryFace = GeometryFace
   deriving (Show, Eq)
 
 data GeometryBuffers = GeometryBuffers
-  { vao       :: VAO
-  , vertCount :: Int32
+  { vao       :: !VAO
+  , vertCount :: !Int32
   }
   deriving (Show, Eq)
+instance NFData GeometryBuffers where rnf = rwhnf
 
 type Geometries = M.Map String GeometryBuffers
 

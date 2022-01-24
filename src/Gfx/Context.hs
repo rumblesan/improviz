@@ -20,6 +20,7 @@ import           Gfx.Engine                     ( GfxEngine
 import           Gfx.PostProcessing             ( AnimationStyle )
 import           Graphics.Rendering.OpenGL      ( BlendingFactor )
 import           Language.Ast                   ( Value )
+import           Control.DeepSeq                ( force )
 
 data GfxContext = GfxContext
   { drawShape         :: String -> Float -> Float -> Float -> IO ()
@@ -103,20 +104,20 @@ wrapNoArg :: TVar GfxEngine -> GraphicsEngine () -> IO ()
 wrapNoArg gfx func = do
   ge    <- readTVarIO gfx
   newGe <- execStateT func ge
-  atomically $ writeTVar gfx newGe
+  atomically $ writeTVar gfx $! force newGe
 
 wrapOneArg :: TVar GfxEngine -> (a -> GraphicsEngine ()) -> a -> IO ()
 wrapOneArg gfx func a = do
   ge    <- readTVarIO gfx
   newGe <- execStateT (func a) ge
-  atomically $ writeTVar gfx newGe
+  atomically $ writeTVar gfx $! force newGe
 
 wrapTwoArg
   :: TVar GfxEngine -> (a -> b -> GraphicsEngine ()) -> a -> b -> IO ()
 wrapTwoArg gfx func a b = do
   ge    <- readTVarIO gfx
   newGe <- execStateT (func a b) ge
-  atomically $ writeTVar gfx newGe
+  atomically $ writeTVar gfx $! force newGe
 
 wrapThreeArg
   :: TVar GfxEngine
@@ -128,7 +129,7 @@ wrapThreeArg
 wrapThreeArg gfx func a b c = do
   ge    <- readTVarIO gfx
   newGe <- execStateT (func a b c) ge
-  atomically $ writeTVar gfx newGe
+  atomically $ writeTVar gfx $! force newGe
 
 wrapFourArg
   :: TVar GfxEngine
@@ -141,4 +142,4 @@ wrapFourArg
 wrapFourArg gfx func a b c d = do
   ge    <- readTVarIO gfx
   newGe <- execStateT (func a b c d) ge
-  atomically $ writeTVar gfx newGe
+  atomically $ writeTVar gfx $! force newGe

@@ -22,6 +22,7 @@ executable improviz
                      , aeson
                      , bytestring
                      , containers
+                     , deepseq
                      , file-embed
                      , filepath
                      , freetype2
