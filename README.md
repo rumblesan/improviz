@@ -125,6 +125,7 @@ Many thanks to the following people who have contributed to Improviz and it's de
 [hellocatfood](https://hellocatfood.com) for the excellent gifs and general feedback
 [darch](http://www.darch.dk/) for some really helpful feedback, and teaching improviz workshops
 [nihilazo](https://itwont.work/git/) for helping polish the vim plugin and give it some necessary updates
+[claudeha](https://mathr.co.uk/) for debugging some of the memory/space leaks and providing some much needed performance improvements
 
 
 ## Contact
