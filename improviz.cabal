@@ -124,6 +124,7 @@ test-suite improviz-test
                      , aeson
                      , bytestring
                      , containers
+                     , deepseq
                      , file-embed
                      , filepath
                      , freetype2
