@@ -29,3 +29,9 @@ func rectangle(x, y)
 func line(x)
 	x := 1
 	shape(:line, x, 1, 1)
+
+func geo(name, x, y, z)
+	x := 1
+	y := x
+	z := y
+	shape(name, x, y, z)
