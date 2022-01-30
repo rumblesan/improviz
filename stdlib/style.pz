@@ -29,9 +29,11 @@ func fill(r, g, b, a, &blk)
 	s = :fill
 	if (isNull(blk))
 		style(s, r, g, b, a)
+		intMaterial(:material, :basic)
 	else
 		pushScope()
 		style(s, r, g, b, a)
+		intMaterial(:material, :basic)
 		blk()
 		popScope()
 
@@ -39,9 +41,11 @@ func noFill(&blk)
 	s = :noFill
 	if (isNull(blk))
 		style(s)
+		intMaterial(:material, :basic)
 	else
 		pushScope()
 		style(s)
+		intMaterial(:material, :basic)
 		blk()
 		popScope()
 
@@ -53,9 +57,11 @@ func stroke(r, g, b, a, &blk)
 	s = :stroke
 	if (isNull(blk))
 		style(s, r, g, b, a)
+		intMaterial(:material, :basic)
 	else
 		pushScope()
 		style(s, r, g, b, a)
+		intMaterial(:material, :basic)
 		blk()
 		popScope()
 
@@ -63,9 +69,11 @@ func noStroke(&blk)
 	s = :noStroke
 	if (isNull(blk))
 		style(s)
+		intMaterial(:material, :basic)
 	else
 		pushScope()
 		style(s)
+		intMaterial(:material, :basic)
 		blk()
 		popScope()
 
