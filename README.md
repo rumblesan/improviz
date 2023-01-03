@@ -1,8 +1,15 @@
-# Improviz
+# DEPRECATED: Improviz
 
 [![Build Status](https://travis-ci.org/rumblesan/improviz.svg?branch=main)](https://travis-ci.org/rumblesan/improviz)
 [![Windows build](https://ci.appveyor.com/api/projects/status/sv8a7mosacfsng2l?svg=true)](https://ci.appveyor.com/project/rumblesan/improviz)
 
+## Deprecation
+
+Unfortunately, I've decided to deprecate Improviz.
+
+Building Improviz on recent versions of MacOS is now no-longer possible due to the removal of OpenGL. It should still build on Mojave, and those binaries *should* still run on later versions, but I have no idea how long that will continue for.
+
+Building on Linux and Windows should still be fine.
 
 ## Description
 
