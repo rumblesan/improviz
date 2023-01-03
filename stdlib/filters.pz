@@ -1,3 +1,9 @@
+func filter(name, &blk)
+	animationStyle(name)
+
+func filterVar(name, value, &blk)
+	postProcess(:variable, name, value)
+
 func paintOver()
 	blendFunc([:SrcAlpha, :OneMinusSrcAlpha], [:One, :Zero])
 	animationStyle(:paintOver)
